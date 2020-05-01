@@ -1,0 +1,39 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "src/*"
+      ],
+      "@common/*": [
+        "../common/*"
+      ]
+    },
+    "lib": [
+      "esnext",
+    ],
+    "typeRoots": [
+      "./node_modules/@types",
+    ],
+
+    /* Strict Type-Checking Options */
+    "strict": true,
+    "noImplicitAny": false,
+    "strictPropertyInitialization": false,
+    "esModuleInterop": true,
+    "sourceMap": true,
+    "moduleResolution": "node",
+    "experimentalDecorators": true,
+    "forceConsistentCasingInFileNames": true
+    // ?? "importHelpers": true,
+    // ?? "allowSyntheticDefaultImports": true,
+  },
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
