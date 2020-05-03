@@ -2,10 +2,10 @@ import express from 'express'
 import morgan from 'morgan'
 import helmet from 'helmet'
 import cookieSession from 'cookie-session'
-import WebSocket from 'ws'
+import url from 'url'
 
 import { PORT } from './config/constants'
-import { register, publicsite } from './controllers'
+import { register, publicsite, livews } from './controllers'
 
 const app = express()
 app.use(helmet())
@@ -28,15 +28,16 @@ app.use('/api/register', register)
 app.use('/api', publicsite)
 
 const server = app.listen(PORT, () => {
-    // eslint-disable-next-line no-console
     console.log(`Server is listening on port ${PORT}`)
 })
 
-const wss = new WebSocket.Server({ server })
-wss.on('connection', function connection(ws: WebSocket) {
-    ws.on('message', function newmessage(msg: string) {
-        ws.send('response for ' + msg)
-        // respond to client here
-    })
-    ws.send('first message')
+server.on('upgrade', function upgrade(request, socket, head) {
+    const pathname = request.url.split('?')[0]
+    if (pathname === '/live2') {
+        livews.handleUpgrade(request, socket, head, function done(ws) {
+            livews.emit('connection', ws, request)
+        })
+    } else {
+        socket.destroy()
+    }
 })

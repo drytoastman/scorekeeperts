@@ -4,6 +4,7 @@ import { SeriesRepository } from './seriesrepo'
 import { DriverRepository } from './driverrepo'
 import { ClassRepository } from './classrepo'
 import { RegisterRepository } from './registerrepo'
+import { TableWatcher } from './tablewatcher'
 
 interface DBExtensions {
     series: SeriesRepository;
@@ -37,3 +38,4 @@ const cn = {
 export const pgp = pgpromise(initOptions)
 pgp.pg.types.setTypeParser(pgp.pg.types.builtins.TIMESTAMP, function(stringValue) { return new Date(stringValue + '+0000') })
 export const db = pgp(cn)
+export const tableWatcher = new TableWatcher(db)
