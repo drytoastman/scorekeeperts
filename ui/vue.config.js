@@ -26,8 +26,7 @@ module.exports = {
         headers: {
         },
         proxy: {
-            // proxy all requests starting with /api
-            '/api': {
+            '/api2': {
                 target: 'http://127.0.0.1:4000',
                 changeOrigin: true
             }

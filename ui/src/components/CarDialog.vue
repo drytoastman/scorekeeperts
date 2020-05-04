@@ -60,7 +60,7 @@ export default {
         car: Object,
         actionName: String
     },
-    data () {
+    data() {
         return {
             vrules: CarValidator,
             classcode: '',
@@ -71,22 +71,22 @@ export default {
         }
     },
     computed: {
-        ...mapState('register', ['series', 'classes', 'indexes', 'usednumbers']),
-        carm: function () {
+        ...mapState(['series', 'classes', 'indexes', 'usednumbers']),
+        carm: function() {
             return JSON.parse(JSON.stringify(this.car || { attr: {} })) // get a copy so we don't mutate orig
         },
-        classlist: function () {
+        classlist: function() {
             return Object.values(this.classes).filter(c => c.classcode !== 'HOLD')
         },
-        indexlist: function () {
+        indexlist: function() {
             const restrict = (this.classcode in this.classes) ? this.classes[this.classcode].restrictedIndexes : []
             return Object.values(this.indexes).filter(i => restrict.includes(i.indexcode) && i.indexcode !== '')
         },
-        needindex: function () { return this.indexlist.length > 0 },
-        disableAll: function () { return this.actionName === 'Delete' }
+        needindex: function() { return this.indexlist.length > 0 },
+        disableAll: function() { return this.actionName === 'Delete' }
     },
     methods: {
-        save () {
+        save() {
             if (this.$refs.form.validate()) {
                 if (!this.needindex) {
                     this.carm.indexcode = ''
@@ -95,22 +95,22 @@ export default {
                 this.$emit('input')
             }
         },
-        classcodechange () {
+        classcodechange() {
             this.classcode = this.carm.classcode // tickle reactivity when v-select changes
         }
     },
     watch: {
-        value: function (newv) {
+        value: function(newv) {
             if (newv) { // dialog open
                 if ('form' in this.$refs) { this.$refs.form.resetValidation() } // reset validations if present
                 this.classcode = this.carm.classcode // tickle reactivity
             }
         },
-        classcode: function () {
+        classcode: function() {
             this.usedNumbersProxy = ['loading ...']
-            this.$store.dispatch('register/getUsedNumbers', { series: this.series, classcode: this.classcode })
+            this.$store.dispatch('getUsedNumbers', { series: this.series, classcode: this.classcode })
         },
-        usednumbers: function () {
+        usednumbers: function() {
             this.usedNumbersProxy = this.usednumbers
         }
     }

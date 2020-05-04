@@ -17,7 +17,7 @@ export default {
         dark: Boolean,
         color: String
     },
-    data () {
+    data() {
         return {
             username: '',
             password: '',
@@ -27,9 +27,9 @@ export default {
         }
     },
     methods: {
-        login: function () {
+        login: function() {
             if (!this.$refs.form.validate()) { return }
-            this.$store.dispatch('register/login', {
+            this.$store.dispatch('login', {
                 username: this.username,
                 password: this.password
             })

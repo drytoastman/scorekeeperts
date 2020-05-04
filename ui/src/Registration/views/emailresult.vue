@@ -12,7 +12,7 @@ export default {
     components: {
     },
     computed: {
-        ...mapState('register', ['emailresult'])
+        ...mapState(['emailresult'])
     }
 }
 </script>

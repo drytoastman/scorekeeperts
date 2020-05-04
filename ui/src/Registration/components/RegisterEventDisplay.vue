@@ -7,7 +7,7 @@
             Location: {{event.location}}
         </v-row>
         <v-row>
-            Entries: {{counts.singles}}
+            Entries: {{counts.all}}
         </v-row>
     </v-container>
 </template>
@@ -15,7 +15,7 @@
 <script>
 export default {
     filters: {
-        timedate: function (v) {
+        timedate: function(v) {
             const d = new Date(v)
             return d.toDateString() + ' - ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', timeZoneName: 'short' })
         }
@@ -30,7 +30,9 @@ export default {
             default: () => ({})
         }
     },
-    data: function () {
+    computed: {
+    },
+    data: function() {
         return {}
     }
 }

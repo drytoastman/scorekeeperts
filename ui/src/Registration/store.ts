@@ -1,29 +1,30 @@
 import Vue from 'vue'
-import Vuex from 'vuex'
+import Vuex, { MutationTree, ActionTree, ActionContext } from 'vuex'
 import axios from 'axios'
-import { Module, VuexModule, Mutation, Action } from 'vuex-module-decorators'
+import ReconnectingWebSocket from 'reconnecting-websocket'
+
 import { Driver, SeriesEvent, Car, Registration, Payment, SeriesIndex, SeriesClass } from '@common/lib'
 
-function root () {
-    return '/api/register'
-}
+Vue.use(Vuex)
 
-function errorhandler (mod: VuexModule<any>, error: any) {
+const root = '/api2/register'
+
+function errorhandler(context: ActionContext<State, any>, error: any) {
     if (error.response) {
         if (error.response.status === 401) {
-            mod.context.commit('authenticate', false)
+            context.commit('authenticate', false)
         }
         if (typeof error.response.data === 'object') {
-            mod.context.commit('setErrors', error.response.data.result || error.response.data.error)
+            context.commit('setErrors', error.response.data.result || error.response.data.error)
         } else {
-            mod.context.commit('setErrors', [error.response.data])
+            context.commit('setErrors', [error.response.data])
         }
     } else {
-        mod.context.commit('setErrors', [error.toString().replace('Error: ', '')])
+        context.commit('setErrors', [error.toString().replace('Error: ', '')])
     }
 }
 
-function clearSeriesData (state: any) {
+function clearSeriesData(state: any) {
     state.classes = []
     state.indexes = []
     state.events = {}
@@ -33,8 +34,7 @@ function clearSeriesData (state: any) {
     state.counts = {}
 }
 
-@Module({ namespaced: true })
-class RegisterModule extends VuexModule {
+class State {
     authenticated: string|boolean = ''
     errors: string[] = []
     series = ''
@@ -48,165 +48,165 @@ class RegisterModule extends VuexModule {
     counts: {[key: string]: any} = {}
     emailresult: any = {}
     usednumbers: number[] = []
+    ws: ReconnectingWebSocket = new ReconnectingWebSocket(`ws://${window.location.host}${root}/live`, undefined, {
+        minReconnectionDelay: 1000,
+        maxRetries: 10,
+        startClosed: true
+    })
+}
 
-    @Mutation
-    authenticate (ok: boolean) {
-        this.authenticated = ok
+const mutations = {
+
+    authenticate(state: State, ok: boolean) {
+        state.authenticated = ok
         if (!ok) {
-            this.driver = {} as Driver
+            state.driver = {} as Driver
             clearSeriesData(this)
         } else {
-            this.errors = []
+            state.errors = []
+            state.ws.reconnect()
         }
-    }
+    },
 
-    @Mutation
-    setErrors (errors: string[]) {
-        this.errors = errors
-    }
+    setErrors(state: State, errors: string[]) {
+        state.errors = errors
+    },
 
-    @Mutation
-    setEmailResult (data: any[]) {
-        this.emailresult = data
-    }
+    setEmailResult(state: State, data: any[]) {
+        state.emailresult = data
+    },
 
-    @Mutation
-    setUsedNumbers (data: number[]) {
-        this.usednumbers = data
-    }
+    setUsedNumbers(state: State, data: number[]) {
+        state.usednumbers = data
+    },
 
-    @Mutation
-    apiData (data: any) {
+    apiData(state: State, data: any) {
         if (data === undefined) return
 
         if ('driver' in data) {
-            this.driver = data.driver
+            state.driver = data.driver
         }
 
-        if (('series' in data) && (data.series !== this.series)) {
-            clearSeriesData(this)
-            this.series = data.series
+        if (('series' in data) && (data.series !== state.series)) {
+            clearSeriesData(state)
+            state.series = data.series
         }
 
         if ('classes' in data) {
-            this.classes = data.classes
+            state.classes = data.classes
         }
 
         if ('indexes' in data) {
-            this.indexes = data.indexes
+            state.indexes = data.indexes
         }
 
         if ('events' in data) {
             if (data.type === 'get') {
-                this.events = {}
+                state.events = {}
             }
-            data.events.forEach((e: SeriesEvent) => Vue.set(this.events, e.eventid, e))
+            data.events.forEach((e: SeriesEvent) => Vue.set(state.events, e.eventid, e))
         }
 
         if ('cars' in data) {
             if (data.type === 'delete') {
-                data.cars.forEach((c: Car) => Vue.delete(this.cars, c.carid))
+                data.cars.forEach((c: Car) => Vue.delete(state.cars, c.carid))
             } else { // get or update
-                if (data.type === 'get') { this.cars = {} }
-                data.cars.forEach((c: Car) => Vue.set(this.cars, c.carid, c))
+                if (data.type === 'get') { state.cars = {} }
+                data.cars.forEach((c: Car) => Vue.set(state.cars, c.carid, c))
             }
         }
 
         if ('registered' in data) {
-            this.registered = {}
+            state.registered = {}
             data.registered.forEach((r: Registration) => {
-                if (!(r.eventid in this.registered)) { Vue.set(this.registered, r.eventid, []) }
-                this.registered[r.eventid].push(r)
+                if (!(r.eventid in state.registered)) { Vue.set(state.registered, r.eventid, []) }
+                state.registered[r.eventid].push(r)
             })
         }
 
         if ('payments' in data) {
-            this.payments = {}
+            state.payments = {}
             data.payments.forEach((p: Payment) => {
-                if (!(p.eventid in this.payments)) { Vue.set(this.payments, p.eventid, []) }
-                this.payments[p.eventid].push(p)
+                if (!(p.eventid in state.payments)) { Vue.set(state.payments, p.eventid, []) }
+                state.payments[p.eventid].push(p)
             })
         }
 
         if ('counts' in data) {
-            this.counts = {}
-            data.counts.forEach((e: SeriesEvent) => Vue.set(this.counts, e.eventid, e))
+            state.counts = {}
+            data.counts.forEach((e: SeriesEvent) => Vue.set(state.counts, e.eventid, e))
         }
     }
 
-    @Action({ rawError: true })
-    async getdata (p: any) {
+} as MutationTree<State>
+
+
+const actions = {
+
+    async getdata(context: ActionContext<State, any>, p: any) {
         try {
-            const data = (await axios.get(root() + '/api', { params: p, withCredentials: true })).data
-            this.context.commit('authenticate', true) // we must be auth if this happens
-            this.context.commit('apiData', data)
+            const data = (await axios.get(root + '/api', { params: p, withCredentials: true })).data
+            context.commit('authenticate', true) // we must be auth if this happens
+            context.commit('apiData', data)
         } catch (error) {
-            errorhandler(this, error)
+            errorhandler(context, error)
         }
-    }
-
-    @Action({ rawError: true })
-    async setdata (p: any) {
-        try {
-            const data = (await axios.post(root() + '/api', p, { withCredentials: true })).data
-            this.context.commit('authenticate', true) // we must be auth if this happens
-            this.context.commit('apiData', data)
-        } catch (error) {
-            errorhandler(this, error)
-        }
-    }
-
-    @Action({ rawError: true })
-    async getUsedNumbers (p: any) {
-        try {
-            const data = (await axios.get(root() + '/used', { params: p, withCredentials: true })).data
-            this.context.commit('setUsedNumbers', data)
-        } catch (error) {
-            errorhandler(this, error)
-        }
-    }
-
-    @Action({ rawError: true })
-    async login (p: any) {
-        try {
-            await axios.post(root() + '/debuglogin', p, { withCredentials: true })
-            this.context.commit('authenticate', true)
-        } catch (error) {
-            errorhandler(this, error)
-        }
-    }
-
-    @Action
-    async logout () {
-        try {
-            await axios.get(root() + '/logout', { withCredentials: true })
-            this.context.commit('authenticate', false)
-        } catch (error) {
-            errorhandler(this, error)
-        }
-    }
-
-    @Action({ rawError: true })
-    async regreset (p: any) {
-        try {
-            const resp = (await axios.post(root() + '/regreset', p, { withCredentials: true })).data
-            this.context.commit('setEmailResult', resp.data)
-        } catch (error) {
-            errorhandler(this, error)
-        }
-    }
-}
-
-Vue.use(Vuex)
-
-export default new Vuex.Store({
-    state: {
     },
-    mutations: {
+
+    async setdata(context: ActionContext<State, any>, p: any) {
+        try {
+            const data = (await axios.post(root + '/api', p, { withCredentials: true })).data
+            context.commit('authenticate', true) // we must be auth if this happens
+            context.commit('apiData', data)
+        } catch (error) {
+            errorhandler(context, error)
+        }
     },
-    actions: {
+
+    async getUsedNumbers(context: ActionContext<State, any>, p: any) {
+        try {
+            const data = (await axios.get(root + '/used', { params: p, withCredentials: true })).data
+            context.commit('setUsedNumbers', data)
+        } catch (error) {
+            errorhandler(context, error)
+        }
     },
-    modules: {
-        register: RegisterModule
+
+    async login(context: ActionContext<State, any>, p: any) {
+        try {
+            await axios.post(root + '/debuglogin', p, { withCredentials: true })
+            context.commit('authenticate', true)
+        } catch (error) {
+            errorhandler(context, error)
+        }
+    },
+
+    async logout(context: ActionContext<State, any>) {
+        try {
+            await axios.get(root + '/logout', { withCredentials: true })
+            context.commit('authenticate', false)
+        } catch (error) {
+            errorhandler(context, error)
+        }
+    },
+
+    async regreset(context: ActionContext<State, any>, p: any) {
+        try {
+            const resp = (await axios.post(root + '/regreset', p, { withCredentials: true })).data
+            context.commit('setEmailResult', resp.data)
+        } catch (error) {
+            errorhandler(context, error)
+        }
     }
+
+}  as ActionTree<State, any>
+
+
+const registerStore = new Vuex.Store({
+    state: new State(),
+    mutations: mutations,
+    actions: actions
 })
+registerStore.state.ws.onmessage = (e) => registerStore.commit('apiData', JSON.parse(e.data))
+
+export default registerStore

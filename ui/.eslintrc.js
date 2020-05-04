@@ -1,12 +1,14 @@
 rules = {
     'max-len': ['error', { code: 180, ignoreTemplateLiterals: true }],
     '@typescript-eslint/no-explicit-any': 'off',
+    'space-before-function-paren': ["warn", "never"],
+    'no-multi-spaces': 'off',
+    'no-multiple-empty-lines': 'off',
     indent: ['warn', 4]
 }
 
 if (process.env.NODE_ENV !== 'production') {
     rules = Object.assign(rules, {
-        'no-console': 'error',
         'no-debugger': 'error',
     })
 }

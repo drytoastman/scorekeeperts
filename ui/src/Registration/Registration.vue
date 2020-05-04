@@ -49,15 +49,15 @@ export default {
         drawer: null
     }),
     methods: {
-        logout: function () {
-            this.$store.dispatch('register/logout')
+        logout: function() {
+            this.$store.dispatch('logout')
         }
     },
     computed: {
-        ...mapState('register', ['authenticated', 'errors'])
+        ...mapState(['authenticated', 'errors'])
     },
     watch: {
-        authenticated: function (newv) {
+        authenticated: function(newv) {
             // tristate with blank string to get initial state
             if (newv === false) {
                 this.$router.replace('/login')

@@ -27,7 +27,7 @@
 <script>
 import { mapState } from 'vuex'
 import CarCardsBox from '../../components/CarCardsBox'
-import EventsAccordian from '../../components/EventsAccordian'
+import EventsAccordian from '../components/EventsAccordian'
 
 export default {
     name: 'SeriesSummary',
@@ -40,12 +40,12 @@ export default {
         items: ['Cars', 'Events']
     }),
     computed: {
-        ...mapState('register', ['cars', 'authenticated']),
-        series: function () { return this.$route.params.series },
-        showevents: function () { return this.selected === 'Events' }
+        ...mapState(['cars', 'authenticated']),
+        series: function() { return this.$route.params.series },
+        showevents: function() { return this.selected === 'Events' }
     },
-    mounted () {
-        this.$store.dispatch('register/getdata', { series: this.$route.params.series })
+    mounted() {
+        this.$store.dispatch('getdata', { series: this.$route.params.series })
     }
 }
 </script>

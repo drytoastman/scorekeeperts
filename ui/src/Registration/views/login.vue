@@ -14,9 +14,9 @@
 </template>
 
 <script>
-import LoginForm from '../../components/LoginForm'
-import ResetForm from '../../components/ResetForm'
-import RegisterForm from '../../components/RegisterForm'
+import LoginForm from '../components/LoginForm'
+import ResetForm from '../components/ResetForm'
+import RegisterForm from '../components/RegisterForm'
 export default {
     name: 'Login',
     components: {
@@ -24,7 +24,7 @@ export default {
         ResetForm,
         RegisterForm
     },
-    data () {
+    data() {
         return {
             active: null
         }

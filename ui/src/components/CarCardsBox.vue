@@ -28,7 +28,7 @@ export default {
         CarDisplay,
         CarDialog
     },
-    data () {
+    data() {
         return {
             dialogOpen: false,
             dialogTitle: 'Title here',
@@ -38,8 +38,8 @@ export default {
         }
     },
     computed: {
-        ...mapState('register', ['series', 'cars', 'errors']),
-        actionName () {
+        ...mapState(['series', 'cars', 'errors']),
+        actionName() {
             switch (this.apiType) {
             case 'insert': return 'Create'
             case 'update': return 'Update'
@@ -47,34 +47,34 @@ export default {
             default: return '???'
             }
         },
-        orderedCars () {
+        orderedCars() {
             const ret = _.orderBy(this.cars, ['classcode', 'number'])
             if (this.loadingCard) ret.push(this.loadingCard)
             return ret
         }
     },
     methods: {
-        addCar () {
+        addCar() {
             this.dialogCar = undefined
             this.dialogTitle = 'Add Car'
             this.dialogOpen = true
             this.apiType = 'insert'
         },
-        editCar (car) {
+        editCar(car) {
             this.dialogCar = car
             this.dialogTitle = 'Edit Car'
             this.dialogOpen = true
             this.apiType = 'update'
         },
-        deleteCar (car) {
+        deleteCar(car) {
             this.dialogCar = car
             this.dialogTitle = 'Delete Car'
             this.dialogOpen = true
             this.apiType = 'delete'
         },
-        dialogSave (cardata) {
+        dialogSave(cardata) {
             // Called when the ok action in the dialog is taken
-            this.$store.dispatch('register/setdata', {
+            this.$store.dispatch('setdata', {
                 series: this.series,
                 type: this.apiType,
                 cars: [cardata]
@@ -88,8 +88,8 @@ export default {
         }
     },
     watch: {
-        cars: function () { this.loadingCard = undefined }, // on new car data
-        dialogOpen: function (newv) { if (!newv) { this.dialogCar = undefined } } // on dialog close
+        cars: function() { this.loadingCard = undefined }, // on new car data
+        dialogOpen: function(newv) { if (!newv) { this.dialogCar = undefined } } // on dialog close
     }
 }
 </script>

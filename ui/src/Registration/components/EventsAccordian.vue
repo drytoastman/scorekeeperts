@@ -31,10 +31,10 @@ export default {
         RegisterEventDisplay
     },
     filters: {
-        titledate: function (v) { return new Date(v).toDateString() }
+        titledate: function(v) { return new Date(v).toDateString() }
     },
     computed: {
-        ...mapState('register', ['events', 'counts'])
+        ...mapState(['events', 'counts'])
     }
 }
 </script>
