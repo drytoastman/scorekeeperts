@@ -1,7 +1,7 @@
 export { Car, CarAttr, CarValidator } from './car'
 export { SeriesIndex, IndexValidator, SeriesClass, ClassValidator } from './classindex'
 export { Driver, DriverAttr, DriverValidator } from './driver'
-export { SeriesEvent, EventAttr, EventValidator } from './event'
+export { SeriesEvent, EventAttr, EventWrap, EventValidator } from './event'
 export { Registration, RegValidator, Payment, PaymentValidator } from './register'
 export { SeriesSettings, DefaultSettings, SettingsValidator } from './settings'
 export { ClassData } from './classdata'

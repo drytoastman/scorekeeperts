@@ -1,6 +1,7 @@
 import validator from 'validator'
 
 export type UUID = string;
+export type DateString = string;
 export type VuetifyValidationRule  = (value: any) => string | boolean
 export type VuetifyValidationRules = VuetifyValidationRule[]
 

@@ -44,7 +44,7 @@ class State {
     events: {[key: string]: SeriesEvent} = {}
     cars: {[key: string]: Car} = {}
     registered: {[key: string]: Registration[]} = {}
-    payments: {[key: string]: Payment[]} = {}
+    payments: {[key: string]: { [key: string]: Payment[]}} = {}
     counts: {[key: string]: any} = {}
     emailresult: any = {}
     usednumbers: number[] = []
@@ -127,8 +127,9 @@ const mutations = {
         if ('payments' in data) {
             state.payments = {}
             data.payments.forEach((p: Payment) => {
-                if (!(p.eventid in state.payments)) { Vue.set(state.payments, p.eventid, []) }
-                state.payments[p.eventid].push(p)
+                if (!(p.eventid in state.payments))          { Vue.set(state.payments, p.eventid, {}) }
+                if (!(p.carid in state.payments[p.eventid])) { Vue.set(state.payments[p.eventid], p.carid, []) }
+                state.payments[p.eventid][p.carid].push(p)
             })
         }
 
@@ -174,7 +175,7 @@ const actions = {
 
     async login(context: ActionContext<State, any>, p: any) {
         try {
-            await axios.post(root + '/debuglogin', p, { withCredentials: true })
+            await axios.post(root + '/login', p, { withCredentials: true })
             context.commit('authenticate', true)
         } catch (error) {
             errorhandler(context, error)

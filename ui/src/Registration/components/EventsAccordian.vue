@@ -4,18 +4,19 @@
         <v-expansion-panel v-for="event in events" :key="event.eventid">
             <v-expansion-panel-header class='elevation-4'>
                 <v-container class="pa-0">
-                    <v-row no-gutters justify="start">
-                        <v-col cols=12 md=3 class='datecol'>
+                    <v-row no-gutters align=center class='eventrow'>
+                        <v-col class='datecol'>
                             <span class='eventdate'>{{event.date | titledate}}</span>
                         </v-col>
-                        <v-col cols=12 md=9 class='namecol'>
-                            <span class='eventname'> {{event.name}}</span>
+                        <v-col class='namecol'>
+                            <span class='eventname'>{{event.name}}</span>
                         </v-col>
+                        <v-spacer></v-spacer>
                     </v-row>
                 </v-container>
             </v-expansion-panel-header>
             <v-expansion-panel-content>
-                <RegisterEventDisplay :event="event" :counts="counts[event.eventid]"></RegisterEventDisplay>
+                <RegisterEventDisplay :event="event" :counts="counts[event.eventid]" :registration="registered[event.eventid]"></RegisterEventDisplay>
             </v-expansion-panel-content>
         </v-expansion-panel>
     </v-expansion-panels>
@@ -34,7 +35,7 @@ export default {
         titledate: function(v) { return new Date(v).toDateString() }
     },
     computed: {
-        ...mapState(['events', 'counts'])
+        ...mapState(['events', 'counts', 'registered'])
     }
 }
 </script>
@@ -47,9 +48,24 @@ export default {
     .eventdate {
         font-weight: bold;
     }
-    @media (max-width: 960px) {
-        .namecol {
-            padding-top: 5px;
+    .datecol {
+        text-align: right;
+        margin-right: 0.5rem;
+        max-width: 10rem;
+    }
+    .datecol, .namecol {
+        flex-grow: 0.5;
+    }
+
+    @media (max-width: 700px) {
+        .eventrow {
+            display: block;
+        }
+        .datecol, .namecol {
+            text-align: left;
+        }
+        .datecol {
+            margin-bottom: 5px;
         }
     }
 

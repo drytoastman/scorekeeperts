@@ -1,4 +1,4 @@
-import { DataValidationRules, Length, isUUID, isDate, UUID, Range, Min } from './util'
+import { DataValidationRules, Length, isUUID, isDate, UUID, Range, Min, DateString } from './util'
 
 export interface EventAttr
 {
@@ -10,7 +10,7 @@ export interface SeriesEvent
 {
     eventid: UUID;
     name: string;
-    date: Date;
+    date: DateString;
     champrequire: [];
     useastiebreak: [];
     isexternal: [];
@@ -30,8 +30,16 @@ export interface SeriesEvent
     ispractice: [];
     accountid: string;
     attr: EventAttr;
-    modified: Date;
-    created: Date;
+    modified: DateString;
+    created: DateString;
+}
+
+export class EventWrap {
+    // eslint-disable-next-line no-useless-constructor
+    constructor(private event: SeriesEvent) {}
+    hasOpened(): boolean { return new Date() > new Date(this.event.regopened) }
+    hasClosed(): boolean { return new Date() > new Date(this.event.regclosed) }
+    isOpen(): boolean    { return this.hasOpened() && !this.hasClosed() }
 }
 
 export const EventValidator: DataValidationRules = {

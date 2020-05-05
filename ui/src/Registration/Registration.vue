@@ -27,26 +27,27 @@
         </v-app-bar>
 
         <v-content>
-            <Alert :errors=errors></Alert>
             <router-view />
         </v-content>
+
+        <v-snackbar v-model="snackbar" :timeout=0>
+            {{ errors }}
+            <v-btn color="pink" text @click="snackbar = false">Close</v-btn>
+        </v-snackbar>
     </v-app>
 </template>
 
 <script>
 import { mapState } from 'vuex'
-import Alert from '../components/Alert'
 
 export default {
     name: 'App',
-    components: {
-        Alert
-    },
     props: {
         source: String
     },
     data: () => ({
-        drawer: null
+        drawer: null,
+        snackbar: false
     }),
     methods: {
         logout: function() {
@@ -65,6 +66,11 @@ export default {
                 if (this.$route.path !== '/series/nwr2020') {
                     this.$router.replace('/series/nwr2020')
                 }
+            }
+        },
+        errors: function(newv) {
+            if (newv.length) {
+                this.snackbar = true
             }
         }
     }
