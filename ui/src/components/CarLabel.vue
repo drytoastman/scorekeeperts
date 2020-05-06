@@ -1,5 +1,5 @@
 <template>
-    <div class='carlabel'>
+    <div class='carlabel' :style="{'font-size': this.fontsize}">
         <div class='head'>
             <span class='code'>{{car.classcode}}</span>
             <span class='number'>#{{car.number}}</span>
@@ -17,10 +17,15 @@ export default {
         car: {
             type: Object,
             default: () => ({ attr: {} })
+        },
+        fontsize: {
+            type: String,
+            default: '100%'
         }
     },
     computed: {
-        indexstr() { return (this.car.indexcode !== '') ? `(${this.car.indexcode})` : '' }
+        indexstr() { return (this.car.indexcode !== '') ? `(${this.car.indexcode})` : '' },
+        stylevars() { return { 'font-size': this.fontsize } }
     }
 }
 </script>
@@ -29,26 +34,27 @@ export default {
     .carlabel {
         font-weight: normal;
         line-height: 20px;
+        text-align: left;
     }
     .code, .number, .index {
         vertical-align: middle;
         font-weight: 500;
     }
     .code {
-        font-size: 1.4rem;
+        font-size: 120%;
         color: #095675;
         margin-right: 4px;
     }
     .number {
-        font-size: 1.2rem;
+        font-size: 100%;
         margin-right: 6px;
     }
     .index {
-        font-size: 1.0rem;
+        font-size: 80%;
         color: grey;
     }
     .descrip {
         color: gray;
-        font-size: 0.9rem;
+        font-size: 70%;
     }
 </style>

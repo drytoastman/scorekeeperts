@@ -18,12 +18,12 @@ type ScorekeeperProtocol = IDatabase<DBExtensions> & DBExtensions;
 
 const initOptions: IInitOptions<DBExtensions> = {
     extend(obj: ScorekeeperProtocol) {
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define
         obj.series = new SeriesRepository(obj)
         obj.clsidx = new ClassRepository(obj)
         obj.drivers = new DriverRepository(obj)
-        // eslint-disable-next-line @typescript-eslint/no-use-before-define
         obj.cars = new CarRepository(obj, pgp)
-        obj.register = new RegisterRepository(obj)
+        obj.register = new RegisterRepository(obj, pgp)
     }
 }
 

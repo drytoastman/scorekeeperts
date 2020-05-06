@@ -1,7 +1,7 @@
 <template>
     <div>
     <v-expansion-panels multiple focusable hover accordion tile>
-        <v-expansion-panel v-for="event in events" :key="event.eventid">
+        <v-expansion-panel v-for="event in orderedEvents" :key="event.eventid">
             <v-expansion-panel-header class='elevation-4'>
                 <v-container class="pa-0">
                     <v-row no-gutters align=center class='eventrow'>
@@ -25,6 +25,7 @@
 
 <script>
 import { mapState } from 'vuex'
+import _ from 'lodash'
 import RegisterEventDisplay from '../components/RegisterEventDisplay.vue'
 
 export default {
@@ -35,7 +36,8 @@ export default {
         titledate: function(v) { return new Date(v).toDateString() }
     },
     computed: {
-        ...mapState(['events', 'counts', 'registered'])
+        ...mapState(['events', 'counts', 'registered']),
+        orderedEvents() { return _.orderBy(this.events, ['date']) }
     }
 }
 </script>

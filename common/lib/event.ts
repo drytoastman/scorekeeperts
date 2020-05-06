@@ -4,6 +4,7 @@ export interface EventAttr
 {
     chair: string;
     location: string;
+    paymentreq: boolean;
 }
 
 export interface SeriesEvent

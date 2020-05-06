@@ -14,10 +14,10 @@
         </v-row>
 
         <v-row>
-            <v-col v-if="!showevents">
+            <v-col v-show="!showevents">
                 <CarCardsBox></CarCardsBox>
             </v-col>
-            <v-col v-if="showevents">
+            <v-col v-show="showevents">
                 <EventsAccordian></EventsAccordian>
             </v-col>
         </v-row>

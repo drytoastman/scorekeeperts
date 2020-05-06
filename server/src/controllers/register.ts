@@ -106,6 +106,9 @@ register.post('/api', async(req: Request, res: Response) => {
         if ('cars' in req.body) {
             ret.cars = await db.cars.updateCars(req.body.type, req.body.cars, req.session!.driverid)
         }
+        if ('registered' in req.body) {
+            ret.registered = await db.register.updateRegistration(req.body.type, req.body.registered, req.session!.driverid)
+        }
 
         res.json(ret)
     } catch (error) {

@@ -108,20 +108,37 @@ const mutations = {
         }
 
         if ('cars' in data) {
+            // data.type in ('get', 'insert', 'update', 'delete')
             if (data.type === 'delete') {
                 data.cars.forEach((c: Car) => Vue.delete(state.cars, c.carid))
-            } else { // get or update
+            } else { // get, insert, update
                 if (data.type === 'get') { state.cars = {} }
                 data.cars.forEach((c: Car) => Vue.set(state.cars, c.carid, c))
             }
         }
 
         if ('registered' in data) {
-            state.registered = {}
-            data.registered.forEach((r: Registration) => {
-                if (!(r.eventid in state.registered)) { Vue.set(state.registered, r.eventid, []) }
-                state.registered[r.eventid].push(r)
-            })
+            if (['delete', 'update'].includes(data.type)) {
+                data.registered.forEach((r: Registration) => {
+                    const a = state.registered[r.eventid]
+                    const m = a.filter(i => i.carid === r.carid)
+                    if (m.length > 0) {
+                        const i = a.indexOf(m[0])
+                        if (data.type === 'update') {
+                            a.splice(i, 1, r || undefined)
+                        } else {
+                            a.splice(i, 1)
+                        }
+                    }
+                })
+            } else {
+                // get, insert
+                if (data.type === 'get') { state.registered = {} }
+                data.registered.forEach((r: Registration) => {
+                    if (!(r.eventid in state.registered)) { Vue.set(state.registered, r.eventid, []) }
+                    state.registered[r.eventid].push(r)
+                })
+            }
         }
 
         if ('payments' in data) {
