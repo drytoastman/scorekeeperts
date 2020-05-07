@@ -4,15 +4,19 @@
             <v-col v-for="car in orderedCars" :key="car.carid">
                 <CarDisplay :car="car" @editcar='editCar' @deletecar='deleteCar'></CarDisplay>
             </v-col>
+            <v-col class='carspacer align-self-center text-center'>
+                <v-btn dark :class="usefixed ? 'fixedbutton' : 'flexbutton'" color="secondary" @click.stop=addCar>Add Car</v-btn>
+            </v-col>
             <v-spacer class='carspacer'></v-spacer>
             <v-spacer class='carspacer'></v-spacer>
             <v-spacer class='carspacer'></v-spacer>
             <v-spacer class='carspacer'></v-spacer>
             <v-spacer class='carspacer'></v-spacer>
             <v-spacer class='carspacer'></v-spacer>
+            <v-col>
+            </v-col>
         </v-row>
         <CarDialog v-model=dialogOpen :title=dialogTitle :car=dialogCar :actionName=actionName @save='dialogSave'></CarDialog>
-        <v-btn dark fixed bottom right fab color="secondary" @click.stop=addCar>Add</v-btn>
     </v-container>
 </template>
 
@@ -41,16 +45,23 @@ export default {
         ...mapState(['series', 'cars', 'errors']),
         actionName() {
             switch (this.apiType) {
-            case 'insert': return 'Create'
-            case 'update': return 'Update'
-            case 'delete': return 'Delete'
-            default: return '???'
+                case 'insert': return 'Create'
+                case 'update': return 'Update'
+                case 'delete': return 'Delete'
+                default: return '???'
             }
         },
         orderedCars() {
             const ret = _.orderBy(this.cars, ['classcode', 'number'])
             if (this.loadingCard) ret.push(this.loadingCard)
             return ret
+        },
+        usefixed() {
+            switch (this.$vuetify.breakpoint.name) {
+                case 'xs': return true
+                case 'sm': return true
+                default: return false
+            }
         }
     },
     methods: {
@@ -98,5 +109,17 @@ export default {
     .carspacer {
         min-width: 15rem;
         padding: 4px;
+    }
+    .fixedbutton {
+        position: fixed;
+        width: 50%;
+        bottom: 10px;
+        left: 0;
+        right: 0;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    .flexbutton {
+        margin-top: 1rem;
     }
 </style>

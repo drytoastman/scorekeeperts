@@ -192,7 +192,7 @@ const actions = {
 
     async login(context: ActionContext<State, any>, p: any) {
         try {
-            await axios.post(root + '/login', p, { withCredentials: true })
+            await axios.post(root + '/debuglogin', p, { withCredentials: true })
             context.commit('authenticate', true)
         } catch (error) {
             errorhandler(context, error)

@@ -6,7 +6,7 @@
           <span class="headline">{{title}}</span>
         </v-card-title>
         <v-card-text :class='{disabledform: disableAll}'>
-          <v-container class='formcontainer'>
+          <v-container>
 
             <v-form ref="form" lazy-validation >
               <v-select v-model="carm.classcode" label="Class" :rules="classrules" :items="classlist" item-text='classcode' @change='classcodechange'>
@@ -24,7 +24,7 @@
 
               <v-text-field v-model="carm.number"     label="Number" :rules="numberrules"></v-text-field>
 
-              <v-expansion-panels>
+              <v-expansion-panels v-show="!disableAll">
                 <v-expansion-panel>
                   <v-expansion-panel-header><span class='text-center'>Numbers Already Taken In {{classcode}}</span></v-expansion-panel-header>
                   <v-expansion-panel-content><span>{{usedNumbersProxy.join(', ')}}</span></v-expansion-panel-content>
@@ -137,7 +137,7 @@ export default {
    opacity: 0.5;
 }
 .v-expansion-panel-header {
-  font-size: 0.9rem;
+  font-size: 90%;
   padding: 3px !important;
   min-height: 0px;
 }
@@ -148,4 +148,22 @@ export default {
   margin-top: 0rem;
   margin-bottom: 1rem;
 }
+
+.v-card__title {
+  padding-top: 5px !important;
+  padding-bottom: 2px !important;
+  border-bottom: 1px solid #63637969;
+  background: #eee;
+}
+.v-card__text {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+.v-card__actions {
+  background: #eee;
+  border-top: 1px solid #63637969;
+  padding-top: 2px !important;
+  padding-bottom: 2px !important;
+}
+
 </style>

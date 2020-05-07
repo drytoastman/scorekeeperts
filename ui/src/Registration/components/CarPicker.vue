@@ -1,35 +1,46 @@
 <template>
-    <v-speed-dial v-model="fab" direction="top">
+    <v-speed-dial v-model="open" direction="top">
         <template v-slot:activator>
-            <v-btn v-model="fab" color="blue darken-2" dark fab>
-                <v-icon v-if="fab">mdi-close</v-icon>
-                <span v-else>Add</span>
+            <v-btn v-model="open" :color="disabled ? 'grey' : 'blue'" dark fab>
+                <span v-if="disabled">Max</span>
+                <v-icon v-else-if="open">mdi-close</v-icon>
+                <span v-else>Reg</span>
             </v-btn>
         </template>
-        <v-btn elevation=8 v-for="car in cars" :key="car.carid" @click="addReg(car)" x-large color="white">
+        <v-btn elevation=8 v-for="car in pickableCars" :key="car.carid" @click="addReg(car)" x-large color="white">
             <CarLabel :car="car"></CarLabel>
         </v-btn>
+        <span></span> <!-- keep speed-dial from removing button if nothing pickable -->
     </v-speed-dial>
 </template>
 
 <script>
 import { mapState } from 'vuex'
+import _ from 'lodash'
 import CarLabel from '../../components/CarLabel'
 import { Event } from '@common/lib'
 
 export default {
     props: {
-        event: Event
+        event: Event,
+        inuse: Array
     },
     components: {
         CarLabel
     },
     data: () => ({
-        fab: false,
+        open: false,
         up: 'up'
     }),
     computed: {
-        ...mapState(['series', 'cars'])
+        ...mapState(['series', 'cars']),
+        pickableCars() {
+            const rids = this.inuse.map(r => r.carid)
+            return _.orderBy(Object.values(this.cars).filter(c => !rids.includes(c.carid)), ['classcode', 'number']).reverse()
+        },
+        disabled() {
+            return this.pickableCars.length === 0
+        }
     },
     methods: {
         addReg(car) {

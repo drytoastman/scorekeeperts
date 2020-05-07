@@ -37,7 +37,7 @@
 
         <v-row v-if="wrap.hasOpened()">
             <v-col class='tlabel'>
-                Entries:<br/>
+                Entries:
                 <span class='plain'>{{registration.length}}/{{event.perlimit}}</span>
             </v-col>
             <v-col>
@@ -47,7 +47,7 @@
                             <RegCard :car="cars[reg.carid]" :reg="reg" :payments="paymentsForReg(reg)" :wrap="wrap"></RegCard>
                         </v-col>
                         <v-col v-if="wrap.isOpen()" class='d-flex align-center'>
-                            <CarPicker :event="event"></CarPicker>
+                            <CarPicker :event="event" :inuse="registration"></CarPicker>
                         </v-col>
                     </v-row>
                 </v-container>
