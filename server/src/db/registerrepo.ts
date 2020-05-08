@@ -11,7 +11,7 @@ export class RegisterRepository {
                 { name: 'eventid', cnd: true, cast: 'uuid' },
                 { name: 'carid',   cnd: true, cast: 'uuid' },
                 'session',
-                { name: 'modified', cast: 'timestamp', init: (): any => { return 'now()' } }
+                { name: 'modified', cast: 'timestamp', mod: ':raw', init: (): any => { return 'now()' } }
             ], { table: 'registered' })
         }
     }
