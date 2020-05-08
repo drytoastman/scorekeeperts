@@ -7,7 +7,7 @@
                 <span class='seriesname'>{{series}}</span>
             </v-col>
             <v-col>
-                <v-select v-model="selected" :items="items" hide-details outlined style='min-width:8rem'></v-select>
+                <v-select v-model="selected" :items="items" hide-details outlined dense style='min-width:8rem'></v-select>
             </v-col>
             <v-col>
             </v-col>

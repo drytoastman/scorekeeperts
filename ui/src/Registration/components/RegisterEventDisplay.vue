@@ -20,12 +20,12 @@
         </v-row>
 
         <v-row v-if="wrap.hasOpened() && event.totlimit && event.sinlimit">
-            <v-col class='tlabel'>Singles:</v-col><v-col>{{counts.unique||0}}/{{event.sinlimit}}</v-col>
-            <v-col class='tlabel'>Count:</v-col>  <v-col>{{counts.all||0}}/{{event.totlimit}}</v-col>
+            <v-col class='tlabel'>Singles:</v-col><v-col>{{ecounts.unique||0}}/{{event.sinlimit}}</v-col>
+            <v-col class='tlabel'>Count:</v-col>  <v-col>{{ecounts.all||0}}/{{event.totlimit}}</v-col>
         </v-row>
 
         <v-row no-gutters v-else-if="wrap.hasOpened()">
-            <v-col class='tlabel'>Count:</v-col><v-col>{{counts.all||0}}{{event.totlimit && `/${event.totlimit}` || ''}}</v-col>
+            <v-col class='tlabel'>Count:</v-col><v-col>{{ecounts.all||0}}{{event.totlimit && `/${event.totlimit}` || ''}}</v-col>
         </v-row>
 
         <v-row v-if="event.attr.notes && !wrap.hasClosed()">
@@ -35,25 +35,29 @@
 
         <v-divider v-if="wrap.hasOpened()"></v-divider>
 
-        <v-row v-if="wrap.hasOpened()">
+        <v-row :class="ereg.length==0 ? 'centerrow' : ''" v-if="wrap.hasOpened()">
             <v-col class='tlabel'>
                 Entries:
-                <span class='plain'>{{registration.length}}/{{event.perlimit}}</span>
+                <span class='plain'>{{ereg.length}}/{{event.perlimit}}</span>
             </v-col>
             <v-col>
                 <v-container class='inner'>
-                    <v-row dense>
-                        <v-col v-for="reg in registration" :key="reg.carid">
-                            <RegCard :car="cars[reg.carid]" :reg="reg" :payments="paymentsForReg(reg)" :wrap="wrap"></RegCard>
+                    <v-row dense v-if="ereg.length > 0">
+                        <v-col v-for="reg in ereg" :key="reg.carid">
+                            <RegCard :reg="reg"></RegCard>
                         </v-col>
-                        <v-col v-if="wrap.isOpen()" class='d-flex align-center'>
-                            <CarPicker :event="event" :inuse="registration"></CarPicker>
+                    </v-row>
+                    <v-row dense>
+                        <v-col>
+                            <v-btn dark color="secondary" @click="$emit('regrequest')">Register</v-btn>
+                        </v-col>
+                        <v-col v-if="ereg.length > 0 && event.accountid">
+                            <v-btn dark color="secondary" @click.stop=''>Payments</v-btn>
                         </v-col>
                     </v-row>
                 </v-container>
             </v-col>
         </v-row>
-
     </v-container>
 </template>
 
@@ -61,12 +65,10 @@
 import { mapState } from 'vuex'
 import { EventWrap } from '@common/lib'
 import RegCard from './RegCard'
-import CarPicker from './CarPicker'
 
 export default {
     components: {
-        RegCard,
-        CarPicker
+        RegCard
     },
     filters: {
         timedate: function(v) {
@@ -77,29 +79,14 @@ export default {
             return v.charAt(0).toUpperCase() + v.slice(1)
         }
     },
-    computed: {
-        ...mapState(['cars', 'payments']),
-        wrap: function() { return new EventWrap(this.event) }
-    },
     props: {
-        event: {
-            type: Object, // SeriesEvent
-            default: () => ({ attr: {} })
-        },
-        counts: {
-            type: Object,
-            default: () => ({})
-        },
-        registration: {
-            type: Array,
-            default: () => []
-        }
+        event: Object
     },
-    methods: {
-        paymentsForReg: function(reg) {
-            try { return this.payments[reg.eventid][reg.carid] || [] } catch {}
-            return []
-        }
+    computed: {
+        ...mapState(['registered', 'counts']),
+        ecounts() { return this.counts[this.event.eventid] },
+        ereg()    { return this.registered[this.event.eventid] },
+        wrap()    { return new EventWrap(this.event) }
     }
 }
 </script>
@@ -112,6 +99,9 @@ export default {
         align-items: baseline;
         margin: 0;
         padding: 0;
+    }
+    .row.centerrow {
+        align-items: center;
     }
     .outer > .row > .col {
         padding: 0;

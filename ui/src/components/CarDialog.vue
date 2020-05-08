@@ -55,7 +55,10 @@ import { CarValidator } from '@common/lib'
 
 export default {
     props: {
-        value: Boolean,
+        value: {
+            type: Boolean,
+            default: () => false
+        },
         title: String,
         car: Object,
         actionName: String
@@ -148,22 +151,4 @@ export default {
   margin-top: 0rem;
   margin-bottom: 1rem;
 }
-
-.v-card__title {
-  padding-top: 5px !important;
-  padding-bottom: 2px !important;
-  border-bottom: 1px solid #63637969;
-  background: #eee;
-}
-.v-card__text {
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
-}
-.v-card__actions {
-  background: #eee;
-  border-top: 1px solid #63637969;
-  padding-top: 2px !important;
-  padding-bottom: 2px !important;
-}
-
 </style>

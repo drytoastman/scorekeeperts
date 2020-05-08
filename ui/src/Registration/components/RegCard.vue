@@ -7,56 +7,40 @@
             <div v-if="reg.session">
                 Session: {{reg.session}}
             </div>
-            <div v-for="p in payments" :key="p.payid">
+            <div v-for="p in paymentsForReg" :key="p.payid">
                 ${{p.amount}} ({{p.txtype}})
             </div>
-            <div v-if="wrap.isOpen() && wrap.event.attr.paymentreq && !payments.length" class='paymentreq'>
+            <div v-if="wrap.isOpen() && wrap.event.attr.paymentreq && !paymentsForReg.length" class='paymentreq'>
                 Payment Required
             </div>
         </v-card-text>
-        <v-card-actions v-if="wrap.isOpen()">
-            <v-btn class="flex-grow-1" color="info" @click="deleteReg()"><v-icon>mdi-close-box-outline</v-icon></v-btn>
-            <v-btn class="flex-grow-1" color="info" @click="doPayment()" v-if="wrap.event.accountid"><v-icon>mdi-cash-plus</v-icon></v-btn>
-        </v-card-actions>
     </v-card>
 </template>
 
 <script>
 import { mapState } from 'vuex'
-import Vue from 'vue'
-import { EventWrap, Registration, Payment } from '@common/lib'
+import { EventWrap, Registration } from '@common/lib'
 import CarLabel from '../../components/CarLabel'
 
 export default {
     components: { CarLabel },
     props: {
-        wrap: EventWrap,
-        car: Object,
-        reg: Registration,
-        payments: Payment
+        reg: Registration
     },
     computed: {
-        ...mapState(['series'])
-    },
-    methods: {
-        deleteReg() {
-            // Called when the ok action in the dialog is taken
-            this.$store.dispatch('setdata', {
-                series: this.series,
-                type: 'delete',
-                registered: [this.reg]
-            })
-            Vue.set(this.reg, 'busy', true)
+        ...mapState(['events', 'cars', 'payments']),
+        car()   { return this.cars[this.reg.carid] },
+        event() { return this.events[this.reg.eventid] },
+        wrap()  { return new EventWrap(this.event) },
+        paymentsForReg() {
+            try { return this.payments[this.reg.eventid][this.reg.carid] || [] } catch {}
+            return []
         }
     }
 }
 </script>
 
 <style scoped>
-    /*
-    .v-card--disabled > :not(.v-card__progress) {
-        opacity: 0.3;
-    } */
     .paymentreq {
         color: red;
     }

@@ -16,28 +16,53 @@
                 </v-container>
             </v-expansion-panel-header>
             <v-expansion-panel-content>
-                <RegisterEventDisplay :event="event" :counts="counts[event.eventid]" :registration="registered[event.eventid]"></RegisterEventDisplay>
+                <RegisterEventDisplay :event="event" @regrequest="regrequest(event)"></RegisterEventDisplay>
             </v-expansion-panel-content>
         </v-expansion-panel>
     </v-expansion-panels>
+    <RegDialog v-model=dialogOpen :event=dialogEvent @update="update"></RegDialog>
+    <!-- :registration=dialogReg :counts=dialogCounts -->
     </div>
 </template>
 
 <script>
+import Vue from 'vue'
 import { mapState } from 'vuex'
 import _ from 'lodash'
+import RegDialog from './RegDialog'
 import RegisterEventDisplay from '../components/RegisterEventDisplay.vue'
 
 export default {
     components: {
-        RegisterEventDisplay
+        RegisterEventDisplay,
+        RegDialog
     },
+    data: () => ({
+        dialogOpen: false,
+        dialogEvent: null
+    }),
     filters: {
         titledate: function(v) { return new Date(v).toDateString() }
     },
     computed: {
-        ...mapState(['events', 'counts', 'registered']),
+        ...mapState(['series', 'events', 'counts', 'registered']),
         orderedEvents() { return _.orderBy(this.events, ['date']) }
+    },
+    methods: {
+        regrequest: function(event) {
+            this.dialogEvent = event
+            this.dialogOpen = true
+        },
+        update(carids) {
+            // Called when the ok action in the dialog is taken
+            this.$store.dispatch('setdata', {
+                series: this.series,
+                type: 'regset',
+                eventid: this.dialogEvent.eventid,
+                carids: carids
+            })
+            Vue.set(this.dialogEvent, 'busy', true)
+        }
     }
 }
 </script>
