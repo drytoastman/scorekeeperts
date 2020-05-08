@@ -20,7 +20,6 @@ export class TableWatcher extends EventEmitter {
     }
 
     tableChange(data) {
-        // console.log('Received Payload:', JSON.stringify(data))
         const ret = this.emit(data.channel, data.payload)
     }
 
