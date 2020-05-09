@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { Request, Response } from 'express'
 import Router from 'express-promise-router'
 import delay from 'express-delay'
@@ -49,13 +48,19 @@ register.post('/login', async(req: Request, res: Response) => {
 })
 
 register.get('/api', async(req: Request, res: Response) => {
+    const driverid = req.session && req.session.driverid
+    if (!driverid) {
+        res.status(400).send({ error: 'no session driver id' })
+        return
+    }
+
     res.json(await db.task('apiget', async t => {
         const ret: any = {
             type: 'get'
         }
 
         if (!req.query || Object.keys(req.query).length === 0) { // no requests
-            ret.driver = await t.drivers.getDriverById(req.session!.driverid)
+            ret.driver = await t.drivers.getDriverById(driverid)
             ret.serieslist = await t.series.seriesList()
 
         } else {
@@ -70,11 +75,11 @@ register.get('/api', async(req: Request, res: Response) => {
             await t.series.setSeries(ret.series)
             for (let ii = 0; ii < itemlist.length; ii++) {  // forEach/async don't play nice
                 switch (itemlist[ii]) {
-                case 'driver':     ret.driver     = await t.drivers.getDriverById(req.session!.driverid); break
+                case 'driver':     ret.driver     = await t.drivers.getDriverById(driverid); break
                 case 'events':     ret.events     = await t.series.eventList(); break
-                case 'cars':       ret.cars       = await t.cars.getCarsbyDriverId(req.session!.driverid); break
-                case 'registered': ret.registered = await t.register.getRegistrationbyDriverId(req.session!.driverid); break
-                case 'payments':   ret.payments   = await t.register.getPaymentsbyDriverId(req.session!.driverid); break
+                case 'cars':       ret.cars       = await t.cars.getCarsbyDriverId(driverid); break
+                case 'registered': ret.registered = await t.register.getRegistrationbyDriverId(driverid); break
+                case 'payments':   ret.payments   = await t.register.getPaymentsbyDriverId(driverid); break
                 case 'counts':     ret.counts     = await t.register.getRegistationCounts(); break
                 case 'classes':
                 case 'indexes':
@@ -96,21 +101,29 @@ register.post('/api', async(req: Request, res: Response) => {
         return
     }
 
+    const driverid = req.session && req.session.driverid
+    if (!driverid) {
+        res.status(400).send({ error: 'no session driver id' })
+        return
+    }
+
     try {
-        const ret: any = {
-            type: req.body.type,
-            series: req.body.series
-        }
+        res.json(await db.task('apiget', async t => {
+            const ret: any = {
+                type: req.body.type,
+                series: req.body.series
+            }
 
-        await db.series.setSeries(req.body.series)
-        if ('cars' in req.body) {
-            ret.cars = await db.cars.updateCars(req.body.type, req.body.cars, req.session!.driverid)
-        }
-        if ('registered' in req.body) {
-            ret.registered = await db.register.updateRegistration(req.body.type, req.body.registered, req.session!.driverid)
-        }
+            await t.series.setSeries(req.body.series)
+            if ('cars' in req.body) {
+                ret.cars = await t.cars.updateCars(req.body.type, req.body.cars, driverid)
+            }
+            if ('registered' in req.body) {
+                Object.assign(ret, await t.register.updateRegistration(req.body.type, req.body.registered, req.body.eventid, driverid))
+            }
 
-        res.json(ret)
+            return ret
+        }))
     } catch (error) {
         res.status(400).send({ error: error.toString() })
     }

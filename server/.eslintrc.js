@@ -5,10 +5,11 @@ rules = {
   'no-multi-spaces': 'off', // I like to visually align things
   'no-unused-vars': 'off',  // doesn't appear to work with typescript
   'padded-blocks': 'off',
+  'no-debugger': 'off',
   'indent': ['warn', 4]
 }
 
-if (process.env.NODE_ENV !== 'production') {
+if (process.env.NODE_ENV === 'production') {
   rules = Object.assign(rules, {
       'no-debugger': 'error',
   })

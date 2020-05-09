@@ -13,7 +13,7 @@ export class CarRepository {
                 'classcode', 'indexcode', 'number:value',
                 { name: 'useclsmult', def: false },
                 { name: 'attr', cast: 'json' },
-                { name: 'modified', cast: 'timestamp', init: (): any => { return 'now()' } },
+                { name: 'modified', cast: 'timestamp', mod: ':raw', init: (): any => { return 'now()' } },
                 { name: 'created',  cast: 'timestamp', init: (col: any): any => { return col.exists ? col.value : 'now()' } }
             ], { table: 'cars' })
         }

@@ -1,5 +1,6 @@
 import { UUID, Registration, Payment } from '@common/lib'
 import { IDatabase, IMain, ColumnSet } from 'pg-promise'
+import _ from 'lodash'
 
 let regcols: ColumnSet|undefined
 
@@ -57,23 +58,60 @@ export class RegisterRepository {
         return (await res).map(r => r.number)
     }
 
-    async updateRegistration(type: string, reg: Registration[], driverid: UUID): Promise<Registration[]> {
-        /** FINISH ME, do lookup and check for carids and verify with driverid
-        if (!reg.every(c => c.driverid === driverid)) {
-            throw Error('Attemping to modifiy another drivers cars')
-        } */
+    private async eventReg(driverid: UUID, eventid: UUID): Promise<Registration[]> {
+        return this.db.any('SELECT r.* FROM registered AS r JOIN cars c ON r.carid=c.carid WHERE c.driverid=$1 and r.eventid=$2', [driverid, eventid])
+    }
 
-        if (type === 'insert') {
-            return this.db.any(this.pgp.helpers.insert(reg, regcols) + ' RETURNING *')
+    private async eventPay(driverid: UUID, eventid: UUID): Promise<Payment[]> {
+        return this.db.any('SELECT p.* FROM payments AS p JOIN cars c ON p.carid=c.carid WHERE c.driverid=$1 and p.eventid=$2', [driverid, eventid])
+    }
+
+    async updateRegistration(type: string, reg: Registration[], eventid: UUID, driverid: UUID): Promise<Object> {
+        if (reg.length > 0) {
+            const dids = await this.db.any('SELECT DISTINCT driverid FROM cars WHERE carid IN ($1:csv)', reg.map(r => r.carid))
+            if ((dids.length !== 1) || (dids[0].driverid !== driverid)) {
+                console.log(dids)
+                console.log(driverid)
+                throw Error('Attemping to modifiy another drivers registration')
+            }
         }
 
-        // if (type === 'update') return this.db.any(this.pgp.helpers.update(reg, regcols) + ' WHERE v.carid = t.carid RETURNING *')
-        const ret:Registration[] = []
-        if (type === 'delete') {
-            for (const r of reg) {
-                ret.push(await this.db.one('DELETE from registered WHERE carid=$1 and eventid=$2 RETURNING *', [r.carid, r.eventid]))
+        function keys(v:any) {  return v.carid + v.session }
+
+        if (type === 'eventupdate') {
+            const curreg  = await this.eventReg(driverid, eventid)
+            const curpay  = await this.eventPay(driverid, eventid)
+            const toadd   = _.differenceBy(reg, curreg, keys)
+            const todel   = _.differenceBy(curreg, reg, keys)
+            const deadpay = _.intersectionBy(curpay, todel, keys) as any[] // lets me append a few things for later update
+
+            // If any of the deleted cars had a payment, we need to move that to an open unchanged or new registration
+            if (deadpay.length > 0) {
+                let openspots = _.differenceBy(reg, curpay, keys)
+                deadpay.forEach(p => {
+                    if (openspots.length === 0) {
+                        throw new Error('Change aborted: would leave orphaned payment(s) as there were no registrations to move the payment to')
+                    }
+                    openspots = _.orderBy(openspots, [o => o!.session === p.session ? 1 : 2])
+                    const o = openspots.shift() // can't be null if we tested for zero above
+                    p.newcarid = o!.carid
+                    p.newsession = o!.session
+                })
             }
-            return ret
+
+            await this.db.tx(async t => {
+                for (const d of todel)   { await t.none('DELETE FROM registered WHERE eventid=$(eventid) AND carid=$(carid) AND session=$(session)', d) }
+                for (const i of toadd)   { await t.none(this.pgp.helpers.insert(i, regcols)) }
+                for (const p of deadpay) { await t.none('UPDATE payments SET carid=$(newcarid), session=$(newsession), modified=now() WHERE payid=$(payid)', p) }
+            }).catch(e => {
+                throw e
+            })
+
+            return {
+                registered: await this.eventReg(driverid, eventid),
+                payments: await this.eventPay(driverid, eventid),
+                eventid: eventid
+            }
         }
 
         throw Error(`Unknown operation type ${JSON.stringify(type)}`)
