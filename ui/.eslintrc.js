@@ -4,10 +4,11 @@ rules = {
     'space-before-function-paren': ["warn", "never"],
     'no-multi-spaces': 'off',
     'no-multiple-empty-lines': 'off',
+    'no-debugger': 'off',
     indent: ['warn', 4, {SwitchCase: 1}]
 }
 
-if (process.env.NODE_ENV !== 'production') {
+if (process.env.NODE_ENV === 'production') {
     rules = Object.assign(rules, {
         'no-debugger': 'error',
     })

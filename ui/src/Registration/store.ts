@@ -118,6 +118,7 @@ const mutations = {
         }
 
         if ('registered' in data) {
+            /*
             if (['delete', 'update'].includes(data.type)) {
                 data.registered.forEach((r: Registration) => {
                     const a = state.registered[r.eventid]
@@ -130,7 +131,9 @@ const mutations = {
                             a.splice(i, 1)
                         }
                     }
-                })
+                }) */
+            if (data.type === 'eventupdate') {
+                Vue.set(state.registered, data.eventid, data.registered)
             } else {
                 // get, insert
                 if (data.type === 'get') { state.registered = {} }
@@ -142,7 +145,11 @@ const mutations = {
         }
 
         if ('payments' in data) {
-            state.payments = {}
+            if (data.type === 'get') {
+                state.payments = {}
+            } else if (data.type === 'eventupdate') {
+                Vue.set(state.payments, data.eventid, {})
+            }
             data.payments.forEach((p: Payment) => {
                 if (!(p.eventid in state.payments))          { Vue.set(state.payments, p.eventid, {}) }
                 if (!(p.carid in state.payments[p.eventid])) { Vue.set(state.payments[p.eventid], p.carid, []) }

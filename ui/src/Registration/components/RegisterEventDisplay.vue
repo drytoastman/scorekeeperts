@@ -49,10 +49,10 @@
                     </v-row>
                     <v-row dense>
                         <v-col>
-                            <v-btn dark color="secondary" @click="$emit('regrequest')">Register</v-btn>
+                            <v-btn dark color="secondary" @click="$emit('regrequest')" :loading="busy">Register</v-btn>
                         </v-col>
                         <v-col v-if="ereg.length > 0 && event.accountid">
-                            <v-btn dark color="secondary" @click.stop=''>Payments</v-btn>
+                            <v-btn dark color="secondary" @click.stop='' :loading="busy">Payments</v-btn>
                         </v-col>
                     </v-row>
                 </v-container>
@@ -80,7 +80,8 @@ export default {
         }
     },
     props: {
-        event: Object
+        event: Object,
+        busy: Boolean
     },
     computed: {
         ...mapState(['registered', 'counts']),

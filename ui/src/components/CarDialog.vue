@@ -50,6 +50,7 @@
 </template>
 
 <script>
+import Vue from 'vue'
 import { mapState } from 'vuex'
 import { CarValidator } from '@common/lib'
 
@@ -61,7 +62,7 @@ export default {
         },
         title: String,
         car: Object,
-        actionName: String
+        apiType: String
     },
     data() {
         return {
@@ -75,6 +76,14 @@ export default {
     },
     computed: {
         ...mapState(['series', 'classes', 'indexes', 'usednumbers']),
+        actionName() {
+            switch (this.apiType) {
+                case 'insert': return 'Create'
+                case 'update': return 'Update'
+                case 'delete': return 'Delete'
+                default: return '???'
+            }
+        },
         carm: function() {
             return JSON.parse(JSON.stringify(this.car || { attr: {} })) // get a copy so we don't mutate orig
         },
@@ -94,6 +103,17 @@ export default {
                 if (!this.needindex) {
                     this.carm.indexcode = ''
                 }
+
+                this.$store.dispatch('setdata', {
+                    series: this.series,
+                    type: this.apiType,
+                    cars: [this.carm]
+                })
+
+                if (this.car) {
+                    Vue.set(this.car, 'busy', true)
+                }
+
                 this.$emit('save', this.carm)
                 this.$emit('input')
             }

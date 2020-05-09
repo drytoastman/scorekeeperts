@@ -16,11 +16,11 @@
                 </v-container>
             </v-expansion-panel-header>
             <v-expansion-panel-content>
-                <RegisterEventDisplay :event="event" @regrequest="regrequest(event)"></RegisterEventDisplay>
+                <RegisterEventDisplay :event="event" :busy="busy[event.eventid]" @regrequest="regrequest(event)"></RegisterEventDisplay>
             </v-expansion-panel-content>
         </v-expansion-panel>
     </v-expansion-panels>
-    <RegDialog v-model=dialogOpen :event=dialogEvent @update="update"></RegDialog>
+    <RegDialog v-model=dialogOpen :event=dialogEvent @update="newInFlight"></RegDialog>
     <!-- :registration=dialogReg :counts=dialogCounts -->
     </div>
 </template>
@@ -39,7 +39,8 @@ export default {
     },
     data: () => ({
         dialogOpen: false,
-        dialogEvent: null
+        dialogEvent: null,
+        busy: Object
     }),
     filters: {
         titledate: function(v) { return new Date(v).toDateString() }
@@ -53,15 +54,8 @@ export default {
             this.dialogEvent = event
             this.dialogOpen = true
         },
-        update(carids) {
-            // Called when the ok action in the dialog is taken
-            this.$store.dispatch('setdata', {
-                series: this.series,
-                type: 'regset',
-                eventid: this.dialogEvent.eventid,
-                carids: carids
-            })
-            Vue.set(this.dialogEvent, 'busy', true)
+        newInFlight: function() {
+            // Vue.set(this.busy, this.dialogEvent.eventid, true)
         }
     }
 }

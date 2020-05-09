@@ -16,7 +16,7 @@
             <v-col>
             </v-col>
         </v-row>
-        <CarDialog v-model=dialogOpen :title=dialogTitle :car=dialogCar :actionName=actionName @save='dialogSave'></CarDialog>
+        <CarDialog v-model=dialogOpen :title=dialogTitle :car=dialogCar :apiType=apiType @save='dialogSave'></CarDialog>
     </v-container>
 </template>
 
@@ -43,14 +43,6 @@ export default {
     },
     computed: {
         ...mapState(['series', 'cars', 'errors']),
-        actionName() {
-            switch (this.apiType) {
-                case 'insert': return 'Create'
-                case 'update': return 'Update'
-                case 'delete': return 'Delete'
-                default: return '???'
-            }
-        },
         orderedCars() {
             const ret = _.orderBy(this.cars, ['classcode', 'number'])
             if (this.loadingCard) ret.push(this.loadingCard)
@@ -84,15 +76,8 @@ export default {
             this.apiType = 'delete'
         },
         dialogSave(cardata) {
-            // Called when the ok action in the dialog is taken
-            this.$store.dispatch('setdata', {
-                series: this.series,
-                type: this.apiType,
-                cars: [cardata]
-            })
-            if (this.dialogCar) {
-                Vue.set(this.dialogCar, 'busy', true)
-            } else {
+            // Called when the ok action in the dialog is taken, on new car show a place holder
+            if (!this.dialogCar) {
                 this.loadingCard = cardata
                 Vue.set(this.loadingCard, 'busy', true)
             }
