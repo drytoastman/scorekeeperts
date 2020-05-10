@@ -4,6 +4,7 @@ import router from './router'
 import store from './store'
 import Vuetify from 'vuetify/lib'
 import colors from 'vuetify/es5/util/colors'
+import 'typeface-roboto'
 import { installLoggingHandlers } from '@/util/logging'
 
 installLoggingHandlers()
@@ -23,6 +24,9 @@ const vuetify = new Vuetify({
             light: base,
             dark: base
         }
+    },
+    icons: {
+        iconfont: 'mdiSvg'
     }
 })
 
