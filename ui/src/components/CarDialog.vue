@@ -1,56 +1,54 @@
 <template>
-  <v-row justify="center">
-    <v-dialog :value="value" @input="$emit('input')" persistent max-width="400px" >
-      <v-card>
-        <v-card-title>
-          <span class="headline">{{title}}</span>
-        </v-card-title>
-        <v-card-text :class='{disabledform: disableAll}'>
-          <v-container>
+    <v-row justify="center">
+        <v-dialog :value="value" @input="$emit('input')" persistent max-width="400px" >
+            <v-card>
+                <v-card-title>
+                    <span class="headline">{{title}}</span>
+                </v-card-title>
+                <v-card-text :class='{disabledform: disableAll}'>
+                    <v-container>
+                        <v-form ref="form" lazy-validation >
+                            <v-select v-model="carm.classcode" label="Class" :rules="classrules" :items="classlist" item-text='classcode' @change='classcodechange'>
+                                <template v-slot:item="d">
+                                  <span class='classcode'>{{ d.item.classcode }}</span><span class='descrip'>{{ d.item.descrip }}</span>
+                                </template>
+                            </v-select>
 
-            <v-form ref="form" lazy-validation >
-              <v-select v-model="carm.classcode" label="Class" :rules="classrules" :items="classlist" item-text='classcode' @change='classcodechange'>
-                <template v-slot:item="d">
-                  <span class='classcode'>{{ d.item.classcode }}</span><span class='descrip'>{{ d.item.descrip }}</span>
-                </template>
-              </v-select>
+                            <v-select v-model="carm.indexcode" :rules="indexrules" :items="indexlist" item-value='indexcode' item-text='indexcode'
+                                      :label='needindex?"Index":"No index required"' :disabled="!needindex">
+                                <template v-slot:item="d">
+                                    <span class='indexcode'>{{ d.item.indexcode }}</span><span class='descrip'>{{ d.item.descrip }}</span>
+                                </template>
+                            </v-select>
 
-              <v-select v-model="carm.indexcode" :rules="indexrules" :items="indexlist" item-value='indexcode' item-text='indexcode'
-                        :label='needindex?"Index":"No index required"' :disabled="!needindex">
-                <template v-slot:item="d">
-                  <span class='indexcode'>{{ d.item.indexcode }}</span><span class='descrip'>{{ d.item.descrip }}</span>
-                </template>
-              </v-select>
+                            <v-text-field v-model="carm.number"     label="Number" :rules="numberrules"></v-text-field>
 
-              <v-text-field v-model="carm.number"     label="Number" :rules="numberrules"></v-text-field>
+                            <v-expansion-panels v-show="!disableAll">
+                                <v-expansion-panel>
+                                    <v-expansion-panel-header><span class='text-center'>Numbers Already Taken In {{classcode}}</span></v-expansion-panel-header>
+                                    <v-expansion-panel-content><span>{{usedNumbersProxy.join(', ')}}</span></v-expansion-panel-content>
+                                </v-expansion-panel>
+                            </v-expansion-panels>
 
-              <v-expansion-panels v-show="!disableAll">
-                <v-expansion-panel>
-                  <v-expansion-panel-header><span class='text-center'>Numbers Already Taken In {{classcode}}</span></v-expansion-panel-header>
-                  <v-expansion-panel-content><span>{{usedNumbersProxy.join(', ')}}</span></v-expansion-panel-content>
-                </v-expansion-panel>
-              </v-expansion-panels>
-
-              <!-- v-divider class='spacer'></v-divider -->
-              <v-text-field v-model="carm.attr.year"  label="Year"   :rules="vrules.year"></v-text-field>
-              <v-text-field v-model="carm.attr.make"  label="Make"   :rules="vrules.make"></v-text-field>
-              <v-text-field v-model="carm.attr.model" label="Model"  :rules="vrules.model"></v-text-field>
-              <v-text-field v-model="carm.attr.color" label="Color"  :rules="vrules.color"></v-text-field>
-            </v-form>
-          </v-container>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn color="blue darken-1" text @click="$emit('input')">Cancel</v-btn>
-          <v-btn color="blue darken-1" text @click="save()">{{actionName}}</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-  </v-row>
+                            <!-- v-divider class='spacer'></v-divider -->
+                            <v-text-field v-model="carm.attr.year"  label="Year"   :rules="vrules.year"></v-text-field>
+                            <v-text-field v-model="carm.attr.make"  label="Make"   :rules="vrules.make"></v-text-field>
+                            <v-text-field v-model="carm.attr.model" label="Model"  :rules="vrules.model"></v-text-field>
+                            <v-text-field v-model="carm.attr.color" label="Color"  :rules="vrules.color"></v-text-field>
+                        </v-form>
+                    </v-container>
+                </v-card-text>
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn color="blue darken-1" text @click="$emit('input')">Cancel</v-btn>
+                  <v-btn color="blue darken-1" text @click="save()">{{actionName}}</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+    </v-row>
 </template>
 
 <script>
-import Vue from 'vue'
 import { mapState } from 'vuex'
 import { CarValidator } from '@common/lib'
 
@@ -100,6 +98,9 @@ export default {
     methods: {
         save() {
             if (this.$refs.form.validate()) {
+                if (!this.carm.carid) {
+                    this.carm.carid = 'placeholder'
+                }
                 if (!this.needindex) {
                     this.carm.indexcode = ''
                 }
@@ -107,12 +108,9 @@ export default {
                 this.$store.dispatch('setdata', {
                     series: this.series,
                     type: this.apiType,
-                    cars: [this.carm]
+                    cars: [this.carm],
+                    busy: { key: 'busyCars', id: this.carm.carid }
                 })
-
-                if (this.car) {
-                    Vue.set(this.car, 'busy', true)
-                }
 
                 this.$emit('save', this.carm)
                 this.$emit('input')

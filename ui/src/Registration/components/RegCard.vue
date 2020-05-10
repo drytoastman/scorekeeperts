@@ -1,5 +1,5 @@
 <template>
-    <v-card class='regcard' outlined :disabled='reg.busy' :loading='reg.busy'>
+    <v-card class='regcard' outlined>
         <v-card-title>
             <CarLabel :car=car fontsize="85%"></CarLabel>
         </v-card-title>

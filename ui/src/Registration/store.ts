@@ -15,7 +15,7 @@ function errorhandler(context: ActionContext<State, any>, error: any) {
             context.commit('authenticate', false)
         }
         if (typeof error.response.data === 'object') {
-            context.commit('setErrors', error.response.data.result || error.response.data.error)
+            context.commit('setErrors', [error.response.data.result || error.response.data.error])
         } else {
             context.commit('setErrors', [error.response.data])
         }
@@ -48,6 +48,11 @@ class State {
     counts: {[key: string]: any} = {}
     emailresult: any = {}
     usednumbers: number[] = []
+
+    busyCars: {[key: string]: boolean} = {} // carid set
+    busyReg:  {[key: string]: boolean} = {} // eventid set
+    busyPay:  {[key: string]: boolean} = {} // eventid set
+
     ws: ReconnectingWebSocket = new ReconnectingWebSocket(`ws://${window.location.host}${root}/live`, undefined, {
         minReconnectionDelay: 1000,
         maxRetries: 10,
@@ -72,6 +77,10 @@ const mutations = {
         state.errors = errors
     },
 
+    clearErrors(state: State) {
+        state.errors = []
+    },
+
     setEmailResult(state: State, data: any[]) {
         state.emailresult = data
     },
@@ -79,6 +88,16 @@ const mutations = {
     setUsedNumbers(state: State, data: number[]) {
         state.usednumbers = data
     },
+
+    /* eslint-disable curly */
+    markBusy(state: State, busy: any) {
+        Vue.set(state[busy.key], busy.id, true)
+    },
+
+    clearBusy(state: State, busy: any) {
+        Vue.set(state[busy.key], busy.id, false)
+    },
+    /* eslint-enable curly */
 
     apiData(state: State, data: any) {
         if (data === undefined) return
@@ -118,20 +137,6 @@ const mutations = {
         }
 
         if ('registered' in data) {
-            /*
-            if (['delete', 'update'].includes(data.type)) {
-                data.registered.forEach((r: Registration) => {
-                    const a = state.registered[r.eventid]
-                    const m = a.filter(i => i.carid === r.carid)
-                    if (m.length > 0) {
-                        const i = a.indexOf(m[0])
-                        if (data.type === 'update') {
-                            a.splice(i, 1, r || undefined)
-                        } else {
-                            a.splice(i, 1)
-                        }
-                    }
-                }) */
             if (data.type === 'eventupdate') {
                 Vue.set(state.registered, data.eventid, data.registered)
             } else {
@@ -179,12 +184,22 @@ const actions = {
     },
 
     async setdata(context: ActionContext<State, any>, p: any) {
+        let busy = null
         try {
+            if ((busy = p.busy) != null) {
+                context.commit('markBusy', busy)
+                delete p.busy
+            }
+
             const data = (await axios.post(root + '/api', p, { withCredentials: true })).data
             context.commit('authenticate', true) // we must be auth if this happens
             context.commit('apiData', data)
         } catch (error) {
             errorhandler(context, error)
+        } finally {
+            if (busy) {
+                context.commit('clearBusy', busy)
+            }
         }
     },
 

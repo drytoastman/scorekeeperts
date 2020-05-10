@@ -1,5 +1,5 @@
 <template>
-    <v-card class='carcard' elevation='6' :disabled='car.busy' :loading='car.busy' min-width='15rem'>
+    <v-card class='carcard' elevation='6' :disabled='busy' :loading='busy' min-width='15rem'>
         <v-card-title>
             <CarLabel :car=car></CarLabel>
         </v-card-title>
@@ -11,10 +11,15 @@
 </template>
 
 <script>
+import { mapState } from 'vuex'
 import CarLabel from './CarLabel'
 export default {
     components: { CarLabel },
-    props: { car: Object }
+    props: { car: Object },
+    computed: {
+        ...mapState(['busyCars']),
+        busy() { return this.busyCars[this.car.carid] }
+    }
 }
 </script>
 

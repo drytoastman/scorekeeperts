@@ -55,8 +55,8 @@ export default {
     },
     computed: {
         ...mapState(['series', 'cars', 'registered', 'counts']),
-        ereg()         { return this.registered[this.event.eventid] },
-        ecounts()      { return this.counts[this.event.eventid] },
+        ereg()         { return this.registered[this.event.eventid] || [] },
+        ecounts()      { return this.counts[this.event.eventid] || {} },
         checkedCount() { return _.filter(Object.values(this.checks), v => v).length },
         limitReached() { return this.limitTypeReached !== null },
         limitTypeReached() {
@@ -89,9 +89,9 @@ export default {
                     carid: k,
                     eventid: this.event.eventid,
                     session: ''
-                }))
+                })),
+                busy: { key: 'busyReg', id: this.event.eventid }
             })
-            this.$emit('update')
             this.$emit('input')
         }
     },

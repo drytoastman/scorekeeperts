@@ -38,7 +38,7 @@
         <v-row :class="ereg.length==0 ? 'centerrow' : ''" v-if="wrap.hasOpened()">
             <v-col class='tlabel'>
                 Entries:
-                <span class='plain'>{{ereg.length}}/{{event.perlimit}}</span>
+                <span class='plain'>{{ereg.length||0}}/{{event.perlimit}}</span>
             </v-col>
             <v-col>
                 <v-container class='inner'>
@@ -49,10 +49,10 @@
                     </v-row>
                     <v-row dense>
                         <v-col>
-                            <v-btn dark color="secondary" @click="$emit('regrequest')" :loading="busy">Register</v-btn>
+                            <v-btn color="secondary" @click="$emit('regrequest')" :loading="busyR" :disabled="busyP">Register</v-btn>
                         </v-col>
                         <v-col v-if="ereg.length > 0 && event.accountid">
-                            <v-btn dark color="secondary" @click.stop='' :loading="busy">Payments</v-btn>
+                            <v-btn color="secondary" @click.stop='' :loading="busyP" :disabled="busyR">Payments</v-btn>
                         </v-col>
                     </v-row>
                 </v-container>
@@ -80,14 +80,17 @@ export default {
         }
     },
     props: {
-        event: Object,
-        busy: Boolean
+        event: Object
     },
     computed: {
-        ...mapState(['registered', 'counts']),
-        ecounts() { return this.counts[this.event.eventid] },
-        ereg()    { return this.registered[this.event.eventid] },
-        wrap()    { return new EventWrap(this.event) }
+        ...mapState(['registered', 'payments', 'counts', 'busyReg', 'busyPay']),
+        ecounts() { return this.counts[this.event.eventid] || {} },
+        ereg()    { return this.registered[this.event.eventid] || {} },
+        wrap()    { return new EventWrap(this.event) },
+        busyR()   { return this.busyReg[this.event.eventid] === true },
+        busyP()   { return this.busyPay[this.event.eventid] === true }
+    },
+    watch: {
     }
 }
 </script>

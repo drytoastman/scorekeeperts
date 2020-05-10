@@ -79,7 +79,6 @@ export default {
             // Called when the ok action in the dialog is taken, on new car show a place holder
             if (!this.dialogCar) {
                 this.loadingCard = cardata
-                Vue.set(this.loadingCard, 'busy', true)
             }
         }
     },

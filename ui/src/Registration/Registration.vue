@@ -31,8 +31,10 @@
         </v-content>
 
         <v-snackbar v-model="snackbar" :timeout=0>
-            {{ errors }}
-            <v-btn color="pink" text @click="snackbar = false">Close</v-btn>
+            <div v-for="error in errors" :key="error">
+                {{ error }}
+            </div>
+            <v-btn color="pink" text @click="errorclose">Close</v-btn>
         </v-snackbar>
     </v-app>
 </template>
@@ -52,6 +54,10 @@ export default {
     methods: {
         logout: function() {
             this.$store.dispatch('logout')
+        },
+        errorclose: function() {
+            this.snackbar = false
+            this.$store.commit('clearErrors')
         }
     },
     computed: {
