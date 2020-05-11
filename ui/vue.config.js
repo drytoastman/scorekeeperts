@@ -9,12 +9,17 @@ module.exports = {
             entry: './src/Registration/main.ts',
             template: 'public/index.html',
             title: 'Registration',
+            scripts: [
+                'https://www.paypalobjects.com/api/checkout.js',
+                'https://js.squareupsandbox.com/v2/paymentform'
+            ],
             chunks: ['chunk-vendors', 'chunk-common', 'register']
         },
         admin: {
             entry: './src/Admin/main.ts',
             template: 'public/index.html',
             title: 'Admin',
+            scripts: [],
             chunks: ['chunk-vendors', 'chunk-common', 'admin']
         }
     },

@@ -22,7 +22,6 @@
 
 <script>
 import { mapState } from 'vuex'
-import Vue from 'vue'
 import CarDisplay from '../components/CarCard'
 import CarDialog from '../components/CarDialog'
 import _ from 'lodash'

@@ -16,11 +16,12 @@
                 </v-container>
             </v-expansion-panel-header>
             <v-expansion-panel-content>
-                <RegisterEventDisplay :event="event" @regrequest="regrequest(event)"></RegisterEventDisplay>
+                <RegisterEventDisplay :event="event" @regrequest="regrequest(event)" @payrequest="payrequest(event)"></RegisterEventDisplay>
             </v-expansion-panel-content>
         </v-expansion-panel>
     </v-expansion-panels>
-    <RegDialog v-model=dialogOpen :event=dialogEvent></RegDialog>
+    <RegDialog     v-model=dialogOpen  :event=dialogEvent></RegDialog>
+    <PaymentDialog v-model=paymentOpen :event=dialogEvent></PaymentDialog>
     </div>
 </template>
 
@@ -28,15 +29,18 @@
 import { mapState } from 'vuex'
 import _ from 'lodash'
 import RegDialog from './RegDialog'
+import PaymentDialog from './PaymentDialog'
 import RegisterEventDisplay from '../components/RegisterEventDisplay.vue'
 
 export default {
     components: {
         RegisterEventDisplay,
-        RegDialog
+        RegDialog,
+        PaymentDialog
     },
     data: () => ({
         dialogOpen: false,
+        paymentOpen: false,
         dialogEvent: null
     }),
     filters: {
@@ -50,6 +54,10 @@ export default {
         regrequest: function(event) {
             this.dialogEvent = event
             this.dialogOpen = true
+        },
+        payrequest: function(event) {
+            this.dialogEvent = event
+            this.paymentOpen = true
         }
     }
 }

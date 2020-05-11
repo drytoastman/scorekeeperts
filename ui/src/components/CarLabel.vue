@@ -35,6 +35,7 @@ export default {
         font-weight: normal;
         line-height: 20px;
         text-align: left;
+        white-space: nowrap;
     }
     .code, .number, .index {
         vertical-align: middle;

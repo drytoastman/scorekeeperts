@@ -52,7 +52,7 @@
                             <v-btn color="secondary" @click="$emit('regrequest')" :loading="busyR" :disabled="busyP">Register</v-btn>
                         </v-col>
                         <v-col v-if="ereg.length > 0 && event.accountid">
-                            <v-btn color="secondary" @click.stop='' :loading="busyP" :disabled="busyR">Payments</v-btn>
+                            <v-btn color="secondary" @click="$emit('payrequest')" :loading="busyP" :disabled="busyR">Payments</v-btn>
                         </v-col>
                     </v-row>
                 </v-container>
