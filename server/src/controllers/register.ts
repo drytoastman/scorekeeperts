@@ -66,7 +66,7 @@ register.get('/api', async(req: Request, res: Response) => {
         } else {
             let itemlist, classdata
             if (!('items' in req.query)) {
-                itemlist = ['events', 'cars', 'registered', 'payments', 'counts', 'classes', 'indexes']
+                itemlist = ['events', 'cars', 'registered', 'payments', 'counts', 'classes', 'indexes', 'paymentaccounts', 'paymentitems']
             } else {
                 itemlist = (req.query.items as string).split(',')
             }
@@ -75,19 +75,24 @@ register.get('/api', async(req: Request, res: Response) => {
             await t.series.setSeries(ret.series)
             for (let ii = 0; ii < itemlist.length; ii++) {  // forEach/async don't play nice
                 switch (itemlist[ii]) {
-                case 'driver':     ret.driver     = await t.drivers.getDriverById(driverid); break
-                case 'events':     ret.events     = await t.series.eventList(); break
-                case 'cars':       ret.cars       = await t.cars.getCarsbyDriverId(driverid); break
-                case 'registered': ret.registered = await t.register.getRegistrationbyDriverId(driverid); break
-                case 'payments':   ret.payments   = await t.register.getPaymentsbyDriverId(driverid); break
-                case 'counts':     ret.counts     = await t.register.getRegistationCounts(); break
-                case 'classes':
-                case 'indexes':
-                    if (!classdata) classdata = await t.clsidx.classData()
-                    ret[itemlist[ii]] = classdata[itemlist[ii]]
-                    break
-                    // eslint-disable-next-line no-console
-                default: console.log(`don't understand ${itemlist[ii]}`); break
+                    case 'driver':     ret.driver     = await t.drivers.getDriverById(driverid); break
+                    case 'events':     ret.events     = await t.series.eventList(); break
+                    case 'cars':       ret.cars       = await t.cars.getCarsbyDriverId(driverid); break
+                    case 'registered': ret.registered = await t.register.getRegistrationbyDriverId(driverid); break
+                    case 'payments':   ret.payments   = await t.register.getPaymentsbyDriverId(driverid); break
+                    case 'counts':     ret.counts     = await t.register.getRegistationCounts(); break
+                    case 'classes':
+                    case 'indexes':
+                        if (!classdata) classdata = await t.clsidx.classData()
+                        ret[itemlist[ii]] = classdata[itemlist[ii]]
+                        break
+                    case 'paymentaccounts':
+                        ret.paymentaccounts = await t.payments.getPaymentAccounts()
+                        break
+                    case 'paymentitems':
+                        ret.paymentitems = await t.payments.getPaymentItems()
+                        break
+                    default: console.log(`don't understand ${itemlist[ii]}`); break
                 }
             }
         }

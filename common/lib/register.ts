@@ -1,10 +1,10 @@
-import { DataValidationRules, isUUID, isDate, UUID, isSession } from './util'
+import { DataValidationRules, isUUID, isDate, UUID, isSession, DateString } from './util'
 
 export interface Registration {
     eventid: UUID;
     carid: UUID;
     session: string;
-    modified: Date;
+    modified: DateString;
 }
 
 export const RegValidator: DataValidationRules = {
@@ -22,10 +22,10 @@ export interface Payment {
     refid: string;
     txtype: string;
     txid: string;
-    txtime: Date;
+    txtime: DateString;
     itemname: string;
     amount: number;
-    modified: Date;
+    modified: DateString;
 }
 
 export const PaymentValidator: DataValidationRules = {
@@ -40,4 +40,25 @@ export const PaymentValidator: DataValidationRules = {
     itemname: [],
     amount:   [],
     modified: [isDate]
+}
+
+export interface PaymentAccountAttr {
+    environment: string
+}
+
+export interface PaymentAccount {
+    accountid: string;
+    name: string;
+    type: string;
+    attr: PaymentAccountAttr;
+    modified: DateString;
+}
+
+export interface PaymentItem {
+    itemid: string;
+    accountid: string;
+    name: string;
+    price: number;
+    currency: string;
+    modified: DateString;
 }

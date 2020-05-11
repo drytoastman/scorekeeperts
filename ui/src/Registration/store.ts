@@ -3,7 +3,7 @@ import Vuex, { MutationTree, ActionTree, ActionContext } from 'vuex'
 import axios from 'axios'
 import ReconnectingWebSocket from 'reconnecting-websocket'
 
-import { Driver, SeriesEvent, Car, Registration, Payment, SeriesIndex, SeriesClass } from '@common/lib'
+import { Driver, SeriesEvent, Car, Registration, Payment, PaymentAccount, PaymentItem, SeriesIndex, SeriesClass } from '@common/lib'
 
 Vue.use(Vuex)
 
@@ -17,7 +17,14 @@ function errorhandler(context: ActionContext<State, any>, error: any) {
         if (typeof error.response.data === 'object') {
             context.commit('setErrors', [error.response.data.result || error.response.data.error])
         } else {
-            context.commit('setErrors', [error.response.data])
+            if (error.response.headers['content-type'].includes('text/html')) {
+                const el = document.createElement('html')
+                el.innerHTML = error.response.data
+                const lines = el.getElementsByTagName('body')[0].innerText.split('\n').filter(i => i !== '')
+                context.commit('setErrors', lines)
+            } else {
+                context.commit('setErrors', [error.response.data])
+            }
         }
     } else {
         context.commit('setErrors', [error.toString().replace('Error: ', '')])
@@ -35,10 +42,16 @@ function clearSeriesData(state: any) {
 }
 
 class State {
+    // keep in main
     authenticated: string|boolean = ''
     errors: string[] = []
-    series = ''
+    emailresult: any = {}
     driver: Driver = {} as Driver
+
+    // move to a series vuex module
+    series = ''
+    paymentaccounts: PaymentAccount[] = []
+    paymentitems: PaymentItem[] = []
     classes: {[key: string]: SeriesClass} = {}
     indexes: {[key: string]: SeriesIndex} = {}
     events: {[key: string]: SeriesEvent} = {}
@@ -46,9 +59,8 @@ class State {
     registered: {[key: string]: Registration[]} = {}
     payments: {[key: string]: { [key: string]: Payment[]}} = {}
     counts: {[key: string]: any} = {}
-    emailresult: any = {}
-    usednumbers: number[] = []
 
+    usednumbers: number[] = []
     busyCars: {[key: string]: boolean} = {} // carid set
     busyReg:  {[key: string]: boolean} = {} // eventid set
     busyPay:  {[key: string]: boolean} = {} // eventid set
@@ -165,6 +177,14 @@ const mutations = {
         if ('counts' in data) {
             state.counts = {}
             data.counts.forEach((e: SeriesEvent) => Vue.set(state.counts, e.eventid, e))
+        }
+
+        if ('paymentaccounts' in data) {
+            state.paymentaccounts = data.paymentaccounts
+        }
+
+        if ('paymentitems' in data) {
+            state.paymentitems = data.paymentitems
         }
     }
 

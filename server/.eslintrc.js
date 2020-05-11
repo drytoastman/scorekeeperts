@@ -6,7 +6,7 @@ rules = {
   'no-unused-vars': 'off',  // doesn't appear to work with typescript
   'padded-blocks': 'off',
   'no-debugger': 'off',
-  'indent': ['warn', 4]
+  'indent': ['warn', 4, {SwitchCase: 1}]
 }
 
 if (process.env.NODE_ENV === 'production') {
