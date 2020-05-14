@@ -6,15 +6,14 @@
 
                 <v-card v-for="acct in paymentaccounts" :key="acct.accountid">
                     <v-card-title>{{acct.name}}</v-card-title>
+
                     <v-card-text v-for="e in accountEvents(acct.accountid)" :key="e.eventid" class='eventwrap'>
                         <h3>{{e.name}}</h3>
-                        <div v-for="r in registered[e.eventid]" :key="r.eventid+r.carid" class='eventgrid'>
+                        <div v-for="r in unpaidReg(registered[e.eventid])" :key="r.eventid+r.carid" class='eventgrid'>
+
                             <CarLabel :car=cars[r.carid] fontsize="110%"></CarLabel>
-                            <div v-if="hasPayments(r.eventid, r.carid)">
-                                <span class='paidsum'>{{ paymentSum(r.eventid, r.carid)|dollars }}</span>
-                            </div>
-                            <v-select v-else :items="payitems(acct.accountid)" item-value="itemid" return-object hide-details solo dense
-                                @input="newpurchase(acct.accountid, r.eventid, r.carid, $event)"
+                            <v-select :items="payitems(acct.accountid)" item-value="itemid" return-object hide-details solo dense
+                                @input="newpurchase(acct.accountid, r, $event)"
                             >
                                 <template v-slot:selection="d">
                                     <span class='name'>{{ d.item.name }}</span> <span class='price'>{{ d.item.price|dollars }}</span>
@@ -23,12 +22,15 @@
                                     <span class='name'>{{ d.item.name }}</span> <span class='price'>{{ d.item.price|dollars }}</span>
                                 </template>
                             </v-select>
+
                         </div>
                     </v-card-text>
 
-                    <v-card-actions class='eventgrid'>
-                        <div></div>
-                        <v-btn color=secondary :disabled="!(total[acct.accountid]>0)">{{acct.type}} Payment {{total[acct.accountid]|dollars}}</v-btn>
+                    <v-card-actions class='d-flex'>
+                        <div v-if="acct.type=='paypal'" id="paypal-button-container" :class="total[acct.accountid] > 0 ? '' : 'disabled'"></div>
+
+                        <v-btn v-else color=secondary :disabled="!(total[acct.accountid]>0)">{{acct.type}} Payment {{total[acct.accountid]|dollars}}</v-btn>
+
                     </v-card-actions>
                 </v-card>
 
@@ -41,10 +43,11 @@
 import Vue from 'vue'
 import _ from 'lodash'
 import { mapState } from 'vuex'
-import CarLabel from '../../components/CarLabel'
-import { EventWrap } from '@common/lib'
 import { mdiCloseBox } from '@mdi/js'
 
+import CarLabel from '../../components/CarLabel.vue'
+import { loadPaypal, unloadPaypal, buildPaypalOrder } from '../paypal'
+import { EventWrap } from '@common/lib'
 
 export default {
     components: {
@@ -63,12 +66,30 @@ export default {
         return {
             close: mdiCloseBox,
             purchase: {},
-            total: {}
+            total: {},
+            paypalStyle: {
+                layout: 'horizontal',
+                tagline: false,
+                height: 35
+            }
         }
     },
     computed: {
-        ...mapState(['events', 'registered', 'cars', 'payments', 'paymentitems', 'paymentaccounts']),
-        orderedOpenEvents() { return _.orderBy(this.events, ['date']).filter(e => new EventWrap(e).isOpen()) }
+        ...mapState(['series', 'events', 'registered', 'cars', 'payments', 'paymentitems', 'paymentaccounts']),
+        orderedOpenEvents() {
+            return _.orderBy(this.events, ['date']).filter(e => new EventWrap(e).isOpen())
+        },
+        firstPaypalClientId() {
+            const usedAccounts = _.orderBy(this.events, ['date']).map(e => e.accountid)
+            const usedPaypal   = this.paymentaccounts.filter(p => usedAccounts.includes(p.accountid) && p.type === 'paypal')
+            if (usedPaypal.length > 1) {
+                console.error("More than one active paypal account for the series, this won't work due to Paypal client global variable")
+            }
+            if (usedPaypal.length > 0) {
+                return usedPaypal[0].accountid
+            }
+            return null
+        }
     },
     methods: {
         payitems(accountid) {
@@ -83,18 +104,56 @@ export default {
         paymentSum(eventid, carid) {
             return _.sumBy(this.payments[eventid][carid], 'amount')
         },
-        newpurchase(accountid, eventid, carid, value) {
+        unpaidReg(reglist) {
+            return reglist.filter(r => !this.hasPayments(r.eventid, r.carid))
+        },
+        newpurchase(accountid, reg, value) {
             if (!(accountid in this.purchase)) {
                 this.purchase[accountid] = {}
             }
-            this.purchase[accountid][eventid + carid] = value
-            Vue.set(this.total, accountid, _(this.purchase[accountid]).values().sumBy('price'))
+            this.purchase[accountid][reg.eventid + reg.carid + reg.session] = {
+                event: this.events[reg.eventid],
+                car: this.cars[reg.carid],
+                session: reg.session,
+                item: value
+            }
+            Vue.set(this.total, accountid, _(this.purchase[accountid]).values().sumBy('item.price'))
+        },
+
+        createPayments(accountid) {
+            return _(this.purchase[accountid]).values().map(o => ({
+                eventid: o.event.eventid,
+                carid: o.car.carid,
+                session: o.session,
+                name: o.item.name,
+                amount: o.item.price
+            })).value()
+        },
+
+        createPaypalOrder() {
+            return buildPaypalOrder(Object.values(this.purchase[this.firstPaypalClientId]))
+        },
+        paypalApproved(data) {
+            this.$store.dispatch('setdata', {
+                series: this.series,
+                type: 'paypal',
+                orderid: data.orderID,
+                paypal: this.createPayments(this.firstPaypalClientId),
+                busy: { key: 'busyReg', ids: this.accountEvents(this.firstPaypalClientId).map(e => e.eventid) }
+            })
+            this.$emit('input')
         }
     },
     watch: {
-        value: function(newv) {
+        value: async function(newv) {
             if (newv) {
-                // on open
+                if (this.firstPaypalClientId) {
+                    loadPaypal(this.firstPaypalClientId, this.paypalStyle, '#paypal-button-container', this.createPaypalOrder, this.paypalApproved)
+                }
+            } else {
+                if (this.firstPaypalClientId) {
+                    unloadPaypal(this.firstPaypalClientId)
+                }
             }
         }
     }
@@ -120,6 +179,10 @@ h3 {
 .v-card__text {
     margin-bottom: 1rem;
 }
+.v-card__actions * {
+    flex-grow: 1;
+    margin: 5px 10px !important;
+}
 
 .container {
     background: #DDD;
@@ -132,4 +195,15 @@ h3 {
 .v-card {
     margin-bottom: 1rem;
 }
+
+.v-select__selections .name, .v-list-item .name {
+    margin-right: 4px;
+    font-weight: bold;
+}
+
+#paypal-button-container.disabled {
+    pointer-events: none;
+    opacity: 0.4;
+}
+
 </style>

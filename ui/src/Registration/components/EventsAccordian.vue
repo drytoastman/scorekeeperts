@@ -48,7 +48,8 @@ export default {
     },
     computed: {
         ...mapState(['series', 'events', 'counts', 'registered']),
-        orderedEvents() { return _.orderBy(this.events, ['date']) }
+        // events by date, filtering out events that already occured as of today midnight, will still show up day of
+        orderedEvents() { return _.orderBy(this.events, ['date']).filter(e => (new Date(e.date) - new Date()) > -86400) }
     },
     methods: {
         regrequest: function(event) {

@@ -101,15 +101,19 @@ const mutations = {
         state.usednumbers = data
     },
 
-    /* eslint-disable curly */
     markBusy(state: State, busy: any) {
-        Vue.set(state[busy.key], busy.id, true)
+        const ids = (busy.id) ? [busy.id] : busy.ids
+        for (const id of ids) {
+            Vue.set(state[busy.key], id, true)
+        }
     },
 
     clearBusy(state: State, busy: any) {
-        Vue.set(state[busy.key], busy.id, false)
+        const ids = (busy.id) ? [busy.id] : busy.ids
+        for (const id of ids) {
+            Vue.set(state[busy.key], id, false)
+        }
     },
-    /* eslint-enable curly */
 
     apiData(state: State, data: any) {
         if (data === undefined) return

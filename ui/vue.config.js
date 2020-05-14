@@ -10,8 +10,7 @@ module.exports = {
             template: 'public/index.html',
             title: 'Registration',
             scripts: [
-                'https://www.paypalobjects.com/api/checkout.js',
-                'https://js.squareupsandbox.com/v2/paymentform'
+                // 'https://js.squareupsandbox.com/v2/paymentform'
             ],
             chunks: ['chunk-vendors', 'chunk-common', 'register']
         },

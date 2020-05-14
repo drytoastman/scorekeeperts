@@ -6,7 +6,7 @@ export function installLoggingHandlers() {
         console.log(`OnEr: ${filename}:${lineno}: ${message}`)
     }
     window.addEventListener('unhandledrejection', function(event) {
-        console.log(`UnPr: ${event.reason}`)
+        console.log(`UnPr: ${JSON.stringify(event)}`)
         console.log(event.reason.stack)
     })
     Vue.config.errorHandler = err => {

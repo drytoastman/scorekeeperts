@@ -4,11 +4,21 @@ import router from './router'
 import store from './store'
 import Vuetify from 'vuetify/lib'
 import colors from 'vuetify/es5/util/colors'
+import LoadScript from 'vue-plugin-load-script'
 import 'typeface-roboto'
 import { installLoggingHandlers } from '@/util/logging'
 
 installLoggingHandlers()
+Vue.use(LoadScript)
 Vue.use(Vuetify)
+
+declare module 'vue/types/vue' {
+    interface VueConstructor<V extends Vue = Vue> {
+        loadScript: Function;
+        unloadScript: Function;
+    }
+}
+
 const base = {
     primary: colors.indigo.base,
     secondary: colors.blue.base,
