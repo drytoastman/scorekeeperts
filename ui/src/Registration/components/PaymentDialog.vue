@@ -138,8 +138,9 @@ export default {
                 series: this.series,
                 type: 'paypal',
                 orderid: data.orderID,
-                paypal: this.createPayments(this.firstPaypalClientId),
-                busy: { key: 'busyReg', ids: this.accountEvents(this.firstPaypalClientId).map(e => e.eventid) }
+                accountid: this.firstPaypalClientId,
+                items: this.createPayments(this.firstPaypalClientId),
+                busy: { key: 'busyPay', ids: this.accountEvents(this.firstPaypalClientId).map(e => e.eventid) }
             })
             this.$emit('input')
         }
