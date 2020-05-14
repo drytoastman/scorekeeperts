@@ -7,7 +7,7 @@ import { RegisterRepository } from './registerrepo'
 import { TableWatcher } from './tablewatcher'
 import { PaymentsRepository } from './paymentsrepo'
 
-interface DBExtensions {
+export interface DBExtensions {
     series: SeriesRepository;
     clsidx: ClassRepository;
     drivers: DriverRepository;

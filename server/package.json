@@ -10,6 +10,7 @@
     "lint": "eslint . --ext .ts"
   },
   "dependencies": {
+    "axios": "^0.19.2",
     "bcrypt": "^4.0.1",
     "cookie-session": "^1.4.0",
     "cors": "^2.8.5",
@@ -20,6 +21,7 @@
     "lodash": "^4.17.15",
     "morgan": "^1.10.0",
     "node-cache": "^5.1.0",
+    "nodejs-base64": "^1.0.3",
     "pg-promise": "^10.5.2",
     "uuid": "^8.0.0",
     "ws": "^7.2.5"

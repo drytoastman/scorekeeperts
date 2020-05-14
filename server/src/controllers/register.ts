@@ -2,6 +2,7 @@ import { Request, Response } from 'express'
 import Router from 'express-promise-router'
 import delay from 'express-delay'
 import { db } from '../db'
+import { paypalCapture } from '../util/paypal'
 
 export const register = Router()
 
@@ -103,6 +104,7 @@ register.get('/api', async(req: Request, res: Response) => {
 register.post('/api', async(req: Request, res: Response) => {
     if (!('series' in req.body && 'type' in req.body)) {
         res.status(400).send({ error: 'missing series or type' })
+        console.log(req.body)
         return
     }
 
@@ -113,7 +115,7 @@ register.post('/api', async(req: Request, res: Response) => {
     }
 
     try {
-        res.json(await db.task('apiget', async t => {
+        res.json(await db.task('apipost', async t => {
             const ret: any = {
                 type: req.body.type,
                 series: req.body.series
@@ -125,6 +127,10 @@ register.post('/api', async(req: Request, res: Response) => {
             }
             if ('registered' in req.body) {
                 Object.assign(ret, await t.register.updateRegistration(req.body.type, req.body.registered, req.body.eventid, driverid))
+            }
+            if (req.body.type === 'paypal') {
+                console.log(req.body)
+                await paypalCapture(t, req.body.accountid, req.body.orderid)
             }
 
             return ret

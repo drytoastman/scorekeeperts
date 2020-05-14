@@ -14,4 +14,8 @@ export class PaymentsRepository {
     async getPaymentItems(): Promise<PaymentItem[]> {
         return this.db.query('SELECT * from paymentitems')
     }
+
+    async getPaymentSecret(accountid: string): Promise<String> {
+        return (await this.db.one('SELECT secret FROM paymentsecrets WHERE accountid=$1', [accountid])).secret
+    }
 }
