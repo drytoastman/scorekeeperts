@@ -16,12 +16,12 @@
                 </v-container>
             </v-expansion-panel-header>
             <v-expansion-panel-content>
-                <RegisterEventDisplay :event="event" @regrequest="regrequest(event)" @payrequest="payrequest(event)"></RegisterEventDisplay>
+                <RegisterEventDisplay :event="event" @regrequest="regrequest(event)" @payrequest="payrequest(event.accountid)"></RegisterEventDisplay>
             </v-expansion-panel-content>
         </v-expansion-panel>
     </v-expansion-panels>
     <RegDialog     v-model=dialogOpen  :event=dialogEvent></RegDialog>
-    <PaymentDialog v-model=paymentOpen :event=dialogEvent></PaymentDialog>
+    <PaymentDialog v-model=paymentOpen :accountid=dialogAccountId></PaymentDialog>
     </div>
 </template>
 
@@ -41,7 +41,8 @@ export default {
     data: () => ({
         dialogOpen: false,
         paymentOpen: false,
-        dialogEvent: null
+        dialogEvent: null,
+        dialogAccountId: null
     }),
     filters: {
         titledate: function(v) { return new Date(v).toDateString() }
@@ -56,8 +57,8 @@ export default {
             this.dialogEvent = event
             this.dialogOpen = true
         },
-        payrequest: function(event) {
-            this.dialogEvent = event
+        payrequest: function(accountid) {
+            this.dialogAccountId = accountid
             this.paymentOpen = true
         }
     }

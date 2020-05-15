@@ -51,8 +51,8 @@
                         <v-col>
                             <v-btn color="secondary" @click="$emit('regrequest')" :loading="busyR" :disabled="busyP">Register</v-btn>
                         </v-col>
-                        <v-col v-if="ereg.length > 0 && event.accountid">
-                            <v-btn color="secondary" @click="$emit('payrequest')" :loading="busyP" :disabled="busyR">Pay Now</v-btn>
+                        <v-col v-if="ereg.length > 0 && account != null">
+                            <v-btn color="secondary" @click="$emit('payrequest')" :loading="busyP" :disabled="busyR">Pay Now ({{account.name}})</v-btn>
                         </v-col>
                     </v-row>
                 </v-container>
@@ -83,7 +83,8 @@ export default {
         event: Object
     },
     computed: {
-        ...mapState(['registered', 'payments', 'counts', 'busyReg', 'busyPay']),
+        ...mapState(['registered', 'paymentaccounts', 'payments', 'counts', 'busyReg', 'busyPay']),
+        account() { return this.paymentaccounts[this.event.accountid] || null },
         ecounts() { return this.counts[this.event.eventid] || {} },
         ereg()    { return this.registered[this.event.eventid] || {} },
         wrap()    { return new EventWrap(this.event) },

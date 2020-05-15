@@ -50,7 +50,7 @@ class State {
 
     // move to a series vuex module
     series = ''
-    paymentaccounts: PaymentAccount[] = []
+    paymentaccounts: {[key: string]: PaymentAccount} = {}
     paymentitems: PaymentItem[] = []
     classes: {[key: string]: SeriesClass} = {}
     indexes: {[key: string]: SeriesIndex} = {}
@@ -184,7 +184,12 @@ const mutations = {
         }
 
         if ('paymentaccounts' in data) {
-            state.paymentaccounts = data.paymentaccounts
+            if (data.type === 'get') {
+                state.paymentaccounts = {}
+            }
+            data.paymentaccounts.forEach((a: PaymentAccount) => {
+                state.paymentaccounts[a.accountid] = a
+            })
         }
 
         if ('paymentitems' in data) {
