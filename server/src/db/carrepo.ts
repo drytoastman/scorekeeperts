@@ -1,6 +1,7 @@
 import { Car, UUID } from '@common/lib'
 import { IDatabase, IMain, ColumnSet } from 'pg-promise'
 import { v1 as uuidv1 } from 'uuid'
+import { verifyDriverRelationship } from './helper'
 
 let carcols: ColumnSet|undefined
 
@@ -29,9 +30,7 @@ export class CarRepository {
             return this.db.any(this.pgp.helpers.insert(cars, carcols) + ' RETURNING *')
         }
 
-        if (!cars.every(c => c.driverid === driverid)) {
-            throw Error('Attemping to modifiy another drivers cars')
-        }
+        verifyDriverRelationship(this.db, cars.map(c => c.carid), driverid)
 
         if (type === 'update') return this.db.any(this.pgp.helpers.update(cars, carcols) + ' WHERE v.carid = t.carid RETURNING *')
         if (type === 'delete') return this.db.any('DELETE from cars WHERE carid in ($1:csv) RETURNING carid', cars.map(c => c.carid))

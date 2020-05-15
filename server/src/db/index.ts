@@ -26,7 +26,7 @@ const initOptions: IInitOptions<DBExtensions> = {
         obj.drivers = new DriverRepository(obj)
         obj.cars = new CarRepository(obj, pgp)
         obj.register = new RegisterRepository(obj, pgp)
-        obj.payments = new PaymentsRepository(obj)
+        obj.payments = new PaymentsRepository(obj, pgp)
     }
 }
 

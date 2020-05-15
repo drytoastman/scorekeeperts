@@ -1,6 +1,7 @@
 import { UUID, Registration, Payment } from '@common/lib'
 import { IDatabase, IMain, ColumnSet } from 'pg-promise'
 import _ from 'lodash'
+import { verifyDriverRelationship } from './helper'
 
 let regcols: ColumnSet|undefined
 
@@ -19,10 +20,6 @@ export class RegisterRepository {
 
     async getRegistrationbyDriverId(driverid: UUID): Promise<Registration[]> {
         return this.db.any('SELECT r.* FROM registered AS r JOIN cars c ON r.carid=c.carid WHERE c.driverid=$1', [driverid])
-    }
-
-    async getPaymentsbyDriverId(driverid: UUID): Promise<Payment[]> {
-        return this.db.query('SELECT p.* FROM payments AS p JOIN cars c ON p.carid=c.carid WHERE c.driverid=$1', [driverid])
     }
 
     async getRegistationCounts(): Promise<Record<string, any>> {
@@ -67,14 +64,7 @@ export class RegisterRepository {
     }
 
     async updateRegistration(type: string, reg: Registration[], eventid: UUID, driverid: UUID): Promise<Object> {
-        if (reg.length > 0) {
-            const dids = await this.db.any('SELECT DISTINCT driverid FROM cars WHERE carid IN ($1:csv)', reg.map(r => r.carid))
-            if ((dids.length !== 1) || (dids[0].driverid !== driverid)) {
-                console.log(dids)
-                console.log(driverid)
-                throw Error('Attemping to modifiy another drivers registration')
-            }
-        }
+        verifyDriverRelationship(this.db, reg.map(r => r.carid), driverid)
 
         function keys(v:any) {  return v.carid + v.session }
 

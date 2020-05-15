@@ -80,7 +80,7 @@ register.get('/api', async(req: Request, res: Response) => {
                     case 'events':     ret.events     = await t.series.eventList(); break
                     case 'cars':       ret.cars       = await t.cars.getCarsbyDriverId(driverid); break
                     case 'registered': ret.registered = await t.register.getRegistrationbyDriverId(driverid); break
-                    case 'payments':   ret.payments   = await t.register.getPaymentsbyDriverId(driverid); break
+                    case 'payments':   ret.payments   = await t.payments.getPaymentsbyDriverId(driverid); break
                     case 'counts':     ret.counts     = await t.register.getRegistationCounts(); break
                     case 'classes':
                     case 'indexes':
@@ -128,9 +128,10 @@ register.post('/api', async(req: Request, res: Response) => {
             if ('registered' in req.body) {
                 Object.assign(ret, await t.register.updateRegistration(req.body.type, req.body.registered, req.body.eventid, driverid))
             }
-            if (req.body.type === 'paypal') {
-                console.log(req.body)
-                await paypalCapture(t, req.body.accountid, req.body.orderid)
+            if ('payments' in req.body) {
+                if ('paypal' in req.body) {
+                    ret.payments = await paypalCapture(t, req.body.paypal, req.body.payments, driverid)
+                }
             }
 
             return ret
