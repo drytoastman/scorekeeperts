@@ -40,7 +40,7 @@
 
 <script>
 import _ from 'lodash'
-import { mapState } from 'vuex'
+import { mapState, mapGetters } from 'vuex'
 import { mdiCloseBox } from '@mdi/js'
 
 import CarLabel from '../../components/CarLabel.vue'
@@ -54,12 +54,6 @@ export default {
     props: {
         value: Boolean,
         accountid: String
-    },
-    filters: {
-        dollars: function(v) {
-            if (typeof v !== 'number') return ''
-            return `$${(v / 100).toFixed(2)}`
-        }
     },
     data() {
         return {
@@ -75,6 +69,8 @@ export default {
     },
     computed: {
         ...mapState(['series', 'events', 'registered', 'cars', 'payments', 'paymentitems', 'paymentaccounts']),
+        ...mapGetters(['unpaidReg']),
+
         account() {
             return this.paymentaccounts[this.accountid] || {}
         },
@@ -89,15 +85,6 @@ export default {
         }
     },
     methods: {
-        hasPayments(eventid, carid) {
-            return eventid in this.payments ? this.payments[eventid][carid] : false
-        },
-        paymentSum(eventid, carid) {
-            return _.sumBy(this.payments[eventid][carid], 'amount')
-        },
-        unpaidReg(reglist) {
-            return reglist.filter(r => !this.hasPayments(r.eventid, r.carid))
-        },
         newpurchase(reg, value) {
             this.purchase[reg.eventid + reg.carid + reg.session] = {
                 event: this.events[reg.eventid],
@@ -119,6 +106,7 @@ export default {
         },
 
         createPaypalOrder() {
+            // calls out to here to get purchases and then back into paypal library
             return buildPaypalOrder(Object.values(this.purchase))
         },
         paypalApproved(data) {

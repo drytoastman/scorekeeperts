@@ -8,7 +8,7 @@
                 Session: {{reg.session}}
             </div>
             <div v-for="p in paymentsForReg" :key="p.payid">
-                ${{p.amount}} ({{p.txtype}})
+                {{p.amount|dollars}} ({{p.txtype}})
             </div>
             <div v-if="wrap.isOpen() && wrap.event.attr.paymentreq && !paymentsForReg.length" class='paymentreq'>
                 Payment Required

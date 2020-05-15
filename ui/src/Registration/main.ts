@@ -7,8 +7,10 @@ import colors from 'vuetify/es5/util/colors'
 import LoadScript from 'vue-plugin-load-script'
 import 'typeface-roboto'
 import { installLoggingHandlers } from '@/util/logging'
+import filters from '../util/filters'
 
 installLoggingHandlers()
+Vue.use(filters)
 Vue.use(LoadScript)
 Vue.use(Vuetify)
 

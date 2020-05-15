@@ -51,7 +51,7 @@
                         <v-col>
                             <v-btn color="secondary" @click="$emit('regrequest')" :loading="busyR" :disabled="busyP">Register</v-btn>
                         </v-col>
-                        <v-col v-if="ereg.length > 0 && account != null">
+                        <v-col v-if="showPayButton">
                             <v-btn color="secondary" @click="$emit('payrequest')" :loading="busyP" :disabled="busyR">Pay Now ({{account.name}})</v-btn>
                         </v-col>
                     </v-row>
@@ -62,7 +62,7 @@
 </template>
 
 <script>
-import { mapState } from 'vuex'
+import { mapState, mapGetters } from 'vuex'
 import { EventWrap } from '@common/lib'
 import RegCard from './RegCard'
 
@@ -74,9 +74,6 @@ export default {
         timedate: function(v) {
             const d = new Date(v)
             return d.toDateString().slice(0, -4) + ' ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric' })
-        },
-        capitalize: function(v) {
-            return v.charAt(0).toUpperCase() + v.slice(1)
         }
     },
     props: {
@@ -84,12 +81,14 @@ export default {
     },
     computed: {
         ...mapState(['registered', 'paymentaccounts', 'payments', 'counts', 'busyReg', 'busyPay']),
+        ...mapGetters(['unpaidReg']),
         account() { return this.paymentaccounts[this.event.accountid] || null },
         ecounts() { return this.counts[this.event.eventid] || {} },
         ereg()    { return this.registered[this.event.eventid] || {} },
         wrap()    { return new EventWrap(this.event) },
         busyR()   { return this.busyReg[this.event.eventid] === true },
-        busyP()   { return this.busyPay[this.event.eventid] === true }
+        busyP()   { return this.busyPay[this.event.eventid] === true },
+        showPayButton() { return this.ereg.length > 0 && (this.unpaidReg(this.ereg).length > 0) && this.account != null }
     },
     watch: {
     }

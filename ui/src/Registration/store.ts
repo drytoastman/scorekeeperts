@@ -1,9 +1,9 @@
 import Vue from 'vue'
-import Vuex, { MutationTree, ActionTree, ActionContext } from 'vuex'
+import Vuex, { MutationTree, ActionTree, ActionContext, GetterTree } from 'vuex'
 import axios from 'axios'
 import ReconnectingWebSocket from 'reconnecting-websocket'
 
-import { Driver, SeriesEvent, Car, Registration, Payment, PaymentAccount, PaymentItem, SeriesIndex, SeriesClass } from '@common/lib'
+import { Driver, SeriesEvent, Car, Registration, Payment, PaymentAccount, PaymentItem, SeriesIndex, SeriesClass, UUID } from '@common/lib'
 
 Vue.use(Vuex)
 
@@ -271,10 +271,23 @@ const actions = {
 }  as ActionTree<State, any>
 
 
+const getters = {
+    hasPayments: (state) => (eventid: UUID, carid: UUID) => {
+        return eventid in state.payments ? state.payments[eventid][carid] : false
+    },
+
+    unpaidReg: (state, getters) => (reglist: Registration[]) => {
+        return reglist.filter(r => !getters.hasPayments(r.eventid, r.carid))
+    }
+
+} as GetterTree<State, State>
+
+
 const registerStore = new Vuex.Store({
     state: new State(),
     mutations: mutations,
-    actions: actions
+    actions: actions,
+    getters: getters
 })
 registerStore.state.ws.onmessage = (e) => registerStore.commit('apiData', JSON.parse(e.data))
 
