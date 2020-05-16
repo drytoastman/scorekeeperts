@@ -5,35 +5,24 @@
 
 <script>
 import Vue from 'vue'
+import { mapState } from 'vuex'
+const INTG_DATE = '2020-05-12'
 
 export default {
     props: {
-        total: Number,
         opened: Boolean,
         account: Object,
-        purchase: Array
-    },
-    data() {
-        return {
-            INTG_DATE: '2020-05-12'
-        }
+        purchase: Array,
+        payments: Array,
+        total: Number
     },
     computed: {
+        ...mapState(['series']),
         paypalURL() {
-            return `https://www.paypal.com/sdk/js?client-id=${this.account.accountid}&integration-date=${this.INTG_DATE}&disable-funding=credit`
+            return `https://www.paypal.com/sdk/js?client-id=${this.account.accountid}&integration-date=${INTG_DATE}&disable-funding=credit`
         }
     },
     methods: {
-        createPayments() {
-            return this.purchase.map(o => ({
-                eventid: o.event.eventid,
-                carid: o.car.carid,
-                session: o.session,
-                itemname: o.item.name,
-                amount: o.item.price
-            })).value()
-        },
-
         buildPaypalOrder() {
             /* eslint-disable @typescript-eslint/camelcase */
             let total = 0
@@ -67,10 +56,10 @@ export default {
                 series: this.series,
                 type: 'insert',
                 paypal: { orderid: data.orderID, accountid: this.account.accountid },
-                payments: this.createPayments(),
-                busy: { key: 'busyPay', ids: this.accountEvents.map(e => e.eventid) }
+                payments: this.payments,
+                busy: { key: 'busyPay', ids: this.payments.map(p => p.eventid) }
             })
-            this.$emit('input')
+            this.$emit('complete')
         },
 
         async loadPaypal() {

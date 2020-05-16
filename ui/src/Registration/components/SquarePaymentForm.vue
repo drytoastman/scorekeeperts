@@ -1,31 +1,40 @@
 <template>
-    <div class='sq-grid'>
-        <div id="sq-card-number"     class="sq-input"></div>
-        <div id="sq-expiration-date" class="sq-input"></div>
-        <div id="sq-cvv"             class="sq-input"></div>
-        <div id="sq-postal-code"     class="sq-input"></div>
-        <v-btn id="sq-creditcard" :disabled="total<=0" @click.prevent="squareform.requestCardNonce()" color="secondary">
-            <img class='buttonicon' :src="squareicon"/>
-        </v-btn>
+    <div>
+        <div class='sq-grid'>
+            <div id="sq-card-number"     class="sq-input"></div>
+            <div id="sq-expiration-date" class="sq-input"></div>
+            <div id="sq-cvv"             class="sq-input"></div>
+            <div id="sq-postal-code"     class="sq-input"></div>
+            <v-btn id="sq-creditcard" :disabled="total<=0" @click.prevent="squareform.requestCardNonce()" color="secondary">
+                <img class='buttonicon' :src="squareicon"/>
+            </v-btn>
+        </div>
+        <div v-if="errors.length > 0" class='errors'>
+            <div v-for="error in errors" :key="error">{{error}}</div>
+        </div>
     </div>
 </template>
 
 <script>
+import { mapState } from 'vuex'
 import squaresvg from '../../images/square.svg'
 
 export default {
     props: {
-        total: Number,
         opened: Boolean,
-        account: Object
+        account: Object,
+        payments: Array,
+        total: Number
     },
     data() {
         return {
             squareForm: null,
-            squareicon: squaresvg
+            squareicon: squaresvg,
+            errors: []
         }
     },
     computed: {
+        ...mapState(['series']),
         squareURL() {
             const infix = this.account.attr.environment === 'sandbox' ? 'sandbox' : ''
             return `https://js.squareup${infix}.com/v2/paymentform`
@@ -35,11 +44,9 @@ export default {
         createSquareForm() {
             // eslint-disable-next-line no-undef
             return new SqPaymentForm({
-                // TODO: Replace with your sandbox application ID
                 applicationId: 'sandbox-sq0idb-vYf0K0lc1oj2gKh5g5d7Lg',
                 inputClass: 'sq-input',
                 autoBuild: false,
-                // Customize the CSS for SqPaymentForm iframe elements
                 inputStyles: [{
                     fontSize: '14px',
                     lineHeight: '20px',
@@ -63,20 +70,24 @@ export default {
                     placeholder: 'Postal'
                 },
                 callbacks: {
-                    cardNonceResponseReceived: function(errors, nonce) {
-                        if (errors) {
-                            // Log errors from nonce generation to the browser developer console.
-                            console.error('Encountered errors:')
-                            errors.forEach(function(error) {
-                                console.error('  ' + error.message)
-                            })
-                            alert('Encountered errors, check browser developer console for more details')
-                            return
-                        }
-                        alert(`The generated nonce is:\n${nonce}`)
-                    }
+                    cardNonceResponseReceived: this.cardNonceResponseReceived
                 }
             })
+        },
+
+        cardNonceResponseReceived(errors, nonce) {
+            if (errors) {
+                this.errors = errors.map(e => e.message)
+                return
+            }
+            this.$store.dispatch('setdata', {
+                series: this.series,
+                type: 'insert',
+                square: { nonce: nonce, accountid: this.account.accountid },
+                payments: this.payments,
+                busy: { key: 'busyPay', ids: this.payments.map(p => p.eventid) }
+            })
+            this.$emit('complete')
         },
 
         async loadSquare() {
@@ -86,6 +97,7 @@ export default {
         },
 
         async unloadSquare() {
+            this.errors = []
             this.squareform.destroy()
             await this.$unloadScript(this.squareURL)
         }
@@ -128,5 +140,9 @@ export default {
 
 .buttonicon {
     filter: brightness(0) invert(100);
+}
+.errors {
+    color: red;
+    padding: 0.5rem;
 }
 </style>

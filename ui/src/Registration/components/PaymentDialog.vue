@@ -27,8 +27,14 @@
                 </v-card-text>
 
                 <v-card-actions>
-                    <PayPalButton v-if="account.type=='paypal'" ref='paysub' :total=total :opened=value :account=account :purchase=purchase></PayPalButton>
-                    <SquarePaymentForm v-else                   ref='paysub' :total=total :opened=value :account=account></SquarePaymentForm>
+                    <PayPalButton v-if="account.type=='paypal'"
+                            :opened=value :account=account :purchase=purchase :payments=payments :total=total
+                            @complete="$emit('input')">
+                    </PayPalButton>
+                    <SquarePaymentForm v-else
+                            :opened=value :account=account :payments=payments :total=total
+                            @complete="$emit('input')">
+                    </SquarePaymentForm>
                 </v-card-actions>
             </v-card>
         </v-dialog>
@@ -94,6 +100,15 @@ export default {
         },
         total() {
             return _(this.purchase).sumBy('item.price')
+        },
+        payments() {
+            return this.purchase.map(o => ({
+                eventid: o.event.eventid,
+                carid: o.car.carid,
+                session: o.session,
+                itemname: o.item.name,
+                amount: o.item.price
+            }))
         }
     },
     methods: {
