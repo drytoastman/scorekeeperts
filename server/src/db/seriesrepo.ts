@@ -1,4 +1,4 @@
-import { SeriesEvent, SeriesSettings, DefaultSettings } from '@common/lib'
+import { SeriesEvent, SeriesSettings, DefaultSettings, UUID } from '@common/lib'
 import { IDatabase } from 'pg-promise'
 
 export class SeriesRepository {
@@ -49,5 +49,9 @@ export class SeriesRepository {
 
     async eventList(): Promise<SeriesEvent[]> {
         return this.db.any('SELECT * FROM events')
+    }
+
+    async getEvent(eventid: UUID): Promise<SeriesEvent> {
+        return this.db.one('SELECT * FROM events WHERE eventid=$1', [eventid])
     }
 }

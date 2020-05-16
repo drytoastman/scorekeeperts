@@ -3,6 +3,7 @@ import Router from 'express-promise-router'
 import delay from 'express-delay'
 import { db } from '../db'
 import { paypalCapture } from '../util/paypal'
+import { squareOrder } from '../util/square'
 
 export const register = Router()
 
@@ -131,6 +132,8 @@ register.post('/api', async(req: Request, res: Response) => {
             if ('payments' in req.body) {
                 if ('paypal' in req.body) {
                     ret.payments = await paypalCapture(t, req.body.paypal, req.body.payments, driverid)
+                } else if ('square' in req.body) {
+                    ret.payments = await squareOrder(t, req.body.square, req.body.payments, driverid)
                 }
             }
 

@@ -39,7 +39,7 @@ export class PaymentsRepository {
         return this.db.one('SELECT * FROM paymentaccounts WHERE accountid=$1', [accountid])
     }
 
-    async getPaymentAccountSecret(accountid: string): Promise<String> {
+    async getPaymentAccountSecret(accountid: string): Promise<string> {
         return (await this.db.one('SELECT secret FROM paymentsecrets WHERE accountid=$1', [accountid])).secret
     }
 
