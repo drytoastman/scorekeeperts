@@ -20,26 +20,30 @@
             </v-expansion-panel-content>
         </v-expansion-panel>
     </v-expansion-panels>
-    <RegDialog     v-model=dialogOpen  :event=dialogEvent></RegDialog>
-    <PaymentDialog v-model=paymentOpen :accountid=dialogAccountId></PaymentDialog>
+    <ClassRegDialog   v-model=classDialogOpen   :event=dialogEvent></ClassRegDialog>
+    <SessionRegDialog v-model=sessionDialogOpen :event=dialogEvent></SessionRegDialog>
+    <PaymentDialog    v-model=paymentOpen       :accountid=dialogAccountId></PaymentDialog>
     </div>
 </template>
 
 <script>
 import { mapState } from 'vuex'
 import _ from 'lodash'
-import RegDialog from './RegDialog'
+import ClassRegDialog from './ClassRegDialog'
+import SessionRegDialog from './SessionRegDialog'
 import PaymentDialog from './PaymentDialog'
 import RegisterEventDisplay from '../components/RegisterEventDisplay.vue'
 
 export default {
     components: {
         RegisterEventDisplay,
-        RegDialog,
-        PaymentDialog
+        ClassRegDialog,
+        PaymentDialog,
+        SessionRegDialog
     },
     data: () => ({
-        dialogOpen: false,
+        classDialogOpen: false,
+        sessionDialogOpen: false,
         paymentOpen: false,
         dialogEvent: null,
         dialogAccountId: null
@@ -55,7 +59,11 @@ export default {
     methods: {
         regrequest: function(event) {
             this.dialogEvent = event
-            this.dialogOpen = true
+            if (event.regtype > 0) {
+                this.sessionDialogOpen = true
+            } else {
+                this.classDialogOpen = true
+            }
         },
         payrequest: function(accountid) {
             this.dialogAccountId = accountid

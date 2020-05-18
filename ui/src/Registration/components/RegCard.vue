@@ -1,9 +1,10 @@
 <template>
     <v-card class='regcard' outlined>
-        <v-card-title>
+        <v-card-title v-if="!reg.session">
             <CarLabel :car=car fontsize="85%"></CarLabel>
         </v-card-title>
         <v-card-text>
+            <SessionCarLabel v-if="reg.session" :car=car fontsize="105%" display="inline"></SessionCarLabel>
             <div v-if="reg.session">
                 Session: {{reg.session}}
             </div>
@@ -21,9 +22,13 @@
 import { mapState } from 'vuex'
 import { EventWrap, Registration } from '@common/lib'
 import CarLabel from '../../components/CarLabel'
+import SessionCarLabel from '../../components/SessionCarLabel'
 
 export default {
-    components: { CarLabel },
+    components: {
+        CarLabel,
+        SessionCarLabel
+    },
     props: {
         reg: Registration
     },

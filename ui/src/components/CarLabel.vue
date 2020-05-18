@@ -24,8 +24,7 @@ export default {
         }
     },
     computed: {
-        indexstr() { return (this.car.indexcode !== '') ? `(${this.car.indexcode})` : '' },
-        stylevars() { return { 'font-size': this.fontsize } }
+        indexstr() { return (this.car.indexcode !== '') ? `(${this.car.indexcode})` : '' }
     }
 }
 </script>

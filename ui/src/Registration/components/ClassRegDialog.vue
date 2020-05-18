@@ -48,11 +48,6 @@ export default {
         value: Boolean,
         event: Object
     },
-    data() {
-        return {
-            checks: {}
-        }
-    },
     computed: {
         ...mapState(['series', 'cars', 'registered', 'counts']),
         ereg()         { return this.registered[this.event.eventid] || [] },
@@ -69,6 +64,11 @@ export default {
                 }
             }
             return null
+        }
+    },
+    data() {
+        return {
+            checks: {}
         }
     },
     methods: {

@@ -16,3 +16,11 @@
         padding-bottom: 2px !important;
     }
 }
+
+.v-list-item.v-list-item--link::before {
+    background: #fff;
+}
+
+.v-list-item.v-list-item--link:hover {
+    background: #eeeef0;
+}
