@@ -41,24 +41,3 @@ export const PaymentValidator: DataValidationRules = {
     amount:   [],
     modified: [isDate]
 }
-
-export interface PaymentAccountAttr {
-    environment: string
-}
-
-export interface PaymentAccount {
-    accountid: string;
-    name: string;
-    type: string;
-    attr: PaymentAccountAttr;
-    modified: DateString;
-}
-
-export interface PaymentItem {
-    itemid: string;
-    accountid: string;
-    name: string;
-    price: number;
-    currency: string;
-    modified: DateString;
-}
