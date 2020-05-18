@@ -18,11 +18,12 @@
 <script>
 import { mapState } from 'vuex'
 import squaresvg from '../../images/square.svg'
+import { PaymentAccount } from '@common/lib'
 
 export default {
     props: {
         opened: Boolean,
-        account: Object,
+        account: PaymentAccount, // doesn't do anything without lang=ts but that has issues now as well
         payments: Array,
         total: Number
     },
@@ -36,7 +37,7 @@ export default {
     computed: {
         ...mapState(['series']),
         squareURL() {
-            const infix = this.account.attr.environment === 'sandbox' ? 'sandbox' : ''
+            const infix = this.account.attr.mode === 'sandbox' ? 'sandbox' : ''
             return `https://js.squareup${infix}.com/v2/paymentform`
         }
     },
@@ -44,7 +45,7 @@ export default {
         createSquareForm() {
             // eslint-disable-next-line no-undef
             return new SqPaymentForm({
-                applicationId: 'sandbox-sq0idb-vYf0K0lc1oj2gKh5g5d7Lg',
+                applicationId: this.account.attr.applicationId,
                 inputClass: 'sq-input',
                 autoBuild: false,
                 inputStyles: [{
