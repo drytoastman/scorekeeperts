@@ -2,10 +2,13 @@ import { IDatabase, ColumnSet, IMain } from 'pg-promise'
 import _ from 'lodash'
 import { v1 as uuidv1 } from 'uuid'
 
-import { PaymentAccount, PaymentItem, UUID, Payment } from '@common/lib'
+import { PaymentAccount, PaymentItem, UUID, Payment, PaymentAccountSecret } from '@common/lib'
 import { verifyDriverRelationship } from './helper'
+import { CatalogQueryText } from 'square-connect'
 
 let paymentcols: ColumnSet|undefined
+let secretcols: ColumnSet|undefined
+let accountcols: ColumnSet|undefined
 
 export class PaymentsRepository {
     // eslint-disable-next-line no-useless-constructor
@@ -25,6 +28,41 @@ export class PaymentsRepository {
                 { name: 'modified', cast: 'timestamp', mod: ':raw', init: (): any => { return 'now()' } }
             ], { table: 'payments' })
         }
+
+        if (accountcols === undefined) {
+            accountcols = new pgp.helpers.ColumnSet([
+                { name: 'accountid', cnd: true },
+                { name: 'name' },
+                { name: 'type' },
+                { name: 'attr', cast: 'json' },
+                { name: 'modified', cast: 'timestamp', mod: ':raw', init: (): any => { return 'now()' } }
+            ], { table: 'paymentaccounts' })
+        }
+
+        if (secretcols === undefined) {
+            secretcols = new pgp.helpers.ColumnSet([
+                { name: 'accountid', cnd: true },
+                { name: 'secret' },
+                { name: 'attr', cast: 'json' },
+                { name: 'modified', cast: 'timestamp', mod: ':raw', init: (): any => { return 'now()' } }
+            ], { table: 'paymentsecrets' })
+        }
+    }
+
+    private async localCacheGet(key: string): Promise<string> {
+        return this.db.one('SELECT data FROM localcache WHERE name=$1', key).then(r => { return r.data })
+    }
+
+    async getSquareApplicationId(): Promise<string> {
+        return this.localCacheGet('SQ_APPLICATION_ID')
+    }
+
+    async getSquareApplicationMode(): Promise<string> {
+        return this.localCacheGet('SQ_APPLICATION_MODE')
+    }
+
+    async getSquareApplicationSecret(): Promise<string> {
+        return this.localCacheGet('SQ_APPLICATION_SECRET')
     }
 
     async getPaymentAccounts(): Promise<PaymentAccount[]> {
@@ -39,8 +77,23 @@ export class PaymentsRepository {
         return this.db.one('SELECT * FROM paymentaccounts WHERE accountid=$1', [accountid])
     }
 
-    async getPaymentAccountSecret(accountid: string): Promise<string> {
-        return (await this.db.one('SELECT secret FROM paymentsecrets WHERE accountid=$1', [accountid])).secret
+    async getPaymentAccountSecret(accountid: string): Promise<PaymentAccountSecret> {
+        return this.db.one('SELECT * FROM paymentsecrets WHERE accountid=$1', [accountid])
+    }
+
+    async upsertPaymentAccount(account: PaymentAccount): Promise<null> {
+        return this.db.none('INSERT INTO paymentaccounts (accountid, name, type, attr) VALUES ($(accountid), $(name), $(type), $(attr)) ' +
+                            'ON CONFLICT (accountid) DO UPDATE SET name=$(name), type=$(type), attr=$(attr), modified=now()', account)
+    }
+
+    async upsertPaymentSecret(secret: PaymentAccountSecret): Promise<null> {
+        return this.db.none('INSERT INTO paymentsecrets (accountid, secret, attr) VALUES ($(accountid), $(secret), $(attr)) ' +
+                            'ON CONFLICT (accountid) DO UPDATE SET secret=$(secret), attr=$(attr), modified=now()', secret)
+    }
+
+    async updatePaymentAccountSecret(secret: PaymentAccountSecret): Promise<void> {
+        console.log(this.pgp.helpers.update(secret, secretcols) + ' WHERE accountid=$1')
+        await this.db.none(this.pgp.helpers.update(secret, secretcols) + ' WHERE accountid=$1', [secret.accountid])
     }
 
     async getPaymentsbyDriverId(driverid: UUID): Promise<Payment[]> {

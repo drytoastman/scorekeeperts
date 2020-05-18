@@ -1,4 +1,4 @@
-import pgpromise, { IInitOptions, IDatabase } from 'pg-promise'
+import pgpromise, { IInitOptions, IDatabase, IBaseProtocol } from 'pg-promise'
 import { CarRepository } from './carrepo'
 import { SeriesRepository } from './seriesrepo'
 import { DriverRepository } from './driverrepo'
@@ -16,10 +16,11 @@ export interface DBExtensions {
     payments: PaymentsRepository;
 }
 
-type ScorekeeperProtocol = IDatabase<DBExtensions> & DBExtensions;
+export type ScorekeeperProtocol = IBaseProtocol<DBExtensions> & DBExtensions;
+type ScorekeeperProtocolDB = IDatabase<DBExtensions> & DBExtensions;
 
 const initOptions: IInitOptions<DBExtensions> = {
-    extend(obj: ScorekeeperProtocol) {
+    extend(obj: ScorekeeperProtocolDB) {
         // eslint-disable-next-line @typescript-eslint/no-use-before-define
         obj.series = new SeriesRepository(obj)
         obj.clsidx = new ClassRepository(obj)

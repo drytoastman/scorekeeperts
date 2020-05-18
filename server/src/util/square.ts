@@ -1,29 +1,30 @@
 /* eslint-disable camelcase */
-import { DBExtensions } from '../db'
-import { ITask } from 'pg-promise'
+import { ScorekeeperProtocol } from '../db'
 import SquareConnect, { Money, ApiClient } from 'square-connect'
 import { v1 as uuidv1 } from 'uuid'
 
 import { Payment, UUID, PaymentAccount } from '@common/lib'
+import { gCache } from './cache'
+import { token } from 'morgan'
 
-function getAClient(environment: string): ApiClient {
+function getAClient(mode: string, token?: string): ApiClient {
     const client = new SquareConnect.ApiClient()
-    if (environment === 'sandbox') {
+    if (mode === 'sandbox') {
         client.basePath = 'https://connect.squareupsandbox.com'
+    }
+    if (token) {
+        client.authentications.oauth2.accessToken = token
     }
     return client
 }
 
-export async function squareOrder(task: ITask<DBExtensions> & DBExtensions, square: any, payments: Payment[], driverid: UUID): Promise<Payment[]> {
+export async function squareOrder(conn: ScorekeeperProtocol, square: any, payments: Payment[], driverid: UUID): Promise<Payment[]> {
 
-    const account = await task.payments.getPaymentAccount(square.accountid)
-    const secret = await task.payments.getPaymentAccountSecret(square.accountid)
-
-    const client = getAClient(account.attr.environment)
-    client.authentications.oauth2.accessToken = secret
-
-    const refid = uuidv1()
-    const ikey2 = uuidv1()
+    const account = await conn.payments.getPaymentAccount(square.accountid)
+    const secret  = await conn.payments.getPaymentAccountSecret(square.accountid)
+    const client  = getAClient(account.attr.mode, secret.secret)
+    const refid   = uuidv1()
+    const ikey2   = uuidv1()
 
     const body = {
         idempotency_key: refid,
@@ -35,7 +36,7 @@ export async function squareOrder(task: ITask<DBExtensions> & DBExtensions, squa
     }
 
     for (const p of payments) {
-        const event = await task.series.getEvent(p.eventid)
+        const event = await conn.series.getEvent(p.eventid)
         body.order.line_items.push({
             name: event.name,
             variation_name: p.itemname,
@@ -76,14 +77,16 @@ export async function squareOrder(task: ITask<DBExtensions> & DBExtensions, squa
         p.txid   = paymentresponse.payment!.id as string
         p.txtime = paymentresponse.payment!.created_at as string
     })
-    return task.payments.updatePayments('insert', payments, driverid)
+
+    return conn.payments.updatePayments('insert', payments, driverid)
 }
 
-const SQ_APPLICATION_ID = ''
-const SQ_APPLICATION_SECRET = ''
-export async function oauthRequest(account: PaymentAccount, authorizationCode: string) {
+export async function oauthRequest(conn: ScorekeeperProtocol, series: string, authorizationCode: string) {
+    const SQ_APPLICATION_ID     = await conn.payments.getSquareApplicationId()
+    const SQ_APPLICATION_SECRET = await conn.payments.getSquareApplicationSecret()
+    const SQ_APPLICATION_MODE   = await conn.payments.getSquareApplicationMode()
+    const authzclient           = getAClient(SQ_APPLICATION_MODE)
 
-    const authzclient = getAClient(account.attr.environment)
     const tokenresponse = await new SquareConnect.OAuthApi(authzclient).obtainToken({
         client_id: SQ_APPLICATION_ID,
         client_secret: SQ_APPLICATION_SECRET,
@@ -91,10 +94,11 @@ export async function oauthRequest(account: PaymentAccount, authorizationCode: s
         code: authorizationCode
     })
 
-    // save tokenresponse.access_token and tokenresponse.refresh_token
+    if ((!tokenresponse.access_token) || (!tokenresponse.refresh_token)) {
+        throw new Error('token response is missing access or refresh token ' + tokenresponse)
+    }
 
-    const client = getAClient(account.attr.environment)
-    client.authentications.oauth2.accessToken = tokenresponse.access_token!
+    const client = getAClient(SQ_APPLICATION_MODE, tokenresponse.access_token)
     const locationResponse = await new SquareConnect.LocationsApi(client).listLocations()
 
     if (locationResponse.errors) {
@@ -104,13 +108,88 @@ export async function oauthRequest(account: PaymentAccount, authorizationCode: s
         throw new Error('No locations present, need at least one')
     }
 
-    // Send to page to select from
-    // locationResponse.locations[n].id, locationResponse.locations[0].name
+    const requestid = uuidv1()
+    const request = {
+        secret: tokenresponse.access_token,
+        expires: tokenresponse.expires_at,
+        refresh: tokenresponse.refresh_token,
+        locations: JSON.parse(JSON.stringify(locationResponse.locations)),
+        series: series
+    }
+    gCache.set(requestid, request)
+
+    return { requestid: requestid, locations: request.locations }
 }
 
-export async function oauthRefresh(account: PaymentAccount, refreshToken: string) {
 
-    const authzclient = getAClient(account.attr.environment)
+export async function oauthFinish(conn: ScorekeeperProtocol, requestid: string, locationid: string) {
+    const SQ_APPLICATION_ID     = await conn.payments.getSquareApplicationId()
+    const SQ_APPLICATION_MODE   = await conn.payments.getSquareApplicationMode()
 
-    // save tokenresponse.access_token
+    const request = gCache.get(requestid) as any
+    if (!request) {
+        throw new Error('no request in cache, most likely expired')
+    }
+
+    const location = request.locations.filter(l => l.id === locationid)
+    if (location.length === 0) {
+        throw new Error('That location id was not part of the list')
+    }
+
+    const account = {
+        accountid: location[0].id,
+        name: location[0].name,
+        type: 'square',
+        attr: {
+            mode: SQ_APPLICATION_MODE,
+            applicationid: SQ_APPLICATION_ID
+        },
+        modified: ''
+    }
+
+    const secret = {
+        accountid: locationid,
+        secret: request.secret,
+        attr: {
+            refresh: request.refresh,
+            expires: request.expires
+        },
+        modified: ''
+    }
+
+    await conn.series.setSeries(request.series)
+    await conn.payments.upsertPaymentAccount(account)
+    await conn.payments.upsertPaymentSecret(secret)
+}
+
+const SECONDS_10_DAYS = 60 * 60 * 24 * 10
+export async function oauthRefresh(conn: ScorekeeperProtocol, account: PaymentAccount) {
+    try {
+        const secret = await conn.payments.getPaymentAccountSecret(account.accountid)
+        const tillexpire = (new Date(secret.attr.expires).getTime() - new Date().getTime()) / 1000
+        if (tillexpire > SECONDS_10_DAYS) {
+            console.debug(`no refresh needed for ${account.accountid}, till expire = ${tillexpire} seconds`)
+            return
+        }
+
+        console.log(`Refreshing ${account.accountid}`)
+        const SQ_APPLICATION_SECRET = await conn.payments.getSquareApplicationSecret()
+        const authzclient   = getAClient(account.attr.mode)
+        const tokenresponse = await new SquareConnect.OAuthApi(authzclient).obtainToken({
+            client_id: account.attr.applicationid,
+            client_secret: SQ_APPLICATION_SECRET,
+            grant_type: 'refresh_token',
+            refresh_token: secret.attr.refresh
+        })
+
+        if (!tokenresponse.access_token || !tokenresponse.expires_at) {
+            throw new Error('no access token or expires in refresh response')
+        }
+
+        secret.secret = tokenresponse.access_token as string
+        secret.attr.expires = tokenresponse.expires_at as string
+        await conn.payments.updatePaymentAccountSecret(secret)
+    } catch (error) {
+        console.error(error)
+    }
 }

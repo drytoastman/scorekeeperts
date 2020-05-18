@@ -3,6 +3,7 @@ rules = {
   '@typescript-eslint/no-explicit-any': 'off',
   'space-before-function-paren': ["warn", "never"],
   'no-multi-spaces': 'off', // I like to visually align things
+  'no-multiple-empty-lines': 'off',
   'no-unused-vars': 'off',  // doesn't appear to work with typescript
   'padded-blocks': 'off',
   'no-debugger': 'off',

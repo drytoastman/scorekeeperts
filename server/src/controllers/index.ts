@@ -1,7 +1,9 @@
-import { register } from './register'
+import { admin } from './admin'
 import { livereg } from './live'
+import { register } from './register'
 
 export {
-    register,
-    livereg
+    admin,
+    livereg,
+    register
 }
