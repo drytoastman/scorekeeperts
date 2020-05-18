@@ -1,4 +1,4 @@
-import { DataValidationRules, Length, isURL, isPosPoints } from './util'
+import { DataValidationRules, Length, isURL, VuetifyValidationRule } from './util'
 
 export interface SeriesSettings
 {
@@ -46,6 +46,8 @@ export class DefaultSettings implements SeriesSettings {
     resultsheader = ''
     cardtemplate = ''
 }
+
+export const isPosPoints: VuetifyValidationRule = v => { return /^([0-9, ]+|)$/.test(v) || 'Position points can only accept characters 0-9, comma and space' }
 
 export const SettingsValidator: DataValidationRules = {
     seriesname:       [Length(2, 64)],

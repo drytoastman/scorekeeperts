@@ -1,11 +1,4 @@
-import { DataValidationRules, Length, isUUID, isDate, UUID, Range, Min, DateString } from './util'
-
-export interface EventAttr
-{
-    chair: string;
-    location: string;
-    paymentreq: boolean;
-}
+import { DataValidationRules, Length, isUUID, isDate, UUID, Range, Min, DateString, VuetifyValidationRule } from './util'
 
 export interface SeriesEvent
 {
@@ -30,7 +23,11 @@ export interface SeriesEvent
     ispro: [];
     ispractice: [];
     accountid: string;
-    attr: EventAttr;
+    attr: {
+        chair: string;
+        location: string;
+        paymentreq: boolean;
+    }
     modified: DateString;
     created: DateString;
 }
@@ -42,6 +39,16 @@ export class EventWrap {
     hasClosed(): boolean { return new Date() > new Date(this.event.regclosed) }
     isOpen(): boolean    { return this.hasOpened() && !this.hasClosed() }
 }
+
+export function getSessions(regtype: number) {
+    switch (regtype) {
+        case 2: return ['Day']
+        case 1: return ['AM', 'PM']
+        default: return []
+    }
+}
+
+export const isSession: VuetifyValidationRule = v => { return ['', 'AM', 'PM', 'Day'].includes(v) || 'Session can only be one of AM, PM or Day' }
 
 export const EventValidator: DataValidationRules = {
     eventid:       [isUUID],

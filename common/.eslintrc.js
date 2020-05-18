@@ -5,7 +5,7 @@ rules = {
     'no-multi-spaces': 'off', // I like to visually align things
     'no-unused-vars': 'off',  // doesn't appear to work with typescript
     'padded-blocks': 'off',
-    'indent': ['warn', 4],
+    'indent': ['warn', 4, {SwitchCase: 1}],
     'key-spacing': ['warn', {"beforeColon": false, "afterColon": true, "mode": "minimum" }]
   }
 

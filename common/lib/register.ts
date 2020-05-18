@@ -1,4 +1,5 @@
-import { DataValidationRules, isUUID, isDate, UUID, isSession, DateString } from './util'
+import { DataValidationRules, isUUID, isDate, UUID, DateString } from './util'
+import { isSession } from './event'
 
 export interface Registration {
     eventid: UUID;

@@ -17,8 +17,6 @@ export const isUUID: VuetifyValidationRule         = v => { return validator.isU
 export const isDate: VuetifyValidationRule         = v => { return (v instanceof Date && !isNaN(v.getTime())) || 'must be a date object' }
 export const isDecimal3: VuetifyValidationRule     = v => { return validator.isDecimal(v, { decimal_digits: '0,3' }) || 'must be a decimal with max 3 places' }
 export const isBarcode: VuetifyValidationRule      = v => { return /^([0-9A-Z]+|)$/.test(v) || 'Barcode can only accept characters 0-9,A-Z' }
-export const isPosPoints: VuetifyValidationRule    = v => { return /^([0-9, ]+|)$/.test(v) || 'Position points can only accept characters 0-9, comma and space' }
-export const isSession: VuetifyValidationRule      = v => { return ['', 'AM', 'PM', 'Day'].includes(v) || 'Session can only be one of AM, PM or Day' }
 
 export function isPrintable(allowblank: boolean): VuetifyValidationRule {
     return (v): (boolean|string) => {
