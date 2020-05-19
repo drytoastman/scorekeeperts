@@ -10,7 +10,7 @@ export interface DataValidationRules {
 }
 
 export const nonBlank: VuetifyValidationRule       = v => { return v.length > 0 || 'this field is required' }
-export const isNumber: VuetifyValidationRule       = v => { return typeof v === 'number' || validator.isNumeric(v) || 'must be a number ' }
+export const isNumber: VuetifyValidationRule       = v => { return typeof v === 'number' || (typeof v === 'string' && validator.isNumeric(v)) || 'must be a number ' }
 export const isURL: VuetifyValidationRule          = v => { return validator.isURL(v) || 'must be a valid URL' }
 export const isEmail: VuetifyValidationRule        = v => { return validator.isEmail(v) || 'must be a valid email address' }
 export const isUUID: VuetifyValidationRule         = v => { return validator.isUUID(v) || 'must be UUID' }

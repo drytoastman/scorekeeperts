@@ -2,7 +2,7 @@
     <v-dialog :value="value" @input="$emit('input')" persistent max-width="400px">
         <v-card>
             <v-card-title>
-                <span class="headline">Register</span>
+                <span class="headline">Register for Session</span>
             </v-card-title>
             <v-card-text>
                 <v-form ref="form" lazy-validation>
@@ -53,7 +53,7 @@ export default {
     computed: {
         ...mapState(['series', 'cars', 'registered']),
         ereg()     { return this.registered[this.event.eventid] || [] },
-        sessions() { return getSessions(this.event.regtype) },
+        sessions() { return this.event ? getSessions(this.event.regtype) : [] },
         carlist()  { return [{}, ...Object.values(this.cars)] }
     },
     methods: {

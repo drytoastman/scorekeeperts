@@ -7,8 +7,8 @@
                 </v-card-title>
                 <v-card-text :class='{disabledform: disableAll}'>
                     <v-container>
-                        <v-form ref="form" lazy-validation >
-                            <v-select v-model="carm.classcode" label="Class" :rules="classrules" :items="classlist" item-text='classcode' @change='classcodechange'>
+                        <v-form ref="form" lazy-validation>
+                            <v-select v-model="carm.classcode" label="Class" :rules="classrules" :items="classlist" item-text='classcode'>
                                 <template v-slot:item="d">
                                   <span class='classcode'>{{ d.item.classcode }}</span><span class='descrip'>{{ d.item.descrip }}</span>
                                 </template>
@@ -21,16 +21,12 @@
                                 </template>
                             </v-select>
 
-                            <v-text-field v-model="carm.number"     label="Number" :rules="numberrules"></v-text-field>
+                            <v-text-field v-model="carm.number"     label="Number" :rules="numberrules" :disabled="!carm.classcode">
+                                <template v-slot:append-outer>
+                                    <NumberPicker :classcode="carm.classcode" @selected="numselected"></NumberPicker>
+                                </template>
+                            </v-text-field>
 
-                            <v-expansion-panels v-show="!disableAll">
-                                <v-expansion-panel>
-                                    <v-expansion-panel-header><span class='text-center'>Numbers Already Taken In {{classcode}}</span></v-expansion-panel-header>
-                                    <v-expansion-panel-content><span>{{usedNumbersProxy.join(', ')}}</span></v-expansion-panel-content>
-                                </v-expansion-panel>
-                            </v-expansion-panels>
-
-                            <!-- v-divider class='spacer'></v-divider -->
                             <v-text-field v-model="carm.attr.year"  label="Year"   :rules="vrules.year"></v-text-field>
                             <v-text-field v-model="carm.attr.make"  label="Make"   :rules="vrules.make"></v-text-field>
                             <v-text-field v-model="carm.attr.model" label="Model"  :rules="vrules.model"></v-text-field>
@@ -51,8 +47,12 @@
 <script>
 import { mapState } from 'vuex'
 import { CarValidator } from '@common/lib'
+import NumberPicker from '../components/NumberPicker'
 
 export default {
+    components: {
+        NumberPicker
+    },
     props: {
         value: {
             type: Boolean,
@@ -65,11 +65,10 @@ export default {
     data() {
         return {
             vrules: CarValidator,
-            classcode: '',
-            usedNumbersProxy: [],
             classrules: [v => { return this.classlist.map(c => c.classcode).includes(v) || 'Need to select a valid class' }],
             indexrules: [v => { return !this.needindex || this.indexlist.map(i => i.indexcode).includes(v) || 'Need to select a valid index' }],
-            numberrules: [...CarValidator.number, v => !this.usednumbers.includes(parseInt(v)) || 'Number taken']
+            numberrules: [...CarValidator.number, v => !this.usednumbers.includes(parseInt(v)) || 'Number taken'],
+            carm: { attr: {} } // we get a copy when the dialog arg changes, data initializer won't catch that
         }
     },
     computed: {
@@ -82,20 +81,20 @@ export default {
                 default: return '???'
             }
         },
-        carm: function() {
-            return JSON.parse(JSON.stringify(this.car || { attr: {} })) // get a copy so we don't mutate orig
-        },
         classlist: function() {
             return Object.values(this.classes).filter(c => c.classcode !== 'HOLD')
         },
         indexlist: function() {
-            const restrict = (this.classcode in this.classes) ? this.classes[this.classcode].restrictedIndexes : []
+            const restrict = (this.carm.classcode in this.classes) ? this.classes[this.carm.classcode].restrictedIndexes : []
             return Object.values(this.indexes).filter(i => restrict.includes(i.indexcode) && i.indexcode !== '')
         },
         needindex: function() { return this.indexlist.length > 0 },
         disableAll: function() { return this.actionName === 'Delete' }
     },
     methods: {
+        numselected(num) {
+            this.carm.number = num
+        },
         save() {
             if (this.$refs.form.validate()) {
                 if (!this.carm.carid) {
@@ -115,24 +114,14 @@ export default {
                 this.$emit('save', this.carm)
                 this.$emit('input')
             }
-        },
-        classcodechange() {
-            this.classcode = this.carm.classcode // tickle reactivity when v-select changes
         }
     },
     watch: {
         value: function(newv) {
             if (newv) { // dialog open
                 if ('form' in this.$refs) { this.$refs.form.resetValidation() } // reset validations if present
-                this.classcode = this.carm.classcode // tickle reactivity
+                this.carm = JSON.parse(JSON.stringify(this.car || { attr: {} }))
             }
-        },
-        classcode: function() {
-            this.usedNumbersProxy = ['loading ...']
-            this.$store.dispatch('getUsedNumbers', { series: this.series, classcode: this.classcode })
-        },
-        usednumbers: function() {
-            this.usedNumbersProxy = this.usednumbers
         }
     }
 }
@@ -168,5 +157,13 @@ export default {
 .v-expansion-panels {
   margin-top: 0rem;
   margin-bottom: 1rem;
+}
+
+.v-input__append-outer .row {
+    margin-left: 0;
+    margin-top: -10px;
+}
+.v-text-field {
+    margin-top: 2px;
 }
 </style>
