@@ -5,7 +5,6 @@
 
 <script>
 import Vue from 'vue'
-import { mapState } from 'vuex'
 const INTG_DATE = '2020-05-12'
 
 export default {
@@ -17,7 +16,6 @@ export default {
         total: Number
     },
     computed: {
-        ...mapState(['series']),
         paypalURL() {
             return `https://www.paypal.com/sdk/js?client-id=${this.account.accountid}&integration-date=${INTG_DATE}&disable-funding=credit`
         }
@@ -53,7 +51,6 @@ export default {
 
         paypalApproved(data) {
             this.$store.dispatch('setdata', {
-                series: this.series,
                 type: 'insert',
                 paypal: { orderid: data.orderID, accountid: this.account.accountid },
                 payments: this.payments,

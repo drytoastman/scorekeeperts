@@ -69,7 +69,7 @@ export default {
         }
     },
     computed: {
-        ...mapState(['series', 'events', 'registered', 'cars', 'payments', 'paymentitems', 'paymentaccounts']),
+        ...mapState(['events', 'registered', 'cars', 'payments', 'paymentitems', 'paymentaccounts']),
         ...mapGetters(['unpaidReg']),
 
         account() {

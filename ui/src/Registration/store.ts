@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import Vuex, { MutationTree, ActionTree, ActionContext, GetterTree } from 'vuex'
+import Vuex, { MutationTree, ActionTree, ActionContext, GetterTree, MutationPayload } from 'vuex'
 import axios from 'axios'
 import ReconnectingWebSocket from 'reconnecting-websocket'
 
@@ -27,29 +27,23 @@ function errorhandler(context: ActionContext<State, any>, error: any) {
             }
         }
     } else {
-        context.commit('setErrors', [error.toString().replace('Error: ', '')])
+        let errorstring = error.toString()
+        if (errorstring.startsWith('Error: ')) {
+            errorstring = errorstring.slice(7)
+        }
+        context.commit('setErrors', [errorstring])
     }
 }
 
-function clearSeriesData(state: any) {
-    state.classes = []
-    state.indexes = []
-    state.events = {}
-    state.cars = {}
-    state.registered = {}
-    state.payments = {}
-    state.counts = {}
-}
-
 class State {
-    // keep in main
     authenticated: string|boolean = ''
     errors: string[] = []
     emailresult: any = {}
     driver: Driver = {} as Driver
+    serieslist: string[] = []
 
-    // move to a series vuex module
-    series = ''
+    // series specific
+    panelstate = [] // we set/get at will, saves state across page movement
     paymentaccounts: {[key: string]: PaymentAccount} = {}
     paymentitems: PaymentItem[] = []
     classes: {[key: string]: SeriesClass} = {}
@@ -60,6 +54,7 @@ class State {
     payments: {[key: string]: { [key: string]: Payment[]}} = {}
     counts: {[key: string]: any} = {}
 
+    // other more temporary things
     usednumbers: number[] = []
     busyCars: {[key: string]: boolean} = {} // carid set
     busyReg:  {[key: string]: boolean} = {} // eventid set
@@ -72,16 +67,42 @@ class State {
     })
 }
 
+function clearSeriesData(state: State) {
+    state.panelstate = []
+    state.paymentaccounts = {}
+    state.paymentitems = []
+    state.classes = {}
+    state.indexes = {}
+    state.events = {}
+    state.cars = {}
+    state.registered = {}
+    state.payments = {}
+    state.counts = {}
+
+    state.usednumbers = []
+    state.busyCars = {}
+    state.busyReg = {}
+    state.busyPay = {}
+}
+
 const mutations = {
+
+    clearSeriesData(state: State) {
+        clearSeriesData(state)
+    },
 
     authenticate(state: State, ok: boolean) {
         state.authenticated = ok
         if (!ok) {
             state.driver = {} as Driver
-            clearSeriesData(this)
+            clearSeriesData(state)
         } else {
             state.errors = []
-            state.ws.reconnect()
+            if (state.ws) {
+                state.ws.reconnect()
+            } else {
+                console.error('No websocket after authenticating')
+            }
         }
     },
 
@@ -122,9 +143,8 @@ const mutations = {
             state.driver = data.driver
         }
 
-        if (('series' in data) && (data.series !== state.series)) {
-            clearSeriesData(state)
-            state.series = data.series
+        if ('serieslist' in data) {
+            state.serieslist = data.serieslist
         }
 
         if ('classes' in data) {
@@ -204,6 +224,10 @@ const actions = {
 
     async getdata(context: ActionContext<State, any>, p: any) {
         try {
+            if (!p) {
+                p = {}
+            }
+            p.series = this.state.route.params.series
             const data = (await axios.get(root + '/api', { params: p, withCredentials: true })).data
             context.commit('authenticate', true) // we must be auth if this happens
             context.commit('apiData', data)
@@ -220,6 +244,7 @@ const actions = {
                 delete p.busy
             }
 
+            p.series = this.state.route.params.series
             const data = (await axios.post(root + '/api', p, { withCredentials: true })).data
             context.commit('authenticate', true) // we must be auth if this happens
             context.commit('apiData', data)
@@ -234,6 +259,7 @@ const actions = {
 
     async getUsedNumbers(context: ActionContext<State, any>, p: any) {
         try {
+            p.series = this.state.route.params.series
             const data = (await axios.get(root + '/used', { params: p, withCredentials: true })).data
             context.commit('setUsedNumbers', data)
         } catch (error) {
@@ -289,6 +315,29 @@ const registerStore = new Vuex.Store({
     actions: actions,
     getters: getters
 })
+
 registerStore.state.ws.onmessage = (e) => registerStore.commit('apiData', JSON.parse(e.data))
+
+// ROUTE_CHANGED is registered later as a module so Typescript doesn't like using watch
+registerStore.subscribe((mutation: MutationPayload) => {
+    if (mutation.type === 'route/ROUTE_CHANGED') {
+        const f = mutation.payload.from
+        const t = mutation.payload.to
+        if (t.params.series && (f.params.series !== t.params.series)) {
+            console.log(`new series ${t.params.series}`)
+            registerStore.commit('clearSeriesData')
+            registerStore.dispatch('getdata')
+        }
+    }
+})
+
+registerStore.watch(
+    (state: State) => { return state.authenticated },
+    (newvalue, oldvalue) => {
+        if ((newvalue === true) && (!oldvalue)) {
+            registerStore.dispatch('getdata')
+        }
+    }
+)
 
 export default registerStore

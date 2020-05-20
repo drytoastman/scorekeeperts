@@ -1,36 +1,47 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import LoginComponent from './views/login.vue'
+import EventsView from './views/events.vue'
+import CarsView from './views/cars.vue'
+import ProfileView from './views/profile.vue'
+// import LoginComponent from './views/login.vue'
 import EmailResult from './views/emailresult.vue'
-import SeriesSummary from './views/series.vue'
 
 Vue.use(VueRouter)
 
 const routes = [
+    /*
     {
         path: '/login',
         name: 'login',
         component: LoginComponent
-    },
+    }, */
     {
         path: '/emailresult',
         name: 'emailresult',
         component: EmailResult
     },
     {
-        path: '/series/:series',
-        name: 'series',
-        component: SeriesSummary
+        path: '/:series/events',
+        name: 'events',
+        component: EventsView
     },
+    {
+        path: '/:series/cars',
+        name: 'cars',
+        component: CarsView
+    },
+    {
+        path: '/:series/profile',
+        name: 'profile',
+        component: ProfileView
+    }
+    /*
     {
         path: '/',
         redirect: {
-            name: 'series',
-            params: {
-                series: 'nwr2020'
-            }
+            name: 'profile'
         }
-    }
+    } */
     /*
     {
         path: '/about',

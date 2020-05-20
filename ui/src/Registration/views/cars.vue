@@ -22,8 +22,8 @@
 
 <script>
 import { mapState } from 'vuex'
-import CarDisplay from '../components/CarCard'
-import CarDialog from '../components/CarDialog'
+import CarDisplay from '../../components/CarCard'
+import CarDialog from '../../components/CarDialog'
 import _ from 'lodash'
 
 export default {
@@ -90,7 +90,7 @@ export default {
 
 <style scoped>
     .carspacer {
-        min-width: 15rem;
+        min-width: 15.5rem;
         padding: 4px;
     }
     .fixedbutton {

@@ -42,7 +42,7 @@ export default {
         }
     },
     computed: {
-        ...mapState(['series', 'usednumbers']),
+        ...mapState(['usednumbers']),
         allnumbers() { return _.range(1, 1000) }
     },
     methods: {
@@ -52,7 +52,7 @@ export default {
         loadNumbers() {
             if (this.classcode) {
                 this.loading = 'Loading numbers'
-                this.$store.dispatch('getUsedNumbers', { series: this.series, classcode: this.classcode })
+                this.$store.dispatch('getUsedNumbers', { classcode: this.classcode })
             } else {
                 this.loading = 'No classcode selected'
             }
@@ -88,7 +88,7 @@ export default {
     text-align: right;
     height: 80vh;
     overflow: scroll;
-    font-size: 110%;
+    font-size: 100%;
 }
 .close {
     display: block;

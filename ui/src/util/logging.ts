@@ -11,6 +11,6 @@ export function installLoggingHandlers() {
     })
     Vue.config.errorHandler = err => {
         console.log(`VuEr: ${err}`)
-        console.log(err.stack?.substring(0, 200))
+        console.log(err.stack?.substring(0, 500))
     }
 }

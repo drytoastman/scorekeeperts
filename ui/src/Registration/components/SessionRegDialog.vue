@@ -51,7 +51,7 @@ export default {
         }
     },
     computed: {
-        ...mapState(['series', 'cars', 'registered']),
+        ...mapState(['cars', 'registered']),
         ereg()     { return this.registered[this.event.eventid] || [] },
         sessions() { return this.event ? getSessions(this.event.regtype) : [] },
         carlist()  { return [{}, ...Object.values(this.cars)] }
@@ -60,7 +60,6 @@ export default {
         update() {
             // Create new reg objects and send request
             this.$store.dispatch('setdata', {
-                series: this.series,
                 type: 'eventupdate',
                 eventid: this.event.eventid,
                 registered: _(this.sessionselect).map((v, k) => ({

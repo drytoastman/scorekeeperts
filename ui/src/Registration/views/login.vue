@@ -1,6 +1,6 @@
 <template>
-    <v-container fluid class="fill-height">
-        <v-row align="center" justify="center">
+    <v-container fluid>
+        <v-row class="pushdown" justify="center">
             <v-tabs id="logintabs" v-model="active" background-color="primary" dark centered grow>
                 <v-tab ripple>Login</v-tab>
                 <v-tab ripple>Reset</v-tab>

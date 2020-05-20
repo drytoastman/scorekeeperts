@@ -49,7 +49,7 @@ export default {
         event: Object
     },
     computed: {
-        ...mapState(['series', 'cars', 'registered', 'counts']),
+        ...mapState(['cars', 'registered', 'counts']),
         ereg()         { return this.registered[this.event.eventid] || [] },
         ecounts()      { return this.counts[this.event.eventid] || {} },
         checkedCount() { return _.filter(Object.values(this.checks), v => v).length },
@@ -82,7 +82,6 @@ export default {
         update() {
             // Create new reg objects and send request
             this.$store.dispatch('setdata', {
-                series: this.series,
                 type: 'eventupdate',
                 eventid: this.event.eventid,
                 registered: _.map(_.pickBy(this.checks), (v, k) => ({

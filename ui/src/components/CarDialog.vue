@@ -72,7 +72,7 @@ export default {
         }
     },
     computed: {
-        ...mapState(['series', 'classes', 'indexes', 'usednumbers']),
+        ...mapState(['classes', 'indexes', 'usednumbers']),
         actionName() {
             switch (this.apiType) {
                 case 'insert': return 'Create'
@@ -105,7 +105,6 @@ export default {
                 }
 
                 this.$store.dispatch('setdata', {
-                    series: this.series,
                     type: this.apiType,
                     cars: [this.carm],
                     busy: { key: 'busyCars', id: this.carm.carid }

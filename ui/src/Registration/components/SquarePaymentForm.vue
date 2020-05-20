@@ -16,7 +16,6 @@
 </template>
 
 <script>
-import { mapState } from 'vuex'
 import squaresvg from '../../images/square.svg'
 import { PaymentAccount } from '@common/lib'
 
@@ -35,7 +34,6 @@ export default {
         }
     },
     computed: {
-        ...mapState(['series']),
         squareURL() {
             const infix = this.account.attr.mode === 'sandbox' ? 'sandbox' : ''
             return `https://js.squareup${infix}.com/v2/paymentform`
@@ -82,7 +80,6 @@ export default {
                 return
             }
             this.$store.dispatch('setdata', {
-                series: this.series,
                 type: 'insert',
                 square: { nonce: nonce, accountid: this.account.accountid },
                 payments: this.payments,

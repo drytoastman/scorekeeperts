@@ -5,6 +5,7 @@ import store from './store'
 import Vuetify from 'vuetify/lib'
 import colors from 'vuetify/es5/util/colors'
 import LoadScript from 'vue-plugin-load-script'
+import { sync } from 'vuex-router-sync'
 import 'typeface-roboto'
 import { installLoggingHandlers } from '@/util/logging'
 import filters from '../util/filters'
@@ -41,6 +42,8 @@ const vuetify = new Vuetify({
         iconfont: 'mdiSvg'
     }
 })
+
+sync(store, router)
 
 new Vue({
     router,
