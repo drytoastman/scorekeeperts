@@ -68,7 +68,11 @@ register.get('/api', async(req: Request, res: Response) => {
         } else {
             let itemlist, classdata
             if (!('items' in req.query)) {
-                itemlist = ['events', 'cars', 'registered', 'payments', 'counts', 'classes', 'indexes', 'paymentaccounts', 'paymentitems']
+                itemlist = ['driver', 'serieslist', 'events', 'cars', 'registered', 'payments', 'counts', 'classes', 'indexes', 'paymentaccounts', 'paymentitems']
+                const serieslist = await t.series.seriesList()
+                if (!serieslist.includes(req.query.series as string)) {
+                    itemlist = ['driver', 'serieslist']
+                }
             } else {
                 itemlist = (req.query.items as string).split(',')
             }
@@ -78,6 +82,7 @@ register.get('/api', async(req: Request, res: Response) => {
             for (let ii = 0; ii < itemlist.length; ii++) {  // forEach/async don't play nice
                 switch (itemlist[ii]) {
                     case 'driver':     ret.driver     = await t.drivers.getDriverById(driverid); break
+                    case 'serieslist': ret.serieslist = await t.series.seriesList(); break
                     case 'events':     ret.events     = await t.series.eventList(); break
                     case 'cars':       ret.cars       = await t.cars.getCarsbyDriverId(driverid); break
                     case 'registered': ret.registered = await t.register.getRegistrationbyDriverId(driverid); break
