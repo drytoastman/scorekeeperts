@@ -3,22 +3,20 @@ import VueRouter from 'vue-router'
 import EventsView from './views/events.vue'
 import CarsView from './views/cars.vue'
 import ProfileView from './views/profile.vue'
-// import LoginComponent from './views/login.vue'
 import EmailResult from './views/emailresult.vue'
 
 Vue.use(VueRouter)
 
 const routes = [
-    /*
-    {
-        path: '/login',
-        name: 'login',
-        component: LoginComponent
-    }, */
     {
         path: '/emailresult',
         name: 'emailresult',
         component: EmailResult
+    },
+    {
+        path: '/profile',
+        name: 'profile',
+        component: ProfileView
     },
     {
         path: '/:series/events',
@@ -31,17 +29,11 @@ const routes = [
         component: CarsView
     },
     {
-        path: '/:series/profile',
-        name: 'profile',
-        component: ProfileView
-    }
-    /*
-    {
         path: '/',
         redirect: {
             name: 'profile'
         }
-    } */
+    }
     /*
     {
         path: '/about',

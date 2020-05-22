@@ -1,6 +1,8 @@
 import Vue from 'vue'
-import Vuex, { MutationTree, ActionTree, ActionContext, GetterTree, MutationPayload } from 'vuex'
+import Vuex, { MutationTree, ActionTree, ActionContext, GetterTree, Store } from 'vuex'
+import { Route, NavigationGuard } from 'vue-router'
 import axios from 'axios'
+import _ from 'lodash'
 import ReconnectingWebSocket from 'reconnecting-websocket'
 
 import { Driver, SeriesEvent, Car, Registration, Payment, PaymentAccount, PaymentItem, SeriesIndex, SeriesClass, UUID } from '@common/lib'
@@ -8,8 +10,9 @@ import { Driver, SeriesEvent, Car, Registration, Payment, PaymentAccount, Paymen
 Vue.use(Vuex)
 
 const root = '/api2/register'
+const EMPTY = ''
 
-function errorhandler(context: ActionContext<State, any>, error: any) {
+function errorhandler(context: ActionContext<RegisterState, any>, error: any) {
     if (error.response) {
         if (error.response.status === 401) {
             context.commit('authenticate', false)
@@ -35,14 +38,15 @@ function errorhandler(context: ActionContext<State, any>, error: any) {
     }
 }
 
-class State {
-    authenticated: string|boolean = ''
+export class RegisterState {
+    authenticated = true  // assume we are and then fallback if our API requests fail
     errors: string[] = []
     emailresult: any = {}
     driver: Driver = {} as Driver
     serieslist: string[] = []
 
     // series specific
+    currentSeries = EMPTY
     panelstate = [] // we set/get at will, saves state across page movement
     paymentaccounts: {[key: string]: PaymentAccount} = {}
     paymentitems: PaymentItem[] = []
@@ -67,7 +71,7 @@ class State {
     })
 }
 
-function clearSeriesData(state: State) {
+function clearSeriesData(state: RegisterState) {
     state.panelstate = []
     state.paymentaccounts = {}
     state.paymentitems = []
@@ -87,11 +91,16 @@ function clearSeriesData(state: State) {
 
 const mutations = {
 
-    clearSeriesData(state: State) {
+    clearSeriesData(state: RegisterState) {
         clearSeriesData(state)
     },
 
-    authenticate(state: State, ok: boolean) {
+    changeSeries(state: RegisterState, newseries: string) {
+        state.currentSeries = newseries
+        clearSeriesData(state)
+    },
+
+    authenticate(state: RegisterState, ok: boolean) {
         state.authenticated = ok
         if (!ok) {
             state.driver = {} as Driver
@@ -106,37 +115,37 @@ const mutations = {
         }
     },
 
-    setErrors(state: State, errors: string[]) {
+    setErrors(state: RegisterState, errors: string[]) {
         state.errors = errors
     },
 
-    clearErrors(state: State) {
+    clearErrors(state: RegisterState) {
         state.errors = []
     },
 
-    setEmailResult(state: State, data: any[]) {
+    setEmailResult(state: RegisterState, data: any[]) {
         state.emailresult = data
     },
 
-    setUsedNumbers(state: State, data: number[]) {
+    setUsedNumbers(state: RegisterState, data: number[]) {
         state.usednumbers = data
     },
 
-    markBusy(state: State, busy: any) {
+    markBusy(state: RegisterState, busy: any) {
         const ids = (busy.id) ? [busy.id] : busy.ids
         for (const id of ids) {
             Vue.set(state[busy.key], id, true)
         }
     },
 
-    clearBusy(state: State, busy: any) {
+    clearBusy(state: RegisterState, busy: any) {
         const ids = (busy.id) ? [busy.id] : busy.ids
         for (const id of ids) {
             Vue.set(state[busy.key], id, false)
         }
     },
 
-    apiData(state: State, data: any) {
+    apiData(state: RegisterState, data: any) {
         if (data === undefined) return
 
         if ('driver' in data) {
@@ -217,17 +226,18 @@ const mutations = {
         }
     }
 
-} as MutationTree<State>
+} as MutationTree<RegisterState>
 
 
 const actions = {
 
-    async getdata(context: ActionContext<State, any>, p: any) {
+    async getdata(context: ActionContext<RegisterState, any>, p: any) {
         try {
             if (!p) {
                 p = {}
             }
-            p.series = this.state.route.params.series
+            console.log(`getdata with series = ${this.state.currentSeries}`)
+            p.series = this.state.currentSeries
             const data = (await axios.get(root + '/api', { params: p, withCredentials: true })).data
             context.commit('authenticate', true) // we must be auth if this happens
             context.commit('apiData', data)
@@ -236,7 +246,7 @@ const actions = {
         }
     },
 
-    async setdata(context: ActionContext<State, any>, p: any) {
+    async setdata(context: ActionContext<RegisterState, any>, p: any) {
         let busy = null
         try {
             if ((busy = p.busy) != null) {
@@ -244,9 +254,8 @@ const actions = {
                 delete p.busy
             }
 
-            p.series = this.state.route.params.series
+            p.series = this.state.currentSeries
             const data = (await axios.post(root + '/api', p, { withCredentials: true })).data
-            context.commit('authenticate', true) // we must be auth if this happens
             context.commit('apiData', data)
         } catch (error) {
             errorhandler(context, error)
@@ -257,9 +266,9 @@ const actions = {
         }
     },
 
-    async getUsedNumbers(context: ActionContext<State, any>, p: any) {
+    async getUsedNumbers(context: ActionContext<RegisterState, any>, p: any) {
         try {
-            p.series = this.state.route.params.series
+            p.series = this.state.currentSeries
             const data = (await axios.get(root + '/used', { params: p, withCredentials: true })).data
             context.commit('setUsedNumbers', data)
         } catch (error) {
@@ -267,7 +276,7 @@ const actions = {
         }
     },
 
-    async login(context: ActionContext<State, any>, p: any) {
+    async login(context: ActionContext<RegisterState, any>, p: any) {
         try {
             await axios.post(root + '/login', p, { withCredentials: true })
             context.commit('authenticate', true)
@@ -276,7 +285,7 @@ const actions = {
         }
     },
 
-    async logout(context: ActionContext<State, any>) {
+    async logout(context: ActionContext<RegisterState, any>) {
         try {
             await axios.get(root + '/logout', { withCredentials: true })
             context.commit('authenticate', false)
@@ -285,7 +294,7 @@ const actions = {
         }
     },
 
-    async regreset(context: ActionContext<State, any>, p: any) {
+    async regreset(context: ActionContext<RegisterState, any>, p: any) {
         try {
             const resp = (await axios.post(root + '/regreset', p, { withCredentials: true })).data
             context.commit('setEmailResult', resp.data)
@@ -294,7 +303,7 @@ const actions = {
         }
     }
 
-}  as ActionTree<State, any>
+}  as ActionTree<RegisterState, any>
 
 
 const getters = {
@@ -303,39 +312,74 @@ const getters = {
     },
 
     unpaidReg: (state, getters) => (reglist: Registration[]) => {
+        if (!reglist) { return [] }
         return reglist.filter(r => !getters.hasPayments(r.eventid, r.carid))
     }
 
-} as GetterTree<State, State>
+} as GetterTree<RegisterState, RegisterState>
 
 
-const registerStore = new Vuex.Store({
-    state: new State(),
+declare module 'vuex' {
+    interface Store<S> {
+        storeBeforeResolve: NavigationGuard;
+    }
+}
+
+const registerStore = new Store({
+    state: new RegisterState(),
     mutations: mutations,
     actions: actions,
     getters: getters
 })
 
+
+/* Create our websocket */
 registerStore.state.ws.onmessage = (e) => registerStore.commit('apiData', JSON.parse(e.data))
 
-// ROUTE_CHANGED is registered later as a module so Typescript doesn't like using watch
-registerStore.subscribe((mutation: MutationPayload) => {
-    if (mutation.type === 'route/ROUTE_CHANGED') {
-        const f = mutation.payload.from
-        const t = mutation.payload.to
-        if (t.params.series && (f.params.series !== t.params.series)) {
-            console.log(`new series ${t.params.series}`)
-            registerStore.commit('clearSeriesData')
+/*
+    On certain route changes, we check if we changed our series via the URL
+    Also, attempt data load if we don't have anything yet for some reason
+*/
+registerStore.storeBeforeResolve = function storeBeforeResolve(to: Route, from: Route, next: Function): void {
+    if ((to.params.series) && (to.params.series !== registerStore.state.currentSeries)) {
+        registerStore.commit('changeSeries', to.params.series)
+    }
+    if (!registerStore.state.driver.driverid) {
+        registerStore.dispatch('getdata')
+    }
+    next()
+}
+
+/* When we go from unauthneticated to authenticated, we are now able to load data */
+registerStore.watch(
+    (state: RegisterState) => { return state.authenticated },
+    (newvalue, oldvalue) => {
+        if ((newvalue === true) && (!oldvalue)) {
+            console.log('authenticated getdata')
             registerStore.dispatch('getdata')
         }
     }
-})
+)
 
+/* When the current series changes (URL or UI), we need to load new data */
 registerStore.watch(
-    (state: State) => { return state.authenticated },
+    (state: RegisterState) => { return state.currentSeries },
+    () => {
+        console.log('serieschange getdata')
+        registerStore.dispatch('getdata')
+    }
+)
+
+/*
+   This is a corner case if the user starts on the profile page, we need to setup a default
+   series, but we can't do that until we get the serieslist from the server
+*/
+registerStore.watch(
+    (state: RegisterState) => { return state.serieslist },
     (newvalue, oldvalue) => {
-        if ((newvalue === true) && (!oldvalue)) {
-            registerStore.dispatch('getdata')
+        if (_.isEqual(oldvalue, newvalue)) { return } // vuex see array reassignment as a change
+        if (newvalue.length > 0 && registerStore.state.currentSeries === EMPTY) {
+            registerStore.commit('changeSeries', registerStore.state.serieslist[0])
         }
     }
 )
