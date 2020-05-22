@@ -45,6 +45,7 @@
 </template>
 
 <script>
+import Vue from 'vue'
 import { mapState } from 'vuex'
 import { CarValidator } from '@common/lib'
 import NumberPicker from '../components/NumberPicker'
@@ -93,7 +94,7 @@ export default {
     },
     methods: {
         numselected(num) {
-            this.carm.number = num
+            Vue.set(this.carm, 'number', num) // use Vue.set to catch it even if we started blank
         },
         save() {
             if (this.$refs.form.validate()) {

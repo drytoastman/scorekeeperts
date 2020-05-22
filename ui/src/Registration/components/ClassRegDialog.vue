@@ -8,15 +8,20 @@
                 <v-card-text>
                     <v-container>
                         <v-form ref="form" lazy-validation>
-                            <div v-for="car in cars" :key="car.carid" class='regline d-flex'>
-                                <v-checkbox v-model="checks[car.carid]"
+                            <div class='cargrid'>
+                                <template v-for="car in cars">
+                                    <v-checkbox hide-details
+                                                v-model="checks[car.carid]"
+                                                :key="car.carid+'1'"
+                                                :disabled="!checks[car.carid] && limitReached"
+                                    ></v-checkbox>
+                                    <v-btn elevation=2 x-large
+                                            :key="car.carid+'2'"
+                                            @click="clickCar(car.carid)"
                                             :disabled="!checks[car.carid] && limitReached"
-                                ></v-checkbox>
-                                <v-btn elevation=1 x-large
-                                        @click="clickCar(car.carid)"
-                                        :disabled="!checks[car.carid] && limitReached"
-                                        :class="checks[car.carid] ? 'selected' : 'unselected'"
-                                ><CarLabel :car="car"></CarLabel></v-btn>
+                                            :class="checks[car.carid] ? 'selected' : 'unselected'"
+                                    ><CarLabel :car="car"></CarLabel></v-btn>
+                                </template>
                             </div>
                             <div class='errortext'>
                                 {{limitTypeReached}}
@@ -112,18 +117,31 @@ export default {
 </script>
 
 <style scoped>
-.regline .v-btn {
-    flex-grow: 1;
-    justify-content: left;
-    border: 1px solid #AAA;
+.cargrid {
+    display: grid;
+    grid-template-columns: 30px 1fr;
+    align-items: center;
+    row-gap: 10px;
 }
-.regline .unselected {
+.cargrid .v-btn {
+    width: 100%;
+    justify-content: left;
+}
+.cargrid .unselected {
     background-color: #FFF !important;
 }
-.regline .selected {
-    background-color: #CCDA !important;
+.cargrid .selected {
+    background-color: #5B6A8E26 !important;
+}
+.cargrid .v-btn--disabled {
+    opacity: 0.3;
+}
+.v-input--selection-controls {
+    margin-top: 0;
+    padding-top: 0;
 }
 .errortext {
+    margin-top: 10px;
     text-align: center;
     color: red;
 }
