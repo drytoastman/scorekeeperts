@@ -1,0 +1,131 @@
+<template>
+    <v-row justify="center">
+        <v-dialog v-model="opened" persistent max-width="420px">
+            <template v-slot:activator="{ on }">
+                <v-btn v-on="on">Edit</v-btn>
+            </template>
+
+            <v-card>
+                <v-card-title>
+                    <span class="headline">Edit Driver</span>
+                </v-card-title>
+                <v-card-text>
+                    <v-form ref="form" lazy-validation>
+                        <div class='formgrid'>
+                            <v-text-field v-model="driverm.firstname"     class='firstn'   label="Firstname"         :rules="vrules.firstname"></v-text-field>
+                            <v-text-field v-model="driverm.lastname"      class='lastn'    label="Firstname"         :rules="vrules.lastname"></v-text-field>
+                            <v-text-field v-model="driverm.email"         class='email'    label="Email"             :rules="vrules.email"></v-text-field>
+                            <v-checkbox   v-model="driverm.optoutmail"    class='dnc'      label="Do Not Contact"></v-checkbox>
+                            <v-text-field v-model="driverm.barcode"       class='barcode'  label="Barcode"           :rules="vrules.barcode"></v-text-field>
+                            <v-text-field v-model="driverm.attr.scca"     class='scca'     label="SCCA #"            :rules="vrules.scca"></v-text-field>
+                            <v-divider class='divider'></v-divider>
+                            <v-text-field v-model="driverm.attr.address"  class='address'  label="Address"           :rules="vrules.address"></v-text-field>
+                            <v-text-field v-model="driverm.attr.city"     class='city'     label="City"              :rules="vrules.city"></v-text-field>
+                            <v-text-field v-model="driverm.attr.state"    class='state'    label="State"             :rules="vrules.state"></v-text-field>
+                            <v-text-field v-model="driverm.attr.zip"      class='zip'      label="Zip"               :rules="vrules.zip"></v-text-field>
+                            <v-text-field v-model="driverm.attr.phone"    class='phone'    label="Phone"             :rules="vrules.phone"></v-text-field>
+                            <v-text-field v-model="driverm.attr.brag"     class='brag'     label="Brag"              :rules="vrules.brag"></v-text-field>
+                            <v-text-field v-model="driverm.attr.sponsor"  class='sponsor'  label="Sponsor"           :rules="vrules.sponsor"></v-text-field>
+                            <v-text-field v-model="driverm.attr.econtact" class='econtact' label="Emergency Contact" :rules="vrules.econtact"></v-text-field>
+                            <v-text-field v-model="driverm.attr.ephone"   class='ephone'   label="Emergency Phone"   :rules="vrules.ephone"></v-text-field>
+                        </div>
+                    </v-form>
+                </v-card-text>
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn color="blue darken-1" text @click="opened=false">Cancel</v-btn>
+                  <v-btn color="blue darken-1" text @click="save()">Update</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+    </v-row>
+</template>
+
+<script>
+import { DriverValidator } from '@common/lib'
+
+export default {
+    props: {
+        driver: Object
+    },
+    data() {
+        return {
+            vrules: DriverValidator,
+            opened: false,
+            driverm: { attr: {} }
+        }
+    },
+    methods: {
+        save() {
+            if (this.$refs.form.validate()) {
+                this.$store.dispatch('setdata', {
+                    type: 'update',
+                    driver: this.driverm,
+                    busy: { key: 'busyDriver', id: this.driver.driverid }
+                })
+                this.opened = false
+            }
+        }
+    },
+    watch: {
+        opened: function(newv) {
+            if (newv) { // dialog open
+                if ('form' in this.$refs) { this.$refs.form.resetValidation() } // reset validations if present
+                this.driverm = JSON.parse(JSON.stringify(this.driver || { attr: {} }))
+            }
+        }
+    }
+}
+</script>
+
+<style>
+.v-text-field {
+    margin-top: 0;
+}
+.v-input--selection-controls {
+    margin-top: 0;
+}
+.v-card__text {
+    margin-top: 10px;
+}
+
+.formgrid {
+    display: grid;
+    column-gap: 10px;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-areas:
+        "firstn firstn lastn lastn "
+        "email email email dnc "
+        "barcode barcode scca scca "
+        "divider divider divider divider "
+        "phone phone address address "
+        "city city state zip "
+        "econtact econtact ephone ephone "
+        "sponsor sponsor sponsor sponsor "
+        "brag brag brag brag "
+        ;
+}
+.firstn   { grid-area: firstn; }
+.lastn    { grid-area: lastn; }
+.email    { grid-area: email; }
+.dnc      { grid-area: dnc;  }
+.barcode  { grid-area: barcode; }
+.scca     { grid-area: scca; }
+.divider  { grid-area: divider; }
+.address  { grid-area: address; }
+.city     { grid-area: city; }
+.state    { grid-area: state; }
+.zip      { grid-area: zip; }
+.phone    { grid-area: phone; }
+.brag     { grid-area: brag; }
+.sponsor  { grid-area: sponsor; }
+.econtact { grid-area: econtact; }
+.ephone   { grid-area: ephone; }
+
+.dnc .v-label {
+    font-size: 80%;
+}
+.divider {
+    border-style: dotted;
+}
+</style>

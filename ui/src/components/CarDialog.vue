@@ -146,19 +146,6 @@ export default {
    pointer-events: none;
    opacity: 0.5;
 }
-.v-expansion-panel-header {
-  font-size: 90%;
-  padding: 3px !important;
-  min-height: 0px;
-}
-.v-expansion-panel-content {
-  font-family: Arial, Helvetica, sans-serif;
-}
-.v-expansion-panels {
-  margin-top: 0rem;
-  margin-bottom: 1rem;
-}
-
 .v-input__append-outer .row {
     margin-left: 0;
     margin-top: -10px;

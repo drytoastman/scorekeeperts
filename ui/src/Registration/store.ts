@@ -44,6 +44,8 @@ export class RegisterState {
     emailresult: any = {}
     driver: Driver = {} as Driver
     serieslist: string[] = []
+    listids: string[] = []
+    unsubscribe: string[] = []
 
     // series specific
     currentSeries = EMPTY
@@ -60,6 +62,7 @@ export class RegisterState {
 
     // other more temporary things
     usednumbers: number[] = []
+    busyDriver: {[key: string]: boolean} = {} // driverid set
     busyCars: {[key: string]: boolean} = {} // carid set
     busyReg:  {[key: string]: boolean} = {} // eventid set
     busyPay:  {[key: string]: boolean} = {} // eventid set
@@ -154,6 +157,14 @@ const mutations = {
 
         if ('serieslist' in data) {
             state.serieslist = data.serieslist
+        }
+
+        if ('listids' in data) {
+            state.listids = data.listids
+        }
+
+        if ('unsubscribe' in data) {
+            state.unsubscribe = data.unsubscribe
         }
 
         if ('classes' in data) {
