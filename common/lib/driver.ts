@@ -1,19 +1,5 @@
 import { DataValidationRules, MaxLength, Length, isUUID, isEmail, isBarcode, isDate, UUID } from './util'
 
-export interface DriverAttr
-{
-    address: string;
-    city: string;
-    state: string;
-    zip: string;
-    phone: string;
-    brag: string;
-    sponsor: string;
-    econtact: string;
-    ephone: string;
-    scca: string;
-}
-
 export interface Driver
 {
     driverid: UUID;
@@ -24,7 +10,18 @@ export interface Driver
     password: string;
     barcode: string;
     optoutmail: boolean;
-    attr: DriverAttr;
+    attr: {
+        address: string;
+        city: string;
+        state: string;
+        zip: string;
+        phone: string;
+        brag: string;
+        sponsor: string;
+        econtact: string;
+        ephone: string;
+        scca: string;
+    }
     modified: Date;
     created: Date;
 }

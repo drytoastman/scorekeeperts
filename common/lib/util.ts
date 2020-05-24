@@ -16,7 +16,7 @@ export const isEmail: VuetifyValidationRule        = v => { return validator.isE
 export const isUUID: VuetifyValidationRule         = v => { return validator.isUUID(v) || 'must be UUID' }
 export const isDate: VuetifyValidationRule         = v => { return (v instanceof Date && !isNaN(v.getTime())) || 'must be a date object' }
 export const isDecimal3: VuetifyValidationRule     = v => { return validator.isDecimal(v, { decimal_digits: '0,3' }) || 'must be a decimal with max 3 places' }
-export const isBarcode: VuetifyValidationRule      = v => { return /^([0-9A-Z]+|)$/.test(v) || 'Barcode can only accept characters 0-9,A-Z' }
+export const isBarcode: VuetifyValidationRule      = v => { return /^([0-9A-Z]+|)$/.test(v) || 'Barcode can only accept characters 0-9 an capital A-Z' }
 
 export function isPrintable(allowblank: boolean): VuetifyValidationRule {
     return (v): (boolean|string) => {
