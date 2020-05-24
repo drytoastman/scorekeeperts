@@ -16,6 +16,15 @@ export class SeriesRepository {
         return results.map(v => v.schema_name)
     }
 
+    async emailListIds(): Promise<string[]> {
+        const ids = new Set<string>()
+        for (const series of await this.seriesList()) {
+            const results = await this.db.any('SELECT val FROM $1:name.settings WHERE name=\'emaillistid\'', series)
+            results.forEach(r => ids.add(r.val))
+        }
+        return Array.from(ids.values()).sort()
+    }
+
     _db2obj(key: string, val: string, obj: SeriesSettings): void {
         // Convert from text columns to local data type
         if (!(key in obj)) {

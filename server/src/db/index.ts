@@ -24,7 +24,7 @@ const initOptions: IInitOptions<DBExtensions> = {
         // eslint-disable-next-line @typescript-eslint/no-use-before-define
         obj.series = new SeriesRepository(obj)
         obj.clsidx = new ClassRepository(obj)
-        obj.drivers = new DriverRepository(obj)
+        obj.drivers = new DriverRepository(obj, pgp)
         obj.cars = new CarRepository(obj, pgp)
         obj.register = new RegisterRepository(obj, pgp)
         obj.payments = new PaymentsRepository(obj, pgp)

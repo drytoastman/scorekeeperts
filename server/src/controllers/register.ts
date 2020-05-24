@@ -68,10 +68,10 @@ register.get('/api', async(req: Request, res: Response) => {
         } else {
             let itemlist, classdata
             if (!('items' in req.query)) {
-                itemlist = ['driver', 'serieslist', 'events', 'cars', 'registered', 'payments', 'counts', 'classes', 'indexes', 'paymentaccounts', 'paymentitems']
+                itemlist = ['driver', 'serieslist', 'emaillists', 'events', 'cars', 'registered', 'payments', 'counts', 'classes', 'indexes', 'paymentaccounts', 'paymentitems']
                 const serieslist = await t.series.seriesList()
                 if (!serieslist.includes(req.query.series as string)) {
-                    itemlist = ['driver', 'serieslist']
+                    itemlist = ['driver', 'serieslist', 'emaillists']
                 }
             } else {
                 itemlist = (req.query.items as string).split(',')
@@ -83,6 +83,10 @@ register.get('/api', async(req: Request, res: Response) => {
                 switch (itemlist[ii]) {
                     case 'driver':     ret.driver     = await t.drivers.getDriverById(driverid); break
                     case 'serieslist': ret.serieslist = await t.series.seriesList(); break
+                    case 'emaillists':
+                        ret.listids     = await t.series.emailListIds()
+                        ret.unsubscribe = await t.drivers.getUnsubscribeList(driverid)
+                        break
                     case 'events':     ret.events     = await t.series.eventList(); break
                     case 'cars':       ret.cars       = await t.cars.getCarsbyDriverId(driverid); break
                     case 'registered': ret.registered = await t.register.getRegistrationbyDriverId(driverid); break
@@ -128,6 +132,9 @@ register.post('/api', async(req: Request, res: Response) => {
             }
 
             await t.series.setSeries(req.body.series)
+            if ('driver' in req.body) {
+                ret.driver = await t.drivers.updateDriver(req.body.type, req.body.driver, driverid)
+            }
             if ('cars' in req.body) {
                 ret.cars = await t.cars.updateCars(req.body.type, req.body.cars, driverid)
             }
