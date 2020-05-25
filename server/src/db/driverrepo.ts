@@ -25,10 +25,6 @@ export class DriverRepository {
         return d
     }
 
-    async getDriverbyUsername(username: string): Promise<Driver> {
-        return this.filterDriver(await this.db.one('SELECT * FROM drivers WHERE username=$1', [username]))
-    }
-
     async getDriverById(driverid: UUID): Promise<Driver> {
         return this.filterDriver(await this.db.one('SELECT * FROM drivers WHERE driverid=$1', [driverid]))
     }
@@ -37,9 +33,13 @@ export class DriverRepository {
         return (await this.db.any('SELECT emaillistid FROM unsubscribe WHERE driverid=$1', [driverid])).map(r => r.emaillistid)
     }
 
-    async checkPassword(driver: Driver, password: string): Promise<boolean> {
-        return await bcrypt.compare(password, driver.password)
-        // bcrypt.hash('tis.com', 12, function(err, hash) {
+    async checkLogin(username: string, password: string): Promise<UUID> {
+        const d = await this.db.one('SELECT * FROM drivers WHERE username=$1', [username])
+        if (await bcrypt.compare(password, d.password)) {
+            return d.driverid
+        }
+        throw new Error('Authentication Failed')
+        // bcrypt.hash(password, 12, function(err, hash) { })
     }
 
     async updateDriver(type: string, driver: Driver, driverid: UUID): Promise<Driver> {

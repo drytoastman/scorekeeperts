@@ -37,16 +37,13 @@ register.post('/regreset', async(req: Request, res: Response) => {
 
 register.post('/login', async(req: Request, res: Response) => {
     try {
-        const d = await db.drivers.getDriverbyUsername(req.body.username)
-        const success = await db.drivers.checkPassword(d, req.body.password)
-        if (success) {
-            req.session!.driverid = d.driverid
-            res.status(200).json({ result: 'authenticated' })
-            return
-        }
+        const driverid = await db.drivers.checkLogin(req.body.username, req.body.password)
+        req.session!.driverid = driverid
+        res.status(200).json({ result: 'authenticated' })
+        return
     } catch (error) {
+        res.status(401).json({ error: error.toString() })
     }
-    res.status(401).json({ error: 'authentication failed' })
 })
 
 register.get('/api', async(req: Request, res: Response) => {
