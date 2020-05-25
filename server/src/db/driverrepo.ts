@@ -39,7 +39,16 @@ export class DriverRepository {
             return d.driverid
         }
         throw new Error('Authentication Failed')
-        // bcrypt.hash(password, 12, function(err, hash) { })
+    }
+
+    async changePassword(driverid: UUID, currentpassword: string, newpassword: string): Promise<void> {
+        const d = await this.db.one('SELECT * FROM drivers WHERE driverid=$1', [driverid])
+        if (!await bcrypt.compare(currentpassword, d.password)) {
+            throw new Error('Current password was incorrect')
+        }
+
+        const hash = await bcrypt.hash(newpassword, 12) // , function(err, hash) { })
+        await this.db.none('UPDATE drivers SET password=$1,modified=now() WHERE driverid=$2', [hash, driverid])
     }
 
     async updateDriver(type: string, driver: Driver, driverid: UUID): Promise<Driver> {

@@ -296,6 +296,15 @@ const actions = {
         }
     },
 
+    async changePassword(context: ActionContext<RegisterState, any>, p: any) {
+        try {
+            await axios.post(root + '/changepassword', p, { withCredentials: true })
+            context.commit('setErrors', ['Password change successful'])
+        } catch (error) {
+            errorhandler(context, error)
+        }
+    },
+
     async logout(context: ActionContext<RegisterState, any>) {
         try {
             await axios.get(root + '/logout', { withCredentials: true })

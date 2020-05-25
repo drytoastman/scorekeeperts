@@ -6,7 +6,7 @@
         <v-text-field v-model="email"     label="Email"      required :rules="vrules.email"></v-text-field>
         <v-text-field v-model="username"  label="Username"   required :rules="vrules.username"></v-text-field>
         <v-text-field v-model="password"  label="Password"   required :rules="vrules.password"
-            :type="showp?'text':'password'" @click:append="showp=!showp" :append-icon="showp?'mdi-eye':'mdi-eye-off'">
+                      :type="pType" @click:append="showp=!showp" :append-icon="pIcon">
         </v-text-field>
         <v-btn :dark=dark :color=color type="submit">Create New Profile</v-btn>
     </v-form>
@@ -15,8 +15,11 @@
 <script>
 import Alert from '../../components/Alert'
 import { DriverValidator } from '@common/lib'
+import { PasswordEyeMixin } from '../../components/PasswordEyeMixin.js'
+
 export default {
     name: 'RegisterForm',
+    mixins: [PasswordEyeMixin],
     components: {
         Alert
     },
@@ -32,7 +35,6 @@ export default {
             username: '',
             password: '',
             error: '',
-            showp: false,
             vrules: DriverValidator
         }
     },

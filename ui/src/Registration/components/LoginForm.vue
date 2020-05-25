@@ -2,7 +2,7 @@
     <v-form ref="form" lazy-validation @submit.prevent="login">
         <v-text-field v-model="username" label="Username" :rules="vrules.username" required></v-text-field>
         <v-text-field v-model="password" label="Password" :rules="vrules.password" required
-            :type="showp?'text':'password'" @click:append="showp=!showp" :append-icon="showp?'mdi-eye':'mdi-eye-off'">
+                      :type="pType" @click:append="showp=!showp" :append-icon="pIcon">
         </v-text-field>
         <v-btn :dark=dark :color=color type="submit">Login</v-btn>
     </v-form>
@@ -10,9 +10,11 @@
 
 <script>
 import { DriverValidator } from '@common/lib'
+import { PasswordEyeMixin } from '../../components/PasswordEyeMixin.js'
 
 export default {
     name: 'LoginForm',
+    mixins: [PasswordEyeMixin],
     props: {
         dark: Boolean,
         color: String
@@ -21,7 +23,6 @@ export default {
         return {
             username: '',
             password: '',
-            showp: false,
             error: '',
             vrules: DriverValidator
         }

@@ -46,6 +46,16 @@ register.post('/login', async(req: Request, res: Response) => {
     }
 })
 
+register.post('/changepassword', async(req: Request, res: Response) => {
+    try {
+        await db.drivers.changePassword(req.session!.driverid, req.body.currentpassword, req.body.newpassword)
+        res.status(200).json({ result: 'Password change successful' })
+        return
+    } catch (error) {
+        res.status(400).json({ error: error.toString() })
+    }
+})
+
 register.get('/api', async(req: Request, res: Response) => {
     const driverid = req.session && req.session.driverid
     if (!driverid) {
