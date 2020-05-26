@@ -1,9 +1,23 @@
 <template>
-    <v-container>
-        <Driver></Driver>
-        <EmailGroups></EmailGroups>
-        <DriverDialog :driver="driver"></DriverDialog>
-        <ChangePasswordDialog></ChangePasswordDialog>
+    <v-container v-if="driver.attr">
+        <v-row>
+            <v-col>
+                <Driver>
+                    <div class='dialogs'>
+                        <DriverDialog :driver="driver"></DriverDialog>
+                        <ChangePasswordDialog></ChangePasswordDialog>
+                    </div>
+                </Driver>
+                <EmailGroups>
+                    <div class='dialogs'>
+                        <EmailGroupsDialog></EmailGroupsDialog>
+                    </div>
+                </EmailGroups>
+            </v-col>
+            <v-col>
+                Upcoming
+            </v-col>
+        </v-row>
     </v-container>
 </template>
 
@@ -13,6 +27,7 @@ import Driver from '../../components/Driver'
 import DriverDialog from '../../components/DriverDialog'
 import ChangePasswordDialog from '../components/ChangePasswordDialog'
 import EmailGroups from '../components/EmailGroups'
+import EmailGroupsDialog from '../components/EmailGroupsDialog'
 
 export default {
     name: 'Profile',
@@ -20,7 +35,8 @@ export default {
         ChangePasswordDialog,
         Driver,
         DriverDialog,
-        EmailGroups
+        EmailGroups,
+        EmailGroupsDialog
     },
     computed: {
         ...mapState(['driver'])
@@ -28,8 +44,12 @@ export default {
 }
 </script>
 
-<style scoped>
-.driverinfo {
-    margin-left: 1rem;
+<style>
+.dialogs .v-btn--contained {
+    margin-top: 10px;
+    margin-left: 7px;
+}
+.dialogs .v-btn--contained:first-child {
+    margin-left: 0px !important;
 }
 </style>

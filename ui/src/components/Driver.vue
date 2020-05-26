@@ -1,8 +1,8 @@
 <template>
-    <v-container fluid v-if="driver.attr" class='driverinfo'>
-        <v-row>id: {{driver.driverid}}</v-row>
-        <v-row class='name'>{{driver.firstname}} {{driver.lastname}}</v-row>
-        <v-row>
+    <div v-if="driver.attr" class='driverinfo'>
+        <div class='name'>{{driver.firstname}} {{driver.lastname}}</div>
+        <div>{{driver.driverid}}</div>
+        <div>
             {{driver.email}}
             <v-tooltip right>
                 <template v-slot:activator="{ on }">
@@ -10,15 +10,25 @@
                 </template>
                 <span>{{dnctooltip}}</span>
             </v-tooltip>
-        </v-row>
-        <v-row>Barcode: {{driver.barcode}} SCCA: {{driver.attr.scca}}</v-row>
-        <v-row>{{driver.attr.phone}}</v-row>
-        <v-row>{{driver.attr.address}}</v-row>
-        <v-row>{{driver.attr.city}} {{driver.attr.state}} {{driver.attr.zip}}</v-row>
-        <v-row>{{driver.attr.econtact}} {{driver.attr.ephone}}</v-row>
-        <v-row>{{driver.attr.sponsor}}</v-row>
-        <v-row>{{driver.attr.brag}}</v-row>
-    </v-container>
+        </div>
+        <div class='barcodescca'>
+            <span class='barcode' v-if="driver.barcode"><b>Barcode:</b> {{driver.barcode}}</span>
+            <span class='scca'    v-if="driver.attr.scca"><b>SCCA:</b> {{driver.attr.scca}}</span>
+        </div>
+        <div>{{driver.attr.phone}}</div>
+        <div>{{driver.attr.address}}</div>
+        <div class='csz'>{{driver.attr.city}} {{driver.attr.state}} {{driver.attr.zip}}</div>
+        <div class='sponsorbrag'>
+            <template v-if="driver.attr.sponsor"><span><b>Sponsor:</b></span><span>{{driver.attr.sponsor}}</span></template>
+            <template v-if="driver.attr.brag"><span><b> Brag:</b></span><span>{{driver.attr.brag}}</span></template>
+        </div>
+        <div>
+            <span v-if="driver.attr.econtact || driver.attr.ephone"><b>Emergency</b></span><br/>
+            <span class='econtact' v-if="driver.attr.econtact"><b>Contact:</b> {{driver.attr.econtact}}</span><br/>
+            <span class='ephone'   v-if="driver.attr.ephone"><b>Phone:</b> {{driver.attr.ephone}}</span>
+        </div>
+        <slot></slot>
+    </div>
 </template>
 
 <script>
@@ -37,11 +47,35 @@ export default {
 </script>
 
 <style scoped>
+.driverinfo {
+    border: 1px solid #AAA;
+    border-radius: 4px;
+    padding: 20px;
+    display: inline-block;
+    width: 24rem;
+    overflow: hidden;
+}
 .name {
     font-weight: bold;
-    font-size: 110%;
+    font-size: 120%;
+    margin-left: -5px;
 }
 .dncicon {
     margin-left: 10px;
+}
+.econtact, .ephone {
+    margin-left: 10px;
+}
+.barcodescca, .csz {
+    margin-bottom: 5px;
+    border-bottom: 1px solid #CCC;
+}
+.barcode {
+    margin-right: 10px;
+}
+.sponsorbrag {
+    display: grid;
+    grid-template-columns: auto auto;
+    column-gap: 10px;
 }
 </style>
