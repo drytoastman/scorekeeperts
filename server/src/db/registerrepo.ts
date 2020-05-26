@@ -22,6 +22,23 @@ export class RegisterRepository {
         return this.db.any('SELECT r.* FROM registered AS r JOIN cars c ON r.carid=c.carid WHERE c.driverid=$1', [driverid])
     }
 
+    async getRegistrationSummary(driverid: UUID): Promise<object[]> {
+        const events:any[] = []
+        for (const row of await this.db.any(
+            'SELECT r.*,c.*,e.eventid,e.name,e.date FROM registered AS r JOIN cars c ON r.carid=c.carid JOIN events e ON r.eventid=e.eventid ' +
+            'WHERE c.driverid=$1 ORDER BY e.date,c.classcode', [driverid])) {
+            if (!(row.eventid in events)) {
+                events[row.eventid] = {
+                    name: row.name,
+                    date: row.date,
+                    reg: []
+                }
+            }
+            events[row.eventid].reg.push(row)
+        }
+        return Object.values(events)
+    }
+
     async getRegistationCounts(): Promise<Record<string, any>> {
         const singles = await this.db.any('select eventid,count(carid) from registered group by eventid')
         const uniques = await this.db.any('select r.eventid,count(distinct c.driverid) from registered r join cars c on r.carid=c.carid group by r.eventid')

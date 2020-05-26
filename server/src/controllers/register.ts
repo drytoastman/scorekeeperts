@@ -1,9 +1,11 @@
 import { Request, Response } from 'express'
 import Router from 'express-promise-router'
 import delay from 'express-delay'
-import { db } from '../db'
+import _ from 'lodash'
+import { db, DBExtensions } from '../db'
 import { paypalCapture } from '../util/paypal'
 import { squareOrder } from '../util/square'
+import { ITask } from 'pg-promise'
 
 export const register = Router()
 
@@ -56,6 +58,19 @@ register.post('/changepassword', async(req: Request, res: Response) => {
     }
 })
 
+async function allSeriesSummary(t: ITask<DBExtensions> & DBExtensions, driverid: string): Promise<any[]> {
+    const ret:any[] = []
+    for (const series of await t.series.seriesList()) {
+        await t.series.setSeries(series)
+        ret.push(...(await t.register.getRegistrationSummary(driverid)).map(v => Object.assign(v, { series: series })))
+    }
+    return _.sortBy(ret, ['date'])
+}
+
+const NONSERIESITEMS = ['driver', 'serieslist', 'emaillists', 'summary']
+const SERIESITEMS = ['events', 'cars', 'registered', 'payments', 'counts', 'classes', 'indexes', 'paymentaccounts', 'paymentitems']
+const ALLITEMS = [...NONSERIESITEMS, ...SERIESITEMS]
+
 register.get('/api', async(req: Request, res: Response) => {
     const driverid = req.session && req.session.driverid
     if (!driverid) {
@@ -75,10 +90,10 @@ register.get('/api', async(req: Request, res: Response) => {
         } else {
             let itemlist, classdata
             if (!('items' in req.query)) {
-                itemlist = ['driver', 'serieslist', 'emaillists', 'events', 'cars', 'registered', 'payments', 'counts', 'classes', 'indexes', 'paymentaccounts', 'paymentitems']
+                itemlist = ALLITEMS
                 const serieslist = await t.series.seriesList()
                 if (!serieslist.includes(req.query.series as string)) {
-                    itemlist = ['driver', 'serieslist', 'emaillists']
+                    itemlist = NONSERIESITEMS
                 }
             } else {
                 itemlist = (req.query.items as string).split(',')
@@ -113,6 +128,11 @@ register.get('/api', async(req: Request, res: Response) => {
                     default: console.log(`don't understand ${itemlist[ii]}`); break
                 }
             }
+
+            // This has to happen last as it plays with the series schema setting
+            if (itemlist.includes('summary')) {
+                ret.summary = await allSeriesSummary(t, driverid)
+            }
         }
         return ret
     }))
@@ -137,6 +157,7 @@ register.post('/api', async(req: Request, res: Response) => {
                 type: req.body.type,
                 series: req.body.series
             }
+            let addsummary = false
 
             await t.series.setSeries(req.body.series)
             if ('driver' in req.body) {
@@ -147,9 +168,11 @@ register.post('/api', async(req: Request, res: Response) => {
             }
             if ('cars' in req.body) {
                 ret.cars = await t.cars.updateCars(req.body.type, req.body.cars, driverid)
+                addsummary = true
             }
             if ('registered' in req.body) {
                 Object.assign(ret, await t.register.updateRegistration(req.body.type, req.body.registered, req.body.eventid, driverid))
+                addsummary = true
             }
             if ('payments' in req.body) {
                 if ('paypal' in req.body) {
@@ -157,8 +180,12 @@ register.post('/api', async(req: Request, res: Response) => {
                 } else if ('square' in req.body) {
                     ret.payments = await squareOrder(t, req.body.square, req.body.payments, driverid)
                 }
+                addsummary = true
             }
 
+            if (addsummary) {
+                ret.summary = await allSeriesSummary(t, driverid)
+            }
             return ret
         }))
     } catch (error) {

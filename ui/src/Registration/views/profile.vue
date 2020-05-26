@@ -8,14 +8,14 @@
                         <ChangePasswordDialog></ChangePasswordDialog>
                     </div>
                 </Driver>
-                <EmailGroups>
+                <EmailGroups v-if="!driver.optoutmail">
                     <div class='dialogs'>
                         <EmailGroupsDialog></EmailGroupsDialog>
                     </div>
                 </EmailGroups>
             </v-col>
             <v-col>
-                Upcoming
+                <SummaryDisplay></SummaryDisplay>
             </v-col>
         </v-row>
     </v-container>
@@ -28,6 +28,7 @@ import DriverDialog from '../../components/DriverDialog'
 import ChangePasswordDialog from '../components/ChangePasswordDialog'
 import EmailGroups from '../components/EmailGroups'
 import EmailGroupsDialog from '../components/EmailGroupsDialog'
+import SummaryDisplay from '../components/SummaryDisplay'
 
 export default {
     name: 'Profile',
@@ -36,7 +37,8 @@ export default {
         Driver,
         DriverDialog,
         EmailGroups,
-        EmailGroupsDialog
+        EmailGroupsDialog,
+        SummaryDisplay
     },
     computed: {
         ...mapState(['driver'])

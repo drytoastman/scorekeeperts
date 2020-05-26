@@ -46,6 +46,7 @@ export class RegisterState {
     serieslist: string[] = []
     listids: string[] = []
     unsubscribe: string[] = []
+    summary: any[] = []
 
     // series specific
     currentSeries = EMPTY
@@ -165,6 +166,10 @@ const mutations = {
 
         if ('unsubscribe' in data) {
             state.unsubscribe = data.unsubscribe
+        }
+
+        if ('summary' in data) {
+            state.summary = data.summary
         }
 
         if ('classes' in data) {
