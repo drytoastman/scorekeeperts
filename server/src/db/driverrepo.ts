@@ -3,7 +3,7 @@ import { UUID, Driver } from '@common/lib'
 import { IDatabase, ColumnSet, IMain } from 'pg-promise'
 
 let drivercols: ColumnSet|undefined
-
+let unsubcols: ColumnSet|undefined
 
 export class DriverRepository {
     constructor(private db: IDatabase<any>, private pgp: IMain) {
@@ -18,6 +18,12 @@ export class DriverRepository {
                 { name: 'created',  cast: 'timestamp', init: (col: any): any => { return col.exists ? col.value : 'now()' } }
             ], { table: 'drivers' })
         }
+        if (unsubcols === undefined) {
+            unsubcols = new pgp.helpers.ColumnSet([
+                'emaillistid',
+                { name: 'driverid', cast: 'uuid' }
+            ], { table: 'unsubscribe' })
+        }
     }
 
     private filterDriver(d: Driver): Driver {
@@ -31,6 +37,12 @@ export class DriverRepository {
 
     async getUnsubscribeList(driverid: UUID): Promise<string[]> {
         return (await this.db.any('SELECT emaillistid FROM unsubscribe WHERE driverid=$1', [driverid])).map(r => r.emaillistid)
+    }
+
+    async updateUnsubscribeList(unsublist: string[], driverid: UUID): Promise<string[]> {
+        await this.db.none('DELETE FROM unsubscribe WHERE driverid=$1', [driverid])
+        const rows = await this.db.any(this.pgp.helpers.insert(unsublist.map(v => ({ emaillistid: v, driverid: driverid })), unsubcols) + ' RETURNING emaillistid')
+        return rows.map(r => r.emaillistid)
     }
 
     async checkLogin(username: string, password: string): Promise<UUID> {

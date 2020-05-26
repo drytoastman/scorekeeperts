@@ -142,6 +142,9 @@ register.post('/api', async(req: Request, res: Response) => {
             if ('driver' in req.body) {
                 ret.driver = await t.drivers.updateDriver(req.body.type, req.body.driver, driverid)
             }
+            if ('unsubscribe' in req.body) {
+                ret.unsubscribe = await t.drivers.updateUnsubscribeList(req.body.unsubscribe, driverid)
+            }
             if ('cars' in req.body) {
                 ret.cars = await t.cars.updateCars(req.body.type, req.body.cars, driverid)
             }
