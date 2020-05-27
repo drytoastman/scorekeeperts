@@ -76,7 +76,7 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 .v-text-field {
     margin-top: 0;
 }

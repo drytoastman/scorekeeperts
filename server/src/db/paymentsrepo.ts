@@ -101,7 +101,7 @@ export class PaymentsRepository {
     }
 
     async updatePayments(type: string, payments: Payment[], driverid: UUID): Promise<Payment[]> {
-        verifyDriverRelationship(this.db, payments.map(p => p.carid), driverid)
+        await verifyDriverRelationship(this.db, payments.map(p => p.carid), driverid)
 
         if (type === 'insert') {
             payments.forEach(p => { p.payid = uuidv1() })

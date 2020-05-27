@@ -81,7 +81,7 @@ export class RegisterRepository {
     }
 
     async updateRegistration(type: string, reg: Registration[], eventid: UUID, driverid: UUID): Promise<Object> {
-        verifyDriverRelationship(this.db, reg.map(r => r.carid), driverid)
+        await verifyDriverRelationship(this.db, reg.map(r => r.carid), driverid)
 
         function keys(v:any) {  return v.carid + v.session }
 

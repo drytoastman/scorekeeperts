@@ -52,7 +52,7 @@
                             <v-btn color="secondary" @click="$emit('regrequest')" :loading="busyR" :disabled="busyP">Register</v-btn>
                         </v-col>
                         <v-col v-if="showPayButton">
-                            <v-btn color="secondary" @click="$emit('payrequest')" :loading="busyP" :disabled="busyR">Pay Now ({{account.name}})</v-btn>
+                            <v-btn color="secondary" @click="$emit('payrequest')" :loading="busyP" :disabled="busyR">Pay Now ({{account.type}})</v-btn>
                         </v-col>
                     </v-row>
                 </v-container>

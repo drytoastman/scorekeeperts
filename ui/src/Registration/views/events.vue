@@ -8,15 +8,12 @@
                         <v-col class='datecol'>
                             <span class='eventdate'>{{event.date | dmdy}}</span>
                         </v-col>
-                        <v-col class='opencol'>
+                        <v-col class='namecol'>
                             <svg height="14" width="14">
                                 <circle cx=7 cy=7 r="6" :fill="opencolor(event)" />
                             </svg>
-                        </v-col>
-                        <v-col class='namecol'>
                             <span class='eventname'>{{event.name}}</span>
                         </v-col>
-                        <v-spacer></v-spacer>
                     </v-row>
                 </v-container>
             </v-expansion-panel-header>
@@ -99,15 +96,11 @@ export default {
     }
     .datecol {
         text-align: right;
-        min-width: 10.8rem;
+        max-width: 10rem;
     }
-    .opencol {
-        flex-grow: 0;
-        text-align: center;
-        min-width: 3rem;
-    }
-    .datecol, .namecol {
-        flex-grow: 0.5;
+    .namecol svg {
+        margin-left: 5px;
+        margin-right: 5px;
     }
 
     @media (max-width: 700px) {

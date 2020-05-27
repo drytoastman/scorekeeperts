@@ -6,7 +6,13 @@
                     <span class="headline">Register</span>
                 </v-card-title>
                 <v-card-text>
+                    <div class='carslink'>
+                        <router-link :to="{name:'cars'}">Create, Edit and Delete Cars Here</router-link>
+                    </div>
                     <v-container>
+                        <div class='nocars' v-if="nocars">
+                            You haven't created any cars for this series.  You can do so via the above link.
+                        </div>
                         <v-form ref="form" lazy-validation>
                             <div class='cargrid'>
                                 <template v-for="car in cars">
@@ -32,7 +38,7 @@
                 <v-card-actions>
                     <v-spacer></v-spacer>
                     <v-btn color="blue darken-1" text @click="$emit('input')">Cancel</v-btn>
-                    <v-btn color="blue darken-1" text @click="update()">Update</v-btn>
+                    <v-btn color="blue darken-1" text @click="update()" :disabled="nocars">Update</v-btn>
                 </v-card-actions>
             </v-card>
         </v-dialog>
@@ -55,6 +61,7 @@ export default {
     },
     computed: {
         ...mapState(['cars', 'registered', 'counts']),
+        nocars()       { return Object.values(this.cars).length <= 0 },
         ereg()         { return this.registered[this.event.eventid] || [] },
         ecounts()      { return this.counts[this.event.eventid] || {} },
         checkedCount() { return _.filter(Object.values(this.checks), v => v).length },

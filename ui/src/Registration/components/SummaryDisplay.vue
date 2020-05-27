@@ -7,10 +7,10 @@
                 <span class='date'>{{s.date | dmdy}}</span>
             </div>
             <ol>
-                <li v-for="r in s.reg" :key="r.carid">
+                <li v-for="r in s.reg" :key="r.carid+r.session">
                     <div v-if="r.session">
-                        <SessionCarLabel :car="r" fontsize="110%"></SessionCarLabel>
                         <div class='session'>Session: {{r.session}}</div>
+                        <SessionCarLabel :car="r"></SessionCarLabel>
                     </div>
                     <CarLabel v-else :car="r" fontsize="110%"></CarLabel>
                 </li>

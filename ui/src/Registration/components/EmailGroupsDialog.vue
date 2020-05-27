@@ -65,4 +65,7 @@ export default {
 .checkgrid {
     column-count: 2;
 }
+.v-input--selection-controls {
+    margin-top: 0;
+}
 </style>
