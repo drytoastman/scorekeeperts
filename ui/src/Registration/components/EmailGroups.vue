@@ -1,6 +1,6 @@
 <template>
-    <div class='outer'>
-        <div class='name'>Email Groups</div>
+    <div>
+        <div class='title'>Email Groups</div>
         <div class='unsubgrid'>
             <template v-for="listid in listids">
             <div :key="listid">
@@ -34,17 +34,6 @@ export default {
 </script>
 
 <style scoped>
-.outer {
-    border: 1px solid #AAA;
-    border-radius: 4px;
-    padding: 20px;
-    width: 24rem;
-}
-.name {
-    font-weight: bold;
-    font-size: 120%;
-    margin-left: -5px;
-}
 .unsubgrid {
     column-count: 2;
 }

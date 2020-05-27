@@ -4,14 +4,14 @@
             <CarLabel :car=car fontsize="85%"></CarLabel>
         </v-card-title>
         <v-card-text>
-            <SessionCarLabel v-if="reg.session" :car=car fontsize="105%" display="inline"></SessionCarLabel>
+            <SessionCarLabel v-if="reg.session" :car=car :session="reg.session" fontsize="110%" display="inline"></SessionCarLabel>
             <div v-if="reg.session">
                 Session: {{reg.session}}
             </div>
             <div v-for="p in paymentsForReg" :key="p.payid">
                 {{p.amount|dollars}} ({{p.itemname}})
             </div>
-            <div v-if="wrap.isOpen() && wrap.event.attr.paymentreq && !paymentsForReg.length" class='paymentreq'>
+            <div v-if="isOpen && event.attr.paymentreq && !paymentsForReg.length" class='paymentreq'>
                 Payment Required
             </div>
         </v-card-text>
@@ -20,7 +20,8 @@
 
 <script>
 import { mapState } from 'vuex'
-import { EventWrap, Registration } from '@common/lib'
+import { Registration } from '@common/lib'
+import { isOpen } from '@common/lib/event'
 import CarLabel from '../../components/CarLabel'
 import SessionCarLabel from '../../components/SessionCarLabel'
 
@@ -36,7 +37,7 @@ export default {
         ...mapState(['events', 'cars', 'payments']),
         car()   { return this.cars[this.reg.carid] },
         event() { return this.events[this.reg.eventid] },
-        wrap()  { return new EventWrap(this.event) },
+        isOpen() { return isOpen(this.event) },
         paymentsForReg() {
             try { return this.payments[this.reg.eventid][this.reg.carid] || [] } catch {}
             return []

@@ -1,21 +1,23 @@
 <template>
     <v-container v-if="driver.attr">
-        <v-row>
+        <v-row dense>
             <v-col>
-                <Driver>
+                <Driver class='profilebox'>
                     <div class='dialogs'>
                         <DriverDialog :driver="driver"></DriverDialog>
                         <ChangePasswordDialog></ChangePasswordDialog>
                     </div>
                 </Driver>
-                <EmailGroups v-if="!driver.optoutmail">
+            </v-col>
+            <v-col>
+                <EmailGroups v-if="!driver.optoutmail" class='profilebox'>
                     <div class='dialogs'>
                         <EmailGroupsDialog></EmailGroupsDialog>
                     </div>
                 </EmailGroups>
             </v-col>
             <v-col>
-                <SummaryDisplay></SummaryDisplay>
+                <SummaryDisplay class='profilebox'></SummaryDisplay>
             </v-col>
         </v-row>
     </v-container>

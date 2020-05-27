@@ -1,11 +1,11 @@
 <template>
     <v-container class='outer'>
-        <v-row v-if="!wrap.hasOpened()">
+        <v-row v-if="!hasOpened">
             <v-col class='tlabel'>Opens:</v-col>
             <v-col>{{event.regopened | timedate}}</v-col>
         </v-row>
         <v-row>
-            <v-col class='tlabel'>{{wrap.hasClosed() ? 'Closed' : 'Closes'}}:</v-col>
+            <v-col class='tlabel'>{{hasClosed ? 'Closed' : 'Closes'}}:</v-col>
             <v-col style='whitespace:nowrap'>{{event.regclosed | timedate }}</v-col>
         </v-row>
         <v-row v-if="event.location" >
@@ -19,23 +19,23 @@
             <v-col>{{event.attr[key]}}</v-col>
         </v-row>
 
-        <v-row v-if="wrap.hasOpened() && event.totlimit && event.sinlimit">
+        <v-row v-if="hasOpened && event.totlimit && event.sinlimit">
             <v-col class='tlabel'>Singles:</v-col><v-col>{{ecounts.unique||0}}/{{event.sinlimit}}</v-col>
             <v-col class='tlabel'>Count:</v-col>  <v-col>{{ecounts.all||0}}/{{event.totlimit}}</v-col>
         </v-row>
 
-        <v-row no-gutters v-else-if="wrap.hasOpened()">
+        <v-row no-gutters v-else-if="hasOpened">
             <v-col class='tlabel'>Count:</v-col><v-col>{{ecounts.all||0}}{{event.totlimit && `/${event.totlimit}` || ''}}</v-col>
         </v-row>
 
-        <v-row v-if="event.attr.notes && !wrap.hasClosed()">
+        <v-row v-if="event.attr.notes && !hasClosed">
             <v-col class='tlabel'>Notes:</v-col>
             <v-col v-html=event.attr.notes></v-col>
         </v-row>
 
-        <v-divider v-if="wrap.hasOpened()"></v-divider>
+        <v-divider v-if="hasOpened"></v-divider>
 
-        <v-row :class="ereg.length==0 ? 'centerrow' : ''" v-if="wrap.hasOpened()">
+        <v-row :class="ereg.length==0 ? 'centerrow' : ''" v-if="hasOpened">
             <v-col class='tlabel'>
                 Entries:
                 <span class='plain'>{{ereg.length||0}}/{{event.perlimit}}</span>
@@ -47,7 +47,7 @@
                             <RegCard :reg="reg"></RegCard>
                         </v-col>
                     </v-row>
-                    <v-row v-if="wrap.isOpen()" dense>
+                    <v-row v-if="isOpen" dense>
                         <v-col>
                             <v-btn color="secondary" @click="$emit('regrequest')" :loading="busyR" :disabled="busyP">Register</v-btn>
                         </v-col>
@@ -63,7 +63,7 @@
 
 <script>
 import { mapState, mapGetters } from 'vuex'
-import { EventWrap } from '@common/lib'
+import { isOpen, hasClosed, hasOpened } from '@common/lib/event'
 import RegCard from './RegCard'
 
 export default {
@@ -85,7 +85,9 @@ export default {
         account() { return this.paymentaccounts[this.event.accountid] || null },
         ecounts() { return this.counts[this.event.eventid] || {} },
         ereg()    { return this.registered[this.event.eventid] || {} },
-        wrap()    { return new EventWrap(this.event) },
+        isOpen()    { return isOpen(this.event) },
+        hasOpened() { return hasOpened(this.event) },
+        hasClosed() { return hasClosed(this.event) },
         busyR()   { return this.busyReg[this.event.eventid] === true },
         busyP()   { return this.busyPay[this.event.eventid] === true },
         showPayButton() { return this.ereg.length > 0 && (this.unpaidReg(this.ereg).length > 0) && this.account != null }

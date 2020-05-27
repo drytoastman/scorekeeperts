@@ -32,16 +32,11 @@ export interface SeriesEvent
     created: DateString;
 }
 
-export class EventWrap {
-    // eslint-disable-next-line no-useless-constructor
-    constructor(private event: SeriesEvent) {}
-    hasOpened(): boolean { return new Date() > new Date(this.event.regopened) }
-    hasClosed(): boolean { return new Date() > new Date(this.event.regclosed) }
-    isOpen(): boolean    { return this.hasOpened() && !this.hasClosed() }
-}
-
-export function getSessions(regtype: number) {
-    switch (regtype) {
+export function hasOpened(event: SeriesEvent): boolean { return new Date() > new Date(event.regopened) }
+export function hasClosed(event: SeriesEvent): boolean { return new Date() > new Date(event.regclosed) }
+export function isOpen(event: SeriesEvent):    boolean { return hasOpened(event) && !hasClosed(event) }
+export function getSessions(event: SeriesEvent) {
+    switch (event.regtype) {
         case 2: return ['Day']
         case 1: return ['AM', 'PM']
         default: return []

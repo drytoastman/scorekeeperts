@@ -1,6 +1,6 @@
 <template>
-    <div v-if="driver.attr" class='driverinfo'>
-        <div class='name'>{{driver.firstname}} {{driver.lastname}}</div>
+    <div v-if="driver.attr">
+        <div class='title'>{{driver.firstname}} {{driver.lastname}}</div>
         <div>{{driver.driverid}}</div>
         <div>
             {{driver.email}}
@@ -47,19 +47,6 @@ export default {
 </script>
 
 <style scoped>
-.driverinfo {
-    border: 1px solid #AAA;
-    border-radius: 4px;
-    padding: 20px;
-    display: inline-block;
-    width: 24rem;
-    overflow: hidden;
-}
-.name {
-    font-weight: bold;
-    font-size: 120%;
-    margin-left: -5px;
-}
 .dncicon {
     margin-left: 10px;
 }

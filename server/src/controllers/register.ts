@@ -125,6 +125,7 @@ register.get('/api', async(req: Request, res: Response) => {
                     case 'paymentitems':
                         ret.paymentitems = await t.payments.getPaymentItems()
                         break
+                    case 'summary': break // deal with later
                     default: console.log(`don't understand ${itemlist[ii]}`); break
                 }
             }

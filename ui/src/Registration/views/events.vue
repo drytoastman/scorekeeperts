@@ -6,7 +6,12 @@
                 <v-container class="pa-0">
                     <v-row no-gutters align=center class='eventrow'>
                         <v-col class='datecol'>
-                            <span class='eventdate'>{{event.date | titledate}}</span>
+                            <span class='eventdate'>{{event.date | dmdy}}</span>
+                        </v-col>
+                        <v-col class='opencol'>
+                            <svg height="14" width="14">
+                                <circle cx=7 cy=7 r="6" :fill="opencolor(event)" />
+                            </svg>
                         </v-col>
                         <v-col class='namecol'>
                             <span class='eventname'>{{event.name}}</span>
@@ -29,6 +34,7 @@
 <script>
 import { mapState } from 'vuex'
 import _ from 'lodash'
+import { isOpen, hasClosed } from '@common/lib/event'
 import ClassRegDialog from '../components/ClassRegDialog'
 import SessionRegDialog from '../components/SessionRegDialog'
 import PaymentDialog from '../components/PaymentDialog'
@@ -48,9 +54,6 @@ export default {
         dialogEvent: null,
         dialogAccountId: null
     }),
-    filters: {
-        titledate: function(v) { return new Date(v).toDateString() }
-    },
     computed: {
         ...mapState(['series', 'events', 'counts', 'registered', 'panelstate']),
         // events by date, filtering out events that already occured as of today midnight, will still show up day of
@@ -72,6 +75,11 @@ export default {
         payrequest: function(accountid) {
             this.dialogAccountId = accountid
             this.paymentOpen = true
+        },
+        opencolor: function(event) {
+            if (isOpen(event)) return '#3C3'
+            if (hasClosed(event)) return 'red'
+            return '#AAA'
         }
     }
 }
@@ -91,8 +99,12 @@ export default {
     }
     .datecol {
         text-align: right;
-        margin-right: 0.5rem;
-        max-width: 10rem;
+        min-width: 10.8rem;
+    }
+    .opencol {
+        flex-grow: 0;
+        text-align: center;
+        min-width: 3rem;
     }
     .datecol, .namecol {
         flex-grow: 0.5;

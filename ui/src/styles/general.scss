@@ -17,6 +17,19 @@
     }
 }
 
+.profilebox {
+    border: 1px solid #AAA;
+    border-radius: 4px;
+    padding: 20px;
+    width: 24rem;
+
+    .title {
+        font-weight: bold;
+        font-size: 120%;
+        margin-left: -5px;
+    }
+}
+
 .v-list-item.v-list-item--link::before {
     background: #fff;
 }

@@ -46,10 +46,10 @@ import _ from 'lodash'
 import { mapState, mapGetters } from 'vuex'
 import { mdiCloseBox } from '@mdi/js'
 
+import { isOpen } from '@common/lib/event'
 import CarLabel from '../../components/CarLabel.vue'
 import SquarePaymentForm from './SquarePaymentForm'
 import PayPalButton from './PayPalButton'
-import { EventWrap } from '@common/lib'
 
 export default {
     components: {
@@ -82,7 +82,7 @@ export default {
             return [{ itemid: null, name: '' }, ...this.paymentitems.filter(i => i.accountid === this.accountid)]
         },
         orderedOpenEvents() {
-            return _.orderBy(this.events, ['date']).filter(e => new EventWrap(e).isOpen())
+            return _.orderBy(this.events, ['date']).filter(e => isOpen(e))
         },
         purchase() {
             const ret = []

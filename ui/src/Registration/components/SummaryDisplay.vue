@@ -1,11 +1,18 @@
 <template>
-    <div class='outer'>
-        <div class='name'>Upcoming Entries</div>
+    <div>
+        <div class='title'>Upcoming Entries</div>
         <div v-for="s in summary" :key="s.eventid">
-            <div>{{s.date | titledate}} {{s.series}} {{s.name}}</div>
+            <div class='eventinfo'>
+                <span class='ename'>{{s.series}} - {{s.name}}</span>
+                <span class='date'>{{s.date | dmdy}}</span>
+            </div>
             <ol>
                 <li v-for="r in s.reg" :key="r.carid">
-                    <CarLabel :car="r"></CarLabel>
+                    <div v-if="r.session">
+                        <SessionCarLabel :car="r" fontsize="110%"></SessionCarLabel>
+                        <div class='session'>Session: {{r.session}}</div>
+                    </div>
+                    <CarLabel v-else :car="r" fontsize="110%"></CarLabel>
                 </li>
             </ol>
         </div>
@@ -15,14 +22,13 @@
 <script>
 import { mapState } from 'vuex'
 import CarLabel from '../../components/CarLabel'
+import SessionCarLabel from '../../components/SessionCarLabel'
 
 export default {
     name: 'SummaryDisplay',
     components: {
-        CarLabel
-    },
-    filters: {
-        titledate: function(v) { return new Date(v).toDateString() }
+        CarLabel,
+        SessionCarLabel
     },
     computed: {
         ...mapState(['summary'])
@@ -31,15 +37,14 @@ export default {
 </script>
 
 <style scoped>
-.outer {
-    border: 1px solid #AAA;
-    border-radius: 4px;
-    padding: 20px;
-    width: 24rem;
+.eventinfo {
+    border-top: 1px solid #CCC;
+    margin-top: 10px;
+    padding-top: 10px;
+    margin-bottom: 5px;
 }
-.name {
+.ename {
     font-weight: bold;
-    font-size: 120%;
-    margin-left: -5px;
+    display: block;
 }
 </style>

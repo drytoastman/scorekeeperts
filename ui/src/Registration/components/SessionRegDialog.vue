@@ -53,7 +53,7 @@ export default {
     computed: {
         ...mapState(['cars', 'registered']),
         ereg()     { return this.registered[this.event.eventid] || [] },
-        sessions() { return this.event ? getSessions(this.event.regtype) : [] },
+        sessions() { return this.event ? getSessions(this.event) : [] },
         carlist()  { return [{}, ...Object.values(this.cars)] }
     },
     methods: {
