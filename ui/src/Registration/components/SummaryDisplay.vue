@@ -3,8 +3,9 @@
         <div class='title'>Upcoming Entries</div>
         <div v-for="s in summary" :key="s.eventid">
             <div class='eventinfo'>
-                <span class='ename'>{{s.series}} - {{s.name}}</span>
                 <span class='date'>{{s.date | dmdy}}</span>
+                <span class='series'>{{s.series}}</span>
+                <span class='ename'>{{s.name}}</span>
             </div>
             <ol>
                 <li v-for="r in s.reg" :key="r.carid+r.session">
@@ -46,5 +47,12 @@ export default {
 .ename {
     font-weight: bold;
     display: block;
+}
+.date {
+    color: rgb(27, 97, 155);
+    margin-right: 0.7rem;
+}
+.series {
+    font-style: italic;
 }
 </style>

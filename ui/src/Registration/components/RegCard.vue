@@ -4,9 +4,9 @@
             <CarLabel :car=car fontsize="85%"></CarLabel>
         </v-card-title>
         <v-card-text>
-            <SessionCarLabel v-if="reg.session" :car=car :session="reg.session" fontsize="110%" display="inline"></SessionCarLabel>
             <div v-if="reg.session">
                 Session: {{reg.session}}
+                <SessionCarLabel :car=car :session="reg.session" fontsize="110%" display="inline"></SessionCarLabel>
             </div>
             <div v-for="p in paymentsForReg" :key="p.payid">
                 {{p.amount|dollars}} ({{p.itemname}})

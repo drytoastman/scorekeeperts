@@ -50,11 +50,12 @@ export default {
         margin-right: 6px;
     }
     .index {
-        font-size: 80%;
+        font-size: 85%;
         color: grey;
     }
     .descrip {
         color: gray;
-        font-size: 70%;
+        font-size: 80%;
+        line-height: 1.8;
     }
 </style>
