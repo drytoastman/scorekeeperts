@@ -9,7 +9,7 @@ import { Driver, SeriesEvent, Car, Registration, Payment, PaymentAccount, Paymen
 
 Vue.use(Vuex)
 
-const root = '/api2/register'
+const root = '/api2'
 const EMPTY = ''
 
 function errorhandler(context: ActionContext<RegisterState, any>, error: any) {
@@ -20,7 +20,8 @@ function errorhandler(context: ActionContext<RegisterState, any>, error: any) {
         if (typeof error.response.data === 'object') {
             context.commit('setErrors', [error.response.data.result || error.response.data.error])
         } else {
-            if (error.response.headers['content-type'].includes('text/html')) {
+            const ct = error.response.headers['content-type']
+            if (ct && ct.includes('text/html')) {
                 const el = document.createElement('html')
                 el.innerHTML = error.response.data
                 const lines = el.getElementsByTagName('body')[0].innerText.split('\n').filter(i => i !== '')
@@ -240,6 +241,10 @@ const mutations = {
         if ('paymentitems' in data) {
             state.paymentitems = data.paymentitems
         }
+
+        if ('usednumbers' in data) {
+            state.usednumbers = data.usednumbers
+        }
     }
 
 } as MutationTree<RegisterState>
@@ -254,7 +259,10 @@ const actions = {
             }
             console.log(`getdata with series = ${this.state.currentSeries}`)
             p.series = this.state.currentSeries
-            const data = (await axios.get(root + '/api', { params: p, withCredentials: true })).data
+            if (!p.items) {
+                p.items = 'driverall'
+            }
+            const data = (await axios.get(root, { params: p, withCredentials: true })).data
             context.commit('authenticate', true) // we must be auth if this happens
             context.commit('apiData', data)
         } catch (error) {
@@ -271,7 +279,7 @@ const actions = {
             }
 
             p.series = this.state.currentSeries
-            const data = (await axios.post(root + '/api', p, { withCredentials: true })).data
+            const data = (await axios.post(root, p, { withCredentials: true })).data
             context.commit('apiData', data)
         } catch (error) {
             errorhandler(context, error)
@@ -279,16 +287,6 @@ const actions = {
             if (busy) {
                 context.commit('clearBusy', busy)
             }
-        }
-    },
-
-    async getUsedNumbers(context: ActionContext<RegisterState, any>, p: any) {
-        try {
-            p.series = this.state.currentSeries
-            const data = (await axios.get(root + '/used', { params: p, withCredentials: true })).data
-            context.commit('setUsedNumbers', data)
-        } catch (error) {
-            errorhandler(context, error)
         }
     },
 

@@ -10,6 +10,12 @@ export class SeriesRepository {
         return this.db.none(`set search_path= '${series}', 'public'`)
     }
 
+    async checkSeriesLogin(series: string, password: string): Promise<void> {
+        if ((await this.db.one('SELECT data FROM localcache WHERE name=$1', [series])).data !== password) {
+            throw Error('Invalid password')
+        }
+    }
+
     async seriesList(): Promise<string[]> {
         const results = await this.db.any('SELECT schema_name FROM information_schema.schemata ' +
             "WHERE schema_name NOT LIKE 'pg_%' AND schema_name NOT IN ('information_schema', 'public', 'template')")

@@ -52,7 +52,7 @@ export default {
         loadNumbers() {
             if (this.classcode) {
                 this.loading = 'Loading numbers'
-                this.$store.dispatch('getUsedNumbers', { classcode: this.classcode })
+                this.$store.dispatch('getdata', { items: 'usednumbers', classcode: this.classcode })
             } else {
                 this.loading = 'No classcode selected'
             }

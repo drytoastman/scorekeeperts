@@ -1,9 +1,7 @@
-import { admin } from './admin'
 import { livereg } from './live'
-import { register } from './register'
+import { api2 } from './api2'
 
 export {
-    admin,
-    livereg,
-    register
+    api2,
+    livereg
 }

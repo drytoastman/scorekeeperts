@@ -73,7 +73,9 @@ admin.get('/crontest', async(req: Request, res: Response) => {
             for (const series of await t.series.seriesList()) {
                 t.series.setSeries(series)
                 for (const account of await t.payments.getPaymentAccounts()) {
+                    console.log(account)
                     if (account.type === 'square') {
+
                         await square.oauthRefresh(t, account)
                     }
                 }
