@@ -52,7 +52,7 @@
         </v-app-bar>
 
         <v-content>
-            <!-- {{$route.name}}, {{$store.state.currentSeries}} -->
+            <v-progress-circular class='loadingicon' v-if="gettingData" indeterminate color="secondary"></v-progress-circular>
             <div v-if="!$route.name" class='pushdown main-page-warning'>Unknown Page</div>
             <router-view v-else-if="authenticated" />
             <Login v-else-if="authenticated===false"></Login>
@@ -95,7 +95,7 @@ export default {
         }
     },
     computed: {
-        ...mapState(['currentSeries', 'serieslist', 'authenticated', 'errors']),
+        ...mapState(['currentSeries', 'serieslist', 'authenticated', 'errors', 'gettingData']),
         snackbar() { return this.errors.length > 0 },
         displayName() {
             if (!this.authenticated) { return 'Registration' }
@@ -127,6 +127,12 @@ export default {
 .main-page-warning {
     font-size: 150%;
     text-align: center;
+}
+.loadingicon {
+    position: fixed;
+    z-index: 200;
+    left: 50vw;
+    top: 20vh;
 }
 .ndsh {
     height: 30px;

@@ -64,6 +64,7 @@ export class RegisterState {
 
     // other more temporary things
     usednumbers: number[] = []
+    gettingData = false
     busyDriver: {[key: string]: boolean} = {} // driverid set
     busyCars: {[key: string]: boolean} = {} // carid set
     busyReg:  {[key: string]: boolean} = {} // eventid set
@@ -148,6 +149,10 @@ const mutations = {
         for (const id of ids) {
             Vue.set(state[busy.key], id, false)
         }
+    },
+
+    gettingData(state: RegisterState, value: boolean) {
+        state.gettingData = value
     },
 
     apiData(state: RegisterState, data: any) {
@@ -262,11 +267,14 @@ const actions = {
             if (!p.items) {
                 p.items = 'driverall'
             }
+            context.commit('gettingData', true)
             const data = (await axios.get(root, { params: p, withCredentials: true })).data
             context.commit('authenticate', true) // we must be auth if this happens
             context.commit('apiData', data)
         } catch (error) {
             errorhandler(context, error)
+        } finally {
+            context.commit('gettingData', false)
         }
     },
 
