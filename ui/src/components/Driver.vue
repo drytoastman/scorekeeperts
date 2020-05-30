@@ -54,7 +54,8 @@ export default {
     margin-left: 10px;
 }
 .barcodescca, .csz {
-    margin-bottom: 5px;
+    padding-bottom: 8px;
+    margin-bottom: 8px;
     border-bottom: 1px solid #CCC;
 }
 .barcode {

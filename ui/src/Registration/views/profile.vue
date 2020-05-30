@@ -8,9 +8,7 @@
                         <ChangePasswordDialog></ChangePasswordDialog>
                     </div>
                 </Driver>
-            </v-col>
-            <v-col>
-                <EmailGroups v-if="!driver.optoutmail" class='profilebox'>
+                <EmailGroups class='profilebox emailgroups' v-if="!driver.optoutmail">
                     <div class='dialogs'>
                         <EmailGroupsDialog></EmailGroupsDialog>
                     </div>
@@ -50,10 +48,13 @@ export default {
 
 <style>
 .dialogs .v-btn--contained {
-    margin-top: 10px;
+    margin-top: 15px;
     margin-left: 7px;
 }
 .dialogs .v-btn--contained:first-child {
     margin-left: 0px !important;
+}
+.emailgroups {
+    margin-top: 8px;
 }
 </style>

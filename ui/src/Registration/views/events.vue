@@ -74,9 +74,9 @@ export default {
             this.paymentOpen = true
         },
         opencolor: function(event) {
-            if (isOpen(event)) return '#3C3'
-            if (hasClosed(event)) return 'red'
-            return '#AAA'
+            if (isOpen(event)) return '#4C4'
+            if (hasClosed(event)) return '#C44'
+            return '#BBB'
         }
     }
 }
@@ -86,7 +86,6 @@ export default {
     .outer {
         padding: 1rem;
     }
-
     .eventdate, .eventname {
         font-size: 1.2rem;
         white-space: nowrap;
@@ -96,7 +95,8 @@ export default {
     }
     .datecol {
         text-align: right;
-        max-width: 10rem;
+        flex-grow: 0;
+        flex-basis: 10rem;
     }
     .namecol svg {
         margin-left: 5px;
@@ -105,7 +105,8 @@ export default {
 
     @media (max-width: 700px) {
         .outer {
-            padding: 0;
+            padding-left: 0;
+            padding-right: 0;
         }
         .eventrow {
             display: block;
@@ -118,9 +119,12 @@ export default {
         }
     }
 
-    /* .v-expansion-panel-header--active */
+    .v-expansion-panel-header--active {
+        background: rgb(0, 134, 244);
+        color: white;
+    }
     .v-expansion-panel-header:hover {
-        background: gray;
+        background:#3f51b5;
         color: white;
     }
 </style>

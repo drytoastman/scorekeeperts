@@ -127,6 +127,18 @@ export default {
     .inner .col {
         flex-grow: 0;
     }
+    .inner .col .v-btn {
+        min-width: 10rem;
+    }
+    @media (max-width: 700px) {
+        .inner .col {
+            flex-grow: 1;
+
+        }
+        .inner .col * {
+            width: 100%;
+        }
+    }
     .regcard {
         width: 14rem;
     }

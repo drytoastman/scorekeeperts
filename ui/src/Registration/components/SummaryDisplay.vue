@@ -1,7 +1,7 @@
 <template>
     <div>
         <div class='title'>Upcoming Entries</div>
-        <div v-for="s in summary" :key="s.eventid">
+        <div class='eventsummary' v-for="s in summary" :key="s.eventid">
             <div class='eventinfo'>
                 <span class='date'>{{s.date | dmdy}}</span>
                 <span class='series'>{{s.series}}</span>
@@ -38,12 +38,16 @@ export default {
 </script>
 
 <style scoped>
-.eventinfo {
+.eventsummary {
     border-top: 1px solid #CCC;
     margin-top: 10px;
     padding-top: 10px;
-    margin-bottom: 5px;
 }
+.eventsummary:nth-child(2) {
+    border: none;
+    padding-top: 0;
+}
+
 .ename {
     font-weight: bold;
     display: block;
