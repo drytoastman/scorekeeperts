@@ -5,6 +5,7 @@ rules = {
     'no-multi-spaces': 'off',
     'no-multiple-empty-lines': 'off',
     'no-debugger': 'off',
+    'key-spacing': 'off',
     indent: ['warn', 4, {SwitchCase: 1}]
 }
 

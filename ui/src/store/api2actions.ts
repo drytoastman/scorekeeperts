@@ -8,7 +8,7 @@ export const api2Actions = {
         try {
             if (!p) { p = {} }
             p.series = this.state.currentSeries
-            if (!p.items) { p.items = this.defaultgetlist }
+            if (!p.items) { p.items = this.state.defaultgetlist }
             context.commit('gettingData', true)
             const data = (await axios.get(API2ROOT, { params: p, withCredentials: true })).data
             context.commit('apiData', data)

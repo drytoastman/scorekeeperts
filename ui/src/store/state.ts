@@ -38,12 +38,14 @@ export class Api2State {
     busyReg:  {[key: string]: boolean} = {} // eventid set
     busyPay:  {[key: string]: boolean} = {} // eventid set
 
+    // used for communications
+    defaultgetlist= ''
     ws: ReconnectingWebSocket = new ReconnectingWebSocket(`ws://${window.location.host}${API2ROOT}/live`, undefined, {
         minReconnectionDelay: 1000,
         maxRetries: 10,
         startClosed: true
     })
 
-    // opaque things
+    // opaque things that we don't track
     panelstate = [] // we set/get at will, saves state across page movement
 }

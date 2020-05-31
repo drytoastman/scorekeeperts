@@ -1,11 +1,12 @@
 import Vue from 'vue'
-import Registration from './Registration.vue'
-import router from './router'
-import store from '../store'
 import Vuetify from 'vuetify/lib'
 import colors from 'vuetify/es5/util/colors'
 import LoadScript from 'vue-plugin-load-script'
 import 'typeface-roboto'
+
+import Registration from './Registration.vue'
+import router from './router'
+import { createRegisterStore } from '../store'
 import { installLoggingHandlers } from '@/util/logging'
 import filters from '../util/filters'
 
@@ -42,8 +43,7 @@ const vuetify = new Vuetify({
     }
 })
 
-router.beforeResolve(store.storeBeforeResolve)
-// store.watch(
+const store = createRegisterStore(router)
 
 new Vue({
     router,
