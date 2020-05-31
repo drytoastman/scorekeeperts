@@ -1,19 +1,6 @@
 <template>
     <v-app fluid>
-        <v-navigation-drawer v-model="drawer" v-if="authenticated" app>
-            <v-list dense>
-                <v-list-item link>
-                    <v-list-item-action>
-                        <v-icon>mdi-contact-mail</v-icon>
-                    </v-list-item-action>
-                    <v-list-item-content>
-                        <v-list-item-title>Logout</v-list-item-title>
-                    </v-list-item-content>
-                </v-list-item>
-            </v-list>
-        </v-navigation-drawer>
-
-        <v-app-bar app dark color='primary' v-if="authenticated">
+        <v-app-bar app dark color='primary'>
             <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
             <v-toolbar-title>Scorekeeper Admin</v-toolbar-title>
         </v-app-bar>
@@ -39,9 +26,7 @@ export default {
         source: String
     },
     data: () => ({
-        drawer: null,
-        authenticated: true,
-        errors: []
+        drawer: null
     }),
     methods: {
 

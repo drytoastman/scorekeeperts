@@ -29,9 +29,8 @@
                 <v-subheader class='ndsh'>Series Specific</v-subheader>
 
                 <v-list-item>
-                    <!-- <v-list-item-action></v-list-item-action> -->
                     <v-list-item-content>
-                        <v-select :items="serieslist" v-model="selectedSeries" solo dense hide-details></v-select>
+                        <v-select :items="serieslist" v-model="selectedSeries" solo dense hide-details placeholder="Select A Series"></v-select>
                     </v-list-item-content>
                 </v-list-item>
                 <v-list-item :to="{name:'events', params:{series:currentSeries}}" link>
@@ -46,7 +45,7 @@
         </v-navigation-drawer>
 
         <v-app-bar app dense dark color='primary'>
-            <v-app-bar-nav-icon @click.stop="drawer = !drawer" :disabled="!authenticated" />
+            <v-app-bar-nav-icon @click.stop="drawer = !drawer" :disabled="!driverAuthenticated" />
             <v-toolbar-title>{{displayName}}</v-toolbar-title>
             <v-spacer></v-spacer>
         </v-app-bar>
@@ -54,9 +53,9 @@
         <v-content>
             <v-progress-circular class='loadingicon' v-if="gettingData" indeterminate color="secondary"></v-progress-circular>
             <div v-if="!$route.name" class='pushdown main-page-warning'>Unknown Page</div>
-            <router-view v-else-if="authenticated" />
-            <Login v-else-if="authenticated===false"></Login>
-            <div v-else class='pushdown main-page-warning'>Loading Data ...</div>
+            <router-view v-else-if="driverAuthenticated" />
+            <Login v-else-if="driverAuthenticated===false"></Login>
+            <!--<div v-else class='pushdown main-page-warning'>Loading Data ...</div>-->
         </v-content>
 
         <v-snackbar :value="snackbar" :timeout=0>
@@ -95,10 +94,10 @@ export default {
         }
     },
     computed: {
-        ...mapState(['currentSeries', 'serieslist', 'authenticated', 'errors', 'gettingData']),
+        ...mapState(['currentSeries', 'serieslist', 'driverAuthenticated', 'errors', 'gettingData']),
         snackbar() { return this.errors.length > 0 },
         displayName() {
-            if (!this.authenticated) { return 'Registration' }
+            if (!this.driverAuthenticated) { return 'Registration' }
             return `Registration${this.$route.path}`.replace(/\//g, ' / ')
         },
         selectedSeries: {
