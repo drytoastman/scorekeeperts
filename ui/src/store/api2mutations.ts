@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import { MutationTree } from 'vuex'
-import { Car, SeriesEvent, Registration, Payment, PaymentAccount, Driver } from '@common/lib'
+import { Car, SeriesEvent, Registration, Payment, PaymentAccount } from '@common/lib'
 import { Api2State } from './state'
 
 export function clearApi2SeriesData(state: Api2State) {
@@ -22,32 +22,27 @@ export function clearApi2SeriesData(state: Api2State) {
 
 export const api2Mutations = {
 
-    axiosError(state: Api2State, error: any) {
-        if (error.response) {
-            if ((error.response) && (error.response.status === 401)) {
-                state.driverAuthenticated = false
-                state.driver = {} as Driver
-            }
-
-            if (typeof error.response.data === 'object') {
-                state.errors = [error.response.data.result || error.response.data.error]
+    driverAuthenticated(state: Api2State, ok: boolean) {
+        state.driverAuthenticated = ok
+        if (state.driverAuthenticated) {
+            state.errors = []
+            if (state.ws) {
+                state.ws.reconnect()
             } else {
-                const ct = error.response.headers['content-type']
-                if (ct && ct.includes('text/html')) {
-                    const el = document.createElement('html')
-                    el.innerHTML = error.response.data
-                    const lines = el.getElementsByTagName('body')[0].innerText.split('\n').filter(i => i !== '')
-                    state.errors = lines
-                } else {
-                    state.errors = [error.response.data]
-                }
+                console.error('No websocket after authenticating')
             }
-        } else {
-            let errorstring = error.toString()
-            if (errorstring.startsWith('Error: ')) {
-                errorstring = errorstring.slice(7)
+        }
+    },
+
+    seriesAuthenticated(state: Api2State, data: any) {
+        Vue.set(state.seriesAuthenticated, data.series, data.ok)
+        if (state.seriesAuthenticated[data.series]) {
+            state.errors = []
+            if (state.ws) {
+                state.ws.reconnect()
+            } else {
+                console.error('No websocket after authenticating')
             }
-            state.errors = [errorstring]
         }
     },
 

@@ -1,28 +1,10 @@
 import axios from 'axios'
 import { Api2State, API2ROOT } from './state'
-import { MutationTree, ActionContext, ActionTree, Store, GetterTree } from 'vuex'
+import { ActionContext, ActionTree, Store, GetterTree } from 'vuex'
 import VueRouter, { Route } from 'vue-router'
 import { api2Mutations } from './api2mutations'
 import { api2Actions } from './api2actions'
 import { UUID, Registration } from '@common/lib'
-
-export const registerMutations = {
-
-    driverAuthenticated(state: Api2State, ok: boolean) {
-        state.driverAuthenticated = ok
-        if (state.driverAuthenticated) {
-            state.errors = []
-            if (state.ws) {
-                state.ws.reconnect()
-            } else {
-                console.error('No websocket after authenticating')
-            }
-        }
-    }
-
-} as MutationTree<Api2State>
-
-
 
 export const registerActions = {
 
@@ -30,8 +12,10 @@ export const registerActions = {
         try {
             await axios.post(API2ROOT + '/login', p, { withCredentials: true })
             context.commit('driverAuthenticated', true)
+            console.log('authenticated getdata')
+            context.dispatch('getdata')
         } catch (error) {
-            context.commit('axiosError', error)
+            context.dispatch('axiosError', error)
         }
     },
 
@@ -40,7 +24,7 @@ export const registerActions = {
             await axios.post(API2ROOT + '/changepassword', p, { withCredentials: true })
             context.commit('setErrors', ['Password change successful'])
         } catch (error) {
-            context.commit('axiosError', error)
+            context.dispatch('axiosError', error)
         }
     },
 
@@ -49,7 +33,7 @@ export const registerActions = {
             await axios.get(API2ROOT + '/logout', { withCredentials: true })
             context.commit('driverAuthenticated', false)
         } catch (error) {
-            context.commit('axiosError', error)
+            context.dispatch('axiosError', error)
         }
     },
 
@@ -58,7 +42,7 @@ export const registerActions = {
             const data = (await axios.post(API2ROOT + '/regreset', p, { withCredentials: true })).data
             context.commit('apiData', data)
         } catch (error) {
-            context.commit('axiosError', error)
+            context.dispatch('axiosError', error)
         }
     }
 
@@ -83,7 +67,7 @@ const getters = {
 export function createRegisterStore(router: VueRouter) {
     const store = new Store({
         state: new Api2State(),
-        mutations: { ...api2Mutations, ...registerMutations },
+        mutations: api2Mutations,
         actions:   { ...api2Actions,   ...registerActions },
         getters:   getters
     })
@@ -99,34 +83,28 @@ export function createRegisterStore(router: VueRouter) {
     router.beforeResolve(function(to: Route, from: Route, next: Function): void {
         if ((to.params.series) && (to.params.series !== store.state.currentSeries)) {
             store.commit('changeSeries', to.params.series)
-            if (!store.state.driver.driverid) {
-                store.dispatch('getdata')
-            }
+        }
+        // on any route change, if we don't have driver data, try and load now
+        if (!store.state.driver.driverid) {
+            store.dispatch('getdata')
         }
         next()
     })
 
-    /* When we go from driver unauthneticated to authenticated, we are now able to load data */
+    /* When we go from driver auth to unauth, clear series data *
     store.watch(
         (state: Api2State) => { return state.driverAuthenticated },
         (newvalue: boolean, oldvalue: boolean) => {
-            if ((newvalue === true) && (!oldvalue)) {
-                console.log('authenticated getdata')
-                store.dispatch('getdata')
-            }
             if ((!newvalue) && (oldvalue === true)) {
                 store.commit('clearSeriesData')
             }
         }
-    )
+    ) */
 
     /* When the current series changes (URL or UI), we need to load new data */
     store.watch(
         (state: Api2State) => { return state.currentSeries },
-        () => {
-            console.log('serieschange getdata')
-            store.dispatch('getdata')
-        }
+        () => { store.dispatch('getdata') }
     )
 
     return store

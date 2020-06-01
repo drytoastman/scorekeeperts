@@ -133,9 +133,6 @@ export default {
     left: 50vw;
     top: 20vh;
 }
-.ndsh {
-    height: 30px;
-}
 .v-list-item--active {
     filter: grayscale(60%) opacity(40%);
     pointer-events: none;

@@ -18,6 +18,7 @@ export class Api2State {
 
     // auth pieces
     driverAuthenticated = true  // assume we are and then fallback if our API requests fail
+    seriesAuthenticated = {}
 
     // series specific
     currentSeries = EMPTY

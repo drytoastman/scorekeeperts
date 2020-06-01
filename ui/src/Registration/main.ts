@@ -31,6 +31,7 @@ const base = {
     info: colors.blueGrey.base,
     success: colors.green.base
 }
+
 const vuetify = new Vuetify({
     theme: {
         themes: {
