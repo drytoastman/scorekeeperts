@@ -1,3 +1,4 @@
+import _ from 'lodash'
 import { Request, Response } from 'express'
 import { db } from '../db'
 import { UUID } from '@common/lib'
@@ -82,41 +83,43 @@ export async function regreset(req: Request, res: Response) {
 }
 
 export const SERIESLIST  = 'serieslist'
-export const DRIVERITEMS = new Set<string>(['driver', 'emaillists', 'summary', 'events', 'cars', 'registered',
-    'payments', 'counts', 'classes', 'indexes', 'paymentaccounts', 'paymentitems'])
-export const SERIESITEMS = new Set<string>()
-export const GLOBALITEMS = new Set<string>([SERIESLIST, 'driver', 'emaillists', 'summary'])
-export const BOTHITEMS   = new Set([...DRIVERITEMS].filter(val => SERIESITEMS.has(val)))
-export const DRIVERONLY  = new Set([...DRIVERITEMS].filter(val => !SERIESITEMS.has(val)))
-export const SERIESONLY  = new Set([...SERIESITEMS].filter(val => !DRIVERITEMS.has(val)))
+export const BOTHITEMS   = new Set(['emaillists', 'events', 'paymentaccounts', 'paymentitems', 'counts', 'classes', 'indexes'])
+export const DRIVERITEMS = new Set<string>(['driver', 'summary', 'cars', 'registered', 'payments'])
+export const SERIESITEMS = new Set<string>(['allcars'])
+export const GLOBALITEMS = new Set<string>(['driver', 'emaillists', 'summary'])
+
+class AuthError extends Error {
+    types: string
+    constructor(message: string, types: string) {
+        super(message)
+        this.types = types
+    }
+}
 
 export function checkAuthItems(itemlist: string[], series: string, auth: AuthData) {
 
-    // If there is no series,  filter out things that are not global
-    if (!series) {
-        itemlist = itemlist.filter(val => GLOBALITEMS.has(val))
+    if (_.isEqual(itemlist, [SERIESLIST])) {
+        return itemlist
     }
 
-    if ((!auth.hasDriverAuth()) && (!auth.hasSeriesAuth(series))) {
-        for (const item of itemlist.values()) {
-            if (BOTHITEMS.has(item)) {
-                throw Error('not authenticated for any data')
-            }
-        }
+    console.log(`auth (${series} ${auth.hasSeriesAuth(series)}), (driver ${auth.hasDriverAuth()})`)
+
+    if ((!auth.hasDriverAuth()) && (!auth.hasSeriesAuth(series))) {  // For BOTH items
+        throw new AuthError('not authenticated',  'driver,series')
     }
 
     if (!auth.hasDriverAuth()) {
         for (const item of itemlist.values()) {
-            if (DRIVERONLY.has(item)) {
-                throw Error('not authenticated for driver data')
+            if (DRIVERITEMS.has(item)) {
+                throw new AuthError('not authenticated', 'driver')
             }
         }
     }
 
     if (!auth.hasSeriesAuth(series)) {
         for (const item of itemlist.values()) {
-            if (SERIESONLY.has(item)) {
-                throw Error('not authenticated for series data')
+            if (SERIESITEMS.has(item)) {
+                throw new AuthError('not authenticated', 'series')
             }
         }
     }

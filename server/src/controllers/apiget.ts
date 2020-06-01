@@ -1,9 +1,10 @@
 import { Request, Response } from 'express'
 import { db } from '../db'
 import { allSeriesSummary } from './summary'
-import { checkAuthItems, DRIVERITEMS, SERIESLIST } from './apiauth'
+import { checkAuthItems, DRIVERITEMS, SERIESLIST, SERIESITEMS, GLOBALITEMS, BOTHITEMS } from './apiauth'
 
 const DRIVERALL = 'driverall'
+const SERIESALL = 'seriesall'
 
 export async function apiget(req: Request, res: Response) {
 
@@ -17,13 +18,22 @@ export async function apiget(req: Request, res: Response) {
 
     let itemlist = items.split(',')
     try {
-        // Replace 'driverall' with full driverauth list, shortcut to reduce data sent
+        // Replace '*all' with full lists, shortcut to reduce data sent
         if  (itemlist.includes(DRIVERALL)) {
-            itemlist = [...itemlist, ...DRIVERITEMS, SERIESLIST].filter(v => v !== DRIVERALL)
+            itemlist = [...itemlist, ...DRIVERITEMS, ...BOTHITEMS].filter(v => v !== DRIVERALL)
         }
+        if  (itemlist.includes(SERIESALL)) {
+            itemlist = [...itemlist, ...SERIESITEMS, ...BOTHITEMS].filter(v => v !== SERIESALL)
+        }
+        console.log(itemlist)
+        // If there is no series,  filter out things that are not global
+        if (!series) {
+            itemlist = itemlist.filter(val => GLOBALITEMS.has(val))
+        }
+        itemlist.push(SERIESLIST)
         itemlist = checkAuthItems(itemlist, series, req.auth)
     } catch (error) {
-        res.status(401).json({ error: error.toString() })
+        res.status(401).json({ error: error.message, types: error.types })
         return
     }
 

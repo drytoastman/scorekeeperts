@@ -8,7 +8,7 @@ export const api2 = Router()
 
 if (process.env.NODE_ENV === 'development') {
     console.log('Using development environment (fake delay and debug login)')
-    api2.use(delay(500))
+    // api2.use(delay(1500))
 } else {
     console.log('Using production environment')
 }

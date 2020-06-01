@@ -24,7 +24,7 @@ export async function apipost(req: Request, res: Response) {
     try {
         data = _.pick(req.body, checkAuthItems(Object.keys(req.body), series, req.auth))
     } catch (error) {
-        res.status(401).json({ error: error })
+        res.status(401).json({ error: error.message, types: error.types })
         return
     }
 
