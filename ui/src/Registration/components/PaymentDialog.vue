@@ -79,7 +79,8 @@ export default {
             return this.orderedOpenEvents.filter(e => e.accountid === this.accountid)
         },
         payitems() {
-            return [{ itemid: null, name: '' }, ...this.paymentitems.filter(i => i.accountid === this.accountid)]
+            const arr = _(this.paymentitems).values().filter(i => i.accountid === this.accountid).orderBy('name').value()
+            return [{ itemid: null, name: '' }, ...arr]
         },
         orderedOpenEvents() {
             return _.orderBy(this.events, ['date']).filter(e => isOpen(e))

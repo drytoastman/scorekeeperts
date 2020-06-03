@@ -2,6 +2,14 @@
   <v-data-table :items="itemsList" :headers="headers" item-key="name" class='itemstable'
                  disable-pagination hide-default-header hide-default-footer dense
   >
+    <template v-slot:footer>
+        <div class='addwrap'>
+            <v-btn color="primary" fab x-small @click="$emit('newitem', accountid)">
+                <v-icon>{{icons.mdiPlus}}</v-icon>
+            </v-btn>
+        </div>
+    </template>
+
     <template v-slot:item.price="{ item }">
         {{item.price|dollars}}
     </template>
@@ -15,8 +23,9 @@
 </template>
 
 <script>
+import _ from 'lodash'
 import { mapState } from 'vuex'
-import { mdiPencil, mdiDelete } from '@mdi/js'
+import { mdiPencil, mdiDelete, mdiPlus } from '@mdi/js'
 
 export default {
     name: 'Accounts',
@@ -27,7 +36,8 @@ export default {
         return {
             icons: {
                 mdiPencil,
-                mdiDelete
+                mdiDelete,
+                mdiPlus
             },
             headers: [
                 { text: 'Name', value: 'name' },
@@ -38,10 +48,14 @@ export default {
     },
     computed: {
         ...mapState(['paymentitems']),
-        itemsList() { return this.paymentitems.filter(i => i.accountid === this.accountid) }
+        itemsList() { return  _(this.paymentitems).values().filter(i => i.accountid === this.accountid).orderBy('name').value() }
     }
 }
 </script>
 
 <style scoped>
+.addwrap {
+    text-align: right;
+    padding: 10px;
+}
 </style>

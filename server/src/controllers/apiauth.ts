@@ -33,6 +33,7 @@ export class AuthData {
     seriesAuthenticated(series: string) { this.session.series[series] = true }
     clearSeries(series: string)         { delete this.session.series[series] }
     hasSeriesAuth(series: string)       { return series in this.session.series }
+    requireSeries(series: string)       { if (!this.hasSeriesAuth(series)) { throw new Error(`Series auth for ${series} failed`) } }
 }
 
 

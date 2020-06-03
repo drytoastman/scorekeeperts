@@ -94,7 +94,7 @@ export function createRegisterStore(router: VueRouter) {
         () => { store.dispatch('getdata') }
     )
 
-    // We share the drivers table, in register case copy out the singular driverid for reference
+    /* We share the drivers table, in register case copy out the singular driverid for reference */
     store.watch(
         (state: Api2State) => { return state.drivers },
         (newvalue: any) => {

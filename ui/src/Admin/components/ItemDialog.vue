@@ -2,20 +2,21 @@
     <v-dialog :value="value" @input="$emit('input')" persistent max-width="400px">
         <v-card>
             <v-card-title>
-                <span class="headline">Edit Item</span>
+                <span class="headline">{{title}}</span>
             </v-card-title>
-            <v-card-text>
+            <v-card-text :class='{disabledform: disableAll}'>
                 <v-form ref="form">
-                    <v-container class='xformgrid'>
+                    <v-container>
                         <v-text-field v-model="itemm.name"   label="Name"></v-text-field>
                         <v-text-field v-model="itemm.price"  label="Price" prefix="$" :rules="dollar"></v-text-field>
+                        <v-text-field v-model="itemm.currency" label="Currency" readonly></v-text-field>
                     </v-container>
                 </v-form>
             </v-card-text>
             <v-card-actions>
                 <v-spacer></v-spacer>
                 <v-btn color="blue darken-1" text @click="$emit('input')">Cancel</v-btn>
-                <v-btn color="blue darken-1" text @click="update()">Update</v-btn>
+                <v-btn color="blue darken-1" text @click="update()">{{actionName}}</v-btn>
             </v-card-actions>
         </v-card>
     </v-dialog>
@@ -38,6 +39,23 @@ export default {
         }
     },
     computed: {
+        title() {
+            switch (this.apiType) {
+                case 'insert': return 'New Item'
+                case 'update': return 'Update Item'
+                case 'delete': return 'Delete Item'
+                default: return '???'
+            }
+        },
+        actionName() {
+            switch (this.apiType) {
+                case 'insert': return 'Create'
+                case 'update': return 'Update'
+                case 'delete': return 'Delete'
+                default: return '???'
+            }
+        },
+        disableAll: function() { return this.actionName === 'Delete' }
     },
     methods: {
         update() {
@@ -56,7 +74,11 @@ export default {
             if (newv) {
                 this.itemm = JSON.parse(JSON.stringify(this.item))
                 // convert from cents to dollars
-                this.itemm.price /= 100
+                if (this.itemm.price) {
+                    this.itemm.price /= 100
+                } else {
+                    this.item.price = ''
+                }
             }
         }
     }
@@ -64,10 +86,9 @@ export default {
 </script>
 
 <style scoped>
-.formgrid {
-    display: grid;
-    grid-template-columns: 1fr 7fr;
-    column-gap: 0.3rem;
-    align-items: center;
+.disabledform {
+   background: #c8c8c8;
+   pointer-events: none;
+   opacity: 0.5;
 }
 </style>

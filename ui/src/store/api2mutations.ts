@@ -5,7 +5,7 @@ import { Api2State } from './state'
 
 export function clearApi2SeriesData(state: Api2State) {
     state.paymentaccounts = {}
-    state.paymentitems = []
+    state.paymentitems = {}
     state.classes = {}
     state.indexes = {}
     state.events = {}
@@ -88,10 +88,24 @@ export const api2Mutations = {
     apiData(state: Api2State, data: any) {
         if (data === undefined) return
 
-        for (const key of ['serieslist', 'listids', 'unsubscribe', 'summary', 'classes', 'indexes', 'paymentitems', 'usednumbers', 'emailresult']) {
+        for (const key of ['serieslist', 'listids', 'unsubscribe', 'summary', 'classes', 'indexes', 'usednumbers', 'emailresult']) {
             // easy straight assignments/replacements
             if (key in data) {
                 state[key] = data[key]
+            }
+        }
+
+        // For more common CRUD operations
+        // data.type in ('get', 'insert', 'update', 'delete')
+        for (const pair of [['paymentitems', 'itemid']]) {
+            const [key, idfield] = pair
+            if (key in data) {
+                if (data.type === 'delete') {
+                    data[key].forEach(v => Vue.delete(state[key], v[idfield]))
+                } else { // get, insert, update
+                    if (data.type === 'get') { state[key] = {} }
+                    data[key].forEach(v => Vue.set(state[key], v[idfield], v))
+                }
             }
         }
 

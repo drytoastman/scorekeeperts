@@ -24,7 +24,7 @@ export class Api2State {
     // series specific
     currentSeries = EMPTY
     paymentaccounts: {[key: string]: PaymentAccount} = {}
-    paymentitems: PaymentItem[] = []
+    paymentitems: {[key: string]: PaymentItem} = {}
     classes: {[key: string]: SeriesClass} = {}
     indexes: {[key: string]: SeriesIndex} = {}
     events: {[key: string]: SeriesEvent} = {}

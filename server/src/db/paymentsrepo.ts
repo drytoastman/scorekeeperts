@@ -9,6 +9,7 @@ import { CatalogQueryText } from 'square-connect'
 let paymentcols: ColumnSet|undefined
 let secretcols: ColumnSet|undefined
 let accountcols: ColumnSet|undefined
+let itemcols: ColumnSet|undefined
 
 export class PaymentsRepository {
     // eslint-disable-next-line no-useless-constructor
@@ -47,6 +48,17 @@ export class PaymentsRepository {
                 { name: 'modified', cast: 'timestamp', mod: ':raw', init: (): any => { return 'now()' } }
             ], { table: 'paymentsecrets' })
         }
+
+        if (itemcols === undefined) {
+            itemcols = new pgp.helpers.ColumnSet([
+                { name: 'itemid', cnd: true },
+                { name: 'accountid' },
+                { name: 'name' },
+                { name: 'price' },
+                { name: 'currency' },
+                { name: 'modified', cast: 'timestamp', mod: ':raw', init: (): any => { return 'now()' } }
+            ], { table: 'paymentitems' })
+        }
     }
 
     private async localCacheGet(key: string): Promise<string> {
@@ -71,6 +83,13 @@ export class PaymentsRepository {
 
     async getPaymentItems(): Promise<PaymentItem[]> {
         return this.db.query('SELECT * from paymentitems')
+    }
+
+    async updatePaymentItems(type: string, items: PaymentItem[]): Promise<PaymentItem[]> {
+        if (type === 'insert') { return this.db.any(this.pgp.helpers.insert(items, itemcols) + ' RETURNING *') }
+        if (type === 'update') { return this.db.any(this.pgp.helpers.update(items, itemcols) + ' WHERE v.itemid = t.itemid RETURNING *') }
+        if (type === 'delete') { return this.db.any('DELETE from paymentitems WHERE itemid in ($1:csv) RETURNING itemid', items.map(i => i.itemid)) }
+        throw Error(`Unknown operation type ${JSON.stringify(type)}`)
     }
 
     async getPaymentAccount(accountid: string): Promise<PaymentAccount> {
