@@ -68,11 +68,13 @@ export default {
             this.$store.dispatch('setdata', {
                 type: 'eventupdate',
                 eventid: this.event.eventid,
-                registered: _(this.sessionselect).map((v, k) => ({
-                    session: k,
-                    carid: v,
-                    eventid: this.event.eventid
-                })).filter('carid'),
+                items: {
+                    registered: _(this.sessionselect).map((v, k) => ({
+                        session: k,
+                        carid: v,
+                        eventid: this.event.eventid
+                    })).filter('carid')
+                },
                 busy: { key: 'busyReg', id: this.event.eventid }
             })
             this.$emit('input')

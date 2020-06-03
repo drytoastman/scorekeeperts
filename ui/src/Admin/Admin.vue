@@ -22,8 +22,6 @@
         <v-app-bar app dense dark color="primary">
             <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
             <v-toolbar-title>{{displayName}}</v-toolbar-title>
-            <v-spacer></v-spacer>
-
             <!-- Events Menu -->
             <v-menu v-model="value" close-on-content-click>
                 <template v-slot:activator="{ on }">
@@ -131,12 +129,9 @@ export default {
 }
 </script>
 
-<style>
+<style lang='scss'>
 .v-navigation-drawer .v-subheader.labelheader {
     font-size: 120%;
-}
-.v-app-bar .v-btn .v-btn__content {
-    xcolor: white;
 }
 /*
 .v-navigation-drawer .v-list-item {
@@ -151,4 +146,5 @@ export default {
     background: white;
 }
 */
+@import '@/styles/general.scss'
 </style>

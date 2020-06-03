@@ -2,13 +2,36 @@ import axios from 'axios'
 import { ActionTree, ActionContext } from 'vuex'
 import { Api2State, API2ROOT } from './state'
 
+
+export interface ApiGetData {
+    items: string;
+    classcode?: string;
+    // set by action handler
+    series?: string;
+    authtype?: string;
+}
+
+export interface ApiPostData {
+    type: string;
+    items: {[key: string]: []};
+
+    eventid?: string;
+    paypal?: any;
+    square?: any;
+    busy?: any;
+    // set by action handler
+    series?: string;
+    authtype?: string;
+}
+
 export const api2Actions = {
 
-    async getdata(context: ActionContext<Api2State, any>, p: any) {
+    async getdata(context: ActionContext<Api2State, any>, p: ApiGetData) {
         try {
-            if (!p) { p = {} }
+            if (!p) { p = { items: '' } }
             p.series = this.state.currentSeries
-            if (!p.items) { p.items = this.state.defaultgetlist }
+            p.authtype = this.state.authtype
+
             context.commit('gettingData', true)
             const data = (await axios.get(API2ROOT, { params: p, withCredentials: true })).data
             context.commit('apiData', data)
@@ -19,7 +42,7 @@ export const api2Actions = {
         }
     },
 
-    async setdata(context: ActionContext<Api2State, any>, p: any) {
+    async setdata(context: ActionContext<Api2State, any>, p: ApiPostData) {
         let busy = null
         try {
             if ((busy = p.busy) != null) {
@@ -27,6 +50,7 @@ export const api2Actions = {
                 delete p.busy
             }
             p.series = this.state.currentSeries
+            p.authtype = this.state.authtype
             const data = (await axios.post(API2ROOT, p, { withCredentials: true })).data
             context.commit('apiData', data)
         } catch (error) {
@@ -40,11 +64,11 @@ export const api2Actions = {
 
     async axiosError(context: ActionContext<Api2State, any>, error: any) {
         if (error.response) {
-            if ((error.response) && (error.response.status === 401) && (error.response.data.types)) {
-                if (error.response.data.types.includes('driver'))  {
+            if ((error.response) && (error.response.status === 401) && (error.response.data.authtype)) {
+                if (error.response.data.authtype === 'driver')  {
                     context.commit('driverAuthenticated', false)
                 }
-                if (error.response.data.types.includes('series') && this.state.currentSeries) {
+                if ((error.response.data.authtype === 'series') && this.state.currentSeries) {
                     context.commit('seriesAuthenticated', { series: this.state.currentSeries, ok: false })
                 }
             }

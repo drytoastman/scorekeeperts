@@ -53,7 +53,7 @@ export default {
             this.$store.dispatch('setdata', {
                 type: 'insert',
                 paypal: { orderid: data.orderID, accountid: this.account.accountid },
-                payments: this.payments,
+                items: { payments: this.payments },
                 busy: { key: 'busyPay', ids: this.payments.map(p => p.eventid) }
             })
             this.$emit('complete')

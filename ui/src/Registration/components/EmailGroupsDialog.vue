@@ -44,7 +44,7 @@ export default {
         save() {
             this.$store.dispatch('setdata', {
                 type: 'update',
-                unsubscribe: _(this.checks).pickBy(v => !v).keys().value()
+                items: { unsubscribe: _(this.checks).pickBy(v => !v).keys().value() }
             })
             this.opened = false
         }

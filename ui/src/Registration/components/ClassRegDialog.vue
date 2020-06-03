@@ -96,11 +96,13 @@ export default {
             this.$store.dispatch('setdata', {
                 type: 'eventupdate',
                 eventid: this.event.eventid,
-                registered: _.map(_.pickBy(this.checks), (v, k) => ({
-                    carid: k,
-                    eventid: this.event.eventid,
-                    session: ''
-                })),
+                items: {
+                    registered: _.map(_.pickBy(this.checks), (v, k) => ({
+                        carid: k,
+                        eventid: this.event.eventid,
+                        session: ''
+                    }))
+                },
                 busy: { key: 'busyReg', id: this.event.eventid }
             })
             this.$emit('input')

@@ -58,7 +58,7 @@ export default {
             if (this.$refs.form.validate()) {
                 this.$store.dispatch('setdata', {
                     type: 'update',
-                    driver: this.driverm,
+                    items: { drivers: [this.driverm] },
                     busy: { key: 'busyDriver', id: this.driver.driverid }
                 })
                 this.opened = false

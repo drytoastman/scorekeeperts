@@ -1,23 +1,14 @@
 <template>
-    <div>
-       {{paymentaccounts}}
-    </div>
+    <AccountsTable></AccountsTable>
 </template>
 
 <script>
-import _ from 'lodash'
-import { mapState } from 'vuex'
+import AccountsTable from '../components/AccountsTable.vue'
 
 export default {
     name: 'Accounts',
-    computed: {
-        ...mapState(['paymentaccounts'])
-    },
-    mounted() {
-        if (_.isEmpty(this.paymentaccounts)) {
-            this.$store.dispatch('getdata', { items: 'paymentaccounts' })
-            // console.log('accounts mounted')
-        }
+    components: {
+        AccountsTable
     }
 }
 </script>

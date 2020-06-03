@@ -9,8 +9,9 @@ export class Api2State {
     serieslist: string[] = []
     listids: string[] = []
 
-    // singular driver specific
-    driver: Driver = {} as Driver
+    // non series specific
+    drivers: {[key: string]: Driver} = {}
+    driverid = ''
     unsubscribe: string[] = []
     summary: any[] = []
     emailresult: any = {}
@@ -40,7 +41,7 @@ export class Api2State {
     busyPay:  {[key: string]: boolean} = {} // eventid set
 
     // used for communications
-    defaultgetlist= ''
+    authtype= ''
     ws: ReconnectingWebSocket = new ReconnectingWebSocket(`ws://${window.location.host}${API2ROOT}/live`, undefined, {
         minReconnectionDelay: 1000,
         maxRetries: 10,

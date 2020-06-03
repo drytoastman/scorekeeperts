@@ -1,6 +1,6 @@
 <template>
     <div>
-        Just a placeholder {{$route.path}}, {{$route.params}}
+        Placeholder ({{$route.name}}, {{$route.path}}, {{$route.params}})
     </div>
 </template>
 

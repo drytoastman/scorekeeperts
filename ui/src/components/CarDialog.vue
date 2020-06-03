@@ -107,7 +107,7 @@ export default {
 
                 this.$store.dispatch('setdata', {
                     type: this.apiType,
-                    cars: [this.carm],
+                    items: { cars: [this.carm] },
                     busy: { key: 'busyCars', id: this.carm.carid }
                 })
 

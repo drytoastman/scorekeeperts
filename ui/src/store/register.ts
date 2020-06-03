@@ -4,7 +4,7 @@ import { ActionContext, ActionTree, Store, GetterTree } from 'vuex'
 import VueRouter, { Route } from 'vue-router'
 import { api2Mutations } from './api2mutations'
 import { api2Actions } from './api2actions'
-import { UUID, Registration } from '@common/lib'
+import { UUID, Registration, Driver } from '@common/lib'
 
 export const registerActions = {
 
@@ -58,6 +58,10 @@ const getters = {
     unpaidReg: (state, getters) => (reglist: Registration[]) => {
         if (!reglist) { return [] }
         return reglist.filter(r => !getters.hasPayments(r.eventid, r.carid))
+    },
+
+    driver: (state) => {
+        return state.driverid ? state.drivers[state.driverid] : {}
     }
 
 } as GetterTree<Api2State, Api2State>
@@ -74,37 +78,29 @@ export function createRegisterStore(router: VueRouter) {
 
     /* Create our websocket handler and default get request */
     store.state.ws.onmessage = (e) => store.commit('apiData', JSON.parse(e.data))
-    store.state.defaultgetlist = 'driverall'
+    store.state.authtype = 'driver'
 
-    /*
-        On certain route changes, we check if we changed our series via the URL
-        Also, attempt data load if we don't have anything yet for some reason
-    */
+    /* On certain route changes, we check if we changed our series via the URL */
     router.beforeResolve(function(to: Route, from: Route, next: Function): void {
         if ((to.params.series) && (to.params.series !== store.state.currentSeries)) {
             store.commit('changeSeries', to.params.series)
         }
-        // on any route change, if we don't have driver data, try and load now
-        if (!store.state.driver.driverid) {
-            store.dispatch('getdata')
-        }
         next()
     })
-
-    /* When we go from driver auth to unauth, clear series data *
-    store.watch(
-        (state: Api2State) => { return state.driverAuthenticated },
-        (newvalue: boolean, oldvalue: boolean) => {
-            if ((!newvalue) && (oldvalue === true)) {
-                store.commit('clearSeriesData')
-            }
-        }
-    ) */
 
     /* When the current series changes (URL or UI), we need to load new data */
     store.watch(
         (state: Api2State) => { return state.currentSeries },
         () => { store.dispatch('getdata') }
+    )
+
+    // We share the drivers table, in register case copy out the singular driverid for reference
+    store.watch(
+        (state: Api2State) => { return state.drivers },
+        (newvalue: any) => {
+            const d: Driver[] = Object.values(newvalue)
+            store.commit('setDriverId', d.length > 0 ? d[0].driverid : '')
+        }
     )
 
     return store

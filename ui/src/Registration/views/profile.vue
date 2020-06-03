@@ -2,7 +2,7 @@
     <v-container v-if="driver.attr">
         <v-row dense>
             <v-col>
-                <Driver class='profilebox'>
+                <Driver :driver="driver" class='profilebox'>
                     <div class='dialogs'>
                         <DriverDialog :driver="driver"></DriverDialog>
                         <ChangePasswordDialog></ChangePasswordDialog>
@@ -22,7 +22,7 @@
 </template>
 
 <script>
-import { mapState } from 'vuex'
+import { mapGetters } from 'vuex'
 import Driver from '../../components/Driver'
 import DriverDialog from '../../components/DriverDialog'
 import ChangePasswordDialog from '../components/ChangePasswordDialog'
@@ -41,7 +41,7 @@ export default {
         SummaryDisplay
     },
     computed: {
-        ...mapState(['driver'])
+        ...mapGetters(['driver'])
     }
 }
 </script>

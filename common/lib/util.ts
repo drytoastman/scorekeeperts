@@ -18,6 +18,10 @@ export const isDate: VuetifyValidationRule         = v => { return (v instanceof
 export const isDecimal3: VuetifyValidationRule     = v => { return validator.isDecimal(v, { decimal_digits: '0,3' }) || 'must be a decimal with max 3 places' }
 export const isBarcode: VuetifyValidationRule      = v => { return /^([0-9A-Z]+|)$/.test(v) || 'Barcode can only accept characters 0-9 an capital A-Z' }
 
+export const isDollar: VuetifyValidationRule = v => {
+    return  typeof v === 'number' || validator.isCurrency(v, { digits_after_decimal: [0, 1, 2] }) || 'Needs to be a valid dollar amount'
+}
+
 export function isPrintable(allowblank: boolean): VuetifyValidationRule {
     return (v): (boolean|string) => {
         if (allowblank && v === undefined) return true

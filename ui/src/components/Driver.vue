@@ -1,5 +1,5 @@
 <template>
-    <div v-if="driver.attr">
+    <div v-if="driver && driver.attr">
         <div class='title'>{{driver.firstname}} {{driver.lastname}}</div>
         <div>{{driver.driverid}}</div>
         <div>
@@ -32,13 +32,14 @@
 </template>
 
 <script>
-import { mapState } from 'vuex'
 import { mdiEmail, mdiEmailOff } from '@mdi/js'
 
 export default {
     name: 'Driver',
+    props: {
+        driver: Object
+    },
     computed: {
-        ...mapState(['driver']),
         dncicon()  { return this.driver.optoutmail ? mdiEmailOff : mdiEmail },
         dnccolor() { return this.driver.optoutmail ? '#A77' : '#7A7' },
         dnctooltip() { return this.driver.optoutmail ? 'Do Not Contact' : 'Contact Ok' }

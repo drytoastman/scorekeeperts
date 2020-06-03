@@ -3,7 +3,7 @@
         <v-card-title>
             <CarLabel :car=car></CarLabel>
         </v-card-title>
-        <v-card-actions v-on="on">
+        <v-card-actions>
             <v-btn text @click="$emit('editcar', car)"   :disabled="inreg">Edit</v-btn>
             <v-btn text @click="$emit('deletecar', car)" :disabled="inreg">Delete</v-btn>
             <div class='inuse' v-if="inreg">In Use</div>

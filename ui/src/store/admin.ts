@@ -50,7 +50,7 @@ export function createAdminStore(router: VueRouter) {
 
     /* Create our websocket handler and default get request */
     store.state.ws.onmessage = (e) => store.commit('apiData', JSON.parse(e.data))
-    store.state.defaultgetlist = 'seriesall'
+    store.state.authtype = 'series'
 
     /*
         On route changes, check to see if we have data or need to load it
@@ -59,23 +59,12 @@ export function createAdminStore(router: VueRouter) {
         if ((to.params.series) && (to.params.series !== store.state.currentSeries)) {
             store.commit('changeSeries', to.params.series)
         }
+        // on any route change, if we don't have series list, try and load now
+        if (store.state.serieslist.length === 0) {
+            store.dispatch('getdata', { items: 'serieslist' })
+        }
         next()
     })
-
-    /* When we go from driver unauthneticated to authenticated, we are now able to load data *
-    store.watch(
-        (state: Api2State) => { return state.driverAuthenticated },
-        (newvalue: boolean, oldvalue: boolean) => {
-            if ((newvalue === true) && (!oldvalue)) {
-                console.log('authenticated getdata')
-                store.dispatch('getdata')
-            }
-            if ((!newvalue) && (oldvalue === true)) {
-                store.commit('clearSeriesData')
-            }
-        }
-    )
-    */
 
     /* When the current series changes (URL or UI), we need to load new data */
     store.watch(

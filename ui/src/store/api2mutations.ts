@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import { MutationTree } from 'vuex'
-import { Car, SeriesEvent, Registration, Payment, PaymentAccount } from '@common/lib'
+import { Car, SeriesEvent, Registration, Payment, PaymentAccount, UUID, Driver } from '@common/lib'
 import { Api2State } from './state'
 
 export function clearApi2SeriesData(state: Api2State) {
@@ -55,6 +55,10 @@ export const api2Mutations = {
         clearApi2SeriesData(state)
     },
 
+    setDriverId(state: Api2State, driverid: UUID) {
+        state.driverid = driverid
+    },
+
     setErrors(state: Api2State, errors: string[]) {
         state.errors = errors
     },
@@ -84,11 +88,18 @@ export const api2Mutations = {
     apiData(state: Api2State, data: any) {
         if (data === undefined) return
 
-        for (const key of ['driver', 'serieslist', 'listids', 'unsubscribe', 'summary', 'classes', 'indexes', 'paymentitems', 'usednumbers', 'emailresult']) {
+        for (const key of ['serieslist', 'listids', 'unsubscribe', 'summary', 'classes', 'indexes', 'paymentitems', 'usednumbers', 'emailresult']) {
             // easy straight assignments/replacements
             if (key in data) {
                 state[key] = data[key]
             }
+        }
+
+        if ('drivers' in data) {
+            if (data.type === 'get') {
+                state.drivers = {}
+            }
+            data.drivers.forEach((d: Driver) => Vue.set(state.drivers, d.driverid, d))
         }
 
         if ('events' in data) {
