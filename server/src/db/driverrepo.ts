@@ -26,13 +26,15 @@ export class DriverRepository {
         }
     }
 
-    private filterDriver(d: Driver): Driver {
-        delete d.password
-        return d
+    private filterDrivers(drivers: Driver[]): Driver[] {
+        for (const d of drivers) {
+            delete d.password
+        }
+        return drivers
     }
 
-    async getDriverById(driverid: UUID): Promise<Driver> {
-        return this.filterDriver(await this.db.one('SELECT * FROM drivers WHERE driverid=$1', [driverid]))
+    async getDriverById(driverid: UUID): Promise<Driver[]> {
+        return this.filterDrivers(await this.db.any('SELECT * FROM drivers WHERE driverid=$1', [driverid]))
     }
 
     async getUnsubscribeList(driverid: UUID): Promise<string[]> {
@@ -63,13 +65,13 @@ export class DriverRepository {
         await this.db.none('UPDATE drivers SET password=$1,modified=now() WHERE driverid=$2', [hash, driverid])
     }
 
-    async updateDriver(type: string, driver: Driver, driverid: UUID): Promise<Driver> {
-        if (driver.driverid !== driverid) {
-            throw Error(`Trying to modify a driver that isn't you ${JSON.stringify(driver)} ${driverid}`)
+    async updateDriver(type: string, drivers: Driver[], driverid: UUID): Promise<Driver[]> {
+        if (drivers[0].driverid !== driverid) {
+            throw Error(`Trying to modify a driver that isn't you ${JSON.stringify(drivers[0])} ${driverid}`)
         }
 
         if (type === 'update')  {
-            return this.filterDriver(await this.db.one(this.pgp.helpers.update([driver], drivercols) + ' WHERE v.driverid = t.driverid RETURNING *'))
+            return this.filterDrivers(await this.db.any(this.pgp.helpers.update(drivers, drivercols) + ' WHERE v.driverid = t.driverid RETURNING *'))
         }
 
         throw Error(`Unknown operation type ${JSON.stringify(type)}`)

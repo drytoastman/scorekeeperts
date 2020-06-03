@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import { Request, Response } from 'express'
+import { Request, Response, request } from 'express'
 import { db } from '../db'
 import { UUID } from '@common/lib'
 
@@ -82,47 +82,72 @@ export async function regreset(req: Request, res: Response) {
     }
 }
 
-export const SERIESLIST  = 'serieslist'
-export const BOTHITEMS   = new Set(['emaillists', 'events', 'paymentaccounts', 'paymentitems', 'counts', 'classes', 'indexes'])
-export const DRIVERITEMS = new Set<string>(['driver', 'summary', 'cars', 'registered', 'payments'])
-export const SERIESITEMS = new Set<string>(['allcars'])
-export const GLOBALITEMS = new Set<string>(['driver', 'emaillists', 'summary'])
+export const SERIESLIST   = 'serieslist'
+export const APIITEMS     = [
+    SERIESLIST, 'drivers', 'summary', 'listids', 'unsubscribe',
+    'events', 'paymentaccounts', 'paymentitems', 'payments', 'counts',
+    'classes', 'indexes', 'cars', 'registered'
+]
+export const APINONSERIES = [SERIESLIST, 'drivers', 'summary', 'listids', 'unsubscribe']
 
 class AuthError extends Error {
-    types: string
-    constructor(message: string, types: string) {
+    authtype: string
+    constructor(message: string, authtype: string) {
         super(message)
-        this.types = types
+        this.authtype = authtype
     }
 }
 
-export function checkAuthItems(itemlist: string[], series: string, auth: AuthData) {
-
-    if (_.isEqual(itemlist, [SERIESLIST])) {
-        return itemlist
+export function checkAuth(req: Request): any {
+    let param
+    if (req.method === 'GET') {
+        // Use query param, delete anything in body
+        req.body = {}
+        param = req.query
+    } else if (req.method === 'POST') {
+        // Use the body param, delete anything in query
+        req.query = {}
+        param = req.body
+    } else {
+        throw new AuthError('unknown method', '')
     }
 
-    console.log(`auth (${series} ${auth.hasSeriesAuth(series)}), (driver ${auth.hasDriverAuth()})`)
+    const authtype = param.authtype // driver or series
+    const series   = param.series
 
-    if ((!auth.hasDriverAuth()) && (!auth.hasSeriesAuth(series))) {  // For BOTH items
-        throw new AuthError('not authenticated',  'driver,series')
-    }
-
-    if (!auth.hasDriverAuth()) {
-        for (const item of itemlist.values()) {
-            if (DRIVERITEMS.has(item)) {
-                throw new AuthError('not authenticated', 'driver')
-            }
+    if (req.method === 'GET') {
+        if (param.items === SERIESLIST) { // always allow plain series list
+            param.items = [SERIESLIST]
+            return param
         }
     }
 
-    if (!auth.hasSeriesAuth(series)) {
-        for (const item of itemlist.values()) {
-            if (SERIESITEMS.has(item)) {
-                throw new AuthError('not authenticated', 'series')
-            }
+    if (authtype === 'driver') {
+        if (!req.auth.hasDriverAuth()) {
+            throw new AuthError('not authenticated', 'driver')
+        }
+    } else if (authtype === 'series') {
+        if (!req.auth.hasSeriesAuth(series)) {
+            throw new AuthError('not authenticated', 'series')
+        }
+    } else {
+        throw new AuthError('unknown authtype', authtype)
+    }
+
+    if (req.method === 'GET') {
+        param.items = param.items ? param.items.split(',') : []
+        if (param.items.length === 0) {
+            param.items = [...APIITEMS]
+        }
+        if (!series) {
+            param.items = param.items.filter(val => APINONSERIES.includes(val))
+        }
+
+    } else { // POST
+        if (!series) {
+            param.items = _.pick(param.items, APINONSERIES)
         }
     }
 
-    return itemlist
+    return param
 }

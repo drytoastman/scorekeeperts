@@ -1,63 +1,37 @@
 import { Request, Response } from 'express'
 import { db } from '../db'
 import { allSeriesSummary } from './summary'
-import { checkAuthItems, DRIVERITEMS, SERIESLIST, SERIESITEMS, GLOBALITEMS, BOTHITEMS } from './apiauth'
-
-const DRIVERALL = 'driverall'
-const SERIESALL = 'seriesall'
+import { checkAuth } from './apiauth'
 
 export async function apiget(req: Request, res: Response) {
 
-    const series    = (req.query && req.query.series) as string
-    const classcode = (req.query && req.query.classcode) as string
-    const items     = (req.query && req.query.items)
-    if (typeof items !== 'string' || items.length < 3) { // no requests
-        res.status(400).json({ error: 'nothing requested' })
-        return
-    }
-
-    let itemlist = items.split(',')
+    let param
     try {
-        // Replace '*all' with full lists, shortcut to reduce data sent
-        if  (itemlist.includes(DRIVERALL)) {
-            itemlist = [...itemlist, ...DRIVERITEMS, ...BOTHITEMS].filter(v => v !== DRIVERALL)
-        }
-        if  (itemlist.includes(SERIESALL)) {
-            itemlist = [...itemlist, ...SERIESITEMS, ...BOTHITEMS].filter(v => v !== SERIESALL)
-        }
-        console.log(itemlist)
-        // If there is no series,  filter out things that are not global
-        if (!series) {
-            itemlist = itemlist.filter(val => GLOBALITEMS.has(val))
-        }
-        itemlist.push(SERIESLIST)
-        itemlist = checkAuthItems(itemlist, series, req.auth)
+        param = checkAuth(req)
     } catch (error) {
-        res.status(401).json({ error: error.message, types: error.types })
+        res.status(401).json({ error: error.message, authtype: error.authtype })
         return
     }
 
     res.json(await db.task('apiget', async t => {
         const ret: any = {
             type: 'get',
-            series: series
+            series: param.series
         }
 
         let classdata
         await t.series.setSeries(ret.series)
-        for (const item of itemlist.values()) {
+        for (const item of param.items) {
             switch (item) {
-                case 'driver':     ret.driver     = await t.drivers.getDriverById(req.auth.driverId()); break
-                case 'serieslist': ret.serieslist = await t.series.seriesList(); break
-                case 'emaillists':
-                    ret.listids     = await t.series.emailListIds()
-                    ret.unsubscribe = await t.drivers.getUnsubscribeList(req.auth.driverId())
-                    break
-                case 'events':     ret.events     = await t.series.eventList(); break
-                case 'cars':       ret.cars       = await t.cars.getCarsbyDriverId(req.auth.driverId()); break
-                case 'registered': ret.registered = await t.register.getRegistrationbyDriverId(req.auth.driverId()); break
-                case 'payments':   ret.payments   = await t.payments.getPaymentsbyDriverId(req.auth.driverId()); break
-                case 'counts':     ret.counts     = await t.register.getRegistationCounts(); break
+                case 'drivers':     ret.drivers     = await t.drivers.getDriverById(req.auth.driverId()); break
+                case 'serieslist':  ret.serieslist  = await t.series.seriesList(); break
+                case 'listids':     ret.listids     = await t.series.emailListIds(); break
+                case 'unsubscribe': ret.unsubscribe = await t.drivers.getUnsubscribeList(req.auth.driverId()); break
+                case 'events':      ret.events      = await t.series.eventList(); break
+                case 'cars':        ret.cars        = await t.cars.getCarsbyDriverId(req.auth.driverId()); break
+                case 'registered':  ret.registered  = await t.register.getRegistrationbyDriverId(req.auth.driverId()); break
+                case 'payments':    ret.payments    = await t.payments.getPaymentsbyDriverId(req.auth.driverId()); break
+                case 'counts':      ret.counts      = await t.register.getRegistationCounts(); break
                 case 'classes':
                 case 'indexes':
                     if (!classdata) classdata = await t.clsidx.classData()
@@ -71,7 +45,7 @@ export async function apiget(req: Request, res: Response) {
                     break
                 case 'summary': break // deal with later
                 case 'usednumbers':
-                    ret.usednumbers = await t.register.usedNumbers(req.auth.driverId(), classcode, await t.series.superUniqueNumbers())
+                    ret.usednumbers = await t.register.usedNumbers(req.auth.driverId(), param.classcode, await t.series.superUniqueNumbers())
                     break
 
                 default: console.log(`don't understand ${item}`); break
@@ -79,7 +53,7 @@ export async function apiget(req: Request, res: Response) {
         }
 
         // This has to happen last as it plays with the series schema setting
-        if (itemlist.includes('summary')) {
+        if (param.items.includes('summary')) {
             ret.summary = await allSeriesSummary(t, req.auth.driverId())
         }
 
