@@ -4,7 +4,8 @@
             <v-col>
                 <Driver :driver="driver" class='profilebox'>
                     <div class='dialogs'>
-                        <DriverDialog :driver="driver"></DriverDialog>
+                        <v-btn dark color=secondary @click='driverDialog=true'>Edit Profile</v-btn>
+                        <DriverDialog :driver="driver" apiType="update" v-model=driverDialog></DriverDialog>
                         <ChangePasswordDialog></ChangePasswordDialog>
                     </div>
                 </Driver>
@@ -42,6 +43,11 @@ export default {
     },
     computed: {
         ...mapGetters(['driver'])
+    },
+    data() {
+        return {
+            driverDialog: false
+        }
     }
 }
 </script>

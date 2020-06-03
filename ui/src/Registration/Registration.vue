@@ -112,6 +112,10 @@ export default {
                 })
             }
         }
+    },
+    mounted() {
+        console.log('mounted getdata')
+        this.$store.dispatch('getdata')
     }
 }
 </script>

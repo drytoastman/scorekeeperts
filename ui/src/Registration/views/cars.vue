@@ -16,7 +16,7 @@
             <v-col>
             </v-col>
         </v-row>
-        <CarDialog v-model=dialogOpen :title=dialogTitle :car=dialogCar :apiType=apiType @save='dialogSave'></CarDialog>
+        <CarDialog v-model=dialogOpen :car=dialogCar :apiType=apiType @save='dialogSave'></CarDialog>
     </v-container>
 </template>
 
@@ -34,7 +34,6 @@ export default {
     data() {
         return {
             dialogOpen: false,
-            dialogTitle: 'Title here',
             dialogCar: { attr: {} },
             apiType: '',
             loadingCard: undefined
@@ -58,19 +57,16 @@ export default {
     methods: {
         addCar() {
             this.dialogCar = undefined
-            this.dialogTitle = 'Add Car'
             this.dialogOpen = true
             this.apiType = 'insert'
         },
         editCar(car) {
             this.dialogCar = car
-            this.dialogTitle = 'Edit Car'
             this.dialogOpen = true
             this.apiType = 'update'
         },
         deleteCar(car) {
             this.dialogCar = car
-            this.dialogTitle = 'Delete Car'
             this.dialogOpen = true
             this.apiType = 'delete'
         },

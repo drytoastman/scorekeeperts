@@ -106,10 +106,7 @@ export default {
 
 <style scoped>
 .itemstable {
-    margin-top: 1rem;
-    margin-bottom: 1rem;
-    xborder: 1px solid #ccc;
-    display: inline-block;
+    margin: 1rem auto;
+    display: table;
 }
-
 </style>
