@@ -56,6 +56,11 @@ export async function apipost(req: Request, res: Response) {
                         addsummary = true
                         break
 
+                    case 'paymentaccounts':
+                        req.auth.requireSeries(param.series)
+                        ret.paymentaccounts = await t.payments.updatePaymentAccounts(param.type, param.items.paymentaccounts)
+                        break
+
                     case 'paymentitems':
                         req.auth.requireSeries(param.series)
                         ret.paymentitems = await t.payments.updatePaymentItems(param.type, param.items.paymentitems)

@@ -27,7 +27,8 @@
             </template>
         </v-data-table>
 
-        <ItemDialog :item="dialogData" :apiType="dialogApiType" v-model="itemDialog"></ItemDialog>
+        <ItemDialog    :item="dialogData"    :apiType="dialogApiType" v-model="itemDialog"></ItemDialog>
+        <AccountDialog :account="dialogData" :apiType="dialogApiType" v-model="accountDialog"></AccountDialog>
     </div>
 </template>
 
@@ -39,12 +40,14 @@ import squareIcon from '../../images/square.svg'
 import paypalIcon from '../../images/paypal.svg'
 import ItemsTable from './ItemsTable'
 import ItemDialog from './ItemDialog'
+import AccountDialog from './AccountDialog'
 
 export default {
     name: 'Accounts',
     components: {
         ItemsTable,
-        ItemDialog
+        ItemDialog,
+        AccountDialog
     },
     data() {
         return {
@@ -52,6 +55,7 @@ export default {
             dialogData: {},
             dialogApiType: '',
             itemDialog: false,
+            accountDialog: false,
             icons: {
                 mdiPencil,
                 mdiDelete,
@@ -68,7 +72,10 @@ export default {
     },
     computed: {
         ...mapState(['paymentaccounts']),
-        accountsList() { return Object.values(this.paymentaccounts) }
+        accountsList() {
+            console.log('new list')
+            return Object.values(this.paymentaccounts)
+            }
     },
     methods: {
         newitem(accountid) {
@@ -86,8 +93,16 @@ export default {
             this.dialogApiType = 'delete'
             this.itemDialog = true
         },
-        editaccount(account) { console.log(JSON.stringify(account)) },
-        deleteaccount(account) { console.log(JSON.stringify(account)) }
+        editaccount(account) {
+            this.dialogData = account
+            this.dialogApiType = 'update'
+            this.accountDialog = true
+        },
+        deleteaccount(account) {
+            this.dialogData = account
+            this.dialogApiType = 'delete'
+            this.accountDialog = true
+        }
     }
 }
 </script>

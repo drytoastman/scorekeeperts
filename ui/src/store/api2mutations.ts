@@ -97,7 +97,10 @@ export const api2Mutations = {
 
         // For more common CRUD operations
         // data.type in ('get', 'insert', 'update', 'delete')
-        for (const pair of [['paymentitems', 'itemid']]) {
+        for (const pair of [
+            ['paymentitems', 'itemid'],
+            ['paymentaccounts', 'accountid']
+        ]) {
             const [key, idfield] = pair
             if (key in data) {
                 if (data.type === 'delete') {
@@ -162,15 +165,6 @@ export const api2Mutations = {
         if ('counts' in data) {
             state.counts = {}
             data.counts.forEach((e: SeriesEvent) => Vue.set(state.counts, e.eventid, e))
-        }
-
-        if ('paymentaccounts' in data) {
-            if (data.type === 'get') {
-                state.paymentaccounts = {}
-            }
-            data.paymentaccounts.forEach((a: PaymentAccount) => {
-                state.paymentaccounts[a.accountid] = a
-            })
         }
     }
 

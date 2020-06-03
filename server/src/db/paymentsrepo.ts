@@ -96,6 +96,24 @@ export class PaymentsRepository {
         return this.db.one('SELECT * FROM paymentaccounts WHERE accountid=$1', [accountid])
     }
 
+    async updatePaymentAccounts(type: string, accounts: PaymentAccount[]): Promise<PaymentAccount[]> {
+        if (type === 'insert') { return this.db.any(this.pgp.helpers.insert(accounts, accountcols) + ' RETURNING *') }
+        if (type === 'update') { return this.db.any(this.pgp.helpers.update(accounts, accountcols) + ' WHERE v.accountid = t.accountid RETURNING *') }
+        if (type === 'delete') {
+            const ids = accounts.map(a => a.accountid)
+            const rows = await this.db.any('SELECT name FROM events WHERE accountid in ($1:csv) ORDER BY date', ids)
+            if (rows.length > 0) {
+                throw Error(`Account(s) still in use for events (${rows.map(r => r.name).join(', ')})`)
+            }
+            return this.db.tx(t => {
+                t.any('DELETE from paymentsecrets WHERE accountid in ($1:csv)', ids)
+                t.any('DELETE from paymentitems WHERE accountid in ($1:csv)', ids)
+                return t.any('DELETE from paymentaccounts WHERE accountid in ($1:csv) RETURNING accountid', ids)
+            })
+        }
+        throw Error(`Unknown operation type ${JSON.stringify(type)}`)
+    }
+
     async getPaymentAccountSecret(accountid: string): Promise<PaymentAccountSecret> {
         return this.db.one('SELECT * FROM paymentsecrets WHERE accountid=$1', [accountid])
     }
