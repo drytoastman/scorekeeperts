@@ -5,9 +5,9 @@
                 <v-text-field v-model="itemm.name"   label="Name"></v-text-field>
                 <v-text-field v-model="itemm.price"  label="Price" prefix="$" :rules="dollar"></v-text-field>
                 <div class='attrgrid'>
-                    <span class='key'>currency:</span><span>{{itemm.currency}}</span>
-                    <span class='key'>accountid:</span><span>{{itemm.accountid}}</span>
-                    <span class='key'>itemid:</span><span>{{itemm.itemid}}</span>
+                    <span class='key'>currency:</span> <span class='val'>{{itemm.currency}}</span>
+                    <span class='key'>accountid:</span><span class='val'>{{itemm.accountid}}</span>
+                    <span class='key'>itemid:</span>   <span class='val'>{{itemm.itemid}}</span>
                 </div>
             </v-container>
         </v-form>
@@ -70,5 +70,8 @@ export default {
 }
 .key {
     text-align: right;
+}
+.val {
+    overflow: auto;
 }
 </style>

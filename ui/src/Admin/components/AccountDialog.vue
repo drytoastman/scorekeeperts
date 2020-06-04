@@ -9,10 +9,10 @@
                         <img v-else :src="icons.paypalIcon" />
                     </span>
                     <span class='key'>accountid:</span>
-                    <span>{{accountm.accountid}}</span>
+                    <span class='val'>{{accountm.accountid}}</span>
                     <template v-for="key in accountattr">
                         <span class='key' :key="key">{{key}}:</span>
-                        <span :key="key+'x'">{{accountm.attr[key]}}</span>
+                        <span class='val' :key="key+'x'">{{accountm.attr[key]}}</span>
                     </template>
                 </div>
             </v-container>
@@ -75,5 +75,8 @@ export default {
 }
 .key {
     text-align: right;
+}
+.val {
+    overflow: auto;
 }
 </style>

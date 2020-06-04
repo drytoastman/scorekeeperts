@@ -5,7 +5,6 @@ import { v1 as uuidv1 } from 'uuid'
 
 import { Payment, UUID, PaymentAccount } from '@common/lib'
 import { gCache } from './cache'
-import { token } from 'morgan'
 
 function getAClient(mode: string, token?: string): ApiClient {
     const client = new SquareConnect.ApiClient()
@@ -84,8 +83,8 @@ export async function squareOrder(conn: ScorekeeperProtocol, square: any, paymen
 export async function oauthRequest(conn: ScorekeeperProtocol, series: string, authorizationCode: string) {
     const SQ_APPLICATION_ID     = await conn.payments.getSquareApplicationId()
     const SQ_APPLICATION_SECRET = await conn.payments.getSquareApplicationSecret()
-    const SQ_APPLICATION_MODE   = await conn.payments.getSquareApplicationMode()
-    const authzclient           = getAClient(SQ_APPLICATION_MODE)
+    const CREATE_MODE           = await conn.payments.getPaymentAccountCreateMode()
+    const authzclient           = getAClient(CREATE_MODE)
 
     const tokenresponse = await new SquareConnect.OAuthApi(authzclient).obtainToken({
         client_id: SQ_APPLICATION_ID,
@@ -98,7 +97,7 @@ export async function oauthRequest(conn: ScorekeeperProtocol, series: string, au
         throw new Error('token response is missing access or refresh token ' + tokenresponse)
     }
 
-    const client = getAClient(SQ_APPLICATION_MODE, tokenresponse.access_token)
+    const client = getAClient(CREATE_MODE, tokenresponse.access_token)
     const locationResponse = await new SquareConnect.LocationsApi(client).listLocations()
 
     if (locationResponse.errors) {
@@ -123,8 +122,8 @@ export async function oauthRequest(conn: ScorekeeperProtocol, series: string, au
 
 
 export async function oauthFinish(conn: ScorekeeperProtocol, requestid: string, locationid: string) {
-    const SQ_APPLICATION_ID     = await conn.payments.getSquareApplicationId()
-    const SQ_APPLICATION_MODE   = await conn.payments.getSquareApplicationMode()
+    const SQ_APPLICATION_ID = await conn.payments.getSquareApplicationId()
+    const CREATE_MODE       = await conn.payments.getPaymentAccountCreateMode()
 
     const request = gCache.get(requestid) as any
     if (!request) {
@@ -141,7 +140,7 @@ export async function oauthFinish(conn: ScorekeeperProtocol, requestid: string, 
         name: location[0].name,
         type: 'square',
         attr: {
-            mode: SQ_APPLICATION_MODE,
+            mode: CREATE_MODE,
             applicationid: SQ_APPLICATION_ID
         },
         modified: ''
