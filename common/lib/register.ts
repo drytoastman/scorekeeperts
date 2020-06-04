@@ -26,6 +26,9 @@ export interface Payment {
     txtime: DateString;
     itemname: string;
     amount: number;
+    attr: {
+        accountid: string;
+    };
     modified: DateString;
 }
 

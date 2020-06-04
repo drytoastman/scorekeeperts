@@ -137,17 +137,25 @@ export class PaymentsRepository {
     }
     /***********/
 
-    async getPaymentsbyDriverId(driverid: UUID): Promise<Payment[]> {
-        return this.db.query('SELECT p.* FROM payments AS p JOIN cars c ON p.carid=c.carid WHERE c.driverid=$1', [driverid])
+    async getPaymentsbyAccountId(accountid: UUID): Promise<Payment[]> {
+        return this.db.any('SELECT * FROM payments WHERE attr->>\'accountid\'=$1', [accountid])
     }
 
-    async updatePayments(type: string, payments: Payment[], driverid: UUID): Promise<Payment[]> {
-        await verifyDriverRelationship(this.db, payments.map(p => p.carid), driverid)
+    async getPaymentsbyDriverId(driverid: UUID): Promise<Payment[]> {
+        return this.db.any('SELECT p.* FROM payments AS p JOIN cars c ON p.carid=c.carid WHERE c.driverid=$1', [driverid])
+    }
+
+    async updatePayments(type: string, payments: Payment[], driverid?: UUID): Promise<Payment[]> {
+        if (driverid) {
+            await verifyDriverRelationship(this.db, payments.map(p => p.carid), driverid)
+        }
 
         if (type === 'insert') {
             payments.forEach(p => { p.payid = uuidv1() })
             return this.db.any(this.pgp.helpers.insert(payments, paymentcols) + ' RETURNING *')
         }
+        if (type === 'update') { await this.db.any(this.pgp.helpers.update(payments, paymentcols) + ' WHERE v.payid = t.payid RETURNING *') }
+        if (type === 'delete') { await this.db.any('DELETE from payments WHERE payid in ($1:csv)', payments.map(p => p.payid)) }
 
         throw Error(`Unknown operation type ${JSON.stringify(type)}`)
     }
