@@ -50,6 +50,7 @@ export function createAdminStore(router: VueRouter) {
 
     /* Create our websocket handler and default get request */
     store.state.ws.onmessage = (e) => store.commit('apiData', JSON.parse(e.data))
+    store.state.ws.reconnect()
     store.state.authtype = 'series'
 
     /*

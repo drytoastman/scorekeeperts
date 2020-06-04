@@ -26,11 +26,6 @@ export const api2Mutations = {
         state.driverAuthenticated = ok
         if (state.driverAuthenticated) {
             state.errors = []
-            if (state.ws) {
-                state.ws.reconnect()
-            } else {
-                console.error('No websocket after authenticating')
-            }
         }
     },
 
@@ -38,11 +33,6 @@ export const api2Mutations = {
         Vue.set(state.seriesAuthenticated, data.series, data.ok)
         if (state.seriesAuthenticated[data.series]) {
             state.errors = []
-            if (state.ws) {
-                state.ws.reconnect()
-            } else {
-                console.error('No websocket after authenticating')
-            }
         }
     },
 

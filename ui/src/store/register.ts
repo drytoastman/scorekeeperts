@@ -78,6 +78,7 @@ export function createRegisterStore(router: VueRouter) {
 
     /* Create our websocket handler and default get request */
     store.state.ws.onmessage = (e) => store.commit('apiData', JSON.parse(e.data))
+    store.state.ws.reconnect()
     store.state.authtype = 'driver'
 
     /* On certain route changes, we check if we changed our series via the URL */
