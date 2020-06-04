@@ -58,7 +58,13 @@ export async function apipost(req: Request, res: Response) {
 
                     case 'paymentaccounts':
                         req.auth.requireSeries(param.series)
-                        ret.paymentaccounts = await t.payments.updatePaymentAccounts(param.type, param.items.paymentaccounts)
+                        ret.paymentaccounts = await t.tx(async tx => {
+                            const pa = await tx.payments.updatePaymentAccounts(param.type, param.items.paymentaccounts)
+                            if ('paymentsecrets' in param.items) {  // keep in one tx as they are linked if there are errors
+                                await tx.payments.updatePaymentAccountSecrets(param.type, param.items.paymentsecrets)
+                            }
+                            return pa
+                        })
                         break
 
                     case 'paymentitems':

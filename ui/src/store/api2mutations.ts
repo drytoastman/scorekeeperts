@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import { MutationTree } from 'vuex'
-import { Car, SeriesEvent, Registration, Payment, PaymentAccount, UUID, Driver } from '@common/lib'
+import { Car, SeriesEvent, Registration, Payment, UUID, Driver } from '@common/lib'
 import { Api2State } from './state'
 
 export function clearApi2SeriesData(state: Api2State) {

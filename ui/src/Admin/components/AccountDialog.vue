@@ -8,6 +8,8 @@
                         <img v-if="accountm.type === 'square'" :src="icons.squareIcon" />
                         <img v-else :src="icons.paypalIcon" />
                     </span>
+                    <span class='key'>accountid:</span>
+                    <span>{{accountm.accountid}}</span>
                     <template v-for="key in accountattr">
                         <span class='key' :key="key">{{key}}:</span>
                         <span :key="key+'x'">{{accountm.attr[key]}}</span>
@@ -34,7 +36,6 @@ export default {
     },
     data() {
         return {
-            key: '',
             accountm: { }, // we get a copy when the dialog arg changes, data initializer won't catch that
             icons: {
                 squareIcon,
@@ -58,7 +59,6 @@ export default {
     watch: {
         value: function(newv) {
             if (newv) {
-                console.log(this.account)
                 this.accountm = JSON.parse(JSON.stringify(this.account))
             }
         }

@@ -118,6 +118,14 @@ export class PaymentsRepository {
         return this.db.one('SELECT * FROM paymentsecrets WHERE accountid=$1', [accountid])
     }
 
+    async updatePaymentAccountSecrets(type: string, secrets: PaymentAccountSecret[]): Promise<void> {
+        if (type === 'insert') { await this.db.any(this.pgp.helpers.insert(secrets, secretcols)); return }
+        if (type === 'update') { await this.db.any(this.pgp.helpers.update(secrets, secretcols) + ' WHERE v.accountid = t.accountid RETURNING *'); return }
+        if (type === 'delete') { await this.db.any('DELETE from paymentsecrets WHERE accountid in ($1:csv)', secrets.map(s => s.accountid)); return }
+        throw Error(`Unknown operation type ${JSON.stringify(type)}`)
+    }
+
+    /* Upserts */
     async upsertPaymentAccount(account: PaymentAccount): Promise<null> {
         return this.db.none('INSERT INTO paymentaccounts (accountid, name, type, attr) VALUES ($(accountid), $(name), $(type), $(attr)) ' +
                             'ON CONFLICT (accountid) DO UPDATE SET name=$(name), type=$(type), attr=$(attr), modified=now()', account)
@@ -127,11 +135,7 @@ export class PaymentsRepository {
         return this.db.none('INSERT INTO paymentsecrets (accountid, secret, attr) VALUES ($(accountid), $(secret), $(attr)) ' +
                             'ON CONFLICT (accountid) DO UPDATE SET secret=$(secret), attr=$(attr), modified=now()', secret)
     }
-
-    async updatePaymentAccountSecret(secret: PaymentAccountSecret): Promise<void> {
-        console.log(this.pgp.helpers.update(secret, secretcols) + ' WHERE accountid=$1')
-        await this.db.none(this.pgp.helpers.update(secret, secretcols) + ' WHERE accountid=$1', [secret.accountid])
-    }
+    /***********/
 
     async getPaymentsbyDriverId(driverid: UUID): Promise<Payment[]> {
         return this.db.query('SELECT p.* FROM payments AS p JOIN cars c ON p.carid=c.carid WHERE c.driverid=$1', [driverid])

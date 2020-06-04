@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class='accountstable'>
         <v-data-table
             :items="accountsList"
             :headers="headers"
@@ -27,8 +27,12 @@
             </template>
         </v-data-table>
 
+        <v-btn color="secondary" @click.stop="newsquare">(Re)Authorize <img class='squareicon' :src="icons.squareIcon"/></v-btn>
+        <v-btn color="secondary" @click.stop="newpaypal">Add           <img class='paypalicon' :src="icons.paypalIcon"/></v-btn>
+
         <ItemDialog    :item="dialogData"    :apiType="dialogApiType" v-model="itemDialog"></ItemDialog>
         <AccountDialog :account="dialogData" :apiType="dialogApiType" v-model="accountDialog"></AccountDialog>
+        <AddPaypalDialog v-model="paypalDialog"></AddPaypalDialog>
     </div>
 </template>
 
@@ -41,13 +45,15 @@ import paypalIcon from '../../images/paypal.svg'
 import ItemsTable from './ItemsTable'
 import ItemDialog from './ItemDialog'
 import AccountDialog from './AccountDialog'
+import AddPaypalDialog from './AddPaypalDialog'
 
 export default {
     name: 'Accounts',
     components: {
         ItemsTable,
         ItemDialog,
-        AccountDialog
+        AccountDialog,
+        AddPaypalDialog
     },
     data() {
         return {
@@ -56,6 +62,7 @@ export default {
             dialogApiType: '',
             itemDialog: false,
             accountDialog: false,
+            paypalDialog: false,
             icons: {
                 mdiPencil,
                 mdiDelete,
@@ -72,10 +79,7 @@ export default {
     },
     computed: {
         ...mapState(['paymentaccounts']),
-        accountsList() {
-            console.log('new list')
-            return Object.values(this.paymentaccounts)
-            }
+        accountsList() { return Object.values(this.paymentaccounts) }
     },
     methods: {
         newitem(accountid) {
@@ -92,6 +96,12 @@ export default {
             this.dialogData = item
             this.dialogApiType = 'delete'
             this.itemDialog = true
+        },
+        newpaypal() {
+            this.paypalDialog = true
+        },
+        newsquare() {
+            console.log('new square')
         },
         editaccount(account) {
             this.dialogData = account
@@ -123,5 +133,20 @@ export default {
 .itemstable {
     margin: 1rem auto;
     display: table;
+}
+.paypalicon {
+    margin-left: 10px;
+    padding: 4px;
+    height: 30px;
+    filter: brightness(170%);
+}
+.squareicon {
+    margin-left: 10px;
+    height: 20px;
+    filter: brightness(0) invert(100);
+}
+.accountstable > .v-btn {
+    margin-left: 1rem;
+    margin-top: 1rem;
 }
 </style>

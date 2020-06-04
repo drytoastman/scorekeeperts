@@ -17,7 +17,7 @@ Vue.use(Vuetify)
 
 const base = {
     primary: colors.green.base,
-    secondary: colors.blue.base,
+    secondary: '#00a660',
     accent: colors.cyan.base,
     error: colors.red.base,
     warning: colors.orange.base,

@@ -188,7 +188,7 @@ export async function oauthRefresh(conn: ScorekeeperProtocol, account: PaymentAc
 
         secret.secret = tokenresponse.access_token as string
         secret.attr.expires = tokenresponse.expires_at as string
-        await conn.payments.updatePaymentAccountSecret(secret)
+        await conn.payments.updatePaymentAccountSecrets('update', [secret])
     } catch (error) {
         console.error(error)
     }

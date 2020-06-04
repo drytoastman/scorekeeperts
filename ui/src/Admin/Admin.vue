@@ -64,7 +64,6 @@
 </template>
 
 <script>
-import _ from 'lodash'
 import { mapState, mapGetters } from 'vuex'
 import { mdiCog, mdiFlagCheckered } from '@mdi/js'
 import LoginForm from './components/LoginForm'
