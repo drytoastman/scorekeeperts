@@ -18,6 +18,7 @@
             <template v-slot:item.type="{ item }">
                 <img v-if="item.type === 'square'" :src="icons.squareIcon" />
                 <img v-else :src="icons.paypalIcon" />
+                <v-icon v-if="item.attr.mode==='sandbox'" color=red>{{icons.mdiBug}}</v-icon>
             </template>
 
             <template v-slot:expanded-item="{ headers, item }">
@@ -27,8 +28,13 @@
             </template>
         </v-data-table>
 
-        <v-btn color="secondary" @click.stop="newsquare">(Re)Authorize <img class='squareicon' :src="icons.squareIcon"/></v-btn>
-        <v-btn color="secondary" @click.stop="newpaypal">Add           <img class='paypalicon' :src="icons.paypalIcon"/></v-btn>
+        <v-btn color="secondary" :href="squareoauthurl" :disabled="!squareoauthurl">
+            (Re)Authorize <img class='squareicon' :src="icons.squareIcon"/>
+        </v-btn>
+
+        <v-btn color="secondary" @click.stop="newpaypal">
+            Add <img class='paypalicon' :src="icons.paypalIcon"/>
+        </v-btn>
 
         <ItemDialog    :item="dialogData"    :apiType="dialogApiType" v-model="itemDialog"></ItemDialog>
         <AccountDialog :account="dialogData" :apiType="dialogApiType" v-model="accountDialog"></AccountDialog>
@@ -39,7 +45,7 @@
 <script>
 import { mapState } from 'vuex'
 import { v1 as uuidv1 } from 'uuid'
-import { mdiPencil, mdiDelete } from '@mdi/js'
+import { mdiPencil, mdiDelete, mdiBug } from '@mdi/js'
 import squareIcon from '../../images/square.svg'
 import paypalIcon from '../../images/paypal.svg'
 import ItemsTable from './ItemsTable'
@@ -66,6 +72,7 @@ export default {
             icons: {
                 mdiPencil,
                 mdiDelete,
+                mdiBug,
                 squareIcon,
                 paypalIcon
             },
@@ -78,7 +85,7 @@ export default {
         }
     },
     computed: {
-        ...mapState(['paymentaccounts']),
+        ...mapState(['paymentaccounts', 'squareoauthurl']),
         accountsList() { return Object.values(this.paymentaccounts) }
     },
     methods: {
@@ -99,9 +106,6 @@ export default {
         },
         newpaypal() {
             this.paypalDialog = true
-        },
-        newsquare() {
-            console.log('new square')
         },
         editaccount(account) {
             this.dialogData = account
@@ -134,14 +138,16 @@ export default {
     margin: 1rem auto;
     display: table;
 }
-.paypalicon {
+img {
     margin-left: 10px;
+    vertical-align: middle;
+}
+.paypalicon {
     padding: 4px;
     height: 30px;
     filter: brightness(170%);
 }
 .squareicon {
-    margin-left: 10px;
     height: 20px;
     filter: brightness(0) invert(100);
 }

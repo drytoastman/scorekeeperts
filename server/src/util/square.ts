@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 import { ScorekeeperProtocol } from '../db'
-import SquareConnect, { Money, ApiClient } from 'square-connect'
+import SquareConnect, { Money, ApiClient, OrderRoundingAdjustment } from 'square-connect'
 import { v1 as uuidv1 } from 'uuid'
 
 import { Payment, UUID, PaymentAccount } from '@common/lib'
@@ -80,7 +80,23 @@ export async function squareOrder(conn: ScorekeeperProtocol, square: any, paymen
     return conn.payments.updatePayments('insert', payments, driverid)
 }
 
-export async function oauthRequest(conn: ScorekeeperProtocol, series: string, authorizationCode: string) {
+export async function squareoAuthURL(conn: ScorekeeperProtocol, series: string) {
+    let SQ_APPLICATION_ID = 'missing'
+    try {
+        SQ_APPLICATION_ID = await conn.payments.getSquareApplicationId()
+    } catch (error) {
+        console.log(error)
+        // NO APPLICATION ID on onsite installs
+        return ''
+    }
+
+    const CREATE_MODE = await conn.payments.getPaymentAccountCreateMode()
+    const SCOPE       = 'MERCHANT_PROFILE_READ,PAYMENTS_WRITE,PAYMENTS_READ,ORDERS_WRITE'
+    const client      = getAClient(CREATE_MODE)
+    return `${client.basePath}/oauth2/authorize?client_id=${SQ_APPLICATION_ID}&scope=${SCOPE}&state=${series}`
+}
+
+export async function squareoAuthRequest(conn: ScorekeeperProtocol, series: string, authorizationCode: string) {
     const SQ_APPLICATION_ID     = await conn.payments.getSquareApplicationId()
     const SQ_APPLICATION_SECRET = await conn.payments.getSquareApplicationSecret()
     const CREATE_MODE           = await conn.payments.getPaymentAccountCreateMode()
@@ -91,6 +107,14 @@ export async function oauthRequest(conn: ScorekeeperProtocol, series: string, au
         client_secret: SQ_APPLICATION_SECRET,
         grant_type: 'authorization_code',
         code: authorizationCode
+    }).catch(error => {
+        let msg
+        try {
+            msg = error.response.body.message
+        } catch (referror) {
+            msg = 'unknown error response from Square server'
+        }
+        throw msg
     })
 
     if ((!tokenresponse.access_token) || (!tokenresponse.refresh_token)) {
@@ -121,13 +145,13 @@ export async function oauthRequest(conn: ScorekeeperProtocol, series: string, au
 }
 
 
-export async function oauthFinish(conn: ScorekeeperProtocol, requestid: string, locationid: string) {
+export async function squareoAuthFinish(conn: ScorekeeperProtocol, requestid: string, locationid: string) {
     const SQ_APPLICATION_ID = await conn.payments.getSquareApplicationId()
     const CREATE_MODE       = await conn.payments.getPaymentAccountCreateMode()
 
     const request = gCache.get(requestid) as any
     if (!request) {
-        throw new Error('no request in cache, most likely expired')
+        throw new Error('no request in cache, most likely expired (50 minutes)')
     }
 
     const location = request.locations.filter(l => l.id === locationid)
@@ -141,7 +165,8 @@ export async function oauthFinish(conn: ScorekeeperProtocol, requestid: string, 
         type: 'square',
         attr: {
             mode: CREATE_MODE,
-            applicationid: SQ_APPLICATION_ID
+            applicationid: SQ_APPLICATION_ID,
+            merchantid: location[0].merchant_id
         },
         modified: ''
     }
@@ -162,7 +187,7 @@ export async function oauthFinish(conn: ScorekeeperProtocol, requestid: string, 
 }
 
 const SECONDS_10_DAYS = 60 * 60 * 24 * 10
-export async function oauthRefresh(conn: ScorekeeperProtocol, account: PaymentAccount) {
+export async function squareoAuthRefresh(conn: ScorekeeperProtocol, account: PaymentAccount) {
     try {
         const secret = await conn.payments.getPaymentAccountSecret(account.accountid)
         const tillexpire = (new Date(secret.attr.expires).getTime() - new Date().getTime()) / 1000

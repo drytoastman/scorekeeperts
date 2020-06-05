@@ -1,7 +1,7 @@
 import { Request, Response } from 'express'
 import { db } from '../db'
 import { allSeriesSummary } from './summary'
-import { squareOrder } from '../util/square'
+import * as square from '../util/square'
 import { paypalCapture } from '../util/paypal'
 import { checkAuth } from './apiauth'
 import _ from 'lodash'
@@ -49,7 +49,7 @@ export async function apipost(req: Request, res: Response) {
                         if (param.paypal) {
                             ret.payments = await paypalCapture(t, param.paypal, param.items.payments, req.auth.driverId())
                         } else if (param.square) {
-                            ret.payments = await squareOrder(t, param.square, param.items.payments, req.auth.driverId())
+                            ret.payments = await square.squareOrder(t, param.square, param.items.payments, req.auth.driverId())
                         }
                         addsummary = true
                         break
@@ -72,6 +72,17 @@ export async function apipost(req: Request, res: Response) {
                     case 'paymentitems':
                         req.auth.requireSeries(param.series)
                         ret.paymentitems = await t.payments.updatePaymentItems(param.type, param.items.paymentitems)
+                        break
+
+                    case 'squareoauthcode':
+                        req.auth.requireSeries(param.series)
+                        ret.squareoauthresp = await square.squareoAuthRequest(t, param.series, param.items.squareoauthcode)
+                        break
+                    case 'squareoauthlocation':
+                        req.auth.requireSeries(param.series)
+                        await square.squareoAuthFinish(t, param.items.squareoauthlocation.requestid, param.items.squareoauthlocation.locationid)
+                        ret.type = 'get'
+                        ret.paymentaccounts = await t.payments.getPaymentAccounts()
                         break
                 }
             }

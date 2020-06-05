@@ -3,8 +3,9 @@ import WebSocket from 'ws'
 
 tableWatcher.addTables(['runs', 'timertimes', 'localeventstream', 'registered', 'events'])
 
-export const livereg = new WebSocket.Server({ noServer: true })
-livereg.on('connection', function connection(ws: WebSocket) {
+export const live = new WebSocket.Server({ noServer: true })
+
+live.on('connection', function connection(ws: WebSocket) {
     ws.on('message', function newmessage(msg: string) {
         ws.send('pong')
     })
@@ -21,7 +22,7 @@ tableWatcher.on('registered', async function change(series: any) {
             series: series,
             counts: res
         })
-        livereg.clients.forEach(function(ws) {
+        live.clients.forEach(function(ws) {
             ws.send(msg)
         })
     } catch (error) {
@@ -40,7 +41,7 @@ tableWatcher.on('events', async function change(series: any) {
             series: series,
             events: res
         })
-        livereg.clients.forEach(function(ws) {
+        live.clients.forEach(function(ws) {
             ws.send(msg)
         })
     } catch (error) {

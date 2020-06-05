@@ -107,7 +107,7 @@ export default {
             return this.errors.length > 0
         },
         displayName() {
-            return `Admin${this.$route.path}`.replace(/\//g, ' / ')
+            return `${this.currentSeries} / ${this.$route.name}`
         },
         selectedSeries: {
             get() {
@@ -132,18 +132,11 @@ export default {
 .v-navigation-drawer .v-subheader.labelheader {
     font-size: 120%;
 }
-/*
-.v-navigation-drawer .v-list-item {
-    margin-left: 2rem;
-    background: white;
+.loadingicon {
+    position: fixed;
+    z-index: 200;
+    left: 50vw;
+    top: 20vh;
 }
-.v-navigation-drawer .v-list-item::before {
-    opacity: 0;
-}
-.v-navigation-drawer .v-list-item.fullwidth {
-    margin-left: 0;
-    background: white;
-}
-*/
 @import '@/styles/general.scss'
 </style>

@@ -33,6 +33,10 @@ export class Api2State {
     payments: {[key: string]: { [key: string]: Payment[]}} = {}
     counts: {[key: string]: any} = {}
 
+    // square oauth
+    squareoauthurl = ''
+    squareoauthresp = {}
+
     // other more temporary things
     gettingData = false
     busyDriver: {[key: string]: boolean} = {} // driverid set

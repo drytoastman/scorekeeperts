@@ -85,10 +85,12 @@ export async function regreset(req: Request, res: Response) {
 
 export const SERIESLIST   = 'serieslist'
 export const APIITEMS     = [
-    SERIESLIST, 'drivers', 'summary', 'listids', 'unsubscribe',
+    SERIESLIST, 'drivers', 'listids', 'unsubscribe',
     'events', 'paymentaccounts', 'paymentitems', 'payments', 'counts',
     'classes', 'indexes', 'cars', 'registered'
 ]
+export const SERIESEXTRA  = ['squareoauthurl']
+export const DRIVEREXTRA  = ['summary']
 export const APINONSERIES = [SERIESLIST, 'drivers', 'summary', 'listids', 'unsubscribe']
 
 class AuthError extends Error {
@@ -138,7 +140,11 @@ export function checkAuth(req: Request): any {
     if (req.method === 'GET') {
         param.items = param.items ? param.items.split(',') : []
         if (param.items.length === 0) {
-            param.items = [...APIITEMS]
+            if (authtype === 'series') {
+                param.items = [...APIITEMS, ...SERIESEXTRA]
+            } else {
+                param.items = [...APIITEMS, ...DRIVEREXTRA]
+            }
         }
         if (!series) {
             param.items = param.items.filter(val => APINONSERIES.includes(val))

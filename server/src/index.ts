@@ -1,9 +1,11 @@
-import express, { Request, Response } from 'express'
+import express from 'express'
 import morgan from 'morgan'
 import helmet from 'helmet'
 import cookieSession from 'cookie-session'
 
-import { livereg, api2 } from './controllers'
+import { api2, live } from './controllers'
+import { db } from './db'
+import { paypalCheckRefunds } from './util/paypal'
 
 const app = express()
 app.use(helmet())
@@ -28,6 +30,16 @@ app.use(function(req, res, next) {
 })
 
 app.use('/api2', api2)
+app.get('/test1', function(req, res) {
+    db.task(async t => {
+        t.series.setSeries(req.query.series as string)
+        const a = await t.payments.getPaymentAccount(req.query.accountid as string)
+        res.json(await paypalCheckRefunds(t, a))
+    }).catch(error => {
+        res.json(error)
+    })
+})
+
 
 const PORT = process.env.PORT || 4000
 const server = app.listen(PORT, () => {
@@ -37,7 +49,7 @@ const server = app.listen(PORT, () => {
 server.on('upgrade', function upgrade(request, socket, head) {
     const pathname = request.url.split('?')[0]
     if (pathname === '/api2/live') {
-        livereg.handleUpgrade(request, socket, head, ws => livereg.emit('connection', ws, request))
+        live.handleUpgrade(request, socket, head, ws => live.emit('connection', ws, request))
     } else {
         socket.destroy()
     }
