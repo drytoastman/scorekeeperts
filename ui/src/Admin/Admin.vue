@@ -1,29 +1,14 @@
 <template>
     <v-app fluid>
-        <v-navigation-drawer v-model="drawer" app>
-            <v-list dense>
-                <v-list-item>
-                    <v-list-item-content>
-                        <v-list-item-title class="title" style="overflow:visible">Scorekeeper</v-list-item-title>
-                        <v-list-item-subtitle>Admin</v-list-item-subtitle>
-                    </v-list-item-content>
-                </v-list-item>
-
-                <v-divider></v-divider>
-
-                <v-list-item class="fullwidth">
-                    <v-list-item-content>
-                        <v-select :items="serieslist" v-model="selectedSeries" solo dense hide-details placeholder="Select A Series"></v-select>
-                    </v-list-item-content>
-                </v-list-item>
-            </v-list>
-        </v-navigation-drawer>
-
         <v-app-bar app dense dark color="primary">
-            <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
-            <v-toolbar-title>{{displayName}}</v-toolbar-title>
+            <!-- <v-app-bar-nav-icon @click.stop="drawer = !drawer" /> -->
+            <span class='btitle'>Admin</span>
+            <v-select :items="serieslist" v-model="selectedSeries" solo light dense hide-details placeholder="Select A Series"></v-select>
+            <span class='bdesc'>{{$route.name}}</span>
+            <v-divider inset vertical></v-divider>
+
             <!-- Events Menu -->
-            <v-menu v-model="value" close-on-content-click>
+            <v-menu close-on-content-click>
                 <template v-slot:activator="{ on }">
                     <v-btn color=white icon v-on="on"><v-icon>{{icons.mdiFlagCheckered}}</v-icon></v-btn>
                 </template>
@@ -35,12 +20,12 @@
             </v-menu>
 
             <!-- Settings Menu -->
-            <v-menu v-model="value2" close-on-content-click>
+            <v-menu close-on-content-click>
                 <template v-slot:activator="{ on }">
                     <v-btn color=white icon v-on="on"><v-icon>{{icons.mdiCog}}</v-icon></v-btn>
                 </template>
                 <v-list>
-                    <v-list-item v-for="item in items" :key="item.title" :to="item.link">
+                    <v-list-item v-for="item in settings" :key="item.title" :to="item.link">
                         <v-list-item-title>{{ item.title }}</v-list-item-title>
                     </v-list-item>
                 </v-list>
@@ -73,18 +58,12 @@ export default {
     components: {
         LoginForm
     },
-    props: {
-        source: String
-    },
     data: () => ({
-        drawer: null,
-        value: false,
-        value2: false,
         icons: {
             mdiCog,
             mdiFlagCheckered
         },
-        items: [
+        settings: [
             { title: 'Settings', link: { name:'settings' } },
             { title: 'Classes',  link: { name:'classes' }  },
             { title: 'Indexes',  link: { name:'indexes' }  },
@@ -92,23 +71,14 @@ export default {
         ]
     }),
     methods: {
-        logout: function() {
-            this.$store.dispatch('serieslogout', { series: this.currentSeries })
-            this.drawer = false
-        },
         errorclose: function() {
             this.$store.commit('clearErrors')
         }
     },
     computed: {
-        ...mapState(['currentSeries', 'haveSeriesAuth', 'orderedEvents', 'serieslist', 'events', 'errors', 'gettingData']),
+        ...mapState(['currentSeries', 'serieslist', 'events', 'errors', 'gettingData']),
         ...mapGetters(['haveSeriesAuth', 'orderedEvents']),
-        snackbar() {
-            return this.errors.length > 0
-        },
-        displayName() {
-            return `${this.currentSeries} / ${this.$route.name}`
-        },
+        snackbar() { return this.errors.length > 0 },
         selectedSeries: {
             get() {
                 return this.currentSeries
@@ -123,8 +93,7 @@ export default {
                 })
             }
         }
-    },
-    watch: {}
+    }
 }
 </script>
 
@@ -132,6 +101,34 @@ export default {
 .v-navigation-drawer .v-subheader.labelheader {
     font-size: 120%;
 }
+
+.v-toolbar__content {
+    .v-text-field {
+        max-width: 10rem;
+        margin-left: 1rem;
+        margin-right: 1rem;
+    }
+    .btitle {
+        font-weight: bold;
+        font-size: 130%;
+    }
+    .bdesc {
+        font-weight: bold;
+        font-size: 120%;
+    }
+    .v-divider {
+        border-color:#FFFA;
+        border-width: 1px;
+        margin-left: 1rem;
+        margin-right: 0.5rem;
+    }
+    @media (max-width: 700px) {
+        .v-divider, .bdesc {
+            display: none;
+        }
+    }
+}
+
 .loadingicon {
     position: fixed;
     z-index: 200;

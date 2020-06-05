@@ -70,10 +70,7 @@ export function createAdminStore(router: VueRouter) {
     /* When the current series changes (URL or UI), we need to load new data */
     store.watch(
         (state: Api2State) => { return state.currentSeries },
-        () => {
-            console.log('serieschange getdata')
-            store.dispatch('getdata')
-        }
+        () => { store.dispatch('getdata') }
     )
 
     return store
