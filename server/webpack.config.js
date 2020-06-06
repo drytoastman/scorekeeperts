@@ -1,5 +1,5 @@
 const path = require('path')
-const nodeExternals = require('webpack-node-externals')
+const webpack = require('webpack')
 
 const {
     NODE_ENV = 'production'
@@ -10,7 +10,10 @@ module.exports = {
     mode: NODE_ENV,
     target: 'node',
     watch: NODE_ENV === 'development',
-    externals: [nodeExternals()],
+    plugins: [
+        new webpack.IgnorePlugin(/^pg-native$/),
+        new webpack.DefinePlugin({ 'global.GENTLY': false })
+    ],
     output: {
         path: path.resolve(__dirname, 'build'),
         filename: 'index.js'

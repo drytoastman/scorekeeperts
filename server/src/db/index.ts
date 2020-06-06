@@ -31,9 +31,19 @@ const initOptions: IInitOptions<DBExtensions> = {
     }
 }
 
+const DBHOST = process.env.DBHOST || '127.0.0.1'
+let DBPORT = 6432
+try {
+    if (process.env.DBPORT) {
+        DBPORT = Number.parseInt(process.env.DBPORT)
+    }
+} catch (error) {
+    console.error(error)
+}
+
 const cn = {
-    host: '127.0.0.1',
-    port: 6432,
+    host: DBHOST,
+    port: DBPORT,
     database: 'scorekeeper',
     user: 'localuser',
     max: 30

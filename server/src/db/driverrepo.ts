@@ -1,4 +1,4 @@
-import bcrypt from 'bcrypt'
+import bcrypt from 'bcryptjs'
 import { UUID, Driver } from '@common/lib'
 import { IDatabase, ColumnSet, IMain } from 'pg-promise'
 

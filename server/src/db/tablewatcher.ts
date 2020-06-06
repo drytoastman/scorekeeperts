@@ -24,7 +24,7 @@ export class TableWatcher extends EventEmitter {
     }
 
     reconnect() {
-        const delay = 1
+        const delay = 3000
         return new Promise((resolve, reject) => {
             setTimeout(() => {
                 this.db.connect({ direct: true, onLost: this.onLost }).then(conn => {
