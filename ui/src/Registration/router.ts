@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import VueRouter from 'vue-router'
+import VueRouter, { RouterOptions } from 'vue-router'
 import EventsView from './views/events.vue'
 import CarsView from './views/cars.vue'
 import ProfileView from './views/profile.vue'
@@ -34,22 +34,16 @@ const routes = [
             name: 'profile'
         }
     }
-    /*
-    {
-        path: '/about',
-        name: 'About',
-        // route level code-splitting
-        // this generates a separate chunk (about.[hash].js) for this route
-        // which is lazy-loaded when the route is visited.
-        component: () => import(/* webpackChunkName: "about" *//* '../views/About.vue')
-    }
-    */
 ]
 
-const router = new VueRouter({
+declare const VUE_BASE: string
+const options = {
     mode: 'history',
     base: '/register',
     routes
-})
-
+} as RouterOptions
+if (VUE_BASE && VUE_BASE !== 'PUT_BASE_HERE') {
+    options.base = VUE_BASE
+}
+const router = new VueRouter(options)
 export default router
