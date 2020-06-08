@@ -4,7 +4,7 @@ import helmet from 'helmet'
 import cookieSession from 'cookie-session'
 
 import { api2, live } from './controllers'
-import { db } from './db'
+import { db, tableWatcher, pgp } from './db'
 import { paypalCheckRefunds } from './util/paypal'
 
 const app = express()
@@ -40,7 +40,6 @@ app.get('/test1', function(req, res) {
     })
 })
 
-
 const PORT = process.env.PORT || 4000
 const server = app.listen(PORT, () => {
     console.log(`Server is listening on port ${PORT}`)
@@ -53,4 +52,14 @@ server.on('upgrade', function upgrade(request, socket, head) {
     } else {
         socket.destroy()
     }
+})
+
+
+process.on('SIGTERM', () => {
+    console.log('terminating')
+    server.close(() => {
+        tableWatcher.shutdown()
+        pgp.end()
+        process.exitCode = 0
+    })
 })

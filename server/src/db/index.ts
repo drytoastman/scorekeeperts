@@ -46,6 +46,7 @@ const cn = {
     port: DBPORT,
     database: 'scorekeeper',
     user: 'localuser',
+    application_name: 'scnodejs',
     max: 30
 }
 

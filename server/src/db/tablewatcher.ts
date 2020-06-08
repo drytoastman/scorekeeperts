@@ -5,18 +5,29 @@ import { IClient } from 'pg-promise/typescript/pg-subset'
 export class TableWatcher extends EventEmitter {
     tables: Set<String>
     connection: IConnected<any, IClient> | null
+    shuttingdown: boolean
 
     constructor(private db: IDatabase<any>) {
         super()
+        this.shuttingdown = false
         this.tables = new Set<String>()
-        this.reconnect()
+    }
+
+    shutdown() {
+        this.shuttingdown = true
+        this.connection && this.connection.done()
     }
 
     addTables(tbls: string[]) {
         tbls.forEach(t => {
             this.tables.add(t)
-            this.connection && this.connection.none('LISTEN $1~', t)
+            if (this.connection) {
+                this.connection.none('LISTEN $1~', t)
+            }
         })
+        if (!this.connection) {
+            this.reconnect()
+        }
     }
 
     tableChange(data) {
@@ -25,31 +36,29 @@ export class TableWatcher extends EventEmitter {
 
     reconnect() {
         const delay = 3000
-        return new Promise((resolve, reject) => {
-            setTimeout(() => {
-                this.db.connect({ direct: true, onLost: this.onLost }).then(conn => {
-                    this.connection = conn // global connection is now available
-                    resolve(conn)
-                    conn.client.on('notification', this.tableChange.bind(this))
-                    this.tables.forEach(t => {
-                        conn.none('LISTEN $1~', t)
-                    })
-                }).catch(error => {
-                    console.log('Error Connecting:', error)
-                    this.reconnect().then(resolve).catch(reject)
+        setTimeout(() => {
+            this.db.connect({ direct: true, onLost: this.onLost.bind(this) }).then(conn => {
+                this.connection = conn
+                conn.client.on('notification', this.tableChange.bind(this))
+                this.tables.forEach(t => {
+                    conn.none('LISTEN $1~', t)
                 })
-            }, delay)
-        })
+            }).then(() => {
+                console.log('watcher connected')
+            }).catch(error => {
+                console.log('watcher connect error: ', error)
+                this.reconnect()
+            })
+        }, delay)
     }
 
     onLost(err: any, e: ILostContext<any>) {
-        console.log('Connectivity Problem:', err)
-        this.connection = null // prevent use of the broken connection
-        e.client.removeListener('notification', this.tableChange.bind(this))
-        this.reconnect().then(() => {
-            console.log('Successfully Reconnected')
-        }).catch(() => {
-            console.log('Connection Lost Permanently')
-        })
+        if (this.shuttingdown) {
+            return
+        }
+        console.log('watcher problem:', err)
+        e.client.removeAllListeners('notification')
+        this.connection = null
+        this.reconnect()
     }
 }
