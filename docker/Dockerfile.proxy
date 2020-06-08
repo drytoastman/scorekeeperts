@@ -2,4 +2,5 @@ FROM nginx:1.18.0
 # RUN apt-get update && apt-get install -y -q vim
 COPY --from=tsbase /code/ui/dist /app
 COPY nginx.conf /etc/nginx/
-CMD ["nginx", "-g", "daemon off;"]
+# When using volume for /var/log, make sure nginx directory exists
+CMD ["bash", "-c", "mkdir -p /var/log/nginx && nginx -g 'daemon off;'"]
