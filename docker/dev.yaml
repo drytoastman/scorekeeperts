@@ -1,0 +1,32 @@
+version: '3.2'
+volumes:
+    database:
+    socket:
+    certs: { external: { name: "certs" }}
+
+networks:
+    net1:
+
+# Just need DB and python web for dev, rest is run on dev machine
+services:
+    db:
+        image: drytoastman/scdb:${VERSION:-latest}
+        networks: { net1: {}}
+        ports:
+            - '6432:6432'
+        volumes:
+            - database:/var/lib/postgresql/data
+            - socket:/var/run/postgresql
+            - certs:/certs
+
+    pythonweb:
+        image: drytoastman/scpython:${VERSION:-latest}
+        command: webserver.py
+        networks: { net1: {}}
+        depends_on:
+            - db
+        volumes:
+            - socket:/var/run/postgresql
+        environment:
+            - IS_MAIN_SERVER=1
+
