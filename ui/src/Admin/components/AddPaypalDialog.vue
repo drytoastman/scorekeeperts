@@ -1,11 +1,13 @@
 <template>
-    <BaseDialog :value="value" apiType="insert" dataType="Paypal Account" width="400px" @input="$emit('input')" @update="update">
+    <BaseDialog :value="value" apiType="insert" dataType="Account" width="400px" @input="$emit('input')" @update="update">
         <v-form ref="form">
             <v-container>
                 <div class='text-center'><img :src="icons.paypalIcon" /></div>
-                <v-text-field v-model="accountm.name"      label="Name"></v-text-field>
-                <v-text-field v-model="accountm.accountid" label="Client Id"></v-text-field>
-                <v-text-field v-model="accountm.secret"    label="Client Secret"></v-text-field>
+                <v-text-field v-model="account.name"      label="Name"></v-text-field>
+                <v-text-field v-model="account.accountid" label="Client Id"></v-text-field>
+                <v-text-field v-model="secret.secret"     label="Client Secret"></v-text-field>
+                <v-select v-if="devMode" :items="['production', 'sandbox']" v-model="account.attr.mode"
+                          solo light hide-details placeholder="Select A Mode"></v-select>
             </v-container>
         </v-form>
     </BaseDialog>
@@ -24,21 +26,23 @@ export default {
     },
     data() {
         return {
-            accountm: {},
-            icons: {
-                paypalIcon
-            }
+            account: { attr: {} },
+            secret: { attr: {} },
+            icons: { paypalIcon }
         }
+    },
+    computed: {
+        devMode() { return process.env.NODE_ENV === 'development' }
     },
     methods: {
         update() {
+            this.secret.accountid = this.account.accountid
             this.$store.dispatch('setdata', {
                 type: 'insert',
                 items: {
-                    paymentaccounts: [this.accountm],
-                    paymentsecrets: [this.accountm]
+                    paymentaccounts: [this.account],
+                    paymentsecrets: [this.secret]
                 }
-                // busy: { key: 'busyReg', id: this.event.eventid }
             })
             this.$emit('input')
         }
@@ -46,7 +50,8 @@ export default {
     watch: {
         value: function(newv) {
             if (newv) {
-                this.accountm = { type: 'paypal', attr:{} }
+                this.account = { type: 'paypal', attr: { mode: 'production', version: 2 } }
+                this.secret  = { attr: {} }
             }
         }
     }

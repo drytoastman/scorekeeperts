@@ -28,8 +28,9 @@
             </template>
         </v-data-table>
 
-        <v-btn color="secondary" :href="squareoauthurl" :disabled="!squareoauthurl">
+        <v-btn color="secondary" :href="squareOAuthUrl" :disabled="!squareapplicationid">
             (Re)Authorize <img class='squareicon' :src="icons.squareIcon"/>
+            <span v-if="squareapplicationid.includes('sandbox')" class='sandbox'>Sandbox</span>
         </v-btn>
 
         <v-btn color="secondary" @click.stop="newpaypal">
@@ -85,8 +86,17 @@ export default {
         }
     },
     computed: {
-        ...mapState(['paymentaccounts', 'squareoauthurl']),
-        accountsList() { return Object.values(this.paymentaccounts) }
+        ...mapState(['currentSeries', 'paymentaccounts', 'squareapplicationid']),
+        accountsList() { return Object.values(this.paymentaccounts) },
+        devMode() { return process.env.NODE_ENV === 'development' },
+        squareOAuthUrl() {
+            let host = 'https://connect.squareup.com'
+            if (this.squareapplicationid.includes('sandbox')) {
+                host = 'https://connect.squareupsandbox.com'
+            }
+            const scope = 'MERCHANT_PROFILE_READ,PAYMENTS_WRITE,PAYMENTS_READ,ORDERS_WRITE'
+            return `${host}/oauth2/authorize?client_id=${this.squareapplicationid}&scope=${scope}&state=${this.currentSeries}`
+        }
     },
     methods: {
         newitem(accountid) {
@@ -150,6 +160,10 @@ img {
 .squareicon {
     height: 20px;
     filter: brightness(0) invert(100);
+}
+.sandbox {
+    margin-left: 10px;
+    color: orange;
 }
 .accountstable > .v-btn {
     margin-left: 1rem;

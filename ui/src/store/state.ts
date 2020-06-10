@@ -34,7 +34,7 @@ export class Api2State {
     counts: {[key: string]: any} = {}
 
     // square oauth
-    squareoauthurl = ''
+    squareapplicationid = ''
     squareoauthresp = {}
 
     // other more temporary things

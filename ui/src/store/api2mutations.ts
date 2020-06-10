@@ -79,7 +79,7 @@ export const api2Mutations = {
         if (data === undefined) return
 
         for (const key of ['serieslist', 'listids', 'unsubscribe', 'summary', 'classes', 'indexes',
-            'usednumbers', 'emailresult', 'squareoauthurl', 'squareoauthresp']) {
+            'usednumbers', 'emailresult', 'squareapplicationid', 'squareoauthresp']) {
             // easy straight assignments/replacements
             if (key in data) {
                 state[key] = data[key]
