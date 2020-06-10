@@ -2,7 +2,6 @@ import { Request, Response } from 'express'
 import { db } from '../db'
 import { allSeriesSummary } from './summary'
 import { checkAuth } from './apiauth'
-import { squareoAuthURL } from '../util/square'
 
 export async function apiget(req: Request, res: Response) {
 
@@ -49,8 +48,8 @@ export async function apiget(req: Request, res: Response) {
                     ret.usednumbers = await t.register.usedNumbers(req.auth.driverId(), param.classcode, await t.series.superUniqueNumbers())
                     break
 
-                case 'squareoauthurl':
-                    ret.squareoauthurl = await squareoAuthURL(t, param.series)
+                case 'squareapplicationid':
+                    ret.squareapplicationid = await t.payments.getSquareApplicationId()
                     break
 
                 default: console.log(`don't understand ${item}`); break

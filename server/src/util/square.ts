@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 import { ScorekeeperProtocol } from '../db'
-import SquareConnect, { Money, ApiClient, OrderRoundingAdjustment } from 'square-connect'
+import SquareConnect, { Money, ApiClient } from 'square-connect'
 import { v1 as uuidv1 } from 'uuid'
 
 import { Payment, UUID, PaymentAccount } from '@common/lib'
@@ -80,26 +80,11 @@ export async function squareOrder(conn: ScorekeeperProtocol, square: any, paymen
     return conn.payments.updatePayments('insert', payments, driverid)
 }
 
-export async function squareoAuthURL(conn: ScorekeeperProtocol, series: string) {
-    let SQ_APPLICATION_ID = 'missing'
-    try {
-        SQ_APPLICATION_ID = await conn.payments.getSquareApplicationId()
-    } catch (error) {
-        console.log(error)
-        // NO APPLICATION ID on onsite installs
-        return ''
-    }
-
-    const CREATE_MODE = await conn.payments.getPaymentAccountCreateMode()
-    const SCOPE       = 'MERCHANT_PROFILE_READ,PAYMENTS_WRITE,PAYMENTS_READ,ORDERS_WRITE'
-    const client      = getAClient(CREATE_MODE)
-    return `${client.basePath}/oauth2/authorize?client_id=${SQ_APPLICATION_ID}&scope=${SCOPE}&state=${series}`
-}
 
 export async function squareoAuthRequest(conn: ScorekeeperProtocol, series: string, authorizationCode: string) {
     const SQ_APPLICATION_ID     = await conn.payments.getSquareApplicationId()
     const SQ_APPLICATION_SECRET = await conn.payments.getSquareApplicationSecret()
-    const CREATE_MODE           = await conn.payments.getPaymentAccountCreateMode()
+    const CREATE_MODE           = SQ_APPLICATION_ID.includes('sandbox') ? 'sandbox' : 'production'
     const authzclient           = getAClient(CREATE_MODE)
 
     const tokenresponse = await new SquareConnect.OAuthApi(authzclient).obtainToken({
@@ -147,7 +132,7 @@ export async function squareoAuthRequest(conn: ScorekeeperProtocol, series: stri
 
 export async function squareoAuthFinish(conn: ScorekeeperProtocol, requestid: string, locationid: string) {
     const SQ_APPLICATION_ID = await conn.payments.getSquareApplicationId()
-    const CREATE_MODE       = await conn.payments.getPaymentAccountCreateMode()
+    const CREATE_MODE           = SQ_APPLICATION_ID.includes('sandbox') ? 'sandbox' : 'production'
 
     const request = gCache.get(requestid) as any
     if (!request) {
@@ -166,7 +151,8 @@ export async function squareoAuthFinish(conn: ScorekeeperProtocol, requestid: st
         attr: {
             mode: CREATE_MODE,
             applicationid: SQ_APPLICATION_ID,
-            merchantid: location[0].merchant_id
+            merchantid: location[0].merchant_id,
+            version: 2
         },
         modified: ''
     }

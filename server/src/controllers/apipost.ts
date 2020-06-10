@@ -57,12 +57,8 @@ export async function apipost(req: Request, res: Response) {
                     case 'paymentaccounts':
                         req.auth.requireSeries(param.series)
                         ret.paymentaccounts = await t.tx(async tx => {
-                            if (param.type === 'insert') {
-                                const mode = await tx.payments.getPaymentAccountCreateMode()
-                                param.items.paymentaccounts.forEach(a => { a.attr.mode = mode })
-                            }
                             const pa = await tx.payments.updatePaymentAccounts(param.type, param.items.paymentaccounts)
-                            if ('paymentsecrets' in param.items) {  // keep in one tx as they are linked if there are errors
+                            if ('paymentsecrets' in param.items) {  // keep in one transaction as they are linked if there are errors
                                 await tx.payments.updatePaymentAccountSecrets(param.type, param.items.paymentsecrets)
                             }
                             return pa

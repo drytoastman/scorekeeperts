@@ -65,10 +65,6 @@ export class PaymentsRepository {
         return this.db.one('SELECT data FROM localcache WHERE name=$1', key).then(r => { return r.data })
     }
 
-    async getPaymentAccountCreateMode(): Promise<string> {
-        return this.localCacheGet('PAYMENT_ACCOUNT_CREATE_MODE') // sandbox or production
-    }
-
     async getSquareApplicationId(): Promise<string> {
         return this.localCacheGet('SQ_APPLICATION_ID')
     }

@@ -89,7 +89,7 @@ export const APIITEMS     = [
     'events', 'paymentaccounts', 'paymentitems', 'payments', 'counts',
     'classes', 'indexes', 'cars', 'registered'
 ]
-export const SERIESEXTRA  = ['squareoauthurl']
+export const SERIESEXTRA  = ['squareapplicationid']
 export const DRIVEREXTRA  = ['summary']
 export const APINONSERIES = [SERIESLIST, 'drivers', 'summary', 'listids', 'unsubscribe']
 
