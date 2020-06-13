@@ -33,7 +33,7 @@
 <script>
 import Vue from 'vue'
 import { mapState } from 'vuex'
-import { CarValidator } from '@common/lib'
+import { CarValidator, restrictedRegistrationIndexes } from '@common/lib'
 import NumberPicker from './NumberPicker'
 import BaseDialog from './BaseDialog'
 
@@ -62,7 +62,8 @@ export default {
             return Object.values(this.classes).filter(c => c.classcode !== 'HOLD')
         },
         indexlist: function() {
-            const restrict = (this.carm.classcode in this.classes) ? this.classes[this.carm.classcode].restrictedIndexes : []
+            const restrict = (this.carm.classcode in this.classes)
+                ? restrictedRegistrationIndexes(this.classes[this.carm.classcode].caridxrestrict, Object.keys(this.indexes)) : []
             return Object.values(this.indexes).filter(i => restrict.includes(i.indexcode) && i.indexcode !== '')
         },
         needindex: function() { return this.indexlist.length > 0 }

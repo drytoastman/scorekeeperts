@@ -32,16 +32,16 @@
             </v-menu>
         </v-app-bar>
 
-        <v-content>
+        <v-main>
             <v-progress-circular class="loadingicon" v-if="gettingData" indeterminate color="secondary"></v-progress-circular>
             <div v-if="!$route.name" class="pushdown main-page-warning">Unknown Page</div>
             <router-view v-else-if="haveSeriesAuth" />
             <v-container v-else-if="!haveSeriesAuth">
                 <LoginForm ></LoginForm>
             </v-container>
-        </v-content>
+        </v-main>
 
-        <v-snackbar :value="snackbar" :timeout="0">
+        <v-snackbar :value="snackbar" :timeout="-1">
             <div v-for="error in errors" :key="error">{{ error }}</div>
             <v-btn color="pink" text @click="errorclose">Close</v-btn>
         </v-snackbar>
@@ -98,6 +98,14 @@ export default {
 </script>
 
 <style lang='scss'>
+html {
+    overflow-x: auto;
+}
+
+.v-main__wrap, .v-content__wrap {
+    max-width: initial;
+}
+
 .v-navigation-drawer .v-subheader.labelheader {
     font-size: 120%;
 }

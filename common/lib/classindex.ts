@@ -1,4 +1,4 @@
-import { DataValidationRules, MaxLength, Length, isDecimal3, Min, isPrintable } from './util'
+import { DataValidationRules, MaxLength, Length, isDecimal3, Min, isPrintable, isInteger } from './util'
 
 export interface SeriesIndex
 {
@@ -26,8 +26,6 @@ export interface SeriesClass
     usecarflag: boolean;
     caridxrestrict: string;
     countedruns: number;
-    // non-db stored data, generated
-    restrictedIndexes: string[];
 }
 
 export const ClassValidator: DataValidationRules =
@@ -42,5 +40,5 @@ export const ClassValidator: DataValidationRules =
     classmultiplier: [isDecimal3],
     usecarflag:      [],
     caridxrestrict:  [MaxLength(128)],
-    countedruns:     [Min(0)]
+    countedruns:     [isInteger, Min(0)]
 }

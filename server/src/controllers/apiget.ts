@@ -32,11 +32,12 @@ export async function apiget(req: Request, res: Response) {
                 case 'registered':  ret.registered  = await t.register.getRegistrationbyDriverId(req.auth.driverId()); break
                 case 'payments':    ret.payments    = await t.payments.getPaymentsbyDriverId(req.auth.driverId()); break
                 case 'counts':      ret.counts      = await t.register.getRegistationCounts(); break
-                case 'classes':
-                case 'indexes':
+                case 'classes':     ret.classes     = await t.clsidx.classList(); break
+                case 'indexes':     ret.indexes     = await t.clsidx.indexList(); break
+                /*
                     if (!classdata) classdata = await t.clsidx.classData()
                     ret[item] = classdata[item]
-                    break
+                    break */
                 case 'paymentaccounts':
                     ret.paymentaccounts = await t.payments.getPaymentAccounts()
                     break

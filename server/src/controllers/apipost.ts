@@ -80,6 +80,16 @@ export async function apipost(req: Request, res: Response) {
                         ret.type = 'get'
                         ret.paymentaccounts = await t.payments.getPaymentAccounts()
                         break
+
+                    case 'classes':
+                        req.auth.requireSeries(param.series)
+                        ret.classes = await t.clsidx.updateClasses(param.type, param.items.classes)
+                        break
+                        /*
+                    case 'indexes':
+                        if (!classdata) classdata = await t.clsidx.classData()
+                        ret[item] = classdata[item]
+                        break */
                 }
             }
 

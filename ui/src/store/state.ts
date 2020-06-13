@@ -40,9 +40,10 @@ export class Api2State {
     // other more temporary things
     gettingData = false
     busyDriver: {[key: string]: boolean} = {} // driverid set
-    busyCars: {[key: string]: boolean} = {} // carid set
-    busyReg:  {[key: string]: boolean} = {} // eventid set
-    busyPay:  {[key: string]: boolean} = {} // eventid set
+    busyCars:   {[key: string]: boolean} = {} // carid set
+    busyReg:    {[key: string]: boolean} = {} // eventid set
+    busyPay:    {[key: string]: boolean} = {} // eventid set
+    busyClass:  {[key: string]: boolean} = {} // classcode set
 
     // used for communications
     authtype= ''

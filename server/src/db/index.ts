@@ -23,7 +23,7 @@ const initOptions: IInitOptions<DBExtensions> = {
     extend(obj: ScorekeeperProtocolDB) {
         // eslint-disable-next-line @typescript-eslint/no-use-before-define
         obj.series = new SeriesRepository(obj)
-        obj.clsidx = new ClassRepository(obj)
+        obj.clsidx = new ClassRepository(obj, pgp)
         obj.drivers = new DriverRepository(obj, pgp)
         obj.cars = new CarRepository(obj, pgp)
         obj.register = new RegisterRepository(obj, pgp)

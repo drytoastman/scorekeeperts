@@ -1,5 +1,5 @@
 <template>
-    <v-dialog :value="value" @input="$emit('input')" persistent :max-width="width">
+    <v-dialog :value="value" @input="$emit('input')" :persistent="persistent" :max-width="width">
         <v-card>
             <v-card-title>
                 <span class="headline">{{title}}</span>
@@ -23,7 +23,11 @@ export default {
         value: Boolean,
         apiType: String,
         dataType: String,
-        width: String
+        width: String,
+        persistent: {
+            type: Boolean,
+            default() { return true }
+        }
     },
     computed: {
         title() {

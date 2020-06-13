@@ -58,6 +58,10 @@ export const api2Mutations = {
     },
 
     markBusy(state: Api2State, busy: any) {
+        if (!(busy.key in state)) {
+            console.error('markBusy for unknown key: ' + busy.key)
+            return
+        }
         const ids = (busy.id) ? [busy.id] : busy.ids
         for (const id of ids) {
             Vue.set(state[busy.key], id, true)
@@ -65,6 +69,10 @@ export const api2Mutations = {
     },
 
     clearBusy(state: Api2State, busy: any) {
+        if (!(busy.key in state)) {
+            console.error('clearBusy for unknown key: ' + busy.key)
+            return
+        }
         const ids = (busy.id) ? [busy.id] : busy.ids
         for (const id of ids) {
             Vue.set(state[busy.key], id, false)
@@ -78,7 +86,7 @@ export const api2Mutations = {
     apiData(state: Api2State, data: any) {
         if (data === undefined) return
 
-        for (const key of ['serieslist', 'listids', 'unsubscribe', 'summary', 'classes', 'indexes',
+        for (const key of ['serieslist', 'listids', 'unsubscribe', 'summary',
             'usednumbers', 'emailresult', 'squareapplicationid', 'squareoauthresp']) {
             // easy straight assignments/replacements
             if (key in data) {
@@ -89,8 +97,13 @@ export const api2Mutations = {
         // For more common CRUD operations
         // data.type in ('get', 'insert', 'update', 'delete')
         for (const pair of [
+            ['drivers', 'driverid'],
+            ['cars', 'carid'],
+            ['events', 'eventid'],
             ['paymentitems', 'itemid'],
-            ['paymentaccounts', 'accountid']
+            ['paymentaccounts', 'accountid'],
+            ['classes', 'classcode'],
+            ['indexes', 'indexcode']
         ]) {
             const [key, idfield] = pair
             if (key in data) {
@@ -100,30 +113,6 @@ export const api2Mutations = {
                     if (data.type === 'get') { state[key] = {} }
                     data[key].forEach(v => Vue.set(state[key], v[idfield], v))
                 }
-            }
-        }
-
-        if ('drivers' in data) {
-            if (data.type === 'get') {
-                state.drivers = {}
-            }
-            data.drivers.forEach((d: Driver) => Vue.set(state.drivers, d.driverid, d))
-        }
-
-        if ('events' in data) {
-            if (data.type === 'get') {
-                state.events = {}
-            }
-            data.events.forEach((e: SeriesEvent) => Vue.set(state.events, e.eventid, e))
-        }
-
-        if ('cars' in data) {
-            // data.type in ('get', 'insert', 'update', 'delete')
-            if (data.type === 'delete') {
-                data.cars.forEach((c: Car) => Vue.delete(state.cars, c.carid))
-            } else { // get, insert, update
-                if (data.type === 'get') { state.cars = {} }
-                data.cars.forEach((c: Car) => Vue.set(state.cars, c.carid, c))
             }
         }
 
