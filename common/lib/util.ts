@@ -1,3 +1,4 @@
+import _ from 'lodash'
 import validator from 'validator'
 
 export type UUID = string;
@@ -16,6 +17,7 @@ export const isEmail: VuetifyValidationRule    = v => { return validator.isEmail
 export const isUUID: VuetifyValidationRule     = v => { return validator.isUUID(v) || 'must be UUID' }
 export const isDate: VuetifyValidationRule     = v => { return (v instanceof Date && !isNaN(v.getTime())) || 'must be a date object' }
 export const isBarcode: VuetifyValidationRule  = v => { return /^([0-9A-Z]+|)$/.test(v) || 'Barcode can only accept characters 0-9 an capital A-Z' }
+export const isISODate: VuetifyValidationRule  = v => { return validator.isISO8601(v) || 'Not a valid ISO Date value' }
 
 export const isInteger: VuetifyValidationRule  = v => {
     return (v === undefined) || typeof v === 'number' || validator.isInt(v) || 'must be an integer'
@@ -73,21 +75,15 @@ export function validateValue(value: any, rules: VuetifyValidationRules): boolea
     return true
 }
 
-export function validateObj(obj: any, ruleobj: DataValidationRules): boolean|object {
-    const errors: any = {}
-    let valid = true
-    for (const key in Object.keys(ruleobj)) {
+export function validateObj(obj: any, ruleobj: DataValidationRules): void {
+    for (const key of Object.keys(ruleobj)) {
         if (key in obj) {
-            errors[key] = []
             for (const rule of ruleobj[key]) {
                 const res = rule(obj[key])
                 if (typeof res === 'string') {
-                    errors[key].push(res)
-                    valid = false
+                    throw Error(`in object member '${key}', ${res}`)
                 }
             }
         }
     }
-
-    return valid || errors
 }

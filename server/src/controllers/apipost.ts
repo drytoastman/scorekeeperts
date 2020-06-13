@@ -85,11 +85,11 @@ export async function apipost(req: Request, res: Response) {
                         req.auth.requireSeries(param.series)
                         ret.classes = await t.clsidx.updateClasses(param.type, param.items.classes)
                         break
-                        /*
+
                     case 'indexes':
-                        if (!classdata) classdata = await t.clsidx.classData()
-                        ret[item] = classdata[item]
-                        break */
+                        req.auth.requireSeries(param.series)
+                        ret.indexes = await t.clsidx.updateIndexes(param.type, param.items.indexes)
+                        break
                 }
             }
 

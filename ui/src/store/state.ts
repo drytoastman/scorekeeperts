@@ -44,6 +44,7 @@ export class Api2State {
     busyReg:    {[key: string]: boolean} = {} // eventid set
     busyPay:    {[key: string]: boolean} = {} // eventid set
     busyClass:  {[key: string]: boolean} = {} // classcode set
+    busyIndex:  {[key: string]: boolean} = {} // indexcode set
 
     // used for communications
     authtype= ''

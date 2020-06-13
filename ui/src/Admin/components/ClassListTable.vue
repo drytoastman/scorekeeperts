@@ -48,7 +48,6 @@ export default {
                 mdiPencil,
                 mdiDelete
             },
-            isMobile: false,
             headers: [
                 { text: 'Code', value: 'classcode' },
                 { text: 'Desc', value: 'descrip', width: 250 },
