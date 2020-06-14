@@ -1,9 +1,9 @@
 <template>
-    <BaseDialog :value="value" :persistent="false" :apiType="apiType" dataType="Index" width="440px" @input="$emit('input')" @update="update">
+    <BaseDialog :value="value" :persistent="false" :apiType="apiType" dataType="Index" width="300px" @input="$emit('input')" @update="update">
         <v-form ref="form">
                 <v-text-field v-model="indexm.indexcode" label="Code"></v-text-field>
                 <v-text-field v-model="indexm.descrip"   label="Description"></v-text-field>
-                <v-text-field v-model="indexm.value"     label="Additional Multiplier" :rules="vrules.value"></v-text-field>
+                <v-text-field v-model="indexm.value"     label="Value" :rules="vrules.value"></v-text-field>
         </v-form>
     </BaseDialog>
 </template>

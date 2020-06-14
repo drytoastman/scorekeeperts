@@ -1,5 +1,7 @@
 <template>
     <div class='classlisttable'>
+        <v-btn color=secondary @click.stop="newclass">Add Class</v-btn>
+
         <v-data-table :items="classlist" :headers="headers" item-key="classcode" disable-pagination hide-default-footer>
 
             <template v-slot:item.eventtrophy="{ item }"><span v-if="item.eventtrophy">&checkmark;</span></template>
@@ -69,7 +71,12 @@ export default {
     },
     methods: {
         newclass() {
-            this.dialogData = { }
+            this.dialogData = {
+                usecarflag: false,
+                classmultiplier: 1.0,
+                countedruns: 0,
+                indexcode: ''
+            }
             this.dialogApiType = 'insert'
             this.classDialog = true
         },

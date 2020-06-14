@@ -1,15 +1,16 @@
 <template>
     <div class='accountstable'>
-        <v-data-table
-            :items="accountsList"
-            :headers="headers"
-            disable-pagination
-            hide-default-footer
-            :expanded.sync="expanded"
-            show-expand
-            item-key="name"
-            class="accountstable"
-        >
+        <v-btn color="secondary" :href="squareOAuthUrl" :disabled="!squareapplicationid">
+            (Re)Authorize <img class='squareicon' :src="icons.squareIcon"/>
+            <span v-if="squareapplicationid.includes('sandbox')" class='sandbox'>Sandbox</span>
+        </v-btn>
+
+        <v-btn color="secondary" @click.stop="newpaypal">
+            Add <img class='paypalicon' :src="icons.paypalIcon"/>
+        </v-btn>
+
+        <v-data-table :items="accountsList" :headers="headers" :expanded.sync="expanded"
+            disable-pagination hide-default-footer show-expand item-key="name" class="accountstable">
             <template v-slot:item.actions="{ item }">
                 <v-icon small @click="editaccount(item)">{{icons.mdiPencil}}</v-icon>
                 <v-icon small @click="deleteaccount(item)">{{icons.mdiDelete}}</v-icon>
@@ -28,14 +29,7 @@
             </template>
         </v-data-table>
 
-        <v-btn color="secondary" :href="squareOAuthUrl" :disabled="!squareapplicationid">
-            (Re)Authorize <img class='squareicon' :src="icons.squareIcon"/>
-            <span v-if="squareapplicationid.includes('sandbox')" class='sandbox'>Sandbox</span>
-        </v-btn>
 
-        <v-btn color="secondary" @click.stop="newpaypal">
-            Add <img class='paypalicon' :src="icons.paypalIcon"/>
-        </v-btn>
 
         <ItemDialog    :item="dialogData"    :apiType="dialogApiType" v-model="itemDialog"></ItemDialog>
         <AccountDialog :account="dialogData" :apiType="dialogApiType" v-model="accountDialog"></AccountDialog>

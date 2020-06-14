@@ -23,7 +23,7 @@
                         <template v-slot:activator="{ on, attrs }">
                             <v-btn v-bind="attrs" v-on="on" :disabled="!classm.carindexed">Matches</v-btn>
                         </template>
-                        <v-list>
+                        <v-list class='widelist'>
                             <v-list-item v-for="m in matches" :key="m">{{m}}</v-list-item>
                         </v-list>
                     </v-menu>
@@ -93,7 +93,7 @@ export default {
     grid-template-columns: repeat(3, 1fr);
     column-gap: 20px;
 }
-.v-list {
+.widelist {
     columns: 4;
 }
 </style>

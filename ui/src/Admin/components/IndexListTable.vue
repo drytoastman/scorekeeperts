@@ -1,5 +1,19 @@
 <template>
     <div class='indexlisttable'>
+        <v-btn color=secondary @click.stop="newindex">Add Index</v-btn>
+        <v-menu>
+            <template v-slot:activator="{ on, attrs }">
+                <v-btn color="secondary" v-bind="attrs" v-on="on" :disabled="true">
+                Reset To Predefined List &#9660;
+                </v-btn>
+            </template>
+            <v-list>
+                <v-list-item v-for="list in lists" :key="list">
+                    {{list}}
+                </v-list-item>
+            </v-list>
+        </v-menu>
+
         <v-data-table :items="indexlist" :headers="headers" item-key="indexcode" disable-pagination hide-default-footer>
             <template v-slot:item.actions="{ item }">
                 <div v-if="busyIndex[item.indexcode]" class='busy'>
@@ -41,12 +55,15 @@ export default {
                 { text: 'Desc', value: 'descrip', width: 250 },
                 { text: 'Value', value: 'value', sortable: false },
                 { text: 'Actions', value: 'actions', sortable: false }
+            ],
+            lists: [
+                'PAX 2020'
             ]
         }
     },
     computed: {
         ...mapState(['indexes', 'busyIndex']),
-        indexlist() { return _(this.indexes).values().orderBy('indexcode').value() }
+        indexlist() { return _(this.indexes).values().filter(v => v.indexcode).orderBy('indexcode').value() }
     },
     methods: {
         newindex() {
@@ -86,6 +103,9 @@ export default {
 }
 .indexlisttable {
     margin: 1rem;
+}
+.v-btn {
+    margin-right: 1rem;
 }
 .busy {
     color: #F44;
