@@ -84,14 +84,13 @@ export async function regreset(req: Request, res: Response) {
 }
 
 export const SERIESLIST   = 'serieslist'
-export const APIITEMS     = [
-    SERIESLIST, 'drivers', 'listids', 'unsubscribe',
-    'events', 'paymentaccounts', 'paymentitems', 'payments', 'counts',
-    'classes', 'indexes', 'cars', 'registered'
+export const COMMONITEMS  = [
+    SERIESLIST, 'listids', 'classes', 'indexes',
+    'events', 'paymentaccounts', 'paymentitems', 'counts'
 ]
-export const SERIESEXTRA  = ['squareapplicationid']
-export const DRIVEREXTRA  = ['summary']
-export const APINONSERIES = [SERIESLIST, 'drivers', 'summary', 'listids', 'unsubscribe']
+export const SERIESEXTRA    = ['squareapplicationid']
+export const DRIVEREXTRA    = ['summary', 'drivers', 'payments', 'registered', 'cars', 'unsubscribe']
+export const API_NON_SERIES = [SERIESLIST, 'drivers', 'summary', 'listids', 'unsubscribe']
 
 class AuthError extends Error {
     authtype: string
@@ -141,18 +140,18 @@ export function checkAuth(req: Request): any {
         param.items = param.items ? param.items.split(',') : []
         if (param.items.length === 0) {
             if (authtype === 'series') {
-                param.items = [...APIITEMS, ...SERIESEXTRA]
+                param.items = [...COMMONITEMS, ...SERIESEXTRA]
             } else {
-                param.items = [...APIITEMS, ...DRIVEREXTRA]
+                param.items = [...COMMONITEMS, ...DRIVEREXTRA]
             }
         }
         if (!series) {
-            param.items = param.items.filter(val => APINONSERIES.includes(val))
+            param.items = param.items.filter(val => API_NON_SERIES.includes(val))
         }
 
     } else { // POST
         if (!series) {
-            param.items = _.pick(param.items, APINONSERIES)
+            param.items = _.pick(param.items, API_NON_SERIES)
         }
     }
 

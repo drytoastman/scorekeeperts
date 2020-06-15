@@ -141,6 +141,10 @@ export class PaymentsRepository {
         return this.db.any('SELECT p.* FROM payments AS p JOIN cars c ON p.carid=c.carid WHERE c.driverid=$1', [driverid])
     }
 
+    async getPaymentsByEventId(eventid: UUID): Promise<Payment[]> {
+        return this.db.any('SELECT * FROM payments WHERE eventid=$1', [eventid])
+    }
+
     async updatePayments(type: string, payments: Payment[], driverid?: UUID): Promise<Payment[]> {
         if (driverid) {
             await verifyDriverRelationship(this.db, payments.map(p => p.carid), driverid)

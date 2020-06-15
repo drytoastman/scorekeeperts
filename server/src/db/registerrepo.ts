@@ -22,6 +22,10 @@ export class RegisterRepository {
         return this.db.any('SELECT r.* FROM registered AS r JOIN cars c ON r.carid=c.carid WHERE c.driverid=$1', [driverid])
     }
 
+    async getRegistrationByEventId(eventid: UUID): Promise<Registration[]> {
+        return this.db.any('SELECT * FROM registered WHERE eventid=$1', [eventid])
+    }
+
     async getRegistrationSummary(driverid: UUID): Promise<object[]> {
         const events:any[] = []
         for (const row of await this.db.any(

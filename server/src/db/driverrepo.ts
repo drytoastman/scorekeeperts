@@ -33,11 +33,15 @@ export class DriverRepository {
         return drivers
     }
 
+    async getAllDrivers(): Promise<Driver[]> {
+        return this.filterDrivers(await this.db.any('SELECT * FROM drivers'))
+    }
+
     async getDriverById(driverid: UUID): Promise<Driver[]> {
         return this.filterDrivers(await this.db.any('SELECT * FROM drivers WHERE driverid=$1', [driverid]))
     }
 
-    async getUnsubscribeList(driverid: UUID): Promise<string[]> {
+    async getUnsubscribeByDriverId(driverid: UUID): Promise<string[]> {
         return (await this.db.any('SELECT emaillistid FROM unsubscribe WHERE driverid=$1', [driverid])).map(r => r.emaillistid)
     }
 

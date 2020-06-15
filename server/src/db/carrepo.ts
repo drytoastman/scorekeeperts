@@ -24,6 +24,10 @@ export class CarRepository {
         return this.db.any('SELECT * FROM cars WHERE driverid=$1', [driverid])
     }
 
+    async getAllCars(): Promise<Car[]> {
+        return this.db.any('SELECT * FROM cars')
+    }
+
     async updateCars(type: string, cars: Car[], driverid: UUID): Promise<Car[]> {
         if (type === 'insert') {
             cars.forEach(c => { c.carid = uuidv1(); c.driverid = driverid })

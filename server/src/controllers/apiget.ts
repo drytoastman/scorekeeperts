@@ -20,40 +20,57 @@ export async function apiget(req: Request, res: Response) {
         }
 
         let classdata
+        const isSeries = param.authtype === 'series'
         await t.series.setSeries(ret.series)
         for (const item of param.items) {
             switch (item) {
-                case 'drivers':     ret.drivers     = await t.drivers.getDriverById(req.auth.driverId()); break
                 case 'serieslist':  ret.serieslist  = await t.series.seriesList(); break
                 case 'listids':     ret.listids     = await t.series.emailListIds(); break
-                case 'unsubscribe': ret.unsubscribe = await t.drivers.getUnsubscribeList(req.auth.driverId()); break
                 case 'events':      ret.events      = await t.series.eventList(); break
-                case 'cars':        ret.cars        = await t.cars.getCarsbyDriverId(req.auth.driverId()); break
-                case 'registered':  ret.registered  = await t.register.getRegistrationbyDriverId(req.auth.driverId()); break
-                case 'payments':    ret.payments    = await t.payments.getPaymentsbyDriverId(req.auth.driverId()); break
                 case 'counts':      ret.counts      = await t.register.getRegistationCounts(); break
                 case 'classes':     ret.classes     = await t.clsidx.classList(); break
                 case 'indexes':     ret.indexes     = await t.clsidx.indexList(); break
-                /*
-                    if (!classdata) classdata = await t.clsidx.classData()
-                    ret[item] = classdata[item]
-                    break */
-                case 'paymentaccounts':
-                    ret.paymentaccounts = await t.payments.getPaymentAccounts()
+                case 'paymentitems': ret.paymentitems = await t.payments.getPaymentItems(); break
+                case 'paymentaccounts': ret.paymentaccounts = await t.payments.getPaymentAccounts(); break
+
+                // dependent on auth type
+                case 'drivers':
+                    ret.drivers = await (isSeries
+                        ? t.drivers.getAllDrivers()
+                        : t.drivers.getDriverById(req.auth.driverId()))
                     break
-                case 'paymentitems':
-                    ret.paymentitems = await t.payments.getPaymentItems()
+
+                case 'unsubscribe':
+                    ret.driverunsubscribe = await (isSeries
+                        ? ['fix me someday']
+                        : t.drivers.getUnsubscribeByDriverId(req.auth.driverId()))
                     break
-                case 'summary': break // deal with later
+
+                case 'payments':
+                    ret.payments = await (isSeries
+                        ? t.payments.getPaymentsByEventId(param.eventid)
+                        : t.payments.getPaymentsbyDriverId(req.auth.driverId()))
+                    break
+
+                case 'registered':
+                    ret.registered = await (isSeries
+                        ? t.register.getRegistrationByEventId(param.eventid)
+                        : t.register.getRegistrationbyDriverId(req.auth.driverId()))
+                    break
+
+                case 'cars':
+                    ret.cars = await (isSeries
+                        ? t.cars.getAllCars()
+                        : t.cars.getCarsbyDriverId(req.auth.driverId()))
+                    break
+
+                case 'summary':
+                    break // deal with later
+
+                case 'squareapplicationid': ret.squareapplicationid = await t.payments.getSquareApplicationId(); break
                 case 'usednumbers':
                     ret.usednumbers = await t.register.usedNumbers(req.auth.driverId(), param.classcode, await t.series.superUniqueNumbers())
                     break
-
-                case 'squareapplicationid':
-                    ret.squareapplicationid = await t.payments.getSquareApplicationId()
-                    break
-
-                default: console.log(`don't understand ${item}`); break
             }
         }
 
