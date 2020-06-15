@@ -50,15 +50,15 @@
             <v-spacer></v-spacer>
         </v-app-bar>
 
-        <v-content>
+        <v-main>
             <v-progress-circular class='loadingicon' v-if="gettingData" indeterminate color="secondary"></v-progress-circular>
             <div v-if="!$route.name" class='pushdown main-page-warning'>Unknown Page</div>
             <router-view v-else-if="driverAuthenticated" />
             <Login v-else-if="driverAuthenticated===false"></Login>
             <!--<div v-else class='pushdown main-page-warning'>Loading Data ...</div>-->
-        </v-content>
+        </v-main>
 
-        <v-snackbar :value="snackbar" :timeout=0>
+        <v-snackbar :value="snackbar" :timeout=-1>
             <div v-for="error in errors" :key="error">
                 {{ error }}
             </div>

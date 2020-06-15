@@ -80,7 +80,7 @@ export default {
         event: Object
     },
     computed: {
-        ...mapState(['registered', 'paymentaccounts', 'payments', 'counts', 'busyReg', 'busyPay']),
+        ...mapState(['registered', 'paymentaccounts', 'counts', 'busyReg', 'busyPay']),
         ...mapGetters(['unpaidReg']),
         account() { return this.paymentaccounts[this.event.accountid] || null },
         ecounts() { return this.counts[this.event.eventid] || {} },

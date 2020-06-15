@@ -30,7 +30,7 @@ export class Api2State {
     events: {[key: string]: SeriesEvent} = {}
     cars: {[key: string]: Car} = {}
     registered: {[key: string]: Registration[]} = {}
-    payments: {[key: string]: { [key: string]: Payment[]}} = {}
+    payments: {[key: string]: Payment[]} = {}
     counts: {[key: string]: any} = {}
 
     // square oauth
@@ -45,6 +45,7 @@ export class Api2State {
     busyPay:    {[key: string]: boolean} = {} // eventid set
     busyClass:  {[key: string]: boolean} = {} // classcode set
     busyIndex:  {[key: string]: boolean} = {} // indexcode set
+    busyPayment: {[key: string]: boolean} = {} // txid set
 
     // used for communications
     authtype= ''

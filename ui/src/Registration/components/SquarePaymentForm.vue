@@ -1,6 +1,9 @@
 <template>
     <div>
-        <div class='sq-grid'>
+        <div v-if="!account.attr.applicationid" class='errors'>
+            No Square Application Id was found!
+        </div>
+        <div v-else class='sq-grid'>
             <div id="sq-card-number"     class="sq-input"></div>
             <div id="sq-expiration-date" class="sq-input"></div>
             <div id="sq-cvv"             class="sq-input"></div>
@@ -89,15 +92,19 @@ export default {
         },
 
         async loadSquare() {
-            await this.$loadScript(this.squareURL)
-            this.squareform = this.createSquareForm()
-            this.squareform.build()
+            if (this.account.attr.applicationid) {
+                await this.$loadScript(this.squareURL)
+                this.squareform = this.createSquareForm()
+                this.squareform.build()
+            }
         },
 
         async unloadSquare() {
             this.errors = []
-            this.squareform.destroy()
-            await this.$unloadScript(this.squareURL)
+            if (this.account.attr.applicationid) {
+                this.squareform.destroy()
+                await this.$unloadScript(this.squareURL)
+            }
         }
     },
     watch: {

@@ -52,7 +52,7 @@ export const registerActions = {
 
 const getters = {
     hasPayments: (state) => (eventid: UUID, carid: UUID) => {
-        return eventid in state.payments ? state.payments[eventid][carid] : false
+        return eventid in state.payments ? state.payments[eventid].filter(p => p.carid === carid).length > 0 : false
     },
 
     unpaidReg: (state, getters) => (reglist: Registration[]) => {

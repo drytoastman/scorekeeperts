@@ -39,7 +39,7 @@ export default {
         event() { return this.events[this.reg.eventid] },
         isOpen() { return isOpen(this.event) },
         paymentsForReg() {
-            try { return this.payments[this.reg.eventid][this.reg.carid] || [] } catch {}
+            try { return this.payments[this.reg.eventid].filter(p => p.carid === this.reg.carid) || [] } catch {}
             return []
         }
     }

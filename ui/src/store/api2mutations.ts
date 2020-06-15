@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import { MutationTree } from 'vuex'
-import { Car, SeriesEvent, Registration, Payment, UUID, Driver } from '@common/lib'
+import { Registration, UUID } from '@common/lib'
 import { Api2State } from './state'
 
 export function clearApi2SeriesData(state: Api2State) {
@@ -86,7 +86,7 @@ export const api2Mutations = {
     apiData(state: Api2State, data: any) {
         if (data === undefined) return
 
-        for (const key of ['serieslist', 'listids', 'unsubscribe', 'summary',
+        for (const key of ['serieslist', 'listids', 'unsubscribe', 'summary', 'counts',
             'usednumbers', 'emailresult', 'squareapplicationid', 'squareoauthresp']) {
             // easy straight assignments/replacements
             if (key in data) {
@@ -116,35 +116,20 @@ export const api2Mutations = {
             }
         }
 
-        if ('registered' in data) {
-            if (data.type === 'eventupdate') {
-                Vue.set(state.registered, data.eventid, data.registered)
-            } else {
+        // data.type in ('get', 'insert', 'update', 'delete', 'eventupdate')
+        for (const key of ['registered', 'payments']) {
+            if (key in data) {
+                if (data.type === 'eventupdate') {
+                    Vue.set(state[key], data.eventid, data[key])
+                } else {
                 // get, insert
-                if (data.type === 'get') { state.registered = {} }
-                data.registered.forEach((r: Registration) => {
-                    if (!(r.eventid in state.registered)) { Vue.set(state.registered, r.eventid, []) }
-                    state.registered[r.eventid].push(r)
-                })
+                    if (data.type === 'get') { state[key] = {} }
+                    data[key].forEach((r: Registration) => {
+                        if (!(r.eventid in state[key])) { Vue.set(state[key], r.eventid, []) }
+                        state[key][r.eventid].push(r)
+                    })
+                }
             }
-        }
-
-        if ('payments' in data) {
-            if (data.type === 'get') {
-                state.payments = {}
-            } else if (data.type === 'eventupdate') {
-                Vue.set(state.payments, data.eventid, {})
-            }
-            data.payments.forEach((p: Payment) => {
-                if (!(p.eventid in state.payments))          { Vue.set(state.payments, p.eventid, {}) }
-                if (!(p.carid in state.payments[p.eventid])) { Vue.set(state.payments[p.eventid], p.carid, []) }
-                state.payments[p.eventid][p.carid].push(p)
-            })
-        }
-
-        if ('counts' in data) {
-            state.counts = {}
-            data.counts.forEach((e: SeriesEvent) => Vue.set(state.counts, e.eventid, e))
         }
     }
 
