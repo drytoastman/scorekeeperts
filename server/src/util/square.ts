@@ -75,6 +75,7 @@ export async function squareOrder(conn: ScorekeeperProtocol, square: any, paymen
         p.txtype = 'square'
         p.txid   = paymentresponse.payment!.id as string
         p.txtime = paymentresponse.payment!.created_at as string
+        p.attr   = { accountid: account.accountid }
     })
 
     return conn.payments.updatePayments('insert', payments, driverid)

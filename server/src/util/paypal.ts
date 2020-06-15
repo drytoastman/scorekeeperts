@@ -52,7 +52,7 @@ export async function paypalCapture(conn: ScorekeeperProtocol, paypal: any, paym
             p.txtype = 'paypal'
             p.txid   = capture.id
             p.txtime = capture.create_time
-            p.attr.accountid = account.accountid
+            p.attr   = { accountid: account.accountid }
         })
         return conn.payments.updatePayments('insert', payments, driverid)
     }

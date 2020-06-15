@@ -26,6 +26,7 @@ export class PaymentsRepository {
                 { name: 'txtime',   cast: 'timestamp' },
                 { name: 'itemname' },
                 { name: 'amount' },
+                { name: 'attr', cast: 'json' },
                 { name: 'modified', cast: 'timestamp', mod: ':raw', init: (): any => { return 'now()' } }
             ], { table: 'payments' })
         }
@@ -142,7 +143,9 @@ export class PaymentsRepository {
     }
 
     async getPaymentsByEventId(eventid: UUID): Promise<Payment[]> {
-        return this.db.any('SELECT * FROM payments WHERE eventid=$1', [eventid])
+        return this.db.any('SELECT d.firstname,d.lastname,p.* ' +
+            'FROM payments AS p JOIN cars c ON p.carid=c.carid JOIN drivers d ON c.driverid=d.driverid ' +
+            'WHERE eventid=$1 ORDER BY d.lastname,d.firstname', [eventid])
     }
 
     async updatePayments(type: string, payments: Payment[], driverid?: UUID): Promise<Payment[]> {
