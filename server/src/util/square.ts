@@ -71,11 +71,13 @@ export async function squareOrder(conn: ScorekeeperProtocol, square: any, paymen
     }
 
     payments.forEach(p => {
+        p.payid  = uuidv1()
         p.refid  = ''
         p.txtype = 'square'
         p.txid   = paymentresponse.payment!.id as string
         p.txtime = paymentresponse.payment!.created_at as string
-        p.attr   = { accountid: account.accountid }
+        p.accountid = account.accountid
+        p.refunded = false
     })
 
     return conn.payments.updatePayments('insert', payments, driverid)

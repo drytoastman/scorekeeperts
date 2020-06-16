@@ -50,6 +50,9 @@ export async function apipost(req: Request, res: Response) {
                             ret.payments = await paypalCapture(t, param.paypal, param.items.payments, req.auth.driverId())
                         } else if (param.square) {
                             ret.payments = await square.squareOrder(t, param.square, param.items.payments, req.auth.driverId())
+                        } else {
+                            req.auth.requireSeries(param.series)
+                            ret.payments = await t.payments.updatePayments(param.type, param.items.payments)
                         }
                         addsummary = true
                         break
@@ -93,7 +96,7 @@ export async function apipost(req: Request, res: Response) {
                 }
             }
 
-            if (addsummary) {
+            if (addsummary && param.authtype === 'driver') {
                 ret.summary = await allSeriesSummary(t, req.auth.driverId())
             }
             return ret

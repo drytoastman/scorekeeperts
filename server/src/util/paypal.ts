@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { base64encode } from 'nodejs-base64'
+import { v1 as uuidv1 } from 'uuid'
 import { ScorekeeperProtocol } from '../db'
 import { Payment, UUID, PaymentAccount, PaymentAccountSecret } from '@common/lib'
 
@@ -48,11 +49,13 @@ export async function paypalCapture(conn: ScorekeeperProtocol, paypal: any, paym
     if (!data.error) {
         const capture = data.purchase_units[0].payments.captures[0]
         payments.forEach(p => {
+            p.payid  = uuidv1()
             p.refid  = ''
             p.txtype = 'paypal'
             p.txid   = capture.id
             p.txtime = capture.create_time
-            p.attr   = { accountid: account.accountid }
+            p.accountid = account.accountid
+            p.refunded = false
         })
         return conn.payments.updatePayments('insert', payments, driverid)
     }

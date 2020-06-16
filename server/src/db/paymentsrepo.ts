@@ -26,7 +26,8 @@ export class PaymentsRepository {
                 { name: 'txtime',   cast: 'timestamp' },
                 { name: 'itemname' },
                 { name: 'amount' },
-                { name: 'attr', cast: 'json' },
+                { name: 'accountid' },
+                { name: 'refunded' },
                 { name: 'modified', cast: 'timestamp', mod: ':raw', init: (): any => { return 'now()' } }
             ], { table: 'payments' })
         }
@@ -142,10 +143,11 @@ export class PaymentsRepository {
         return this.db.any('SELECT p.* FROM payments AS p JOIN cars c ON p.carid=c.carid WHERE c.driverid=$1', [driverid])
     }
 
-    async getPaymentsByEventId(eventid: UUID): Promise<Payment[]> {
+    async getAllPayments(eventid?: UUID): Promise<Payment[]> {
         return this.db.any('SELECT d.firstname,d.lastname,p.* ' +
             'FROM payments AS p JOIN cars c ON p.carid=c.carid JOIN drivers d ON c.driverid=d.driverid ' +
-            'WHERE eventid=$1 ORDER BY d.lastname,d.firstname', [eventid])
+            (eventid ? 'WHERE eventid=$1 ' : '') +
+            'ORDER BY d.lastname,d.firstname', [eventid])
     }
 
     async updatePayments(type: string, payments: Payment[], driverid?: UUID): Promise<Payment[]> {
@@ -153,12 +155,9 @@ export class PaymentsRepository {
             await verifyDriverRelationship(this.db, payments.map(p => p.carid), driverid)
         }
 
-        if (type === 'insert') {
-            payments.forEach(p => { p.payid = uuidv1() })
-            return this.db.any(this.pgp.helpers.insert(payments, paymentcols) + ' RETURNING *')
-        }
-        if (type === 'update') { await this.db.any(this.pgp.helpers.update(payments, paymentcols) + ' WHERE v.payid = t.payid RETURNING *') }
-        if (type === 'delete') { await this.db.any('DELETE from payments WHERE payid in ($1:csv)', payments.map(p => p.payid)) }
+        if (type === 'insert') { return this.db.any(this.pgp.helpers.insert(payments, paymentcols) + ' RETURNING *') }
+        if (type === 'update') { return this.db.any(this.pgp.helpers.update(payments, paymentcols) + ' WHERE v.payid = t.payid RETURNING *') }
+        if (type === 'delete') { return this.db.any('DELETE from payments WHERE payid in ($1:csv)', payments.map(p => p.payid)) }
 
         throw Error(`Unknown operation type ${JSON.stringify(type)}`)
     }

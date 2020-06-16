@@ -48,13 +48,13 @@ export async function apiget(req: Request, res: Response) {
 
                 case 'payments':
                     ret.payments = await (isSeries
-                        ? t.payments.getPaymentsByEventId(param.eventid)
+                        ? t.payments.getAllPayments(param.eventid)
                         : t.payments.getPaymentsbyDriverId(req.auth.driverId()))
                     break
 
                 case 'registered':
                     ret.registered = await (isSeries
-                        ? t.register.getRegistrationByEventId(param.eventid)
+                        ? t.register.getAllRegistration(param.eventid)
                         : t.register.getRegistrationbyDriverId(req.auth.driverId()))
                     break
 
