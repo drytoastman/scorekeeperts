@@ -17,8 +17,8 @@ Vue.use(Vuetify)
 
 const base = {
     primary: colors.green.base,
-    secondary: '#00a660',
-    accent: colors.cyan.base,
+    secondary: colors.lime.base,
+    accent: colors.lime.base,
     error: colors.red.base,
     warning: colors.orange.base,
     info: colors.blueGrey.base,
@@ -30,6 +30,9 @@ const vuetify = new Vuetify({
         themes: {
             light: base,
             dark: base
+        },
+        options: {
+            customProperties: true
         }
     },
     icons: {
