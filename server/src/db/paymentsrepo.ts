@@ -144,10 +144,7 @@ export class PaymentsRepository {
     }
 
     async getAllPayments(eventid?: UUID): Promise<Payment[]> {
-        return this.db.any('SELECT d.firstname,d.lastname,p.* ' +
-            'FROM payments AS p JOIN cars c ON p.carid=c.carid JOIN drivers d ON c.driverid=d.driverid ' +
-            (eventid ? 'WHERE eventid=$1 ' : '') +
-            'ORDER BY d.lastname,d.firstname', [eventid])
+        return this.db.any('SELECT * FROM payments ' + (eventid ? 'WHERE eventid=$1 ' : ''), [eventid])
     }
 
     async updatePayments(type: string, payments: Payment[], driverid?: UUID): Promise<Payment[]> {

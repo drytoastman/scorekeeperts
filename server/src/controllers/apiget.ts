@@ -37,7 +37,7 @@ export async function apiget(req: Request, res: Response) {
                 case 'drivers':
                     ret.drivers = await (isSeries
                         ? t.drivers.getAllDrivers()
-                        : t.drivers.getDriverById(req.auth.driverId()))
+                        : t.drivers.getDriversById([req.auth.driverId()]))
                     break
 
                 case 'unsubscribe':

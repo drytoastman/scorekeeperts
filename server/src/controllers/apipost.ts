@@ -5,6 +5,7 @@ import * as square from '../util/square'
 import { paypalCapture } from '../util/paypal'
 import { checkAuth } from './apiauth'
 import _ from 'lodash'
+import { Car } from '@common/lib'
 
 export async function apipost(req: Request, res: Response) {
 
@@ -93,7 +94,17 @@ export async function apipost(req: Request, res: Response) {
                         req.auth.requireSeries(param.series)
                         ret.indexes = await t.clsidx.updateIndexes(param.type, param.items.indexes)
                         break
+
+                    case 'carids':
+                        ret.cars = await t.cars.getCarsById(param.items.carids)
+                        param.items.driverids = Array.from(new Set([...param.items.driverids, ...ret.cars.map((c:Car) => c.driverid)]))
+                        break
                 }
+            }
+
+            if ('driverids' in param.items) {
+                // if user or other items requested these (do this outside switch for order)
+                ret.drivers = await t.drivers.getDriversById(param.items.driverids)
             }
 
             if (addsummary && param.authtype === 'driver') {

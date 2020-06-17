@@ -23,8 +23,7 @@ export class RegisterRepository {
     }
 
     async getAllRegistration(eventid?: UUID): Promise<Registration[]> {
-        return this.db.any('SELECT * FROM registered ' +
-                (eventid ? 'WHERE eventid=$1 ' : ''), [eventid])
+        return this.db.any('SELECT * FROM registered ' + (eventid ? 'WHERE eventid=$1 ' : ''), [eventid])
     }
 
     async getRegistrationSummary(driverid: UUID): Promise<object[]> {
