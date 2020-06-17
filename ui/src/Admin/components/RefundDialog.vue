@@ -17,9 +17,8 @@
             <v-card-actions>
                 <v-spacer></v-spacer>
                 <v-btn color="secondary darken-2" text @click="$emit('input')">Cancel</v-btn>
-                <v-btn color="secondary darken-2" text @click="mark"   :loading="inflight" :disabled="inflight">Mark Refunded</v-btn>
-                <v-btn color="secondary darken-2" text @click="update" :loading="inflight" :disabled="inflight"
-                       v-if="base.accountid && base.txtype==='square'">{{actionbutton}}</v-btn>
+                <v-btn color="secondary darken-2" text @click="mark">Mark Refunded</v-btn>
+                <v-btn color="secondary darken-2" text @click="refund" v-if="base.accountid && base.txtype==='square'">{{actionbutton}}</v-btn>
             </v-card-actions>
         </v-card>
     </v-dialog>
@@ -43,8 +42,7 @@ export default {
                 { text: 'Item',    value: 'itemname' },
                 { text: 'Amount',  value: 'amount' }
             ],
-            selected: [],
-            inflight: false
+            selected: []
         }
     },
     computed: {
@@ -64,15 +62,12 @@ export default {
         actionbutton() { return `Square Refund ${this.$options.filters.dollars(_(this.selected).sumBy('amount'))}` }
     },
     methods: {
-        update() {
-            this.inflight = true
-            /*
+        refund() {
             this.$store.dispatch('setdata', {
-                type: this.apiType,
-                items: { indexes: [this.indexm] },
-                busy: { key: 'busyIndex', id: this.indexm.indexcode }
-            }) */
-            this.inflight = false
+                type: 'update',
+                items: { refund: this.selected },
+                busy: { key: 'busyPayment', id: this.selected.map(p => p.payid) }
+            })
             this.$emit('input')
         },
         mark() {

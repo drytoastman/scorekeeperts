@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 import { ScorekeeperProtocol } from '../db'
-import SquareConnect, { Money, ApiClient } from 'square-connect'
+import SquareConnect, { Money, ApiClient, CurrencyType } from 'square-connect'
 import { v1 as uuidv1 } from 'uuid'
 
 import { Payment, UUID, PaymentAccount } from '@common/lib'
@@ -81,6 +81,53 @@ export async function squareOrder(conn: ScorekeeperProtocol, square: any, paymen
     })
 
     return conn.payments.updatePayments('insert', payments, driverid)
+}
+
+
+export async function squareRefund(conn: ScorekeeperProtocol, payments: Payment[]): Promise<Payment[]> {
+
+    const account = await conn.payments.getPaymentAccount(payments[0].accountid)
+    const secret  = await conn.payments.getPaymentAccountSecret(account.accountid)
+    const client  = getAClient(account.attr.mode, secret.secret)
+    const refid   = uuidv1()
+
+    let total = 0
+    const reasons:string[] = []
+    for (const p of payments) {
+        const event = await conn.series.getEvent(p.eventid)
+        total += p.amount
+        reasons.push(`${event.name} ${p.itemname}`)
+        if (p.txid !== payments[0].txid) {
+            throw Error('refund payments have different transaction ids')
+        }
+        if (p.accountid !== payments[0].accountid) {
+            throw Error('refund payments have different account ids')
+        }
+    }
+
+    const body = {
+        idempotency_key: refid,
+        payment_id: payments[0].txid,
+        amount_money: {
+            amount: total,
+            currency: 'USD' as CurrencyType
+        },
+        reason: reasons.join(', ')
+    }
+
+    const refunds = new SquareConnect.RefundsApi(client)
+    const response = await refunds.refundPayment(body)
+
+    if (response.errors) {
+        console.log('Refund errors: ' + response.errors)
+        throw new Error(JSON.stringify(response.errors))
+    }
+
+    payments.forEach(p => {
+        p.refunded = true
+    })
+
+    return conn.payments.updatePayments('update', payments)
 }
 
 

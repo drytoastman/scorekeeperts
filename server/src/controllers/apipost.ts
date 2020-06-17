@@ -58,6 +58,11 @@ export async function apipost(req: Request, res: Response) {
                         addsummary = true
                         break
 
+                    case 'refund':
+                        req.auth.requireSeries(param.series)
+                        ret.payments = await square.squareRefund(t, param.items.refund)
+                        break
+
                     case 'paymentaccounts':
                         req.auth.requireSeries(param.series)
                         ret.paymentaccounts = await t.tx(async tx => {
@@ -96,6 +101,7 @@ export async function apipost(req: Request, res: Response) {
                         break
 
                     case 'carids':
+                        req.auth.requireSeries(param.series)
                         ret.cars = await t.cars.getCarsById(param.items.carids)
                         param.items.driverids = Array.from(new Set([...param.items.driverids, ...ret.cars.map((c:Car) => c.driverid)]))
                         break
@@ -104,6 +110,7 @@ export async function apipost(req: Request, res: Response) {
 
             if ('driverids' in param.items) {
                 // if user or other items requested these (do this outside switch for order)
+                req.auth.requireSeries(param.series)
                 ret.drivers = await t.drivers.getDriversById(param.items.driverids)
             }
 
