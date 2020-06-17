@@ -5,6 +5,7 @@ import { ActionContext, ActionTree, Store, GetterTree } from 'vuex'
 import VueRouter, { Route } from 'vue-router'
 import { api2Mutations } from './api2mutations'
 import { api2Actions } from './api2actions'
+import { UUID } from '@common/lib'
 
 
 export const adminActions = {
@@ -26,6 +27,41 @@ export const adminActions = {
             context.commit('seriesAuthenticated', { series: p.series, ok: true })
         } catch (error) {
             context.dispatch('axiosError', error)
+        }
+    },
+
+    async ensureCarDriverInfo(context: ActionContext<Api2State, any>, carids: Set<UUID>) {
+        try {
+            const cids = {}
+            const dids = {}
+            for (const carid of carids) {
+                if (carid in this.state.cars) {
+                    const driverid = this.state.cars[carid].driverid
+                    if (!(driverid in this.state.drivers)) {
+                        dids[driverid] = 1
+                    }
+                } else {
+                    cids[carid] = 1
+                }
+            }
+
+            const p = {
+                series: this.state.currentSeries,
+                authtype: this.state.authtype,
+                type: 'update', // we are not getting entire list
+                items: {
+                    carids: Object.keys(cids),
+                    driverids: Object.keys(dids)
+                }
+            }
+
+            context.commit('gettingData', true)
+            const data = (await axios.post(API2ROOT, p, { withCredentials: true })).data
+            context.commit('apiData', data)
+        } catch (error) {
+            context.dispatch('axiosError', error)
+        } finally {
+            context.commit('gettingData', false)
         }
     }
 

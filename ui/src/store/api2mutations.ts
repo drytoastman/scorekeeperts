@@ -1,6 +1,7 @@
+import _ from 'lodash'
 import Vue from 'vue'
 import { MutationTree } from 'vuex'
-import { Registration, UUID } from '@common/lib'
+import { Registration, UUID, Payment } from '@common/lib'
 import { Api2State } from './state'
 
 export function clearApi2SeriesData(state: Api2State) {
@@ -80,7 +81,11 @@ export const api2Mutations = {
     },
 
     gettingData(state: Api2State, value: boolean) {
-        state.gettingData = value
+        if (value) {
+            state.gettingData++
+        } else {
+            state.gettingData--
+        }
     },
 
     apiData(state: Api2State, data: any) {
@@ -122,12 +127,22 @@ export const api2Mutations = {
                 if (data.type === 'eventupdate') {
                     Vue.set(state[key], data.eventid, data[key])
                 } else {
-                // get, insert
+                    // get, insert
                     if (data.type === 'get') { state[key] = {} }
-                    data[key].forEach((r: Registration) => {
-                        if (!(r.eventid in state[key])) { Vue.set(state[key], r.eventid, []) }
-                        state[key][r.eventid].push(r)
-                    })
+                    if (key === 'payments') {
+                        data[key].forEach((p: Payment) => {
+                            if (!(p.eventid in state[key])) { Vue.set(state[key], p.eventid, []) }
+                            _.remove(state[key][p.eventid], { payid: p.payid })
+                            state[key][p.eventid].push(p)
+                        })
+                    }
+                    if (key === 'registered') {
+                        data[key].forEach((r: Registration) => {
+                            if (!(r.eventid in state[key])) { Vue.set(state[key], r.eventid, []) }
+                            _.remove(state[key][r.eventid], { eventid: r.eventid, carid: r.carid, session: r.session })
+                            state[key][r.eventid].push(r)
+                        })
+                    }
                 }
             }
         }

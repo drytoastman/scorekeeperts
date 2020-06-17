@@ -38,7 +38,7 @@ export class Api2State {
     squareoauthresp = {}
 
     // other more temporary things
-    gettingData = false
+    gettingData = 0
     busyDriver: {[key: string]: boolean} = {} // driverid set
     busyCars:   {[key: string]: boolean} = {} // carid set
     busyReg:    {[key: string]: boolean} = {} // eventid set

@@ -48,8 +48,19 @@ export default {
         }
     },
     computed: {
-        ...mapState(['events', 'payments']),
-        txpayments() { return _(this.payments).map(v => v).flatten().filter({ txid: this.base.txid, refunded: false }).value() },
+        ...mapState(['drivers', 'cars', 'events', 'payments']),
+        txpayments() {
+            return _(this.payments).values().flatten()
+                .filter({ txid: this.base.txid, refunded: false })
+                .map(p => {
+                    const d = this.drivers[this.cars[p.carid]?.driverid]
+                    return {
+                        ...p,
+                        firstname: d?.firstname,
+                        lastname: d?.lastname
+                    }
+                }).value()
+        },
         actionbutton() { return `Square Refund ${this.$options.filters.dollars(_(this.selected).sumBy('amount'))}` }
     },
     methods: {
@@ -65,11 +76,12 @@ export default {
             this.$emit('input')
         },
         mark() {
-            this.selected.forEach(p => { p.refunded = true })
+            const toupdate = _.cloneDeep(this.selected)
+            toupdate.forEach(p => { p.refunded = true })
             this.$store.dispatch('setdata', {
                 type: 'update',
-                items: { payments: this.selected },
-                busy: { key: 'busyIndex', id: this.selected.map(p => p.payid) }
+                items: { payments: toupdate },
+                busy: { key: 'busyPayment', id: toupdate.map(p => p.payid) }
             })
             this.$emit('input')
         }

@@ -1,6 +1,7 @@
 <template>
     <div class='paymenttable'>
-        <v-data-table :items="paymentlist" :headers="headers" item-key="indexcode" disable-pagination hide-default-footer>
+        <v-data-table :items="paymentlist" :headers="headers" item-key="indexcode" :sort-by="['lastname', 'firstname']"
+                        disable-pagination hide-default-footer multi-sort>
             <template v-slot:item.amount="{ item }">
                 <span v-if="item.refunded">
                     Refunded
@@ -13,7 +14,7 @@
             <template v-slot:item.actions="{ item }">
                 <div v-if="item.refunded">
                 </div>
-                <div v-else-if="busyPayment[item.txid]" class='busy'>
+                <div v-else-if="busyPayment[item.payid]" class='busy'>
                     busy
                 </div>
                 <div v-else class='buttongrid'>
@@ -60,8 +61,18 @@ export default {
         }
     },
     computed: {
-        ...mapState(['payments', 'busyPayment']),
-        paymentlist() { return this.payments[this.eventid] }
+        ...mapState(['drivers', 'cars', 'payments', 'registered', 'busyPayment']),
+        paymentlist() {
+            if (!(this.eventid in this.payments)) { return [] }
+            return this.payments[this.eventid].map(p => {
+                const d = this.drivers[this.cars[p.carid]?.driverid]
+                return {
+                    ...p,
+                    firstname: d?.firstname,
+                    lastname: d?.lastname
+                }
+            })
+        }
     },
     methods: {
         refund(item) {
@@ -69,13 +80,21 @@ export default {
             this.RefundDialog = true
         }
     },
-    mounted() {
+    async mounted() {
+        const req = []
         if (_.isEmpty(this.$store.state.payments)) {
-            this.$store.dispatch('getdata', { items: 'payments' })
+            req.push(this.$store.dispatch('getdata', { items: 'payments' }))
         }
         if (_.isEmpty(this.$store.state.registered)) {
-            this.$store.dispatch('getdata', { items: 'registered' })
+            req.push(this.$store.dispatch('getdata', { items: 'registered' }))
         }
+
+        await Promise.all(req)
+
+        const carids = new Set(
+            _(this.payments).values().flatten().map(p => p.carid).value(),
+            _(this.registered).values().flatten().map(r => r.carid).value())
+        this.$store.dispatch('ensureCarDriverInfo', carids)
     }
 }
 </script>
