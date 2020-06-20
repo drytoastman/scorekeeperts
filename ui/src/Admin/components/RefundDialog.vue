@@ -2,7 +2,7 @@
     <v-dialog :value="value" @input="$emit('input')" persistent max-width="600px">
         <v-card>
             <v-card-title>
-                <span class="headline secondary--text text--darken-2">Refund Payment Items</span>
+                <span class="headline primary--text text--darken-2">Refund Payment Items</span>
             </v-card-title>
             <v-card-text>
                 <v-data-table :items="txpayments" :headers="headers" item-key="payid" v-model="selected" disable-pagination hide-default-footer show-select>
@@ -16,9 +16,9 @@
             </v-card-text>
             <v-card-actions>
                 <v-spacer></v-spacer>
-                <v-btn color="secondary darken-2" text @click="$emit('input')">Cancel</v-btn>
-                <v-btn color="secondary darken-2" text @click="mark">Mark Refunded</v-btn>
-                <v-btn color="secondary darken-2" text @click="refund" v-if="base.accountid && base.txtype==='square'">{{actionbutton}}</v-btn>
+                <v-btn color="primary darken-2" text @click="$emit('input')">Cancel</v-btn>
+                <v-btn color="primary darken-2" text @click="mark">Mark Refunded</v-btn>
+                <v-btn color="primary darken-2" text @click="refund" v-if="base.accountid && base.txtype==='square'">{{actionbutton}}</v-btn>
             </v-card-actions>
         </v-card>
     </v-dialog>

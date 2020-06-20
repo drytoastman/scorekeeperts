@@ -23,8 +23,11 @@ declare module 'vue/types/vue' {
 }
 
 const base = {
+    primary: '#465146',
+    secondary: '#478841',
+    /*
     primary: colors.indigo.base,
-    secondary: colors.blue.base,
+    secondary: colors.blue.base, */
     accent: colors.cyan.base,
     error: colors.red.base,
     warning: colors.orange.base,
@@ -37,6 +40,9 @@ const vuetify = new Vuetify({
         themes: {
             light: base,
             dark: base
+        },
+        options: {
+            customProperties: true
         }
     },
     icons: {

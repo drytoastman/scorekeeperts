@@ -62,8 +62,13 @@ export default {
             return Object.values(this.classes).filter(c => c.classcode !== 'HOLD')
         },
         indexlist: function() {
-            const restrict = (this.carm.classcode in this.classes)
-                ? restrictedRegistrationIndexes(this.classes[this.carm.classcode].caridxrestrict, Object.keys(this.indexes)) : []
+            let restrict = []
+            if (this.carm.classcode in this.classes) {
+                const cls = this.classes[this.carm.classcode]
+                if (cls.carindex) {
+                    restrict = restrictedRegistrationIndexes(this.classes[this.carm.classcode].caridxrestrict, Object.keys(this.indexes))
+                }
+            }
             return Object.values(this.indexes).filter(i => restrict.includes(i.indexcode) && i.indexcode !== '')
         },
         needindex: function() { return this.indexlist.length > 0 }

@@ -2,15 +2,15 @@
     <v-dialog :value="value" @input="$emit('input')" :persistent="persistent" :max-width="width">
         <v-card>
             <v-card-title>
-                <span class="headline secondary--text text--darken-2">{{title}}</span>
+                <span class="headline primary--text">{{title}}</span>
             </v-card-title>
             <v-card-text :class='{disabledform: disableAll}'>
                 <slot></slot>
             </v-card-text>
             <v-card-actions>
                 <v-spacer></v-spacer>
-                <v-btn color="secondary darken-2" text @click="$emit('input')">Cancel</v-btn>
-                <v-btn color="secondary darken-2" text @click="$emit('update')">{{actionName}}</v-btn>
+                <v-btn color="primary" text @click="$emit('input')">Cancel</v-btn>
+                <v-btn color="primary" text @click="$emit('update')">{{actionName}}</v-btn>
             </v-card-actions>
         </v-card>
     </v-dialog>

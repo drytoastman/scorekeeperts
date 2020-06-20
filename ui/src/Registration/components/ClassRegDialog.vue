@@ -3,7 +3,7 @@
         <v-dialog :value="value" @input="$emit('input')" persistent max-width="400px">
             <v-card>
                 <v-card-title>
-                    <span class="headline">Register</span>
+                    <span class="primary--text headline">Register</span>
                 </v-card-title>
                 <v-card-text>
                     <div class='carslink'>
@@ -37,8 +37,8 @@
                 </v-card-text>
                 <v-card-actions>
                     <v-spacer></v-spacer>
-                    <v-btn color="blue darken-1" text @click="$emit('input')">Cancel</v-btn>
-                    <v-btn color="blue darken-1" text @click="update()" :disabled="nocars">Update</v-btn>
+                    <v-btn color="primary" text @click="$emit('input')">Cancel</v-btn>
+                    <v-btn color="primary" text @click="update()" :disabled="nocars">Update</v-btn>
                 </v-card-actions>
             </v-card>
         </v-dialog>
