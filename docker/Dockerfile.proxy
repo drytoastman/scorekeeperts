@@ -1,6 +1,7 @@
 FROM nginx:1.18.0
 # RUN apt-get update && apt-get install -y -q vim
 COPY --from=tsbase /code/ui/dist /app
-COPY nginx.conf /etc/nginx/
-# When using volume for /var/log, make sure nginx directory exists
-CMD ["bash", "-c", "mkdir -p /var/log/nginx && nginx -g 'daemon off;'"]
+COPY dhparam.pem /etc/nginx/
+COPY services.conf /etc/nginx/
+COPY nginx* /etc/nginx/
+CMD ["/etc/nginx/nginxstart.sh"]

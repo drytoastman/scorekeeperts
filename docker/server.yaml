@@ -1,0 +1,108 @@
+version: '3.2'
+volumes:
+    database:
+    socket:
+    logs:
+    uploads:
+    certs: { external: { name: "certs" }}
+    webdata:
+    emaildata:
+    crondata:
+    letsencrypt: { external: { name: "letsencrypt" }}
+
+networks:
+    net1:
+
+services:
+    db:
+        image: drytoastman/scdb:${VERSION}
+        networks: { net1: {}}
+        ports:
+            - '54329:5432'
+            - '127.0.0.1:6432:6432'
+        volumes:
+            - database:/var/lib/postgresql/data
+            - socket:/var/run/postgresql
+            - logs:/var/log
+            - certs:/certs
+
+    pythonweb:
+        image: drytoastman/scpython:${VERSION}
+        command: webserver.py
+        networks: { net1: {}}
+        depends_on:
+            - db
+        volumes:
+            - socket:/var/run/postgresql
+            - logs:/var/log
+            - uploads:/var/uploads
+            - webdata:/webdata:ro
+        environment:
+            - IS_MAIN_SERVER=1
+            - SHOWLIVE=0
+            - MAIL_SEND_FROM=mailman@scorekeeper.wwscc.org
+            - MAIL_SEND_DEFAULT_REPLYTO=admin@scorekeeper.wwscc.org
+            - SECRETS_FILE=/webdata/websecrets.json
+            - DEBUG=1
+            - LOG_LEVEL=DEBUG
+
+    # email:
+    #     image: drytoastman/scpython:${VERSION}
+    #     command: mailman
+    #     networks: { net1: {}}
+    #     depends_on:
+    #         - db
+    #     volumes:
+    #         - socket:/var/run/postgresql
+    #         - logs:/var/log
+    #         - uploads:/var/uploads
+    #         - emaildata:/emaildata:ro
+    #     environment:
+    #         - MAIL_RECEIVE_HOST=wwscc.org
+    #         - MAIL_SEND_HOST=wwscc.org
+    #         - MAIL_SEND_FROM=mailman@scorekeeper.wwscc.org
+    #         - MAIL_SEND_DEFAULT_REPLYTO=admin@scorekeeper.wwscc.org
+    #         - SECRETS_FILE=/emaildata/emailsecrets.json
+    #         - DEBUG=1
+    #         - LOG_LEVEL=DEBUG
+
+    # cron:
+    #     image: drytoastman/scpython:${VERSION}
+    #     command: crondaemon
+    #     networks: { net1: {}}
+    #     volumes:
+    #         - socket:/var/run/postgresql
+    #         - logs:/var/log
+    #         - crondata:/crondata:ro
+    #         - webdata:/webdata:ro
+    #     environment:
+    #         - GOOGLE_APPLICATION_CREDENTIALS=/crondata/scorekeeper.creds.json
+    #         - SECRETS_FILE=/webdata/websecrets.json
+    #         - MAIL_ADMIN_ADDRESS=admin@scorekeeper.wwscc.org
+
+    nodeweb:
+        image: drytoastman/scnodejs:${VERSION}
+        networks: { net1: {}}
+        depends_on:
+            - db
+        environment:
+            - DBHOST=db
+            - DBPORT=6432
+        volumes:
+            - logs:/var/log
+
+    proxy:
+        image: testproxy
+        networks: { net1: {}}
+        depends_on:
+            - nodeweb
+            - pythonweb
+        environment:
+            - MAIN_SERVER=1
+        volumes:
+            - logs:/var/log
+            - letsencrypt:/etc/letsencrypt
+        ports:
+            - "80:80"
+            - "443:443"
+        restart: unless-stopped
