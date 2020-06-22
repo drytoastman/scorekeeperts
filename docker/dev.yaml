@@ -29,4 +29,6 @@ services:
             - socket:/var/run/postgresql
         environment:
             - IS_MAIN_SERVER=1
+        ports:
+            - '80:80'
 
