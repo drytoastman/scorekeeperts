@@ -48,3 +48,17 @@ export const DriverValidator: DataValidationRules = {
     modified:   [isDate],
     created:    [isDate]
 }
+
+export const RegisterValidator: DataValidationRules = {
+    firstname:  [Length(2, 32)],
+    lastname:   [Length(2, 32)],
+    email:      [isEmail],
+    username:   [Length(6, 32)],
+    password:   [Length(6, 32)]
+}
+
+export const ResetValidator: DataValidationRules = {
+    firstname:  [Length(2, 32)],
+    lastname:   [Length(2, 32)],
+    email:      [isEmail]
+}

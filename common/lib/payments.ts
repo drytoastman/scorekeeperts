@@ -6,7 +6,9 @@ export interface PaymentAccount {
     type: string;
     attr: {
         mode: string,
-        applicationid: string,
+        version: number
+        merchantid?: string,
+        applicationid?: string,
     }
     modified: DateString;
 }
