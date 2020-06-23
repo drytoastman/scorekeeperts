@@ -4,6 +4,7 @@ rules = {
   'space-before-function-paren': ["warn", "never"],
   'no-multi-spaces': 'off', // I like to visually align things
   'no-multiple-empty-lines': 'off',
+  'key-spacing': 'off',
   'no-unused-vars': 'off',  // doesn't appear to work with typescript
   'padded-blocks': 'off',
   'no-debugger': 'off',
