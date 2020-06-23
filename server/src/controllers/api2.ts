@@ -15,7 +15,7 @@ if (process.env.NODE_ENV === 'development') {
 
 api2.use(async function(req: Request, res: Response, next: Function) {
     if (!req.session) {
-        throw Error('No session available')
+        return res.status(500).json({ error: 'no session available' })
     }
     req.auth = new AuthData(req.session)
     next()

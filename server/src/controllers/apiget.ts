@@ -2,6 +2,7 @@ import { Request, Response } from 'express'
 import { db } from '../db'
 import { allSeriesSummary } from './summary'
 import { checkAuth } from './apiauth'
+import { SQ_APPLICATION_ID } from '../db/generalrepo'
 
 export async function apiget(req: Request, res: Response) {
 
@@ -19,7 +20,6 @@ export async function apiget(req: Request, res: Response) {
             series: param.series
         }
 
-        let classdata
         const isSeries = param.authtype === 'series'
         await t.series.setSeries(ret.series)
         for (const item of param.items) {
@@ -67,7 +67,7 @@ export async function apiget(req: Request, res: Response) {
                 case 'summary':
                     break // deal with later
 
-                case 'squareapplicationid': ret.squareapplicationid = await t.payments.getSquareApplicationId(); break
+                case 'squareapplicationid': ret.squareapplicationid = await t.general.getLocalSetting(SQ_APPLICATION_ID); break
                 case 'usednumbers':
                     ret.usednumbers = await t.register.usedNumbers(req.auth.driverId(), param.classcode, await t.series.superUniqueNumbers())
                     break

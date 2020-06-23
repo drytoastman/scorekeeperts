@@ -5,6 +5,7 @@ import { v1 as uuidv1 } from 'uuid'
 
 import { Payment, UUID, PaymentAccount } from '@common/lib'
 import { gCache } from './cache'
+import { SQ_APPLICATION_ID, SQ_APPLICATION_SECRET } from '../db/generalrepo'
 
 function getAClient(mode: string, token?: string): ApiClient {
     const client = new SquareConnect.ApiClient()
@@ -132,14 +133,14 @@ export async function squareRefund(conn: ScorekeeperProtocol, payments: Payment[
 
 
 export async function squareoAuthRequest(conn: ScorekeeperProtocol, series: string, authorizationCode: string) {
-    const SQ_APPLICATION_ID     = await conn.payments.getSquareApplicationId()
-    const SQ_APPLICATION_SECRET = await conn.payments.getSquareApplicationSecret()
-    const CREATE_MODE           = SQ_APPLICATION_ID.includes('sandbox') ? 'sandbox' : 'production'
-    const authzclient           = getAClient(CREATE_MODE)
+    const client_id     = await conn.general.getLocalSetting(SQ_APPLICATION_ID)
+    const client_secret = await conn.general.getLocalSetting(SQ_APPLICATION_SECRET)
+    const create_mode   = client_id.includes('sandbox') ? 'sandbox' : 'production'
+    const authzclient   = getAClient(create_mode)
 
     const tokenresponse = await new SquareConnect.OAuthApi(authzclient).obtainToken({
-        client_id: SQ_APPLICATION_ID,
-        client_secret: SQ_APPLICATION_SECRET,
+        client_id: client_id,
+        client_secret: client_secret,
         grant_type: 'authorization_code',
         code: authorizationCode
     }).catch(error => {
@@ -156,7 +157,7 @@ export async function squareoAuthRequest(conn: ScorekeeperProtocol, series: stri
         throw new Error('token response is missing access or refresh token ' + tokenresponse)
     }
 
-    const client = getAClient(CREATE_MODE, tokenresponse.access_token)
+    const client = getAClient(create_mode, tokenresponse.access_token)
     const locationResponse = await new SquareConnect.LocationsApi(client).listLocations()
 
     if (locationResponse.errors) {
@@ -181,8 +182,8 @@ export async function squareoAuthRequest(conn: ScorekeeperProtocol, series: stri
 
 
 export async function squareoAuthFinish(conn: ScorekeeperProtocol, requestid: string, locationid: string) {
-    const SQ_APPLICATION_ID = await conn.payments.getSquareApplicationId()
-    const CREATE_MODE           = SQ_APPLICATION_ID.includes('sandbox') ? 'sandbox' : 'production'
+    const client_id   = await conn.general.getLocalSetting(SQ_APPLICATION_ID)
+    const create_mode = client_id.includes('sandbox') ? 'sandbox' : 'production'
 
     const request = gCache.get(requestid) as any
     if (!request) {
@@ -199,8 +200,8 @@ export async function squareoAuthFinish(conn: ScorekeeperProtocol, requestid: st
         name: location[0].name,
         type: 'square',
         attr: {
-            mode: CREATE_MODE,
-            applicationid: SQ_APPLICATION_ID,
+            mode: create_mode,
+            applicationid: client_id,
             merchantid: location[0].merchant_id,
             version: 2
         },
@@ -222,9 +223,13 @@ export async function squareoAuthFinish(conn: ScorekeeperProtocol, requestid: st
     await conn.payments.upsertPaymentSecret(secret)
 }
 
+
 const SECONDS_10_DAYS = 60 * 60 * 24 * 10
 export async function squareoAuthRefresh(conn: ScorekeeperProtocol, account: PaymentAccount) {
     try {
+        if (!account.attr.applicationid) {
+            throw Error('No square application id to refresh with')
+        }
         const secret = await conn.payments.getPaymentAccountSecret(account.accountid)
         const tillexpire = (new Date(secret.attr.expires).getTime() - new Date().getTime()) / 1000
         if (tillexpire > SECONDS_10_DAYS) {
@@ -233,11 +238,11 @@ export async function squareoAuthRefresh(conn: ScorekeeperProtocol, account: Pay
         }
 
         console.log(`Refreshing ${account.accountid}`)
-        const SQ_APPLICATION_SECRET = await conn.payments.getSquareApplicationSecret()
+        const client_secret = await conn.general.getLocalSetting(SQ_APPLICATION_SECRET)
         const authzclient   = getAClient(account.attr.mode)
         const tokenresponse = await new SquareConnect.OAuthApi(authzclient).obtainToken({
             client_id: account.attr.applicationid,
-            client_secret: SQ_APPLICATION_SECRET,
+            client_secret: client_secret,
             grant_type: 'refresh_token',
             refresh_token: secret.attr.refresh
         })

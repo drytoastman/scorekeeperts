@@ -6,6 +6,9 @@ import cookieSession from 'cookie-session'
 import { api2, live } from './controllers'
 import { db, tableWatcher, pgp } from './db'
 import { paypalCheckRefunds } from './util/paypal'
+import { startJobs } from './cron'
+
+startJobs()
 
 const app = express()
 app.use(helmet())
@@ -18,18 +21,26 @@ app.use(morgan('dev', {
 }))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
-app.use(cookieSession({
-    name: 'scorekeeper',
-    secret: 'abcdefghijkl',
-    maxAge: 24 * 60 * 60 * 1000
-}))
-app.use(function(req, res, next) {
-    // session continuation if they are active
-    if (req.session) { req.session.now = Math.floor(Date.now() / 60e3) }
-    next()
+
+db.general.getKeyGrip().then(keygrip => {
+    app.use(cookieSession({
+        name: 'scorekeeper',
+        keys: keygrip,
+        maxAge: 24 * 60 * 60 * 1000 // 1000 days
+    }))
+    app.use(function(req, res, next) {
+        // session continuation if they are active
+        if (req.session) { req.session.now = Math.floor(Date.now() / 60e3) }
+        next()
+    })
+    app.use('/api2', api2)
+}).catch(error => {
+    console.error(`Unable to load keys (${error}), sessions will not work`)
 })
 
-app.use('/api2', api2)
+
+
+/*
 app.get('/test1', function(req, res) {
     db.task(async t => {
         t.series.setSeries(req.query.series as string)
@@ -39,6 +50,7 @@ app.get('/test1', function(req, res) {
         res.json(error)
     })
 })
+*/
 
 const PORT = process.env.PORT || 4000
 const server = app.listen(PORT, () => {

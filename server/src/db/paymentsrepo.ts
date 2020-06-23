@@ -1,10 +1,8 @@
 import { IDatabase, ColumnSet, IMain } from 'pg-promise'
 import _ from 'lodash'
-import { v1 as uuidv1 } from 'uuid'
 
 import { PaymentAccount, PaymentItem, UUID, Payment, PaymentAccountSecret } from '@common/lib'
 import { verifyDriverRelationship } from './helper'
-import { CatalogQueryText } from 'square-connect'
 
 let paymentcols: ColumnSet|undefined
 let secretcols: ColumnSet|undefined
@@ -61,18 +59,6 @@ export class PaymentsRepository {
                 { name: 'modified', cast: 'timestamp', mod: ':raw', init: (): any => { return 'now()' } }
             ], { table: 'paymentitems' })
         }
-    }
-
-    private async localCacheGet(key: string): Promise<string> {
-        return this.db.one('SELECT data FROM localcache WHERE name=$1', key).then(r => { return r.data })
-    }
-
-    async getSquareApplicationId(): Promise<string> {
-        return this.localCacheGet('SQ_APPLICATION_ID')
-    }
-
-    async getSquareApplicationSecret(): Promise<string> {
-        return this.localCacheGet('SQ_APPLICATION_SECRET')
     }
 
     async getPaymentAccounts(): Promise<PaymentAccount[]> {

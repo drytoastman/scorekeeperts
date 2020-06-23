@@ -6,6 +6,7 @@ import { ClassRepository } from './classrepo'
 import { RegisterRepository } from './registerrepo'
 import { TableWatcher } from './tablewatcher'
 import { PaymentsRepository } from './paymentsrepo'
+import { GeneralRepository } from './generalrepo'
 
 export interface DBExtensions {
     series: SeriesRepository;
@@ -14,6 +15,7 @@ export interface DBExtensions {
     cars: CarRepository;
     register: RegisterRepository;
     payments: PaymentsRepository;
+    general: GeneralRepository;
 }
 
 export type ScorekeeperProtocol = IBaseProtocol<DBExtensions> & DBExtensions;
@@ -28,6 +30,7 @@ const initOptions: IInitOptions<DBExtensions> = {
         obj.cars = new CarRepository(obj, pgp)
         obj.register = new RegisterRepository(obj, pgp)
         obj.payments = new PaymentsRepository(obj, pgp)
+        obj.general = new GeneralRepository(obj)
     }
 }
 
