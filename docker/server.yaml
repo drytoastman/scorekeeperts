@@ -2,12 +2,10 @@ version: '3.2'
 volumes:
     database:
     socket:
+    backups:
     logs:
-    uploads:
     certs: { external: { name: "certs" }}
     webdata:
-    emaildata:
-    crondata:
     letsencrypt: { external: { name: "letsencrypt" }}
 
 networks:
@@ -16,6 +14,7 @@ networks:
 services:
     db:
         image: drytoastman/scdb:${VERSION}
+        logging: { driver: gcplogs }
         networks: { net1: {}}
         ports:
             - '54329:5432'
@@ -35,7 +34,6 @@ services:
         volumes:
             - socket:/var/run/postgresql
             - logs:/var/log
-            - uploads:/var/uploads
             - webdata:/webdata:ro
         environment:
             - IS_MAIN_SERVER=1
@@ -43,42 +41,6 @@ services:
             - MAIL_SEND_FROM=mailman@scorekeeper.wwscc.org
             - MAIL_SEND_DEFAULT_REPLYTO=admin@scorekeeper.wwscc.org
             - SECRETS_FILE=/webdata/websecrets.json
-            - DEBUG=1
-            - LOG_LEVEL=DEBUG
-
-    # email:
-    #     image: drytoastman/scpython:${VERSION}
-    #     command: mailman
-    #     networks: { net1: {}}
-    #     depends_on:
-    #         - db
-    #     volumes:
-    #         - socket:/var/run/postgresql
-    #         - logs:/var/log
-    #         - uploads:/var/uploads
-    #         - emaildata:/emaildata:ro
-    #     environment:
-    #         - MAIL_RECEIVE_HOST=wwscc.org
-    #         - MAIL_SEND_HOST=wwscc.org
-    #         - MAIL_SEND_FROM=mailman@scorekeeper.wwscc.org
-    #         - MAIL_SEND_DEFAULT_REPLYTO=admin@scorekeeper.wwscc.org
-    #         - SECRETS_FILE=/emaildata/emailsecrets.json
-    #         - DEBUG=1
-    #         - LOG_LEVEL=DEBUG
-
-    # cron:
-    #     image: drytoastman/scpython:${VERSION}
-    #     command: crondaemon
-    #     networks: { net1: {}}
-    #     volumes:
-    #         - socket:/var/run/postgresql
-    #         - logs:/var/log
-    #         - crondata:/crondata:ro
-    #         - webdata:/webdata:ro
-    #     environment:
-    #         - GOOGLE_APPLICATION_CREDENTIALS=/crondata/scorekeeper.creds.json
-    #         - SECRETS_FILE=/webdata/websecrets.json
-    #         - MAIL_ADMIN_ADDRESS=admin@scorekeeper.wwscc.org
 
     nodeweb:
         image: drytoastman/scnodejs:${VERSION}
@@ -92,7 +54,8 @@ services:
             - logs:/var/log
 
     proxy:
-        image: testproxy
+        image: drytoastman/scproxy:${VERSION}
+        logging: { driver: gcplogs }
         networks: { net1: {}}
         depends_on:
             - nodeweb
