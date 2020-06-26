@@ -1,5 +1,5 @@
 
-CREATE SCHEMA <seriesname>; 
+CREATE SCHEMA <seriesname>;
 GRANT ALL   ON SCHEMA <seriesname> TO <seriesname>;
 GRANT USAGE ON SCHEMA <seriesname> TO nulluser;
 GRANT driversaccess TO <seriesname>;
@@ -23,7 +23,7 @@ GRANT  ALL ON <seriesname>.serieslog_logid_seq TO <seriesname>;
 CREATE INDEX ON <seriesname>.serieslog(otime);
 CREATE INDEX ON <seriesname>.serieslog(ltime);
 COMMENT ON TABLE <seriesname>.serieslog is 'Change logs that are specific to this local database';
- 
+
 CREATE TABLE settings (
     name       VARCHAR     NOT NULL PRIMARY KEY,
     val        VARCHAR     NOT NULL,
@@ -37,7 +37,7 @@ COMMENT ON TABLE settings IS 'settings includes any boolean, integer, double pre
 
 
 CREATE TABLE seriesattr (
-    driverid UUID       PRIMARY KEY REFERENCES public.drivers, 
+    driverid UUID       PRIMARY KEY REFERENCES public.drivers,
     attr     JSONB      NOT NULL DEFAULT '{}',
     modified TIMESTAMP  NOT NULL DEFAULT now()
 );
@@ -50,7 +50,7 @@ COMMENT ON TABLE seriesattr IS 'seriesattr records extra driver information that
 
 CREATE TABLE indexlist (
     indexcode   VARCHAR(16)  PRIMARY KEY,
-    descrip     TEXT         NOT NULL, 
+    descrip     TEXT         NOT NULL,
     value       FLOAT        NOT NULL,
     modified    TIMESTAMP    NOT NULL DEFAULT now()
 );
@@ -63,14 +63,14 @@ COMMENT ON TABLE indexlist IS 'The list of indexes for this series';
 
 CREATE TABLE classlist (
     classcode       VARCHAR(16)  PRIMARY KEY,
-    descrip         TEXT         NOT NULL, 
-    indexcode       VARCHAR(16)  NOT NULL REFERENCES indexlist, 
+    descrip         TEXT         NOT NULL,
+    indexcode       VARCHAR(16)  NOT NULL REFERENCES indexlist,
     caridxrestrict  TEXT         NOT NULL,
-    classmultiplier FLOAT        NOT NULL, 
-    carindexed      BOOLEAN      NOT NULL, 
-    usecarflag      BOOLEAN      NOT NULL, 
-    eventtrophy     BOOLEAN      NOT NULL, 
-    champtrophy     BOOLEAN      NOT NULL, 
+    classmultiplier FLOAT        NOT NULL,
+    carindexed      BOOLEAN      NOT NULL,
+    usecarflag      BOOLEAN      NOT NULL,
+    eventtrophy     BOOLEAN      NOT NULL,
+    champtrophy     BOOLEAN      NOT NULL,
     secondruns      BOOLEAN      NOT NULL,
     countedruns     INTEGER      NOT NULL,
     modified        TIMESTAMP    NOT NULL DEFAULT now()
@@ -108,7 +108,6 @@ COMMENT ON TABLE paymentaccounts IS 'the list of configured merchant data availa
 
 CREATE TABLE paymentitems (
     itemid    TEXT      PRIMARY KEY,
-    accountid TEXT      NOT NULL REFERENCES paymentaccounts,
     name      TEXT      NOT NULL,
     price     INTEGER   NOT NULL DEFAULT 100,
     currency  CHAR(3)   NOT NULL DEFAULT 'USD',
@@ -124,18 +123,20 @@ COMMENT ON TABLE paymentitems IS 'the list of configured items for an account, i
 CREATE TABLE paymentsecrets (
     accountid TEXT      PRIMARY KEY,
     secret    TEXT      NOT NULL DEFAULT '',
+    attr      JSONB     NOT NULL,
     modified  TIMESTAMP NOT NULL DEFAULT now()
 );
 REVOKE ALL ON paymentsecrets FROM public;
 GRANT ALL  ON paymentsecrets TO localuser;
 COMMENT ON TABLE paymentsecrets IS 'Local only table for payment account details that only need to be on the main server, localuser required to access, no remotes';
 
-
+-- DEPRECATED
 CREATE SEQUENCE ordercounter;
 REVOKE ALL ON ordercounter FROM public;
 GRANT ALL  ON ordercounter TO localuser;
 COMMENT ON SEQUENCE ordercounter IS 'Unsynced counter for main server when counting orders for series payments';
 
+-- DEPRECATED
 CREATE TABLE tempcache (
     key       TEXT      PRIMARY KEY,
     data      JSONB     NOT NULL DEFAULT '{}'
@@ -146,26 +147,26 @@ COMMENT ON TABLE tempcache IS 'Local only table that can be used for caching dat
 
 
 CREATE TABLE events (
-    eventid       UUID        PRIMARY KEY, 
-    name          TEXT        NOT NULL, 
-    date          DATE        NOT NULL, 
+    eventid       UUID        PRIMARY KEY,
+    name          TEXT        NOT NULL,
+    date          DATE        NOT NULL,
     champrequire  BOOLEAN     NOT NULL DEFAULT FALSE,
     useastiebreak BOOLEAN     NOT NULL DEFAULT FALSE,
     isexternal    BOOLEAN     NOT NULL DEFAULT FALSE,
     regtype       INTEGER     NOT NULL DEFAULT 0,
-    regopened     TIMESTAMP   NOT NULL DEFAULT now(), 
-    regclosed     TIMESTAMP   NOT NULL, 
-    courses       INTEGER     NOT NULL DEFAULT 1, 
-    runs          INTEGER     NOT NULL DEFAULT 4, 
-    countedruns   INTEGER     NOT NULL DEFAULT 0, 
+    regopened     TIMESTAMP   NOT NULL DEFAULT now(),
+    regclosed     TIMESTAMP   NOT NULL,
+    courses       INTEGER     NOT NULL DEFAULT 1,
+    runs          INTEGER     NOT NULL DEFAULT 4,
+    countedruns   INTEGER     NOT NULL DEFAULT 0,
 	segments      INTEGER     NOT NULL DEFAULT 0,
-    perlimit      INTEGER     NOT NULL DEFAULT 0, 
-    sinlimit      INTEGER     NOT NULL DEFAULT 0, 
-    totlimit      INTEGER     NOT NULL DEFAULT 0, 
-    conepen       FLOAT       NOT NULL DEFAULT 2.0, 
-    gatepen       FLOAT       NOT NULL DEFAULT 10.0, 
-    ispro         BOOLEAN     NOT NULL DEFAULT FALSE, 
-    ispractice    BOOLEAN     NOT NULL DEFAULT FALSE, 
+    perlimit      INTEGER     NOT NULL DEFAULT 0,
+    sinlimit      INTEGER     NOT NULL DEFAULT 0,
+    totlimit      INTEGER     NOT NULL DEFAULT 0,
+    conepen       FLOAT       NOT NULL DEFAULT 2.0,
+    gatepen       FLOAT       NOT NULL DEFAULT 10.0,
+    ispro         BOOLEAN     NOT NULL DEFAULT FALSE,
+    ispractice    BOOLEAN     NOT NULL DEFAULT FALSE,
     accountid     TEXT        REFERENCES paymentaccounts,
     attr          JSONB       NOT NULL,
     modified      TIMESTAMP   NOT NULL DEFAULT now(),
@@ -180,10 +181,10 @@ COMMENT ON TABLE events IS 'The list of events for this series, attr includes lo
 
 CREATE TABLE cars (
     carid         UUID        PRIMARY KEY,
-    driverid      UUID        NOT NULL REFERENCES public.drivers, 
-    classcode     VARCHAR(16) NOT NULL REFERENCES classlist, 
-    indexcode     VARCHAR(16) NOT NULL REFERENCES indexlist, 
-    number        INTEGER     NOT NULL, 
+    driverid      UUID        NOT NULL REFERENCES public.drivers,
+    classcode     VARCHAR(16) NOT NULL REFERENCES classlist,
+    indexcode     VARCHAR(16) NOT NULL REFERENCES indexlist,
+    number        INTEGER     NOT NULL,
 	useclsmult    BOOLEAN     NOT NULL,
     attr          JSONB       NOT NULL,
     modified      TIMESTAMP   NOT NULL DEFAULT now(),
@@ -200,15 +201,15 @@ COMMENT ON COLUMN cars.useclsmult IS 'If classlist.usecarflag is True, each car 
 
 
 CREATE TABLE runs (
-    eventid  UUID       NOT NULL REFERENCES events, 
-    carid    UUID       NOT NULL REFERENCES cars, 
+    eventid  UUID       NOT NULL REFERENCES events,
+    carid    UUID       NOT NULL REFERENCES cars,
     course   INTEGER    NOT NULL,
     rungroup INTEGER    NOT NULL,
-    run      INTEGER    NOT NULL, 
-    cones    INTEGER    NOT NULL DEFAULT 0, 
-    gates    INTEGER    NOT NULL DEFAULT 0, 
-    raw      FLOAT      NOT NULL, 
-    status   VARCHAR(8) NOT NULL DEFAULT 'DNS', 
+    run      INTEGER    NOT NULL,
+    cones    INTEGER    NOT NULL DEFAULT 0,
+    gates    INTEGER    NOT NULL DEFAULT 0,
+    raw      FLOAT      NOT NULL,
+    status   VARCHAR(8) NOT NULL DEFAULT 'DNS',
     attr     JSONB      NOT NULL,
     modified TIMESTAMP  NOT NULL DEFAULT now(),
     PRIMARY KEY (eventid, carid, course, rungroup, run),
@@ -253,8 +254,8 @@ COMMENT ON TABLE timertimes IS 'The list of all times received by data entry via
 
 
 CREATE TABLE registered (
-    eventid    UUID      NOT NULL REFERENCES events, 
-    carid      UUID      NOT NULL REFERENCES cars, 
+    eventid    UUID      NOT NULL REFERENCES events,
+    carid      UUID      NOT NULL REFERENCES cars,
     session    TEXT      NOT NULL DEFAULT '',
     modified   TIMESTAMP NOT NULL DEFAULT now(),
     PRIMARY KEY (eventid, carid, session)
@@ -268,14 +269,15 @@ COMMENT ON TABLE registered IS 'The list of cars registered for events';
 
 CREATE TABLE payments (
     payid      UUID      PRIMARY KEY,
-    eventid    UUID      NOT NULL REFERENCES events, 
-    carid      UUID      NOT NULL REFERENCES cars, 
+    eventid    UUID      NOT NULL REFERENCES events,
+    carid      UUID      NOT NULL REFERENCES cars,
     session    TEXT      NOT NULL DEFAULT '',
     refid      TEXT,
     txtype     TEXT,
     txid       TEXT,
     txtime     TIMESTAMP,
     itemname   TEXT,
+    accountid  TEXT,
     amount     FLOAT,
     modified   TIMESTAMP NOT NULL DEFAULT now()
 );
@@ -287,9 +289,9 @@ COMMENT ON TABLE payments IS 'The list of payments made, there is potential part
 
 
 CREATE TABLE runorder (
-    eventid  UUID       NOT NULL REFERENCES events, 
-    course   INTEGER    NOT NULL CHECK (course > 0), 
-    rungroup INTEGER    NOT NULL CHECK (rungroup > 0), 
+    eventid  UUID       NOT NULL REFERENCES events,
+    course   INTEGER    NOT NULL CHECK (course > 0),
+    rungroup INTEGER    NOT NULL CHECK (rungroup > 0),
     cars     UUID[]     NOT NULL,
     modified TIMESTAMP  NOT NULL DEFAULT now(),
     PRIMARY KEY (eventid, course, rungroup)
@@ -303,8 +305,8 @@ COMMENT ON TABLE runorder IS 'This is the list of cars in each rungroup as seen 
 
 
 CREATE TABLE classorder (
-    eventid   UUID      NOT NULL REFERENCES events, 
-    rungroup  INTEGER   NOT NULL CHECK (rungroup > 0), 
+    eventid   UUID      NOT NULL REFERENCES events,
+    rungroup  INTEGER   NOT NULL CHECK (rungroup > 0),
     classes   TEXT[]    NOT NULL,
     modified  TIMESTAMP NOT NULL DEFAULT now(),
     PRIMARY KEY (eventid, rungroup)
@@ -320,7 +322,7 @@ COMMENT ON TABLE classorder IS 'the ordering of classes inside each run group, g
 CREATE TABLE challenges (
     challengeid UUID        PRIMARY KEY,
     eventid     UUID        NOT NULL,
-    name        TEXT        NOT NULL, 
+    name        TEXT        NOT NULL,
     depth       INTEGER     NOT NULL CHECK (depth >= 1 AND depth <= 6),
     modified    TIMESTAMP   NOT NULL DEFAULT now(),
 	FOREIGN KEY (eventid) REFERENCES events(eventid)
@@ -336,11 +338,11 @@ COMMENT ON TABLE challenges is 'The list of challenges for each ProSolo event';
 CREATE TABLE challengerounds (
     challengeid  UUID      NOT NULL,
     round        INTEGER   NOT NULL,
-    swappedstart BOOLEAN   NOT NULL DEFAULT FALSE, 
+    swappedstart BOOLEAN   NOT NULL DEFAULT FALSE,
     car1id       UUID,
-    car1dial     FLOAT     NOT NULL DEFAULT 999.999, 
+    car1dial     FLOAT     NOT NULL DEFAULT 999.999,
     car2id       UUID,
-    car2dial     FLOAT     NOT NULL DEFAULT 999.999, 
+    car2dial     FLOAT     NOT NULL DEFAULT 999.999,
     modified     TIMESTAMP NOT NULL DEFAULT now(),
     PRIMARY KEY (challengeid, round),
 	FOREIGN KEY (challengeid) REFERENCES challenges(challengeid) ON DELETE CASCADE ON UPDATE CASCADE,

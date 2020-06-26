@@ -209,7 +209,7 @@ DECLARE
     cmds text[];
     schema text;
 BEGIN
-    FOR schema IN SELECT nspname FROM pg_catalog.pg_namespace where nspname !~ '^pg_' and nspname not in ('information_schema', 'public') 
+    FOR schema IN SELECT nspname FROM pg_catalog.pg_namespace where nspname !~ '^pg_' and nspname not in ('information_schema', 'public')
     LOOP
         PERFORM set_config('search_path', schema||',public', true);
         SELECT regexp_split_to_array(replace(replace(seriesscript, '<seriesname>', schema), '\r\n', ''), ';') INTO cmds;
@@ -264,15 +264,15 @@ COMMENT ON TABLE results IS 'The stored list of JSON data represent event result
 
 -- attr includes alias, address, city, state, zip, phone, brag, sponsor, emergency, notes, etc
 CREATE TABLE drivers (
-    driverid   UUID        PRIMARY KEY, 
-    firstname  TEXT        NOT NULL, 
-    lastname   TEXT        NOT NULL, 
+    driverid   UUID        PRIMARY KEY,
+    firstname  TEXT        NOT NULL,
+    lastname   TEXT        NOT NULL,
     email      TEXT        NOT NULL,
     username   TEXT        NOT NULL DEFAULT '',
     password   TEXT        NOT NULL DEFAULT '',
     barcode    TEXT        NOT NULL DEFAULT '',
     optoutmail BOOLEAN     NOT NULL DEFAULT FALSE,
-    attr       JSONB       NOT NULL DEFAULT '{}', 
+    attr       JSONB       NOT NULL DEFAULT '{}',
     modified   TIMESTAMP   NOT NULL DEFAULT now(),
     created    TIMESTAMP   NOT NULL DEFAULT now(),
     CONSTRAINT uniqueusername UNIQUE (username)
@@ -289,7 +289,7 @@ COMMENT ON TABLE drivers IS 'The global list of drivers for all series';
 CREATE TABLE weekendmembers (
     uniqueid      UUID        NOT NULL PRIMARY KEY,
     membership    INTEGER     NOT NULL,
-    driverid      UUID        NOT NULL REFERENCES drivers, 
+    driverid      UUID        NOT NULL REFERENCES drivers,
     startdate     DATE        NOT NULL,
     enddate       DATE        NOT NULL,
     issuer        TEXT        NOT NULL,
@@ -358,13 +358,23 @@ REVOKE ALL ON unsubscribe FROM public;
 GRANT  ALL ON unsubscribe TO mergeaccess;
 COMMENT ON TABLE unsubscribe IS 'map of emaillistids a driverid has unsubscribed from, (i.e. nwr)';
 
-CREATE TABLE emailfailures(
-    email  TEXT,
-    status TEXT,
-    time   TIMESTAMP NOT NULL DEFAULT now()
+
+CREATE TABLE emailfilter(
+    forder INTEGER NOT NULL,
+    drop   BOOLEAN NOT NULL DEFAULT TRUE,
+    match  TEXT PRIMARY KEY
 );
-REVOKE ALL ON emailfailures FROM public;
-GRANT  ALL ON emailfailures TO mergeaccess;
+REVOKE ALL ON emailfilter FROM public;
+GRANT  ALL ON emailfilter TO mergeaccess;
+
+
+CREATE TABLE localsettings (
+    key TEXT PRIMARY KEY,
+    value TEXT
+);
+REVOKE ALL ON localsettings FROM public;
+GRANT  ALL ON localsettings TO mergeaccess;
+
 
 CREATE TABLE localcache (
     name TEXT PRIMARY KEY,
