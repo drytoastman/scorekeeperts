@@ -1,7 +1,17 @@
+FROM node:12.18.0-slim as builder
+WORKDIR /code
+COPY common/package*.json ./common/
+COPY     ui/package*.json ./ui/
+RUN cd common && npm install
+RUN cd ui     && npm install
+COPY common common
+COPY ui ui
+RUN  cd ui    && npm run build
+
 FROM nginx:1.18.0
 # RUN apt-get update && apt-get install -y -q vim
-COPY --from=tsbase /code/ui/dist /app
-COPY dhparam.pem /etc/nginx/
-COPY services.conf /etc/nginx/
-COPY nginx* /etc/nginx/
+COPY --from=builder /code/ui/dist /app
+COPY docker/dhparam.pem /etc/nginx/
+COPY docker/services.conf /etc/nginx/
+COPY docker/nginx* /etc/nginx/
 CMD ["/etc/nginx/nginxstart.sh"]
