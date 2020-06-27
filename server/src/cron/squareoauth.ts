@@ -1,5 +1,6 @@
 import { db } from '../db'
 import * as square from '../util/square'
+import { cronlog } from '../util/logging'
 
 export async function oauthrefresh() {
     try {
@@ -8,13 +9,13 @@ export async function oauthrefresh() {
                 t.series.setSeries(series)
                 for (const account of await t.payments.getPaymentAccounts()) {
                     if ((account.type === 'square') && (account.attr.version === 2)) {
-                        console.log(account)
+                        cronlog.debug(account)
                         await square.squareoAuthRefresh(t, account)
                     }
                 }
             }
         })
     } catch (error) {
-        console.log(error)
+        cronlog.error(error)
     }
 }

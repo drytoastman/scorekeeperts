@@ -6,6 +6,7 @@ import Mail from 'nodemailer/lib/mailer'
 
 import { db } from '../db'
 import { MAIL_SEND_USER, MAIL_SEND_PASS, MAIL_SEND_HOST, MAIL_SEND_FROM, MAIL_SEND_REPLYTO, MAIL_RECEIVE_USER, MAIL_RECEIVE_PASS, MAIL_RECEIVE_HOST } from '../db/generalrepo'
+import { cronlog } from '../util/logging'
 
 async function createSender(): Promise<Mail|null> {
     // create reusable transporter object using the default SMTP transport
@@ -29,7 +30,7 @@ async function createSender(): Promise<Mail|null> {
             }
         })
     }).catch(error => {
-        console.error(error)
+        cronlog.error(error)
         return null
     })
 }
@@ -57,7 +58,7 @@ async function createReceiverConfig(): Promise<any> {
             }
         }
     }).catch(error => {
-        console.error(error)
+        cronlog.error(error)
         return {}
     })
 }
@@ -93,7 +94,7 @@ export async function sendQueuedEmail() {
             await t.general.deleteQueuedEmail(email.mailid)
         }
     }).catch(error => {
-        console.error(error)
+        cronlog.error(error)
     })
 }
 
@@ -107,15 +108,20 @@ export async function checkMailmanErrors() {
     const connection = await imaps.connect(imapConfig)
     const inbox      = await connection.openBox('INBOX')
     const messages   = await connection.search(['ALL'], { bodies: ['HEADER', 'TEXT', ''] })
+    cronlog.debug('checkmail: %d messsages', messages.length)
 
     for (const item of messages) {
         var all = _.find(item.parts, { which: '' })
         if (!all) continue
-        processMessage(all.body)
+        if (await processMessage(all.body)) {
+            await (connection as any).deleteMessage(item.attributes.uid) // missing stuff from their types file
+        }
     }
+
+    connection.end()
 }
 
-async function processMessage(data: Buffer) {
+async function processMessage(data: Buffer): Promise<boolean> {
     try {
         const parsed = await simpleParser(data)
         for (const attachment of parsed.attachments) {
@@ -125,21 +131,23 @@ async function processMessage(data: Buffer) {
                 const allheaders = new Map([...a1.headers, ...a2.headers])
                 const status = Number((allheaders.get('status') as string || '2.0.0')[0])
                 if (status >= 4) {
-                    console.log('Mailman Error Report:')
-                    allheaders.forEach((v, k) => { console.log(`    ${k}: ${v}`) })
+                    cronlog.warn('Mailman Error Report:')
+                    allheaders.forEach((v, k) => { cronlog.warn(`    ${k}: ${v}`) })
                     if (status >= 5) {
                         let email = allheaders.get('original-recipient')!.toString()
                         if (email.includes(';')) {
                             email = email.split(';')[1]
+                            cronlog.warn(`ban ${email}`)
                             await db.general.addEmailFilter(email)
                         }
-                        console.log(`ban ${email}`)
                     }
                 }
                 break
             }
         }
+        return true
     } catch (error) {
-        console.log('parse error: ' + error)
+        cronlog.error('parse error: %s', error)
+        return false
     }
 }

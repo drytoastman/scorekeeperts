@@ -6,6 +6,7 @@ import { v1 as uuidv1 } from 'uuid'
 import { Payment, UUID, PaymentAccount } from '@common/lib'
 import { gCache } from './cache'
 import { SQ_APPLICATION_ID, SQ_APPLICATION_SECRET } from '../db/generalrepo'
+import { paymentslog } from './logging'
 
 function getAClient(mode: string, token?: string): ApiClient {
     const client = new SquareConnect.ApiClient()
@@ -52,7 +53,7 @@ export async function squareOrder(conn: ScorekeeperProtocol, square: any, paymen
     const orderresponse = await orders.createOrder(account.accountid, body)
 
     if (orderresponse.errors) {
-        console.log('Order response errors: ' + orderresponse.errors)
+        paymentslog.error('square order response errors: ' + orderresponse.errors)
         throw new Error(JSON.stringify(orderresponse.errors))
     }
 
@@ -67,7 +68,7 @@ export async function squareOrder(conn: ScorekeeperProtocol, square: any, paymen
     const paymentresponse = await paymentapi.createPayment(sqpayment)
 
     if (paymentresponse.errors) {
-        console.log('Payment response errors: ' + orderresponse.errors)
+        paymentslog.error('Payment response errors: ' + orderresponse.errors)
         throw new Error(JSON.stringify(orderresponse.errors))
     }
 
@@ -120,7 +121,7 @@ export async function squareRefund(conn: ScorekeeperProtocol, payments: Payment[
     const response = await refunds.refundPayment(body)
 
     if (response.errors) {
-        console.log('Refund errors: ' + response.errors)
+        paymentslog.error('Refund errors: ' + response.errors)
         throw new Error(JSON.stringify(response.errors))
     }
 
@@ -233,11 +234,11 @@ export async function squareoAuthRefresh(conn: ScorekeeperProtocol, account: Pay
         const secret = await conn.payments.getPaymentAccountSecret(account.accountid)
         const tillexpire = (new Date(secret.attr.expires).getTime() - new Date().getTime()) / 1000
         if (tillexpire > SECONDS_10_DAYS) {
-            console.debug(`no refresh needed for ${account.accountid}, till expire = ${tillexpire} seconds`)
+            paymentslog.debug(`no refresh needed for ${account.accountid}, till expire = ${tillexpire} seconds`)
             return
         }
 
-        console.log(`Refreshing ${account.accountid}`)
+        paymentslog.info(`Refreshing ${account.accountid}`)
         const client_secret = await conn.general.getLocalSetting(SQ_APPLICATION_SECRET)
         const authzclient   = getAClient(account.attr.mode)
         const tokenresponse = await new SquareConnect.OAuthApi(authzclient).obtainToken({
@@ -255,6 +256,6 @@ export async function squareoAuthRefresh(conn: ScorekeeperProtocol, account: Pay
         secret.attr.expires = tokenresponse.expires_at as string
         await conn.payments.updatePaymentAccountSecrets('update', [secret])
     } catch (error) {
-        console.error(error)
+        paymentslog.error(error)
     }
 }

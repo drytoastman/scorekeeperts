@@ -3,14 +3,15 @@ import delay from 'express-delay'
 import { apiget } from './apiget'
 import { apipost } from './apipost'
 import { login, logout, changepassword, AuthData, regreset, serieslogin, serieslogout } from './apiauth'
+import { controllog } from '../util/logging'
 
 export const api2 = Router()
 
 if (process.env.NODE_ENV === 'development') {
-    console.log('Using development environment (fake delay and debug login)')
-    // api2.use(delay(1500))
+    controllog.warn('Using development environment (fake delay and debug login)')
+    api2.use(delay(1500))
 } else {
-    console.log('Using production environment')
+    controllog.info('Using production environment')
 }
 
 api2.use(async function(req: Request, res: Response, next: Function) {

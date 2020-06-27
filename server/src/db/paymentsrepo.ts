@@ -22,10 +22,10 @@ export class PaymentsRepository {
                 { name: 'txtype' },
                 { name: 'txid' },
                 { name: 'txtime',   cast: 'timestamp' },
-                { name: 'itemname' },
                 { name: 'amount' },
-                { name: 'accountid' },
                 { name: 'refunded' },
+                { name: 'itemname' },
+                { name: 'accountid' },
                 { name: 'modified', cast: 'timestamp', mod: ':raw', init: (): any => { return 'now()' } }
             ], { table: 'payments' })
         }
@@ -52,7 +52,6 @@ export class PaymentsRepository {
         if (itemcols === undefined) {
             itemcols = new pgp.helpers.ColumnSet([
                 { name: 'itemid', cnd: true },
-                { name: 'accountid' },
                 { name: 'name' },
                 { name: 'price' },
                 { name: 'currency' },

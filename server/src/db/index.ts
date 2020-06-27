@@ -7,6 +7,7 @@ import { RegisterRepository } from './registerrepo'
 import { TableWatcher } from './tablewatcher'
 import { PaymentsRepository } from './paymentsrepo'
 import { GeneralRepository } from './generalrepo'
+import { dblog } from '../util/logging'
 
 export interface DBExtensions {
     series: SeriesRepository;
@@ -41,7 +42,7 @@ try {
         DBPORT = Number.parseInt(process.env.DBPORT)
     }
 } catch (error) {
-    console.error(error)
+    dblog.error(error)
 }
 
 const cn = {

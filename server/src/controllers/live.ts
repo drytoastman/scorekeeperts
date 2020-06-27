@@ -1,5 +1,6 @@
 import { tableWatcher, db } from '../db'
 import WebSocket from 'ws'
+import { controllog } from '../util/logging'
 
 tableWatcher.addTables(['runs', 'timertimes', 'localeventstream', 'registered', 'events'])
 
@@ -26,7 +27,7 @@ tableWatcher.on('registered', async function change(series: any) {
             ws.send(msg)
         })
     } catch (error) {
-        console.log(error)
+        controllog.error(error)
     }
 })
 
@@ -45,6 +46,6 @@ tableWatcher.on('events', async function change(series: any) {
             ws.send(msg)
         })
     } catch (error) {
-        console.log(error)
+        controllog.error(error)
     }
 })

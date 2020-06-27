@@ -1,6 +1,7 @@
 import { IDatabase, ILostContext, IConnected } from 'pg-promise'
 import { EventEmitter } from 'events'
 import { IClient } from 'pg-promise/typescript/pg-subset'
+import { dblog } from '../util/logging'
 
 export class TableWatcher extends EventEmitter {
     tables: Set<String>
@@ -44,9 +45,9 @@ export class TableWatcher extends EventEmitter {
                     conn.none('LISTEN $1~', t)
                 })
             }).then(() => {
-                console.log('watcher connected')
+                dblog.info('watcher connected')
             }).catch(error => {
-                console.log('watcher connect error: ', error)
+                dblog.error('watcher connect error: %s', error)
                 this.reconnect()
             })
         }, delay)
@@ -56,7 +57,7 @@ export class TableWatcher extends EventEmitter {
         if (this.shuttingdown) {
             return
         }
-        console.log('watcher problem:', err)
+        dblog.error('watcher problem:', err)
         e.client.removeAllListeners('notification')
         this.connection = null
         this.reconnect()

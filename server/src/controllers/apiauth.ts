@@ -7,6 +7,7 @@ import { db } from '../db'
 import { UUID, validateObj, RegisterValidator } from '@common/lib'
 import { wrapObj } from '../util/statelessdata'
 import { IS_MAIN_SERVER } from '../db/generalrepo'
+import { controllog } from '../util/logging'
 
 declare global {
     module Express {
@@ -109,7 +110,7 @@ export async function regreset(req: Request, res: Response) {
                     return [ismain, filter]
                 })
             } catch (error) {
-                console.error(error)
+                controllog.error(error)
                 return res.status(400).json({ error: error.toString() })
             }
 
@@ -139,7 +140,7 @@ export async function regreset(req: Request, res: Response) {
                 })
             } catch (error) {
                 const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress
-                console.warn(`Ignore ${request.email} (${ip}`)
+                controllog.warn(`Ignore ${request.email} (${ip}`)
                 return res.status(400).json({ error: 'Request filtered due to suspicious parameters' })
             }
         }

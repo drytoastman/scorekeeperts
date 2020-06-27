@@ -3,6 +3,7 @@ import { base64encode } from 'nodejs-base64'
 import { v1 as uuidv1 } from 'uuid'
 import { ScorekeeperProtocol } from '../db'
 import { Payment, UUID, PaymentAccount, PaymentAccountSecret } from '@common/lib'
+import { paymentslog } from './logging'
 
 function oauthUrl(mode: string) {
     const infix = (mode === 'sandbox') ? 'sandbox.' : ''
@@ -85,6 +86,6 @@ export async function paypalCheckRefunds(conn: ScorekeeperProtocol, account: Pay
         }
     }
 
-    console.log('delete ' + JSON.stringify(todelete))
+    paymentslog.info('delete ' + JSON.stringify(todelete))
     await conn.payments.updatePayments('delete', todelete)
 }

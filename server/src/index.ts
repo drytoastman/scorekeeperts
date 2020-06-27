@@ -7,6 +7,7 @@ import { api2, live } from './controllers'
 import { db, tableWatcher, pgp } from './db'
 import { paypalCheckRefunds } from './util/paypal'
 import { startJobs } from './cron'
+import { mainlog } from './util/logging'
 
 startJobs()
 
@@ -15,7 +16,7 @@ app.use(helmet())
 app.use(morgan('dev', {
     stream: {
         write(message: string): void {
-            console.log(message.substring(0, message.lastIndexOf('\n')))
+            mainlog.info(message.substring(0, message.lastIndexOf('\n')))
         }
     }
 }))
@@ -35,7 +36,7 @@ db.general.getKeyGrip().then(keygrip => {
     })
     app.use('/api2', api2)
 }).catch(error => {
-    console.error(`Unable to load keys (${error}), sessions will not work`)
+    mainlog.error(`Unable to load keys (${error}), sessions will not work`)
 })
 
 
@@ -54,7 +55,7 @@ app.get('/test1', function(req, res) {
 
 const PORT = process.env.PORT || 4000
 const server = app.listen(PORT, () => {
-    console.log(`Server is listening on port ${PORT}`)
+    mainlog.info('Server is listening on port %d', PORT)
 })
 
 server.on('upgrade', function upgrade(request, socket, head) {
@@ -68,7 +69,7 @@ server.on('upgrade', function upgrade(request, socket, head) {
 
 
 process.on('SIGTERM', () => {
-    console.log('terminating')
+    mainlog.warn('terminating')
     server.close(() => {
         tableWatcher.shutdown()
         pgp.end()

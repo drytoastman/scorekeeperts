@@ -2,6 +2,7 @@ import { CronJob } from 'cron'
 import { oauthrefresh } from './squareoauth'
 import { sendQueuedEmail, checkMailmanErrors } from './mailman'
 import { backupNow } from './cloud'
+import { cronlog } from '../util/logging'
 
 /*
     seconds (0-59)
@@ -14,3 +15,8 @@ export function startJobs() {  // times in UTC
     new CronJob('*/15 *  *     *  *  *', sendQueuedEmail).start()
     new CronJob('0    0  */4   *  *  *', checkMailmanErrors).start()
 }
+
+process.on('SIGPIPE', () => {
+    cronlog.info('forced backup')
+    backupNow()
+})
