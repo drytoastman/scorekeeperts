@@ -82,7 +82,6 @@ export async function changepassword(req: Request, res: Response) {
 
 export async function regreset(req: Request, res: Response) {
     try {
-        console.log(req.body)
         if (req.body.type === 'register') {
             validateObj(req.body, RegisterValidator)
 
@@ -135,7 +134,7 @@ export async function regreset(req: Request, res: Response) {
 
                 await db.general.queueEmail({
                     subject: 'Scorekeeper Profile Request',
-                    recipient: request.email,
+                    recipient: request,
                     body: body
                 })
             } catch (error) {

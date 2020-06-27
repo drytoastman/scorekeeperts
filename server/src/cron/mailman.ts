@@ -7,7 +7,7 @@ import Mail from 'nodemailer/lib/mailer'
 import { db } from '../db'
 import { MAIL_SEND_USER, MAIL_SEND_PASS, MAIL_SEND_HOST, MAIL_SEND_FROM, MAIL_SEND_REPLYTO, MAIL_RECEIVE_USER, MAIL_RECEIVE_PASS, MAIL_RECEIVE_HOST } from '../db/generalrepo'
 
-async function createSender(): Promise<Mail> {
+async function createSender(): Promise<Mail|null> {
     // create reusable transporter object using the default SMTP transport
     // let user: string, pass: string, host: string
     return await db.task(async t => {
@@ -30,7 +30,7 @@ async function createSender(): Promise<Mail> {
         })
     }).catch(error => {
         console.error(error)
-        throw error
+        return null
     })
 }
 
@@ -58,7 +58,7 @@ async function createReceiverConfig(): Promise<any> {
         }
     }).catch(error => {
         console.error(error)
-        throw error
+        return {}
     })
 }
 
@@ -81,15 +81,16 @@ export async function sendQueuedEmail() {
             if (!email) { break }
 
             // send mail with defined transport object
+            const r = email.content.recipient
             await smtp.sendMail({
                 from:    `"Admin via Scorekeeper" <${from}>`,
                 replyTo: `"Scorekeeper Admin" <${replyto}>`,
-                to:      email.content.recipient,
+                to:      `"${r.firstname} ${r.lastname}" <${r.email}>`,
                 subject: email.content.subject,
                 html:    email.content.body
             })
 
-            t.general.deleteQueuedEmail(email.mailid)
+            await t.general.deleteQueuedEmail(email.mailid)
         }
     }).catch(error => {
         console.error(error)

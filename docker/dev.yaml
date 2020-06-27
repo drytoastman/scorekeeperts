@@ -13,7 +13,8 @@ services:
         image: drytoastman/scdb:${VERSION:-latest}
         networks: { net1: {}}
         ports:
-            - '6432:6432'
+            - '127.0.0.1:6432:6432'
+            - '127.0.0.1:6666:6666'
         volumes:
             - database:/var/lib/postgresql/data
             - socket:/var/run/postgresql

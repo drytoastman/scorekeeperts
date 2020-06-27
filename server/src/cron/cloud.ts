@@ -4,34 +4,36 @@ import _ from 'lodash'
 import child from 'child_process'
 import fs from 'fs'
 import moment from 'moment'
+import net from 'net'
 import util from 'util'
 import zlib from 'zlib'
 
 const storage    = new Storage({ keyFilename: 'creds.json' })
 const bucketName = 'scorekeeperbackup'
 
-export async function backupNow() {
-    const name   = `scorekeeper-${moment().format('YYYY-MM-DD-HH-mm')}.sql`
-    const gz     = `${name}.gz`
-    const append = util.promisify(fs.appendFile)
-    const exec   = util.promisify(child.exec)
-    const unlink = util.promisify(fs.unlink)
+export function backupNow() {
+    const name   = `scorekeeper-${moment().format('YYYY-MM-DD-HH-mm')}`
+    const client = new net.Socket()
 
-    await append(name,
-        "UPDATE pg_database SET datallowconn='false' WHERE datname='scorekeeper';\n" +
-        "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname='scorekeeper';\n")
-    await exec(`pg_dumpall -p 6432 -U postgres -c >> ${name}`)
-    await append(name,
-        "UPDATE pg_database SET datallowconn='true' WHERE datname='scorekeeper';\n")
-
-    await new Promise<void>(resolve => {
-        fs.createReadStream(name).pipe(zlib.createGzip()).pipe(fs.createWriteStream(gz)).on('finish', resolve)
+    console.log('starting backup ' + name)
+    client.connect({ host: '127.0.0.1', port: 6666 }, () => {
+        client.write(name + '\n')
     })
-
-    const bucket = storage.bucket(bucketName)
-    await bucket.upload(gz)
-    await unlink(gz)
-    await unlink(name)
+    client.on('data', d => {
+        const s = d.toString()
+        if (s.trim() === 'done') {
+            console.log('backup complete')
+            const path = `/var/log/${name}.sql.gz`
+            const bucket = storage.bucket(bucketName)
+            bucket.upload(path)
+                .then(() => console.log('upload complete'))
+                .catch(error => console.log('upload failure: ' + error))
+                .finally(() => fs.unlink(path, () => {}))
+        } else {
+            console.log(`bad data back from database server: ${s}`)
+        }
+        client.end()
+    })
 }
 
 export async function restoreBackup() {

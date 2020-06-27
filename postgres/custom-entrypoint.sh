@@ -27,6 +27,7 @@ fi
 # Start our socat bridge, only after init is done, otherwise clients can connect to the db
 # during initialization and then lose the connection when it restarts
 socat TCP-LISTEN:6432,reuseaddr,fork, UNIX-CLIENT:/var/run/postgresql/.s.PGSQL.5432 &
+socat TCP-LISTEN:6666,reuseaddr,fork, EXEC:"backup.sh" &
 
 # Start postgres here
 exec /usr/local/bin/docker-entrypoint.sh "$@"
