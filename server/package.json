@@ -23,6 +23,7 @@
     "imap-simple": "^5.0.0",
     "lodash": "^4.17.15",
     "mailparser": "^2.7.7",
+    "moment-timezone": "^0.5.31",
     "morgan": "^1.10.0",
     "node-cache": "^5.1.1",
     "nodejs-base64": "^1.0.3",
@@ -30,6 +31,7 @@
     "pg-promise": "^10.5.6",
     "square-connect": "^3.20200422.2",
     "uuid": "^8.0.0",
+    "winston": "^3.3.3",
     "ws": "^7.3.0"
   },
   "devDependencies": {
