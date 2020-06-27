@@ -16,7 +16,7 @@ export function backupNow() {
     const client = new net.Socket()
 
     console.log('starting backup ' + name)
-    client.connect({ host: '127.0.0.1', port: 6666 }, () => {
+    client.connect({ host: 'db', port: 6666 }, () => {
         client.write(name + '\n')
     })
     client.on('data', d => {

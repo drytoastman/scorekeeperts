@@ -4,5 +4,6 @@ if [ -z "$1" ]; then
 	exit -1
 fi
 echo "Pushing VERSION=$1"
+docker push drytoastman/scdb:$1
 docker push drytoastman/scproxy:$1
 docker push drytoastman/scnodejs:$1
