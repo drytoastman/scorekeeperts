@@ -27,7 +27,10 @@
                 </v-card-text>
 
                 <v-card-actions>
-                    <PayPalButton v-if="account.type=='paypal'"
+                    <div v-if="devMode">
+                        Version 2 payments disabled for now
+                    </div>
+                    <PayPalButton v-else-if="account.type=='paypal'"
                             :opened=value :account=account :purchase=purchase :payments=payments :total=total
                             @complete="$emit('input')">
                     </PayPalButton>
@@ -110,7 +113,8 @@ export default {
                 itemname: o.item.name,
                 amount: o.item.price
             }))
-        }
+        },
+        devMode() { return process.env.NODE_ENV === 'development' }
     },
     methods: {
     },
