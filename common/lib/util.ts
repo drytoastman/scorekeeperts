@@ -12,12 +12,15 @@ export interface DataValidationRules {
 
 export const nonBlank: VuetifyValidationRule   = v => { return v.length > 0 || 'this field is required' }
 export const isNumber: VuetifyValidationRule   = v => { return typeof v === 'number' || (typeof v === 'string' && validator.isNumeric(v)) || 'must be a number ' }
-export const isURL: VuetifyValidationRule      = v => { return validator.isURL(v) || 'must be a valid URL' }
 export const isEmail: VuetifyValidationRule    = v => { return validator.isEmail(v) || 'must be a valid email address' }
 export const isUUID: VuetifyValidationRule     = v => { return validator.isUUID(v) || 'must be UUID' }
 export const isDate: VuetifyValidationRule     = v => { return (v instanceof Date && !isNaN(v.getTime())) || 'must be a date object' }
 export const isBarcode: VuetifyValidationRule  = v => { return /^([0-9A-Z]+|)$/.test(v) || 'Barcode can only accept characters 0-9 an capital A-Z' }
 export const isISODate: VuetifyValidationRule  = v => { return validator.isISO8601(v) || 'Not a valid ISO Date value' }
+
+export const isURL: VuetifyValidationRule      = v => {
+    return (v === undefined) || (v === '') || validator.isURL(v) || 'must be a valid URL'
+}
 
 export const isInteger: VuetifyValidationRule  = v => {
     return (v === undefined) || typeof v === 'number' || validator.isInt(v) || 'must be an integer'
@@ -62,7 +65,7 @@ export function MaxLength(len: number): VuetifyValidationRule {
 }
 
 export function Length(min: number, max: number): VuetifyValidationRule {
-    return (v): (boolean|string) => { return ((min <= v.length) && (v.length <= max)) || `must be between ${min} and ${max} characters` }
+    return (v): (boolean|string) => { return (v === undefined) || ((min <= v.length) && (v.length <= max)) || `must be between ${min} and ${max} characters` }
 }
 
 export function validateValue(value: any, rules: VuetifyValidationRules): boolean|string {

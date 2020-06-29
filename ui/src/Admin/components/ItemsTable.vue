@@ -1,15 +1,7 @@
 <template>
   <v-data-table :items="itemsList" :headers="headers" item-key="name" class='itemstable'
-                 disable-pagination hide-default-header hide-default-footer dense
+                 disable-pagination hide-default-footer dense
   >
-    <template v-slot:footer>
-        <div class='addwrap'>
-            <v-btn color="primary" fab x-small @click="$emit('newitem', accountid)">
-                <v-icon>{{icons.mdiPlus}}</v-icon>
-            </v-btn>
-        </div>
-    </template>
-
     <template v-slot:item.price="{ item }">
         {{item.price|dollars}}
     </template>
@@ -30,7 +22,6 @@ import { mdiPencil, mdiDelete, mdiPlus } from '@mdi/js'
 export default {
     name: 'Accounts',
     props: {
-        accountid: String
     },
     data() {
         return {
@@ -48,7 +39,7 @@ export default {
     },
     computed: {
         ...mapState(['paymentitems']),
-        itemsList() { return  _(this.paymentitems).values().filter(i => i.accountid === this.accountid).orderBy('name').value() }
+        itemsList() { return  _.orderBy(this.paymentitems, 'name') }
     }
 }
 </script>

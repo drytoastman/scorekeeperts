@@ -53,7 +53,7 @@ export default {
     display: block;
 }
 .date {
-    color: rgb(27, 97, 155);
+    color: var(--v-secondary-darken1);
     margin-right: 0.7rem;
 }
 .series {

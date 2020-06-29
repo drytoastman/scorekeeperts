@@ -26,7 +26,7 @@ export default {
 <style scoped>
     .descrip {
         white-space: nowrap;
-        color: #446;
+        color: var(--v-secondary-darken1);
         font-size: 90%;
     }
 </style>

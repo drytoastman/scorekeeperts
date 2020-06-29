@@ -90,6 +90,11 @@ export async function apipost(req: Request, res: Response) {
                         ret.paymentaccounts = await t.payments.getPaymentAccounts()
                         break
 
+                    case 'settings':
+                        req.auth.requireSeries(param.series)
+                        ret.settings = await t.series.updateSettings(param.items.settings)
+                        break
+
                     case 'classes':
                         req.auth.requireSeries(param.series)
                         ret.classes = await t.clsidx.updateClasses(param.type, param.items.classes)
@@ -108,7 +113,7 @@ export async function apipost(req: Request, res: Response) {
                 }
             }
 
-            if ('driverids' in param.items) {
+            if (param.items && 'driverids' in param.items) {
                 // if user or other items requested these (do this outside switch for order)
                 req.auth.requireSeries(param.series)
                 ret.drivers = await t.drivers.getDriversById(param.items.driverids)

@@ -18,8 +18,8 @@
                     busy
                 </div>
                 <div v-else class='buttongrid'>
-                    <v-icon v-if="item.accountid && item.txtype==='square'" @click.stop="refund(item)">{{icons.mdiCreditCardRemove}}</v-icon>
-                    <v-icon v-else @click.stop="refund(item)">{{icons.mdiDelete}}</v-icon>
+                    <v-icon v-if="item.accountid && item.txtype==='square'" @click.stop="refund(item)">{{icons.mdiCreditCardRefund}}</v-icon>
+                    <v-icon v-else @click.stop="refund(item)">{{icons.mdiCreditCardRefund}}</v-icon>
                 </div>
             </template>
         </v-data-table>
@@ -31,7 +31,7 @@
 <script>
 import _ from 'lodash'
 import { mapState } from 'vuex'
-import { mdiCreditCardRemove, mdiDelete } from '@mdi/js'
+import { mdiCreditCardRefund, mdiDelete } from '@mdi/js'
 import RefundDialog from './RefundDialog'
 
 export default {
@@ -47,7 +47,7 @@ export default {
             dialogData: { attr:{} },
             RefundDialog: false,
             icons: {
-                mdiCreditCardRemove,
+                mdiCreditCardRefund,
                 mdiDelete
             },
             headers: [
@@ -56,7 +56,7 @@ export default {
                 { text: 'Item',    value: 'itemname' },
                 { text: 'Type',    value: 'txtype' },
                 { text: 'Amount',  value: 'amount' },
-                { text: 'Refund',  value: 'actions', sortable: false }
+                { text: 'Mark/Refund',  value: 'actions', sortable: false }
             ]
         }
     },

@@ -1,0 +1,75 @@
+<template>
+    <v-form class='settingsform'>
+        <v-text-field v-model="settingsm.seriesname"       style="grid-area: name"   :rules="vrules.seriesname" label="Series Name"></v-text-field>
+
+        <v-text-field v-model="settingsm.emaillistid"      style="grid-area: listid" :rules="vrules.emaillistid" label="Email List Id"></v-text-field>
+        <v-text-field v-model="settingsm.largestcarnumber" style="grid-area: largen" :rules="vrules.largestcarnumber" label="Largest Car Number"></v-text-field>
+        <v-text-field v-model="settingsm.minevents"        style="grid-area: mevent" :rules="vrules.minevents" label="Minimum Events For Championship"></v-text-field>
+        <v-text-field v-model="settingsm.dropevents"       style="grid-area: devent" :rules="vrules.dropevents" label="Events Dropped For Championship"></v-text-field>
+        <v-text-field v-model="settingsm.classinglink"     style="grid-area: linkc"  :rules="vrules.classinglink" label="Classing Help Link"></v-text-field>
+        <v-text-field v-model="settingsm.seriesruleslink"  style="grid-area: linkr"  :rules="vrules.seriesruleslink" label="Series Rules Link"></v-text-field>
+
+        <v-checkbox v-model="settingsm.requestrulesack"     style="grid-area: reqr"   :rules="vrules.requestrulesack" label="Request Rules Ack"></v-checkbox>
+        <v-checkbox v-model="settingsm.requestbarcodes"     style="grid-area: reqb"   :rules="vrules.requestbarcodes" label="Request Barcodes"></v-checkbox>
+        <v-checkbox v-model="settingsm.usepospoints"        style="grid-area: usepos" :rules="vrules.usepospoints" label="Use Position Based Points"></v-checkbox>
+
+        <v-text-field v-if="settingsm.usepospoints"
+            v-model="settingsm.pospointlist" style="grid-area: ppoints" :rules="vrules.pospointlist" label="Position Points List">
+        </v-text-field>
+
+        <v-checkbox v-model="settingsm.indexafterpenalties" style="grid-area: indexa" :rules="vrules.indexafterpenalties" label="Index After Penalties"></v-checkbox>
+        <v-checkbox v-model="settingsm.superuniquenumbers"  style="grid-area: superu" :rules="vrules.superuniquenumbers" label="Series Wide Unique Numbers"></v-checkbox>
+
+        <v-btn style='grid-area: reset' color="secondary" :disabled="unchanged" @click="reset">Reset</v-btn>
+        <v-btn style='grid-area: save'  color="secondary" :disabled="unchanged" @click="saveSettings">Save</v-btn>
+    </v-form>
+</template>
+
+<script>
+import _ from 'lodash'
+import { mapState } from 'vuex'
+import { SettingsValidator } from '@common/lib'
+
+export default {
+    name: 'SettingsForm',
+    data() {
+        return {
+            settingsm: {},
+            vrules: SettingsValidator
+        }
+    },
+    computed: {
+        ...mapState(['settings']),
+        unchanged() { return _.isEqual(this.settings, this.settingsm) }
+    },
+    methods: {
+        saveSettings() {
+            this.$store.commit('gettingData', true)
+            this.$store.dispatch('setdata', {
+                type: 'update',
+                items: { settings: this.settingsm }
+            }).then(() => this.$store.commit('gettingData', false))
+        },
+        reset() { this.settingsm = Object.assign({}, this.settings) }
+    },
+    watch: { settings() { this.reset() } },
+    mounted() { this.reset() }
+}
+</script>
+
+<style scoped>
+.settingsform {
+    display: grid;
+    column-gap: 2rem;
+    grid-template-areas:
+        "name name name name listid listid "
+        "largen largen mevent mevent devent devent "
+        "linkc linkc linkc linkc linkc linkc "
+        "linkr linkr linkr linkr linkr linkr "
+        "reqr reqr reqb reqb usepos usepos "
+        "ppoints ppoints ppoints ppoints ppoints ppoints "
+        "indexa indexa superu superu . . "
+        ". reset reset save save . "
+    ;
+}
+</style>

@@ -34,6 +34,10 @@ export async function apiget(req: Request, res: Response) {
                 case 'paymentaccounts': ret.paymentaccounts = await t.payments.getPaymentAccounts(); break
 
                 // dependent on auth type
+                case 'settings':
+                    ret.settings = isSeries ? await t.series.seriesSettings() : {}
+                    break
+
                 case 'drivers':
                     ret.drivers = await (isSeries
                         ? t.drivers.getAllDrivers()
@@ -67,7 +71,10 @@ export async function apiget(req: Request, res: Response) {
                 case 'summary':
                     break // deal with later
 
-                case 'squareapplicationid': ret.squareapplicationid = await t.general.getLocalSetting(SQ_APPLICATION_ID); break
+                case 'squareapplicationid':
+                    ret.squareapplicationid = await t.general.getLocalSetting(SQ_APPLICATION_ID)
+                    break
+
                 case 'usednumbers':
                     ret.usednumbers = await t.register.usedNumbers(req.auth.driverId(), param.classcode, await t.series.superUniqueNumbers())
                     break

@@ -6,10 +6,12 @@ import cookieSession from 'cookie-session'
 import { api2, live } from './controllers'
 import { db, tableWatcher, pgp } from './db'
 import { paypalCheckRefunds } from './util/paypal'
-import { startJobs } from './cron'
+import { startCronJobs } from './cron'
 import { mainlog } from './util/logging'
 
-startJobs()
+if (process.env.NODE_ENV !== 'development') {
+    startCronJobs()
+}
 
 const app = express()
 app.use(helmet())
@@ -27,7 +29,8 @@ db.general.getKeyGrip().then(keygrip => {
     app.use(cookieSession({
         name: 'scorekeeper',
         keys: keygrip,
-        maxAge: 24 * 60 * 60 * 1000 // 1000 days
+        maxAge: 24 * 60 * 60 * 1000, // 1000 days
+        sameSite: 'strict'
     }))
     app.use(function(req, res, next) {
         // session continuation if they are active
@@ -38,8 +41,6 @@ db.general.getKeyGrip().then(keygrip => {
 }).catch(error => {
     mainlog.error(`Unable to load keys (${error}), sessions will not work`)
 })
-
-
 
 /*
 app.get('/test1', function(req, res) {

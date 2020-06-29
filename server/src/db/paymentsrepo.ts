@@ -52,6 +52,7 @@ export class PaymentsRepository {
         if (itemcols === undefined) {
             itemcols = new pgp.helpers.ColumnSet([
                 { name: 'itemid', cnd: true },
+                { name: 'accountid', init: (): any => { return '' } },
                 { name: 'name' },
                 { name: 'price' },
                 { name: 'currency' },

@@ -21,7 +21,7 @@
                                                 :key="car.carid+'1'"
                                                 :disabled="!checks[car.carid] && limitReached"
                                     ></v-checkbox>
-                                    <v-btn elevation=2 x-large
+                                    <v-btn x-large
                                             :key="car.carid+'2'"
                                             @click="clickCar(car.carid)"
                                             :disabled="!checks[car.carid] && limitReached"
@@ -137,13 +137,16 @@ export default {
     justify-content: left;
 }
 .cargrid .unselected {
+    border: none;
     background-color: #FFF !important;
 }
 .cargrid .selected {
-    background-color: #5B6A8E26 !important;
+    border: 1px solid green;
+    background-color: #fbfff8 !important;
 }
 .cargrid .v-btn--disabled {
     opacity: 0.3;
+    background-color: #FFF !important;
 }
 .v-input--selection-controls {
     margin-top: 0;

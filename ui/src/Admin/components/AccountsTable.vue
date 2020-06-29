@@ -9,27 +9,43 @@
             Add <img class='paypalicon' :src="icons.paypalIcon"/>
         </v-btn>
 
-        <v-data-table :items="accountsList" :headers="headers" :expanded.sync="expanded"
-            disable-pagination hide-default-footer show-expand item-key="name" class="accountstable">
-            <template v-slot:item.actions="{ item }">
-                <v-icon small @click="editaccount(item)">{{icons.mdiPencil}}</v-icon>
-                <v-icon small @click="deleteaccount(item)">{{icons.mdiDelete}}</v-icon>
-            </template>
+        <div class='tableborder'>
+            <v-data-table :items="accountsList" :headers="headers" :expanded.sync="expanded"
+                disable-pagination hide-default-footer item-key="name" class="accountstable">
+                <template v-slot:item.actions="{ item }">
+                    <v-icon small @click="editaccount(item)">{{icons.mdiPencil}}</v-icon>
+                    <v-icon small @click="deleteaccount(item)">{{icons.mdiDelete}}</v-icon>
+                </template>
 
-            <template v-slot:item.type="{ item }">
-                <img v-if="item.type === 'square'" :src="icons.squareIcon" />
-                <img v-else :src="icons.paypalIcon" />
-                <v-icon v-if="item.attr.mode==='sandbox'" color=red>{{icons.mdiBug}}</v-icon>
-            </template>
+                <template v-slot:item.type="{ item }">
+                    <img v-if="item.type === 'square'" :src="icons.squareIcon" />
+                    <img v-else :src="icons.paypalIcon" />
+                    <v-icon v-if="item.attr.mode==='sandbox'" color=red>{{icons.mdiBug}}</v-icon>
+                </template>
 
-            <template v-slot:expanded-item="{ headers, item }">
-                <td :colspan="headers.length">
-                    <ItemsTable :accountid="item.accountid" @edititem="edititem" @deleteitem="deleteitem" @newitem="newitem"></ItemsTable>
-                </td>
-            </template>
-        </v-data-table>
+                <template v-slot:item.version="{ item }">
+                    {{item.attr.version || 1}}
+                </template>
 
+                <template v-slot:item.itemcount="{ item }">
+                    {{oldItems(item.accountid).length}}
+                </template>
 
+                <template v-slot:expanded-item="{ headers, item }">
+                    <td :colspan="headers.length">
+                        <ItemsTable :accountid="item.accountid" @edititem="edititem" @deleteitem="deleteitem"></ItemsTable>
+                    </td>
+                </template>
+            </v-data-table>
+        </div>
+
+        <v-btn color="secondary" @click.stop="newitem">
+            Add Item
+        </v-btn>
+
+        <div class='tableborder'>
+            <ItemsTable accountid="" @edititem="edititem" @deleteitem="deleteitem"></ItemsTable>
+        </div>
 
         <ItemDialog    :item="dialogData"    :apiType="dialogApiType" v-model="itemDialog"></ItemDialog>
         <AccountDialog :account="dialogData" :apiType="dialogApiType" v-model="accountDialog"></AccountDialog>
@@ -38,6 +54,7 @@
 </template>
 
 <script>
+import _ from 'lodash'
 import { mapState } from 'vuex'
 import { v1 as uuidv1 } from 'uuid'
 import { mdiPencil, mdiDelete, mdiBug } from '@mdi/js'
@@ -74,13 +91,14 @@ export default {
             headers: [
                 { text: 'Name', value: 'name' },
                 { text: 'Type', value: 'type' },
+                { text: 'Version', value: 'version' },
                 { text: 'Actions', value: 'actions', sortable: false },
-                { text: 'Items', value: 'data-table-expand' }
+                { text: 'Old Items', value: 'itemcount' }
             ]
         }
     },
     computed: {
-        ...mapState(['currentSeries', 'paymentaccounts', 'squareapplicationid']),
+        ...mapState(['currentSeries', 'paymentaccounts', 'paymentitems', 'squareapplicationid']),
         accountsList() { return Object.values(this.paymentaccounts) },
         devMode() { return process.env.NODE_ENV === 'development' },
         squareOAuthUrl() {
@@ -93,6 +111,9 @@ export default {
         }
     },
     methods: {
+        oldItems(accountid) {
+            return  _(this.paymentitems).values().filter(i => i.accountid === accountid).value()
+        },
         newitem(accountid) {
             this.dialogData = { accountid: accountid, itemid: uuidv1(), currency: 'USD' }
             this.dialogApiType = 'insert'
@@ -138,9 +159,15 @@ export default {
 </style>
 
 <style scoped>
+.tableborder {
+    border: 1px solid #CCC;
+    padding: 1rem;
+    margin-top: 1rem;
+}
 .itemstable {
     margin: 1rem auto;
     display: table;
+    width: 100%;
 }
 img {
     margin-left: 10px;

@@ -29,6 +29,9 @@ export class AuthData {
         if (!this.session.series) {
             this.session.series = {}
         }
+        if (!this.session.admin) {
+            this.session.admin = null
+        }
     }
 
     driverAuthenticated(driverid: UUID) { this.session.driverid = driverid }
@@ -40,6 +43,10 @@ export class AuthData {
     clearSeries(series: string)         { delete this.session.series[series] }
     hasSeriesAuth(series: string)       { return series in this.session.series }
     requireSeries(series: string)       { if (!this.hasSeriesAuth(series)) { throw new Error(`Series auth for ${series} failed`) } }
+
+    adminAuthenticated()                { this.session.admin = true }
+    hasAdminAuth()                      { return this.session.admin === true }
+    clearAdmin()                        { this.session.admin = null }
 }
 
 
@@ -69,6 +76,22 @@ export async function serieslogin(req: Request, res: Response) {
 
 export async function serieslogout(req: Request, res: Response) {
     req.auth.clearSeries(req.body.series)
+    res.status(200).json({ result: 'logged out' })
+}
+
+export async function adminlogin(req: Request, res: Response) {
+    try {
+        if (await db.general.checkAdminPassword(req.body.password)) {
+            req.auth.adminAuthenticated()
+        }
+        res.status(200).json({ result: 'authenticated' })
+    } catch (error) {
+        res.status(401).json({ error: error.toString() })
+    }
+}
+
+export async function adminlogout(req: Request, res: Response) {
+    req.auth.clearAdmin()
     res.status(200).json({ result: 'logged out' })
 }
 
@@ -155,7 +178,7 @@ export const COMMONITEMS  = [
     SERIESLIST, 'listids', 'classes', 'indexes',
     'events', 'paymentaccounts', 'paymentitems', 'counts'
 ]
-export const SERIESEXTRA    = ['squareapplicationid']
+export const SERIESEXTRA    = ['squareapplicationid', 'settings']
 export const DRIVEREXTRA    = ['summary', 'drivers', 'payments', 'registered', 'cars', 'unsubscribe']
 export const API_NON_SERIES = [SERIESLIST, 'drivers', 'summary', 'listids', 'unsubscribe']
 

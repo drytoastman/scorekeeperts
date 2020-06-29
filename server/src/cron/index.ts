@@ -9,7 +9,8 @@ import { cronlog } from '../util/logging'
     minutes (0-59)
     hours (0-23)
 */
-export function startJobs() {  // times in UTC
+export function startCronJobs() {  // times in UTC
+    cronlog.info('scheduling cron jobs')
     new CronJob('0    0  11    *  *  *', oauthrefresh).start()  // 4am
     new CronJob('0    0  8,20  *  *  *', backupNow).start()    // 1am, 1pm
     new CronJob('*/15 *  *     *  *  *', sendQueuedEmail).start()

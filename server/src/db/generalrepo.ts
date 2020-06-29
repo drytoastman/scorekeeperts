@@ -1,5 +1,6 @@
 import { IDatabase } from 'pg-promise'
 import KeyGrip from 'keygrip'
+import bcrypt from 'bcryptjs'
 
 export const IS_MAIN_SERVER = 'IS_MAIN_SERVER'
 export const SQ_APPLICATION_ID = 'SQ_APPLICATION_ID'
@@ -12,15 +13,33 @@ export const MAIL_SEND_REPLYTO = 'MAIL_SEND_REPLYTO'
 export const MAIL_RECEIVE_USER = 'MAIL_RECEIVE_USER'
 export const MAIL_RECEIVE_PASS = 'MAIL_RECEIVER_PASS'
 export const MAIL_RECEIVE_HOST = 'MAIL_RECEIVE_HOST'
+export const ADMIN_PASSWORD = 'ADMIN_PASSWORD'
 
 export class GeneralRepository {
     // eslint-disable-next-line no-useless-constructor
     constructor(private db: IDatabase<any>) {
     }
 
+    async checkAdminPassword(password: string): Promise<boolean> {
+        return bcrypt.compare(password, await this.getLocalSetting(ADMIN_PASSWORD))
+    }
+
+    async setAdminPassword(currentpassword: string, newpassword: string): Promise<void> {
+        if (!bcrypt.compare(currentpassword, await this.getLocalSetting(ADMIN_PASSWORD))) {
+            throw new Error('Current password was incorrect')
+        }
+
+        const hash = await bcrypt.hash(newpassword, 12)
+        this.setLocalSetting(ADMIN_PASSWORD, hash)
+    }
+
     async getLocalSetting(key: string): Promise<string> {
         const row = await this.db.one('SELECT value FROM localsettings WHERE key=$1', [key])
         return row.value
+    }
+
+    async setLocalSetting(key: string, value: string): Promise<null> {
+        return await this.db.none('UPDATE localsettings SET value=$1 WHERE key=$2', [value, key])
     }
 
     async getKeyGrip(): Promise<KeyGrip> {

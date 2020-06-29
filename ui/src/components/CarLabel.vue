@@ -42,7 +42,7 @@ export default {
     }
     .code {
         font-size: 120%;
-        color: #095675;
+        color: var(--v-secondary-darken1);
         margin-right: 4px;
     }
     .number {

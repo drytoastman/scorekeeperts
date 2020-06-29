@@ -6,7 +6,6 @@
                 <v-text-field v-model="itemm.price"  label="Price" prefix="$" :rules="dollar"></v-text-field>
                 <div class='attrgrid'>
                     <span class='key'>currency:</span> <span class='val'>{{itemm.currency}}</span>
-                    <span class='key'>accountid:</span><span class='val'>{{itemm.accountid}}</span>
                     <span class='key'>itemid:</span>   <span class='val'>{{itemm.itemid}}</span>
                 </div>
             </v-container>
@@ -49,6 +48,7 @@ export default {
         value: function(newv) {
             if (newv) {
                 this.itemm = JSON.parse(JSON.stringify(this.item))
+                this.itemm.accountid = ''
                 // convert from cents to dollars
                 if (this.itemm.price) {
                     this.itemm.price /= 100

@@ -2,7 +2,7 @@
     <div class='outer'>
     <v-expansion-panels multiple focusable hover accordion tile v-model='panelstate'>
         <v-expansion-panel v-for="event in orderedEvents" :key="event.eventid">
-            <v-expansion-panel-header class='elevation-4' color='primary darken-2 white--text'>
+            <v-expansion-panel-header class='elevation-4' color='primary lighten-1 white--text'>
                 <v-container class="pa-0">
                     <v-row no-gutters align=center class='eventrow'>
                         <v-col class='datecol'>

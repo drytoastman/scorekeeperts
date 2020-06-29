@@ -7,6 +7,8 @@ import Classes from './views/classes.vue'
 import Indexes from './views/indexes.vue'
 import EventInfo from './views/eventinfo.vue'
 import Payments from './views/payments.vue'
+import Settings from './views/settings.vue'
+import Summary from './views/summary.vue'
 
 Vue.use(VueRouter)
 
@@ -24,21 +26,18 @@ const routes = [
         }
     },
 
-    { path: '/:series',          name: 'summary',  component: Placeholder },
-    { path: '/:series/settings', name: 'settings', component: Placeholder },
+    { path: '/hostsettings',     name: 'hostsettings', component: Placeholder },
+    { path: '/drivereditor',     name: 'drivereditor', component: Placeholder },
+
+    { path: '/',                 name: 'noseries',  component: Summary, props: true },
+    { path: '/:series',          name: 'summary',  component: Summary, props: true },
+    { path: '/:series/settings', name: 'settings', component: Settings },
     { path: '/:series/classes',  name: 'classes',  component: Classes },
     { path: '/:series/indexes',  name: 'indexes',  component: Indexes },
     { path: '/:series/accounts', name: 'accounts', component: Accounts },
     { path: '/:series/event/:eventid',          name: 'event',     component: EventInfo, props: true },
     { path: '/:series/event/:eventid/payments', name: 'epayments', component: Payments,  props: true },
-    { path: '/:series/oauth/:code',    name: 'oauth', component: OAuthHandler },
-
-    {
-        path: '/',
-        redirect: {
-            name: 'summary'
-        }
-    }
+    { path: '/:series/oauth/:code',    name: 'oauth', component: OAuthHandler }
 ]
 
 declare const VUE_BASE: string

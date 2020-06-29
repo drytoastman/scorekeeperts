@@ -1,0 +1,7 @@
+
+ALTER TABLE paymentitems DROP CONSTRAINT paymentitems_accountid_fkey;
+
+ALTER TABLE paymentsecrets ADD COLUMN attr JSONB NOT NULL DEFAULT '{}';
+
+ALTER TABLE payments ADD COLUMN accountid TEXT NOT NULL DEFAULT '';
+ALTER TABLE payments ADD COLUMN refunded BOOLEAN NOT NULL DEFAULT FALSE;

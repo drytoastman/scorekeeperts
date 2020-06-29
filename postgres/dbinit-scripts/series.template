@@ -278,6 +278,7 @@ CREATE TABLE payments (
     txtime     TIMESTAMP,
     itemname   TEXT,
     accountid  TEXT,
+    refunded   BOOLEAN NOT NULL;
     amount     FLOAT,
     modified   TIMESTAMP NOT NULL DEFAULT now()
 );

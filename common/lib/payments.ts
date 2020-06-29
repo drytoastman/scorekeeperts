@@ -5,10 +5,10 @@ export interface PaymentAccount {
     name: string;
     type: string;
     attr: {
-        mode: string,
-        version: number
-        merchantid?: string,
-        applicationid?: string,
+        mode: string;
+        version: number;
+        merchantid?: string;
+        applicationid?: string;
     }
     modified: DateString;
 }
@@ -25,7 +25,6 @@ export interface PaymentAccountSecret {
 
 export interface PaymentItem {
     itemid: string;
-    accountid: string;
     name: string;
     price: number;
     currency: string;

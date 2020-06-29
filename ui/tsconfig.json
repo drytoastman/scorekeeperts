@@ -44,5 +44,8 @@
   ],
   "exclude": [
     "node_modules"
+  ],
+  "files": [
+    "notarealfile"
   ]
 }

@@ -8,7 +8,7 @@
             <v-divider inset vertical></v-divider>
 
             <!-- Events Menu -->
-            <v-menu close-on-content-click>
+            <v-menu close-on-content-click :disabled="!currentSeries">
                 <template v-slot:activator="{ on }">
                     <v-btn color=white icon v-on="on"><v-icon>{{icons.mdiFlagCheckered}}</v-icon></v-btn>
                 </template>
@@ -20,16 +20,30 @@
             </v-menu>
 
             <!-- Settings Menu -->
-            <v-menu close-on-content-click>
+            <v-menu close-on-content-click :disabled="!currentSeries">
                 <template v-slot:activator="{ on }">
                     <v-btn color=white icon v-on="on"><v-icon>{{icons.mdiCog}}</v-icon></v-btn>
                 </template>
-                <v-list>
+                <v-list v-if="currentSeries">
                     <v-list-item v-for="item in settings" :key="item.title" :to="item.link">
                         <v-list-item-title>{{ item.title }}</v-list-item-title>
                     </v-list-item>
                 </v-list>
             </v-menu>
+
+            <!-- Admin Menu --
+            <v-menu close-on-content-click>
+                <template v-slot:activator="{ on }">
+                    <v-btn color=white icon v-on="on"><v-icon>{{icons.mdiAccountCowboyHat}}</v-icon></v-btn>
+                </template>
+                <v-list>
+                    <v-list-item v-for="item in adminitems" :key="item.title" :to="item.link">
+                        <v-list-item-title>{{ item.title }}</v-list-item-title>
+                    </v-list-item>
+                </v-list>
+            </v-menu>
+            -->
+
         </v-app-bar>
 
         <v-main>
@@ -50,7 +64,7 @@
 
 <script>
 import { mapState, mapGetters } from 'vuex'
-import { mdiCog, mdiFlagCheckered } from '@mdi/js'
+import { mdiCog, mdiFlagCheckered, mdiAccountHardHat, mdiAccountCowboyHat } from '@mdi/js'
 import LoginForm from './components/LoginForm'
 
 export default {
@@ -61,14 +75,20 @@ export default {
     data: () => ({
         icons: {
             mdiCog,
-            mdiFlagCheckered
+            mdiFlagCheckered,
+            mdiAccountHardHat,
+            mdiAccountCowboyHat
         },
         settings: [
             { title: 'Settings', link: { name:'settings' } },
             { title: 'Classes',  link: { name:'classes' }  },
             { title: 'Indexes',  link: { name:'indexes' }  },
             { title: 'Accounts', link: { name:'accounts' }  }
-        ]
+        ],
+        adminitems: [ /*
+            { title: 'Host Settings', link: { name:'hostsettings' } },
+            { title: 'Driver Editor', link: { name:'drivereditor' } }
+        */]
     }),
     methods: {
         errorclose: function() {
@@ -76,7 +96,7 @@ export default {
         }
     },
     computed: {
-        ...mapState(['currentSeries', 'serieslist', 'events', 'errors', 'gettingData']),
+        ...mapState(['adminAuthenticated', 'currentSeries', 'serieslist', 'events', 'errors', 'gettingData']),
         ...mapGetters(['haveSeriesAuth', 'orderedEvents']),
         snackbar() { return this.errors.length > 0 },
         selectedSeries: {
@@ -85,7 +105,8 @@ export default {
             },
             set(value) {
                 this.$store.commit('changeSeries', value)
-                this.$router.push({ name: this.$route.name, params: { series: value } }).catch(error => {
+                const name = this.$route.name === 'noseries' ? 'summary' : this.$route.name
+                this.$router.push({ name: name, params: { series: value } }).catch(error => {
                     // If we change series while on a non-series link, don't throw any errors
                     if (error.name !== 'NavigationDuplicated') {
                         throw error

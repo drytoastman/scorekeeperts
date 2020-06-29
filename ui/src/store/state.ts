@@ -1,4 +1,4 @@
-import { PaymentAccount, SeriesClass, SeriesIndex, SeriesEvent, Car, Registration, Payment, Driver } from '@common/lib'
+import { PaymentAccount, SeriesClass, SeriesIndex, SeriesEvent, Car, Registration, Payment, Driver, SeriesSettings } from '@common/lib'
 import ReconnectingWebSocket from 'reconnecting-websocket'
 
 export const EMPTY = ''
@@ -20,9 +20,11 @@ export class Api2State {
     // auth pieces
     driverAuthenticated = true  // assume we are and then fallback if our API requests fail
     seriesAuthenticated = {}
+    adminAuthenticated = true
 
     // series specific
     currentSeries = EMPTY
+    settings: {[key: string]: any} = {}
     paymentaccounts: {[key: string]: PaymentAccount} = {}
     paymentitems: {[key: string]: PaymentItem} = {}
     classes: {[key: string]: SeriesClass} = {}

@@ -1,6 +1,6 @@
 <template>
-    <div>
-        Placeholder ({{$route.name}}, {{$route.path}}, {{$route.params}})
+    <div class='placeholder'>
+        Placeholder - {{$route.name}} {{$route.params}}
     </div>
 </template>
 
@@ -11,4 +11,8 @@ export default {
 </script>
 
 <style scoped>
+.placeholder {
+    margin: 3rem;
+    font-weight: bold;
+}
 </style>

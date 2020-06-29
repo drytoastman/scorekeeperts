@@ -1,8 +1,8 @@
 import { SeriesEvent, SeriesSettings, DefaultSettings, UUID } from '@common/lib'
-import { IDatabase } from 'pg-promise'
+import { IDatabase, IMain } from 'pg-promise'
 
 export class SeriesRepository {
-    constructor(private db: IDatabase<any>) {
+    constructor(private db: IDatabase<any>, private pgp: IMain) {
         this.db = db
     }
 
@@ -60,6 +60,17 @@ export class SeriesRepository {
             this._db2obj(r.name, r.val, ret)
         })
         return ret
+    }
+
+    async updateSettings(settings: SeriesSettings): Promise<SeriesSettings> {
+        const def: SeriesSettings = new DefaultSettings()
+        await this.db.tx(async tx => {
+            for (const key in settings) {
+                const val = this._obj2db(def, key, settings[key])
+                await this.db.none('UPDATE settings SET val=$1,modified=now() WHERE name=$2', [val, key])
+            }
+        })
+        return this.seriesSettings()
     }
 
     async eventList(): Promise<SeriesEvent[]> {
