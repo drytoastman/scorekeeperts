@@ -2,7 +2,6 @@ version: '3.2'
 volumes:
     database:
     socket:
-    backups:
     logs:
     certs: { external: { name: "certs" }}
     webdata:
@@ -27,6 +26,7 @@ services:
 
     pythonweb:
         image: drytoastman/scpython:${VERSION}
+        logging: { driver: gcplogs }
         command: webserver.py
         networks: { net1: {}}
         depends_on:
@@ -44,6 +44,7 @@ services:
 
     nodeweb:
         image: drytoastman/scnodejs:${VERSION}
+        logging: { driver: gcplogs }
         networks: { net1: {}}
         depends_on:
             - db
