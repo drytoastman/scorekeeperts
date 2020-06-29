@@ -27,7 +27,7 @@
                 </v-card-text>
 
                 <v-card-actions>
-                    <div v-if="devMode">
+                    <div v-if="!devMode">
                         Version 2 payments disabled for now
                     </div>
                     <PayPalButton v-else-if="account.type=='paypal'"
