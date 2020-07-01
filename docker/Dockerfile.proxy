@@ -14,4 +14,6 @@ COPY --from=builder /code/ui/dist /app
 COPY docker/dhparam.pem /etc/nginx/
 COPY docker/services.conf /etc/nginx/
 COPY docker/nginx* /etc/nginx/
+# Temp large static files from pythonweb, goes away with pythonweb
+COPY docker/static /app/pystatic/
 CMD ["/etc/nginx/nginxstart.sh"]
