@@ -61,6 +61,7 @@ export default {
 .settingsform {
     display: grid;
     column-gap: 2rem;
+    grid-template-columns: repeat(6, 1fr);
     grid-template-areas:
         "name name name name listid listid "
         "largen largen mevent mevent devent devent "
@@ -71,5 +72,9 @@ export default {
         "indexa indexa superu superu . . "
         ". reset reset save save . "
     ;
+}
+
+.settingsform >>> .v-input--selection-controls__input {
+    align-self: baseline;
 }
 </style>

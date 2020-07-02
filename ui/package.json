@@ -9,12 +9,13 @@
   },
   "dependencies": {
     "axios": "^0.19.2",
+    "date-fns": "^2.14.0",
     "reconnecting-websocket": "^4.4.0",
     "vue": "^2.6.11",
     "vue-plugin-load-script": "^1.2.0",
     "vue-router": "^3.3.4",
-    "vuetify": "^2.3.2",
-    "vuex": "^3.4.0"
+    "vuetify": "^2.3.3",
+    "vuex": "^3.5.1"
   },
   "devDependencies": {
     "@mdi/js": "^5.3.45",
@@ -40,7 +41,7 @@
     "sass": "^1.26.9",
     "sass-loader": "^8.0.2",
     "typeface-roboto": "0.0.75",
-    "typescript": "^3.9.5",
+    "typescript": "^3.9.6",
     "vue-cli-plugin-vuetify": "^2.0.6",
     "vue-template-compiler": "^2.6.11",
     "vuetify-loader": "^1.5.0"

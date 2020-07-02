@@ -1,4 +1,4 @@
-import { DataValidationRules, Length, isUUID, isDate, UUID, Range, Min, DateString, VuetifyValidationRule } from './util'
+import { DataValidationRules, Length, isUUID, isDate, UUID, Range, Min, DateString, VuetifyValidationRule, MaxLength } from './util'
 
 export interface SeriesEvent
 {
@@ -68,5 +68,7 @@ export const EventValidator: DataValidationRules = {
     ispractice:    [],
     accountid:     [], // is in list
     modified:      [isDate],
-    created:       [isDate]
+    created:       [isDate],
+    location:      [MaxLength(32)],
+    notes:         [MaxLength(512)]
 }

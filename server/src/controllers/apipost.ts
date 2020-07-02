@@ -105,6 +105,11 @@ export async function apipost(req: Request, res: Response) {
                         ret.indexes = await t.clsidx.updateIndexes(param.type, param.items.indexes)
                         break
 
+                    case 'events':
+                        req.auth.requireSeries(param.series)
+                        ret.events = await t.series.updateEvents(param.type, param.items.events)
+                        break
+
                     case 'carids':
                         req.auth.requireSeries(param.series)
                         ret.cars = await t.cars.getCarsById(param.items.carids)

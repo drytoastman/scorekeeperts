@@ -1,9 +1,24 @@
 import { SeriesEvent, SeriesSettings, DefaultSettings, UUID } from '@common/lib'
-import { IDatabase, IMain } from 'pg-promise'
+import { IDatabase, IMain, ColumnSet } from 'pg-promise'
+
+let eventcols: ColumnSet|undefined
 
 export class SeriesRepository {
     constructor(private db: IDatabase<any>, private pgp: IMain) {
-        this.db = db
+        if (eventcols === undefined) {
+            eventcols = new pgp.helpers.ColumnSet([
+                { name: 'eventid', cnd: true, cast: 'uuid' },
+                { name: 'date', cast: 'date' },
+                { name: 'regopened', cast: 'timestamp' },
+                { name: 'regclosed', cast: 'timestamp' },
+                'champrequire', 'useastiebreak', 'isexternal', 'ispro', 'ispractice',
+                'regtype', 'courses', 'runs', 'countedruns', 'segments', 'perlimit', 'totlimit', 'sinlimit',
+                'conepen', 'gatepen', 'accountid',
+                { name: 'attr', cast: 'json' },
+                { name: 'modified', cast: 'timestamp', mod: ':raw', init: (): any => { return 'now()' } },
+                { name: 'created',  cast: 'timestamp', init: (col: any): any => { return col.exists ? col.value : 'now()' } }
+            ], { table: 'events' })
+        }
     }
 
     async setSeries(series: string): Promise<null> {
@@ -79,5 +94,12 @@ export class SeriesRepository {
 
     async getEvent(eventid: UUID): Promise<SeriesEvent> {
         return this.db.one('SELECT * FROM events WHERE eventid=$1', [eventid])
+    }
+
+    async updateEvents(type: string, events: SeriesEvent[]): Promise<SeriesEvent[]> {
+        if (type === 'insert') return this.db.any(this.pgp.helpers.insert(events, eventcols) + ' RETURNING *')
+        if (type === 'update') return this.db.any(this.pgp.helpers.update(events, eventcols) + ' WHERE v.eventid = t.eventid RETURNING *')
+        if (type === 'delete') return this.db.any('DELETE from events WHERE eventid in ($1:csv) RETURNING carid', events.map(e => e.eventid))
+        throw Error(`Unknown operation type ${JSON.stringify(type)}`)
     }
 }
