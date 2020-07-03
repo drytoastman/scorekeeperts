@@ -11,7 +11,7 @@ export class SeriesRepository {
                 { name: 'date', cast: 'date' },
                 { name: 'regopened', cast: 'timestamp' },
                 { name: 'regclosed', cast: 'timestamp' },
-                'champrequire', 'useastiebreak', 'isexternal', 'ispro', 'ispractice',
+                'name', 'champrequire', 'useastiebreak', 'isexternal', 'ispro', 'ispractice',
                 'regtype', 'courses', 'runs', 'countedruns', 'segments', 'perlimit', 'totlimit', 'sinlimit',
                 'conepen', 'gatepen', 'accountid',
                 { name: 'attr', cast: 'json' },
