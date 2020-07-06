@@ -5,7 +5,6 @@ import cookieSession from 'cookie-session'
 
 import { api2, live } from './controllers'
 import { db, tableWatcher, pgp } from './db'
-import { paypalCheckRefunds } from './util/paypal'
 import { startCronJobs } from './cron'
 import { mainlog } from './util/logging'
 
@@ -43,18 +42,6 @@ db.general.getKeyGrip().then(keygrip => {
 }).catch(error => {
     mainlog.error(`Unable to load keys (${error}), sessions will not work`)
 })
-
-/*
-app.get('/test1', function(req, res) {
-    db.task(async t => {
-        t.series.setSeries(req.query.series as string)
-        const a = await t.payments.getPaymentAccount(req.query.accountid as string)
-        res.json(await paypalCheckRefunds(t, a))
-    }).catch(error => {
-        res.json(error)
-    })
-})
-*/
 
 const PORT = process.env.PORT || 4000
 const server = app.listen(PORT, () => {

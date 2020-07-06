@@ -20,15 +20,19 @@ module.exports = {
         new CopyPlugin({
             patterns: [
                 {
-                    from: 'src/public/*.html',
-                    to: 'public/[name].[ext]'
+                    from: 'src/static/*.html',
+                    to: 'templates/[name].[ext]'
                 },
                 {
-                    from: 'src/public/*.gz',
+                    from: 'src/static/*.gz',
                     to: 'public/[name]',
                     transform: async function(content, absoluteFrom) {
                         return await gunzip(content)
                     }
+                },
+                {
+                    from: 'src/static/*.sh',
+                    to: 'testing/[name].[ext]'
                 }
             ]
         })

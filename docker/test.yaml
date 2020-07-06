@@ -1,0 +1,64 @@
+version: '3.2'
+volumes:
+    database:
+    socket:
+    logs:
+    certs: { external: { name: "certs" }}
+    webdata:
+
+networks:
+    net1:
+
+services:
+    db:
+        image: drytoastman/scdb:${VERSION:-latest}
+        networks: { net1: {}}
+        ports:
+            - '54329:5432'
+            - '127.0.0.1:6432:6432'
+        volumes:
+            - database:/var/lib/postgresql/data
+            - socket:/var/run/postgresql
+            - logs:/var/log
+            - certs:/certs
+
+    pythonweb:
+        image: drytoastman/scpython:${VERSION:-latest}
+        command: webserver.py
+        networks: { net1: {}}
+        depends_on:
+            - db
+        volumes:
+            - socket:/var/run/postgresql
+            - logs:/var/log
+            - webdata:/webdata:ro
+        environment:
+            - IS_MAIN_SERVER=1
+            - SHOWLIVE=0
+            - MAIL_SEND_FROM=mailman@scorekeeper.wwscc.org
+            - MAIL_SEND_DEFAULT_REPLYTO=admin@scorekeeper.wwscc.org
+            - SECRETS_FILE=/webdata/websecrets.json
+
+    nodeweb:
+        image: drytoastman/scnodejs:${VERSION:-latest}
+        networks: { net1: {}}
+        depends_on:
+            - db
+        environment:
+            - DBHOST=db
+            - DBPORT=6432
+        volumes:
+            - logs:/var/log
+
+    proxy:
+        image: drytoastman/scproxy:${VERSION:-latest}
+        networks: { net1: {}}
+        depends_on:
+            - nodeweb
+            - pythonweb
+        volumes:
+            - logs:/var/log
+        ports:
+            - "80:80"
+            - "443:443"
+        restart: unless-stopped

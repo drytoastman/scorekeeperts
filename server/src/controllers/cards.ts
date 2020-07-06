@@ -8,6 +8,7 @@ import util from 'util'
 import { UUID, SeriesEvent, SeriesSettings } from '@common/lib'
 import { checkAuth } from './apiauth'
 import { db } from '../db'
+import { controllog } from '../util/logging'
 
 interface RegData
 {
@@ -19,7 +20,7 @@ interface RegData
     barcodescript: string
 }
 
-nunjucks.configure('public', {
+nunjucks.configure('templates', {
     autoescape: true
 })
 
@@ -71,10 +72,15 @@ export async function cardtemplate(req: Request, res: Response) {
     }
 
     try {
+        controllog.debug('loading reg data')
         const reg = await loadRegData(param.series, req.query.eventid as string)
         reg.barcodescript = '<script type="text/javascript" src="/public/JsBarcode.code128.3.1.1.min.js"></script>'
-        res.send(nunjucks.render('cards.html', reg))
+        controllog.debug('rendering')
+        const html = nunjucks.render('cards.html', reg)
+        controllog.debug('sending')
+        res.send(html)
     } catch (error) {
+        controllog.error(error)
         return res.status(500).json({ error: error.message })
     }
 }
@@ -94,7 +100,11 @@ export async function cardpdf(req: Request, res: Response) {
         reg.barcodescript = '<script type="text/javascript">\n' + await read('public/JsBarcode.code128.3.1.1.min.js', 'utf-8') + '\n</script>'
         const html = nunjucks.render('cards.html', reg)
 
-        const browser = await puppeteer.launch({ executablePath: chromepath })
+        const browser = await puppeteer.launch({
+            executablePath: chromepath,
+            headless: false,
+            args: ['--no-sandbox', '--disable-setuid-sandbox']
+        })
         const page    = await browser.newPage()
         await page.setContent(html, { waitUntil: 'load' })
         const buffer  = await page.pdf({ width: '8in', height: '5in', margin: { top: '5mm', bottom: '3mm', left: '3mm', right: '5mm' } })
