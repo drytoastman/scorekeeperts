@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import Vuetify from 'vuetify/lib'
 import colors from 'vuetify/es5/util/colors'
-// import LoadScript from 'vue-plugin-load-script'
+import LoadScript from 'vue-plugin-load-script'
 import 'typeface-roboto'
 
 import Admin from './Admin.vue'
@@ -12,7 +12,7 @@ import filters from '../util/filters'
 
 installLoggingHandlers()
 Vue.use(filters)
-// Vue.use(LoadScript)
+Vue.use(LoadScript)
 Vue.use(Vuetify)
 
 const base = {

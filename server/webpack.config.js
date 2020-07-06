@@ -1,5 +1,9 @@
 const path = require('path')
 const webpack = require('webpack')
+const CopyPlugin = require('copy-webpack-plugin')
+const util = require('util')
+const zlib = require('zlib')
+const gunzip = util.promisify(zlib.gunzip)
 
 const {
     NODE_ENV = 'production'
@@ -12,7 +16,22 @@ module.exports = {
     watch: NODE_ENV === 'development',
     plugins: [
         new webpack.IgnorePlugin(/^pg-native$/),
-        new webpack.DefinePlugin({ 'global.GENTLY': false })
+        new webpack.DefinePlugin({ 'global.GENTLY': false }),
+        new CopyPlugin({
+            patterns: [
+                {
+                    from: 'src/public/*.html',
+                    to: 'public/[name].[ext]'
+                },
+                {
+                    from: 'src/public/*.gz',
+                    to: 'public/[name]',
+                    transform: async function(content, absoluteFrom) {
+                        return await gunzip(content)
+                    }
+                }
+            ]
+        })
     ],
     output: {
         path: path.resolve(__dirname, 'build'),

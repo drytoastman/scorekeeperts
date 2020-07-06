@@ -19,6 +19,7 @@ services:
             - database:/var/lib/postgresql/data
             - socket:/var/run/postgresql
             - certs:/certs
+        stop_grace_period: 2s
 
     pythonweb:
         image: drytoastman/scpython:${VERSION:-latest}

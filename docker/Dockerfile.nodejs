@@ -1,4 +1,5 @@
-FROM node:12.18.0-slim as builder
+FROM node:12.18.2-buster-slim as builder
+
 WORKDIR /code
 COPY common/package*.json ./common/
 COPY server/package*.json ./server/
@@ -8,6 +9,8 @@ COPY common common
 COPY server server
 RUN cd server && npm run build
 
-FROM node:12.18.0-slim
+
+FROM node:12.18.2-buster-slim
+COPY --from=chromedp/headless-shell:83.0.4103.116 /headless-shell /headless-shell
 COPY --from=builder /code/server/build/index.js /app/
 CMD ["node", "/app/index.js"]

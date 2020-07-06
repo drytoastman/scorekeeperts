@@ -179,6 +179,19 @@ CREATE TRIGGER  eventuni BEFORE UPDATE ON events FOR EACH ROW EXECUTE PROCEDURE 
 COMMENT ON TABLE events IS 'The list of events for this series, attr includes location, sponsor, host, chair, designer, snail, notes, etc';
 
 
+CREATE TABLE itemeventmap (
+    eventid   UUID        NOT NULL REFERENCES events,
+    itemid    TEXT        NOT NULL REFERENCES paymentitems,
+    modified  TIMESTAMP   NOT NULL DEFAULT now(),
+    PRIMARY KEY (eventid, itemid)
+);
+REVOKE ALL ON itemeventmap FROM public;
+GRANT  ALL ON itemeventmap TO <seriesname>;
+CREATE TRIGGER  iemapmod AFTER  INSERT OR UPDATE OR DELETE ON itemeventmap FOR EACH ROW EXECUTE PROCEDURE logmods('<seriesname>.serieslog');
+CREATE TRIGGER  iemapuni BEFORE UPDATE ON itemeventmap FOR EACH ROW EXECUTE PROCEDURE updatechecks('eventid,itemid');
+COMMENT ON TABLE itemeventmap IS 'The map of items available for payment at an event';
+
+
 CREATE TABLE cars (
     carid         UUID        PRIMARY KEY,
     driverid      UUID        NOT NULL REFERENCES public.drivers,

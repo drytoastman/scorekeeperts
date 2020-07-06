@@ -93,7 +93,7 @@ export default {
 
         const carids = new Set(
             _(this.payments).values().flatten().map(p => p.carid).value(),
-            _(this.registered).values().flatten().map(r => r.carid).value())
+            this.registered[this.eventid].map(r => r.carid))
         this.$store.dispatch('ensureCarDriverInfo', carids)
     }
 }

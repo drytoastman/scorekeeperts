@@ -37,7 +37,9 @@ db.general.getKeyGrip().then(keygrip => {
         if (req.session) { req.session.now = Math.floor(Date.now() / 60e3) }
         next()
     })
+
     app.use('/api2', api2)
+    app.use('/public', express.static('public'))
 }).catch(error => {
     mainlog.error(`Unable to load keys (${error}), sessions will not work`)
 })
@@ -76,4 +78,9 @@ process.on('SIGTERM', () => {
         pgp.end()
         process.exitCode = 0
     })
+})
+
+process.on('uncaughtException', function(err) {
+    // Don't die if a library throws an exception the wrong way
+    console.log('Uncaught exception: ' + err)
 })

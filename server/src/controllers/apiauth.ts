@@ -182,7 +182,7 @@ export const SERIESEXTRA    = ['squareapplicationid', 'settings']
 export const DRIVEREXTRA    = ['summary', 'drivers', 'payments', 'registered', 'cars', 'unsubscribe']
 export const API_NON_SERIES = [SERIESLIST, 'drivers', 'summary', 'listids', 'unsubscribe']
 
-class AuthError extends Error {
+export class AuthError extends Error {
     authtype: string
     constructor(message: string, authtype: string) {
         super(message)

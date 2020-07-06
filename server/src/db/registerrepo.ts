@@ -26,6 +26,32 @@ export class RegisterRepository {
         return this.db.any('SELECT * FROM registered ' + (eventid ? 'WHERE eventid=$1 ' : ''), [eventid])
     }
 
+    async getFullEventRegistration(eventid: UUID, paymentRequired: boolean): Promise<any[]> {
+        const rows = await this.db.any('SELECT d.driverid,d.firstname,d.lastname,d.email,d.barcode,d.optoutmail,c.*,r.*,r.modified as regmodified, ' +
+                    'd.attr as dattr, sa.attr as sattr ' +
+                    'FROM cars c JOIN drivers d ON c.driverid=d.driverid JOIN registered r ON r.carid=c.carid LEFT JOIN seriesattr sa ON c.driverid=sa.driverid ' +
+                    'WHERE r.eventid=$1 ORDER BY c.number', [eventid])
+
+        const regobj: {[key:string]: any} = {}
+        for (const row of rows) {
+            row.payments = []
+            regobj[row.carid + row.session] = _.merge(row, { ...row.dattr, ...row.attr, ...row.sattr })
+        }
+
+        for (const p of await this.db.any('SELECT * FROM payments WHERE eventid=$1', [eventid])) {
+            const key = p.carid + p.session
+            if (key in regobj) {
+                regobj[key].payments.push(p)
+            }
+        }
+
+        const ret = Object.values(regobj)
+        if (paymentRequired) {
+            return ret.filter(v => v.payments.length > 0)
+        }
+        return ret
+    }
+
     async getRegistrationSummary(driverid: UUID): Promise<object[]> {
         const events:any[] = []
         for (const row of await this.db.any(

@@ -55,6 +55,7 @@ export const adminActions = {
                 }
             }
 
+            // We end up using POST so we can specify a large amount of data even though we are really getting data
             context.commit('gettingData', true)
             const data = (await axios.post(API2ROOT, p, { withCredentials: true })).data
             context.commit('apiData', data)

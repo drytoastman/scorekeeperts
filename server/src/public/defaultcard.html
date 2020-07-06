@@ -1,0 +1,68 @@
+<!-- wkhtmltopdf can't handle newer CSS like flex-box so we revert to floats -->
+
+<div class='eventinfo'>
+<div class='name'>{{g.event.name}}</div>
+<div class='date'>{{g.event.date}}</div>
+</div>
+
+<div class='codes'>
+{% if reg.caridbarcode %}
+<svg class="barcode"
+    jsbarcode-format="CODE128C"
+    jsbarcode-height="30"
+    jsbarcode-width="1"
+    jsbarcode-margin="2"
+    jsbarcode-value="{{reg.caridbarcode}}"
+    jsbarcode-text="Quick {{reg.quickentry}}"
+    jsbarcode-textMargin="0"
+    jsbarcode-textAlign="right"
+    jsbarcode-fontSize="12"
+></svg>
+{% endif %}
+</div>
+
+<div class='rules'>
+{% if g.settings and g.settings.requestrulesack %}
+I have read and accept the rules</br>
+<input type='checkbox' {{reg.sattr.rulesack and "checked='checked'" or ""}}>
+{% endif %}
+</div>
+
+<table class='entrant'>
+<tr>
+    <td class='half'>   <span class='label1'>Name:</span> {{reg.firstname}} {{reg.lastname}}</td>
+    <td class='quarter'><span class='label2'>Year:</span> {{reg.year}}</td>
+    <td class='quarter'><span class='label3'>Class (Idx):</span> {{reg.classcode}} {{reg.indexcode and '('+reg.indexcode+')' or ""}}</td>
+</tr>
+<tr>
+    <td class='half'>   <span class='label1'>Address:</span> {{reg.address}}</td>
+    <td class='quarter'><span class='label2'>Make:</span> {{reg.make}}</td>
+    <td class='quarter'><span class='label3'>Number:</span> {{reg.number}}</td>
+</tr>
+<tr>
+    <td class='half'>   <span class='label1'>CSZ:</span> {{reg.city}} {{reg.state}} {{reg.zip}}</td>
+    <td class='quarter'><span class='label2'>Model:</span> {{reg.model}}</td>
+    <td class='quarter'><span class='label3'>Run/Work:</span> </td>
+</tr>
+<tr>
+    <td class='half'>   <span class='label1'>Phone:</span> {{reg.phone}}</td>
+    <td class='quarter'><span class='label2'>Color:</span> {{reg.color}}</td>
+    <td class='quarter'><span class='label3'>Assign:</span> </td>
+</tr>
+<tr>
+    <td class='half'>   <span class='label1'>Email:</span> {{reg.email}}</td>
+    <td class='quarter'><span class='label2'>Barcode:</span> {{reg.barcode}}</td>
+    <td class='quarter'><span class='label3'>Tech By:</span> </td>
+</tr>
+<tr>
+    <td class='half'>   <span class='label1'>Sponsor:</span> {{reg.sponsor}}</td>
+    <td class='half' colspan='2'><span class='label2'>Emerg:</span> {{reg.econtact}} {{reg.ephone}}</td>
+</tr>
+</table>
+
+<table class='runs'>
+<tr><th>Raw Time</th><th>Cones</th><th>Gates</th><th>Official Time</th></tr>
+{% for ii in range(6) %}
+<tr class='run'><td class='third'></td><td class='sixth'></td><td class='sixth'></td><td class='third'></td></tr>
+{% endfor %}
+</table>
