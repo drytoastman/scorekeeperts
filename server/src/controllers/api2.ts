@@ -4,7 +4,7 @@ import { apiget } from './apiget'
 import { apipost } from './apipost'
 import { login, logout, changepassword, AuthData, regreset, serieslogin, serieslogout, adminlogin, adminlogout } from './apiauth'
 import { controllog } from '../util/logging'
-import { cardtemplate, cardpdf } from './cards'
+import { cards } from './cards'
 
 export const api2 = Router()
 
@@ -36,5 +36,4 @@ api2.post('/adminlogout', adminlogout)
 api2.post('/changepassword', changepassword)
 api2.get('/', apiget)
 api2.post('/', apipost)
-api2.get('/cardtemplate', cardtemplate)
-api2.get('/cardpdf', cardpdf)
+api2.get('/cards', cards)

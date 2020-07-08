@@ -30,6 +30,34 @@ export const adminActions = {
         }
     },
 
+    async carddownload(context: ActionContext<Api2State, any>, p: any) {
+        const URL = API2ROOT + '/cards'
+        try {
+            p.series   = this.state.currentSeries
+            p.authtype = this.state.authtype
+
+            if (p.cardtype === 'template') {
+                const url = axios.getUri({ url: URL, params: p })
+                console.log(url)
+                window.open(url, 'cardtemplte')
+                return
+            }
+
+            const response = await axios.get(API2ROOT + '/cards', {
+                params: p,
+                withCredentials: true,
+                responseType: 'blob'
+            })
+            const blob    = new Blob([response.data], { type: response.headers['content-type'] })
+            const link    = document.createElement('a')
+            link.href     = window.URL.createObjectURL(blob)
+            link.download = response.headers['content-disposition'].split(/[="]/)[2]
+            link.click()
+        } catch (error) {
+            context.dispatch('axiosError', error)
+        }
+    },
+
     async ensureCarDriverInfo(context: ActionContext<Api2State, any>, carids: Set<UUID>) {
         try {
             const cids = {}

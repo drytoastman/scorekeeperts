@@ -1,4 +1,5 @@
 import _ from 'lodash'
+import csvstringify from 'csv-stringify'
 import { Request, Response } from 'express'
 import fs from 'fs'
 import nunjucks from 'nunjucks'
@@ -24,9 +25,20 @@ nunjucks.configure('templates', {
     autoescape: true
 })
 
-let chromepath = '/headless-shell/headless-shell'
-if (process.env.NODE_ENV === 'development') {
-    chromepath = 'c:/chromium/chrome.exe'
+
+let chromeargs: puppeteer.LaunchOptions
+if (process.platform === 'win32') {
+    // Running dev in Windows
+    chromeargs = {
+        executablePath: 'c:/chromium/chrome.exe'
+    }
+} else {
+    // running shell in container
+    chromeargs = {
+        executablePath: '/headless-shell/headless-shell',
+        headless: false,
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
+    }
 }
 
 
@@ -63,22 +75,10 @@ function loadRegData(series: string, eventid: UUID): Promise<RegData> {
 }
 
 
-export async function cardtemplate(req: Request, res: Response) {
-    let param
+async function cardtemplate(regData: RegData, res: Response) {
     try {
-        param = checkAuth(req)
-    } catch (error) {
-        return res.status(401).json({ error: error.message, authtype: error.authtype })
-    }
-
-    try {
-        controllog.debug('loading reg data')
-        const reg = await loadRegData(param.series, req.query.eventid as string)
-        reg.barcodescript = '<script type="text/javascript" src="/public/JsBarcode.code128.3.1.1.min.js"></script>'
-        controllog.debug('rendering')
-        const html = nunjucks.render('cards.html', reg)
-        controllog.debug('sending')
-        res.send(html)
+        regData.barcodescript = '<script type="text/javascript" src="/public/JsBarcode.code128.3.1.1.min.js"></script>'
+        res.send(nunjucks.render('cards.html', regData))
     } catch (error) {
         controllog.error(error)
         return res.status(500).json({ error: error.message })
@@ -86,36 +86,78 @@ export async function cardtemplate(req: Request, res: Response) {
 }
 
 
-export async function cardpdf(req: Request, res: Response) {
-    let param
-    try {
-        param = checkAuth(req)
-    } catch (error) {
-        return res.status(401).json({ error: error.message, authtype: error.authtype })
-    }
-
+async function cardpdf(regData: RegData, res: Response) {
     try {
         const read = util.promisify(fs.readFile)
-        const reg = await loadRegData(param.series, req.query.eventid as string)
-        reg.barcodescript = '<script type="text/javascript">\n' + await read('public/JsBarcode.code128.3.1.1.min.js', 'utf-8') + '\n</script>'
-        const html = nunjucks.render('cards.html', reg)
+        regData.barcodescript = '<script type="text/javascript">\n' + await read('public/JsBarcode.code128.3.1.1.min.js', 'utf-8') + '\n</script>'
+        const html = nunjucks.render('cards.html', regData)
 
-        const browser = await puppeteer.launch({
-            executablePath: chromepath,
-            headless: false,
-            args: ['--no-sandbox', '--disable-setuid-sandbox']
-        })
+        const browser = await puppeteer.launch(chromeargs)
         const page    = await browser.newPage()
         await page.setContent(html, { waitUntil: 'load' })
         const buffer  = await page.pdf({ width: '8in', height: '5in', margin: { top: '5mm', bottom: '3mm', left: '3mm', right: '5mm' } })
 
         res.setHeader('Content-Type', 'application/pdf')
-        res.setHeader('Content-Disposition', `attachment; filename="${reg.g.event.name}.pdf"`)
+        res.setHeader('Content-Disposition', `attachment; filename="${regData.g.event.name}.pdf"`)
         res.write(buffer)
         res.end()
         browser.close()
     } catch (error) {
         console.log(error.message)
         return res.status(500).json({ error: error.message })
+    }
+}
+
+async function cardcsv(regData: RegData, res: Response) {
+
+    res.setHeader('Content-Type', 'text/csv')
+    res.setHeader('Content-Disposition', `attachment; filename="${regData.g.event.name}.csv"`)
+
+    const stringifier = csvstringify({
+        columns: ['driverid', 'lastname', 'firstname', 'email', 'address', 'city', 'state', 'zip', 'phone', 'sponsor', 'brag',
+            'carid', 'year', 'make', 'model', 'color', 'number', 'classcode', 'indexcode', 'quickentry'],
+        header: true
+    })
+
+    stringifier.on('readable', () => {
+        let row: any
+        while ((row = stringifier.read())) {
+            res.write(row)
+        }
+    })
+    stringifier.on('finish', function() {
+        res.end()
+    })
+
+    for (const r of regData.registered) {
+        stringifier.write(r)
+    }
+    stringifier.end()
+}
+
+
+export async function cards(req: Request, res: Response) {
+    let param: { series: string; eventid: string; order: any; cardtype: any }
+    try {
+        param = checkAuth(req)
+    } catch (error) {
+        return res.status(401).json({ error: error.message, authtype: error.authtype })
+    }
+
+    const regData = await loadRegData(param.series, param.eventid)
+    const firstNameSorter = r => r.firstname.toLowerCase()
+    const lastNameSorter  = r => r.lastname.toLowerCase()
+
+    switch (param.order) {
+        case 'lastname':    regData.registered = _.sortBy(regData.registered, [lastNameSorter, firstNameSorter]); break
+        case 'classnumber': regData.registered = _.sortBy(regData.registered, ['classcode', 'number']); break
+        default: return res.status(400).json({ error: `invalid order provided "${param.order}"` })
+    }
+
+    switch (param.cardtype) {
+        case 'template': return cardtemplate(regData, res)
+        case 'pdf':      return cardpdf(regData, res)
+        case 'csv':      return cardcsv(regData, res)
+        default: return res.status(400).json({ error: `invalid cardtype provideded "${param.cardtype}"` })
     }
 }
