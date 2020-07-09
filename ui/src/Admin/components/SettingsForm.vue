@@ -20,6 +20,21 @@
         <v-checkbox v-model="settingsm.indexafterpenalties" style="grid-area: indexa" :rules="vrules.indexafterpenalties" label="Index After Penalties"></v-checkbox>
         <v-checkbox v-model="settingsm.superuniquenumbers"  style="grid-area: superu" :rules="vrules.superuniquenumbers" label="Series Wide Unique Numbers"></v-checkbox>
 
+        <v-expansion-panels multiple focusable hover accordion style="grid-area: temp; margin-bottom: 1rem">
+            <v-expansion-panel>
+                <v-expansion-panel-header>Results Extra CSS</v-expansion-panel-header>
+                <v-expansion-panel-content><PrismEditor language="css" v-model="settingsm.resultscss"></PrismEditor></v-expansion-panel-content>
+            </v-expansion-panel>
+            <v-expansion-panel>
+                <v-expansion-panel-header>Results Header (HTML)</v-expansion-panel-header>
+                <v-expansion-panel-content><PrismEditor language="html" v-model="settingsm.resultsheader"></PrismEditor></v-expansion-panel-content>
+            </v-expansion-panel>
+            <v-expansion-panel>
+                <v-expansion-panel-header>Card Template (HTML)</v-expansion-panel-header>
+                <v-expansion-panel-content><PrismEditor language="html" v-model="settingsm.cardtemplate"></PrismEditor></v-expansion-panel-content>
+            </v-expansion-panel>
+        </v-expansion-panels>
+
         <v-btn style='grid-area: reset' color="secondary" :disabled="unchanged" @click="reset">Reset</v-btn>
         <v-btn style='grid-area: save'  color="secondary" :disabled="unchanged" @click="saveSettings">Save</v-btn>
     </v-form>
@@ -28,14 +43,21 @@
 <script>
 import _ from 'lodash'
 import { mapState } from 'vuex'
+import 'prismjs'
+import 'prismjs/themes/prism-coy.css'
+import PrismEditor from 'vue-prism-editor'
 import { SettingsValidator } from '@common/lib'
 
 export default {
     name: 'SettingsForm',
+    components: {
+        PrismEditor
+    },
     data() {
         return {
             settingsm: {},
-            vrules: SettingsValidator
+            vrules: SettingsValidator,
+            showedit1: false
         }
     },
     computed: {
@@ -70,6 +92,7 @@ export default {
         "reqr reqr reqb reqb usepos usepos "
         "ppoints ppoints ppoints ppoints ppoints ppoints "
         "indexa indexa superu superu . . "
+        "temp temp temp temp temp temp "
         ". reset reset save save . "
     ;
 }

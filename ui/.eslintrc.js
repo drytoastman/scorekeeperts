@@ -6,7 +6,8 @@ rules = {
     'no-multiple-empty-lines': 'off',
     'no-debugger': 'off',
     'key-spacing': 'off',
-    indent: ['warn', 4, {SwitchCase: 1}]
+    indent: ['warn', 4, {SwitchCase: 1}],
+    'vue/no-unused-components': 'warn'
 }
 
 if (process.env.NODE_ENV === 'production') {

@@ -36,6 +36,7 @@ export const adminActions = {
             p.series   = this.state.currentSeries
             p.authtype = this.state.authtype
 
+            context.commit('gettingData', true)
             if (p.cardtype === 'template') {
                 const url = axios.getUri({ url: URL, params: p })
                 console.log(url)
@@ -55,6 +56,8 @@ export const adminActions = {
             link.click()
         } catch (error) {
             context.dispatch('axiosError', error)
+        } finally {
+            context.commit('gettingData', false)
         }
     },
 
