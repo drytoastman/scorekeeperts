@@ -5,9 +5,9 @@ export interface SeriesEvent
     eventid: UUID;
     name: string;
     date: DateString;
-    champrequire: [];
-    useastiebreak: [];
-    isexternal: [];
+    champrequire: boolean;
+    useastiebreak: boolean;
+    isexternal: boolean;
     regtype: number;
     regopened: Date;
     regclosed: Date;
@@ -20,9 +20,10 @@ export interface SeriesEvent
     totlimit: number;
     conepen: number;
     gatepen: number;
-    ispro: [];
-    ispractice: [];
+    ispro: boolean;
+    ispractice: boolean;
     accountid: string;
+    items: UUID[];
     attr: {
         chair: string;
         location: string;

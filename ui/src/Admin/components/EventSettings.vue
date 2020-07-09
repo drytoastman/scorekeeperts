@@ -49,9 +49,10 @@
                     <v-select v-model="eventm.accountid" style="grid-area: acct"  label="Payment Account" :items="acctlist" item-value="accountid" item-text="name"></v-select>
                     <v-checkbox v-model="eventm.attr.paymentreq" style="grid-area: preq" label="Payment Required"></v-checkbox>
 
-                    <v-combobox v-model="select" style="grid-area: pitem" :items="itemlist" item-value="itemid" item-text="name" label="Payment Items" multiple chips outlined>
+                    <v-combobox v-model="eventitems" style="grid-area: pitem" :items="itemlist"
+                                item-value="itemid" item-text="name" label="Payment Items" multiple chips deletable-chips outlined>
                         <template v-slot:item="{ item }">
-                            {{item.name}} - {{item.price|dollars}}
+                            {{item.name}} - {{item.price|cents2dollars}}
                         </template>
                     </v-combobox>
                 </div>
@@ -102,7 +103,7 @@ export default {
     data() {
         return {
             eventm: { attr: {} },
-            select: [],
+            eventitems: [],
             vrules: EventValidator,
             regtypes: [
                 { text: 'Standard Event with Classes', value: 0 },
@@ -128,6 +129,8 @@ export default {
         },
         reset() {
             this.eventm = _.cloneDeep(this.event)
+            // v-combobox only sets/returns object so create object list here
+            this.eventitems = this.event.items.map(itemid => this.paymentitems[itemid])
         }
     },
     watch: {
@@ -140,6 +143,10 @@ export default {
                 this.eventm.isexternal = false
                 this.eventm.ispro = false
             }
+        },
+        eventitems() {
+            // v-combobox only sets/returns object so copy back to item list here
+            this.eventm.items = this.eventitems.map(ei => ei.itemid)
         }
     },
     mounted() { this.reset() }

@@ -1,5 +1,6 @@
 import { SeriesEvent, SeriesSettings, DefaultSettings, UUID } from '@common/lib'
 import { IDatabase, IMain, ColumnSet } from 'pg-promise'
+import { ScorekeeperProtocol } from '.'
 
 let eventcols: ColumnSet|undefined
 
@@ -89,17 +90,54 @@ export class SeriesRepository {
     }
 
     async eventList(): Promise<SeriesEvent[]> {
-        return this.db.any('SELECT * FROM events')
+        return this.db.task(async task => {
+            const ret: SeriesEvent[] = await task.any('SELECT * FROM events')
+            await this.loadItemMap(task, ret)
+            return ret
+        })
     }
 
     async getEvent(eventid: UUID): Promise<SeriesEvent> {
-        return this.db.one('SELECT * FROM events WHERE eventid=$1', [eventid])
+        return this.db.task(async task => {
+            const ret: SeriesEvent = await task.one('SELECT * FROM events WHERE eventid=$1', [eventid])
+            await this.loadItemMap(task, [ret])
+            return ret
+        })
+    }
+
+    private async loadItemMap(tx: ScorekeeperProtocol, events: SeriesEvent[]) {
+        for (const event of events) {
+            event.items = (await tx.any('SELECT itemid FROM itemeventmap WHERE eventid=$1', [event.eventid])).map(r => r.itemid)
+        }
+    }
+
+    private async updateItemMap(tx: ScorekeeperProtocol, events: SeriesEvent[]) {
+        for (const event of events) {
+            await tx.none('DELETE FROM itemeventmap WHERE eventid=$1 AND itemid NOT IN ($1:csv)', [event.eventid, event.items])
+            for (const itemid of event.items) {
+                await tx.any('INSERT INTO itemeventmap (eventid, itemid) VALUES ($1, $2) ON CONFLICT (eventid, itemid) DO NOTHING', [event.eventid, itemid])
+            }
+        }
     }
 
     async updateEvents(type: string, events: SeriesEvent[]): Promise<SeriesEvent[]> {
-        if (type === 'insert') return this.db.any(this.pgp.helpers.insert(events, eventcols) + ' RETURNING *')
-        if (type === 'update') return this.db.any(this.pgp.helpers.update(events, eventcols) + ' WHERE v.eventid = t.eventid RETURNING *')
-        if (type === 'delete') return this.db.any('DELETE from events WHERE eventid in ($1:csv) RETURNING carid', events.map(e => e.eventid))
-        throw Error(`Unknown operation type ${JSON.stringify(type)}`)
+        return await this.db.tx(async tx => {
+            if (type === 'insert') {
+                const ret: SeriesEvent[] = await tx.any(this.pgp.helpers.insert(events, eventcols) + ' RETURNING *')
+                await this.updateItemMap(tx, events)
+                await this.loadItemMap(tx, ret)
+                return ret
+            }
+            if (type === 'update') {
+                await this.db.none(this.pgp.helpers.update(events, eventcols))
+                await this.updateItemMap(tx, events)
+                // UPDATE won't return event if nothing changed, still need return for item only updates
+                const ret: SeriesEvent[] = await tx.any('SELECT * FROM events WHERE eventid in ($1:csv)', events.map(e => e.eventid))
+                await this.loadItemMap(tx, ret)
+                return ret
+            }
+            if (type === 'delete') return this.db.any('DELETE from events WHERE eventid in ($1:csv) RETURNING carid', events.map(e => e.eventid))
+            throw Error(`Unknown operation type ${JSON.stringify(type)}`)
+        })
     }
 }
