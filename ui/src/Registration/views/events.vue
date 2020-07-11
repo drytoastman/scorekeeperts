@@ -29,8 +29,9 @@
 </template>
 
 <script>
+import orderBy from 'lodash/orderBy'
+import filter from 'lodash/filter'
 import { mapState } from 'vuex'
-import _ from 'lodash'
 import { isOpen, hasClosed } from '@common/lib/event'
 import ClassRegDialog from '../components/ClassRegDialog'
 import SessionRegDialog from '../components/SessionRegDialog'
@@ -54,7 +55,7 @@ export default {
     computed: {
         ...mapState(['events', 'counts', 'registered', 'panelstate']),
         // events by date, filtering out events that already occured as of today midnight, will still show up day of
-        orderedEvents() { return _.orderBy(this.events, ['date']).filter(e => (new Date(e.date) - new Date()) > -86400) },
+        orderedEvents() { return filter(orderBy(this.events, ['date']), e => (new Date(e.date) - new Date()) > -86400) },
         panelstate: {
             get: function() { return this.$store.state.panelstate },
             set: function(v) { this.$store.state.panelstate = v }

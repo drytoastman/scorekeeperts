@@ -46,8 +46,10 @@
 </template>
 
 <script>
+import filter from 'lodash/filter'
+import map from 'lodash/map'
+import pickBy from 'lodash/pickBy'
 import Vue from 'vue'
-import _ from 'lodash'
 import { mapState } from 'vuex'
 import CarLabel from '../../components/CarLabel'
 
@@ -64,7 +66,7 @@ export default {
         nocars()       { return Object.values(this.cars).length <= 0 },
         ereg()         { return this.registered[this.event.eventid] || [] },
         ecounts()      { return this.counts[this.event.eventid] || {} },
-        checkedCount() { return _.filter(Object.values(this.checks), v => v).length },
+        checkedCount() { return filter(Object.values(this.checks), v => v).length },
         limitReached() { return this.limitTypeReached !== null },
         limitTypeReached() {
             if (!this.event) { return null }
@@ -97,7 +99,7 @@ export default {
                 type: 'eventupdate',
                 eventid: this.event.eventid,
                 items: {
-                    registered: _.map(_.pickBy(this.checks), (v, k) => ({
+                    registered: map(pickBy(this.checks), (v, k) => ({
                         carid: k,
                         eventid: this.event.eventid,
                         session: ''

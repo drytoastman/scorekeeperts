@@ -34,7 +34,7 @@
 </template>
 
 <script>
-import _ from 'lodash'
+import orderBy from 'lodash/orderBy'
 import { mapState } from 'vuex'
 import { ClassValidator, restrictedRegistrationIndexes } from '@common/lib'
 
@@ -57,7 +57,7 @@ export default {
     },
     computed: {
         ...mapState(['classes', 'indexes']),
-        indexlist() { return _(this.indexes).values().orderBy('indexcode').value() },
+        indexlist() { return orderBy(Object.values(this.indexes), 'indexcode') },
         matches()   { return restrictedRegistrationIndexes(this.classm.caridxrestrict, Object.keys(this.indexes)).filter(v => v) }
     },
     methods: {

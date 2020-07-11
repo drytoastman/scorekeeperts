@@ -12,7 +12,8 @@
 </template>
 
 <script>
-import _ from 'lodash'
+import flatMap from 'lodash/flatMap'
+import find from 'lodash/find'
 import { mapState } from 'vuex'
 import CarLabel from './CarLabel'
 export default {
@@ -21,7 +22,7 @@ export default {
     computed: {
         ...mapState(['busyCars', 'registered']),
         busy() { return this.busyCars[this.car.carid] },
-        inreg() { return Boolean(_(this.registered).flatMap().find({ carid: this.car.carid })) }
+        inreg() { return Boolean(find(flatMap(this.registered), { carid: this.car.carid })) }
     }
 }
 </script>

@@ -54,7 +54,6 @@
 </template>
 
 <script>
-import _ from 'lodash'
 import { mapState } from 'vuex'
 import { v1 as uuidv1 } from 'uuid'
 import { mdiPencil, mdiDelete, mdiBug } from '@mdi/js'
@@ -112,7 +111,7 @@ export default {
     },
     methods: {
         oldItems(accountid) {
-            return  _(this.paymentitems).values().filter(i => i.accountid === accountid).value()
+            return  Object.values(this.paymentitems).filter(i => i.accountid === accountid)
         },
         newitem(accountid) {
             this.dialogData = { accountid: accountid, itemid: uuidv1(), currency: 'USD' }

@@ -6,9 +6,9 @@ import 'typeface-roboto'
 
 import Registration from './Registration.vue'
 import router from './router'
-import { createRegisterStore } from '../store'
+import { createRegisterStore } from '@/store'
 import { installLoggingHandlers } from '@/util/logging'
-import filters from '../util/filters'
+import filters from '@/util/filters'
 
 installLoggingHandlers()
 Vue.use(filters)
@@ -17,8 +17,8 @@ Vue.use(Vuetify)
 
 declare module 'vue/types/vue' {
     interface VueConstructor<V extends Vue = Vue> {
-        loadScript: Function;
-        unloadScript: Function;
+        loadScript: any;
+        unloadScript: any;
     }
 }
 

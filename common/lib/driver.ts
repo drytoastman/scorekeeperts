@@ -1,4 +1,4 @@
-import { DataValidationRules, MaxLength, Length, isUUID, isEmail, isBarcode, isDate, UUID } from './util'
+import { DataValidationRules, MaxLength, Length, isUUIDV, isEmailV, isBarcode, isDate, UUID } from './util'
 
 export interface Driver
 {
@@ -27,10 +27,10 @@ export interface Driver
 }
 
 export const DriverValidator: DataValidationRules = {
-    driverid:   [isUUID],
+    driverid:   [isUUIDV],
     firstname:  [Length(2, 32)],
     lastname:   [Length(2, 32)],
-    email:      [isEmail],
+    email:      [isEmailV],
     username:   [Length(6, 32)],
     password:   [Length(6, 32)],
     barcode:    [isBarcode],
@@ -52,7 +52,7 @@ export const DriverValidator: DataValidationRules = {
 export const RegisterValidator: DataValidationRules = {
     firstname:  [Length(2, 32)],
     lastname:   [Length(2, 32)],
-    email:      [isEmail],
+    email:      [isEmailV],
     username:   [Length(6, 32)],
     password:   [Length(6, 32)]
 }
@@ -60,5 +60,5 @@ export const RegisterValidator: DataValidationRules = {
 export const ResetValidator: DataValidationRules = {
     firstname:  [Length(2, 32)],
     lastname:   [Length(2, 32)],
-    email:      [isEmail]
+    email:      [isEmailV]
 }

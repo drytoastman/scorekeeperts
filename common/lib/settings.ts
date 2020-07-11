@@ -1,4 +1,4 @@
-import { DataValidationRules, Length, isURL, VuetifyValidationRule, Range } from './util'
+import { DataValidationRules, Length, isURLV, VuetifyValidationRule, Range } from './util'
 
 export interface SeriesSettings
 {
@@ -55,8 +55,8 @@ export const SettingsValidator: DataValidationRules = {
     largestcarnumber: [Range(99, 10000)],
     minevents:        [Range(0, 100)],
     dropevents:       [Range(0, 100)],
-    classinglink:     [isURL],
-    seriesruleslink:  [isURL],
+    classinglink:     [isURLV],
+    seriesruleslink:  [isURLV],
     requestrulesack:  [],
     requestbarcodes:  [],
     usepospoints:     [],

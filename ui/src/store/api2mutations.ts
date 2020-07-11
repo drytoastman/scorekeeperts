@@ -1,4 +1,4 @@
-import _ from 'lodash'
+import remove from 'lodash/remove'
 import Vue from 'vue'
 import { MutationTree } from 'vuex'
 import { Registration, UUID, Payment } from '@common/lib'
@@ -132,14 +132,14 @@ export const api2Mutations = {
                     if (key === 'payments') {
                         data[key].forEach((p: Payment) => {
                             if (!(p.eventid in state[key])) { Vue.set(state[key], p.eventid, []) }
-                            _.remove(state[key][p.eventid], { payid: p.payid })
+                            remove(state[key][p.eventid], { payid: p.payid })
                             state[key][p.eventid].push(p)
                         })
                     }
                     if (key === 'registered') {
                         data[key].forEach((r: Registration) => {
                             if (!(r.eventid in state[key])) { Vue.set(state[key], r.eventid, []) }
-                            _.remove(state[key][r.eventid], { eventid: r.eventid, carid: r.carid, session: r.session })
+                            remove(state[key][r.eventid], { eventid: r.eventid, carid: r.carid, session: r.session })
                             state[key][r.eventid].push(r)
                         })
                     }

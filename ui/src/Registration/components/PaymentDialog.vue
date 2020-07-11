@@ -11,10 +11,10 @@
                         <CarLabel :car=cars[r.carid] fontsize="110%"></CarLabel>
                         <v-select :items="payitems" return-object hide-details solo dense v-model="selects[JSON.stringify(r)]"> <!-- @input="newpurchase(r, $event)"> -->
                             <template v-slot:selection="d">
-                                <span class='name'>{{ d.item.name }}</span> <span class='price'>{{ d.item.price|dollars }}</span>
+                                <span class='name'>{{ d.item.name }}</span> <span class='price'>{{ d.item.price|cents2dollars }}</span>
                             </template>
                             <template v-slot:item="d">
-                                <span class='name'>{{ d.item.name }}</span> <span class='price'>{{ d.item.price|dollars }}</span>
+                                <span class='name'>{{ d.item.name }}</span> <span class='price'>{{ d.item.price|cents2dollars }}</span>
                             </template>
                         </v-select>
                     </div>
@@ -22,7 +22,7 @@
 
                 <v-card-text>
                     <div class='total'>
-                        Total: {{total|dollars}}
+                        Total: {{total}}
                     </div>
                 </v-card-text>
 
@@ -45,7 +45,9 @@
 </template>
 
 <script>
-import _ from 'lodash'
+import filter from 'lodash/filter'
+import orderBy from 'lodash/orderBy'
+import sumBy from 'lodash/sumBy'
 import { mapState, mapGetters } from 'vuex'
 import { mdiCloseBox } from '@mdi/js'
 
@@ -82,11 +84,11 @@ export default {
             return this.orderedOpenEvents.filter(e => e.accountid === this.accountid)
         },
         payitems() {
-            const arr = _(this.paymentitems).values().filter(i => i.accountid === this.accountid).orderBy('name').value()
+            const arr = orderBy(filter(Object.values(this.paymentitems), i => i.accountid === this.accountid), 'name')
             return [{ itemid: null, name: '' }, ...arr]
         },
         orderedOpenEvents() {
-            return _.orderBy(this.events, ['date']).filter(e => isOpen(e))
+            return filter(orderBy(this.events, ['date']), e => isOpen(e))
         },
         purchase() {
             const ret = []
@@ -103,7 +105,7 @@ export default {
             return ret
         },
         total() {
-            return _(this.purchase).sumBy('item.price')
+            return sumBy(this.purchase, 'item.price')
         },
         payments() {
             return this.purchase.map(o => ({
@@ -111,7 +113,7 @@ export default {
                 carid: o.car.carid,
                 session: o.session,
                 itemname: o.item.name,
-                amount: o.item.price
+                amount: o.item.price * 100
             }))
         },
         devMode() { return process.env.NODE_ENV === 'development' }

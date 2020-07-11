@@ -1,9 +1,10 @@
 import Vue from 'vue'
 import VueRouter, { RouterOptions } from 'vue-router'
-import EventsView from './views/events.vue'
-import CarsView from './views/cars.vue'
-import ProfileView from './views/profile.vue'
-import EmailResult from './views/emailresult.vue'
+
+const EventsView  = () => import(/* webpackChunkName: "registerviews" */  './views/events.vue')
+const CarsView    = () => import(/* webpackChunkName: "registerviews" */  './views/cars.vue')
+const ProfileView = () => import(/* webpackChunkName: "registerviews" */  './views/profile.vue')
+const EmailResult = () => import(/* webpackChunkName: "registerviews" */  './views/emailresult.vue')
 
 Vue.use(VueRouter)
 

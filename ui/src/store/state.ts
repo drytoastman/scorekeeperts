@@ -1,4 +1,4 @@
-import { PaymentAccount, SeriesClass, SeriesIndex, SeriesEvent, Car, Registration, Payment, Driver, SeriesSettings } from '@common/lib'
+import { PaymentAccount, SeriesClass, SeriesIndex, SeriesEvent, Car, Registration, Payment, Driver } from '@common/lib'
 import ReconnectingWebSocket from 'reconnecting-websocket'
 
 export const EMPTY = ''

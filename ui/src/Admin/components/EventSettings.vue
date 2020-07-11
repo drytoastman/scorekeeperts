@@ -87,7 +87,9 @@
 </template>
 
 <script>
-import _ from 'lodash'
+import cloneDeep from 'lodash/cloneDeep'
+import isEqual from 'lodash/isEqual'
+import orderBy from 'lodash/orderBy'
 import { mapState } from 'vuex'
 import { EventValidator } from '@common/lib'
 import DateTimePicker from '../../components/DateTimePicker'
@@ -114,9 +116,9 @@ export default {
     },
     computed: {
         ...mapState(['paymentaccounts', 'paymentitems']),
-        unchanged() { return _.isEqual(this.event, this.eventm) },
+        unchanged() { return isEqual(this.event, this.eventm) },
         acctlist() { return Object.values(this.paymentaccounts) },
-        itemlist() { return _(this.paymentitems).values().orderBy('name').value() },
+        itemlist() { return orderBy(Object.values(this.paymentitems), 'name') },
         noclassesevent() { return this.eventm.regtype !== 0 }
     },
     methods: {
@@ -128,7 +130,7 @@ export default {
             }).then(() => this.$store.commit('gettingData', false))
         },
         reset() {
-            this.eventm = _.cloneDeep(this.event)
+            this.eventm = cloneDeep(this.event)
             // v-combobox only sets/returns object so create object list here
             this.eventitems = this.event.items.map(itemid => this.paymentitems[itemid])
         }

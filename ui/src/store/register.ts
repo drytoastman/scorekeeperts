@@ -68,7 +68,7 @@ const getters = {
 
 
 
-export function createRegisterStore(router: VueRouter) {
+export function createRegisterStore(router: VueRouter): Store<Api2State> {
     const store = new Store({
         state: new Api2State(),
         mutations: api2Mutations,
@@ -82,7 +82,7 @@ export function createRegisterStore(router: VueRouter) {
     store.state.authtype = 'driver'
 
     /* On certain route changes, we check if we changed our series via the URL */
-    router.beforeResolve(function(to: Route, from: Route, next: Function): void {
+    router.beforeResolve(function(to: Route, from: Route, next): void {
         if ((to.params.series) && (to.params.series !== store.state.currentSeries)) {
             store.commit('changeSeries', to.params.series)
         }

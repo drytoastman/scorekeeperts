@@ -17,6 +17,7 @@ module.exports = {
     plugins: [
         new webpack.IgnorePlugin(/^pg-native$/),
         new webpack.DefinePlugin({ 'global.GENTLY': false }),
+        new webpack.ContextReplacementPlugin(/nunjucks|express/),
         new CopyPlugin({
             patterns: [
                 {
@@ -37,6 +38,7 @@ module.exports = {
             ]
         })
     ],
+    externals: /^(fsevents|request|fast-crc32c)$/,
     output: {
         path: path.resolve(__dirname, 'build'),
         filename: 'index.js'

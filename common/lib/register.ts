@@ -1,4 +1,4 @@
-import { DataValidationRules, isUUID, isDate, UUID, DateString } from './util'
+import { DataValidationRules, isUUIDV, isDate, UUID, DateString } from './util'
 import { isSession } from './event'
 
 export interface Registration {
@@ -9,8 +9,8 @@ export interface Registration {
 }
 
 export const RegValidator: DataValidationRules = {
-    eventid:  [isUUID],
-    carid:    [isUUID],
+    eventid:  [isUUIDV],
+    carid:    [isUUIDV],
     session:  [isSession],
     modified: [isDate]
 }
@@ -33,8 +33,8 @@ export interface Payment {
 
 export const PaymentValidator: DataValidationRules = {
     payid:    [],
-    eventid:  [isUUID],
-    carid:    [isUUID],
+    eventid:  [isUUIDV],
+    carid:    [isUUIDV],
     session:  [isSession],
     refid:    [],
     txtype:   [],

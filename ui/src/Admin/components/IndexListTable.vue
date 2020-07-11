@@ -31,7 +31,7 @@
 </template>
 
 <script>
-import _ from 'lodash'
+import orderBy from 'lodash/orderBy'
 import { mapState } from 'vuex'
 import { mdiPencil, mdiDelete } from '@mdi/js'
 import IndexDialog from './IndexDialog'
@@ -63,7 +63,7 @@ export default {
     },
     computed: {
         ...mapState(['indexes', 'busyIndex']),
-        indexlist() { return _(this.indexes).values().filter(v => v.indexcode).orderBy('indexcode').value() }
+        indexlist() { return orderBy(Object.values(this.indexes).filter(v => v.indexcode), 'indexcode') }
     },
     methods: {
         newindex() {

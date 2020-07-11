@@ -36,9 +36,10 @@
 </template>
 
 <script>
+import map from 'lodash/map'
+import filter from 'lodash/filter'
 import Vue from 'vue'
 import { mapState } from 'vuex'
-import _ from 'lodash'
 import { getSessions } from '@common/lib/event'
 import SessionCarLabel from '../../components/SessionCarLabel'
 
@@ -69,11 +70,11 @@ export default {
                 type: 'eventupdate',
                 eventid: this.event.eventid,
                 items: {
-                    registered: _(this.sessionselect).map((v, k) => ({
+                    registered: filter(map(this.sessionselect, (v, k) => ({
                         session: k,
                         carid: v,
                         eventid: this.event.eventid
-                    })).filter('carid')
+                    })), 'carid')
                 },
                 busy: { key: 'busyReg', id: this.event.eventid }
             })

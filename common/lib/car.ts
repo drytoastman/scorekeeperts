@@ -1,4 +1,4 @@
-import { UUID, DataValidationRules, isUUID, MaxLength, Max, isDate, nonBlank, isPrintable, isNumber } from './util'
+import { UUID, DataValidationRules, isUUIDV, MaxLength, Max, isDate, nonBlank, isPrintable, isNumber } from './util'
 
 export interface CarAttr
 {
@@ -22,8 +22,8 @@ export interface Car
 }
 
 export const CarValidator: DataValidationRules = {
-    carid:      [isUUID],
-    driverid:   [isUUID],
+    carid:      [isUUIDV],
+    driverid:   [isUUIDV],
     classcode:  [nonBlank], // is in somelist
     indexcode:  [], // is in somelist
     number:     [isNumber, Max(1999)],

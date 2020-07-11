@@ -29,7 +29,8 @@
 </template>
 
 <script>
-import _ from 'lodash'
+import isEmpty from 'lodash/isEmpty'
+import flatten from 'lodash/flatten'
 import { mapState } from 'vuex'
 import { mdiCreditCardRefund, mdiDelete } from '@mdi/js'
 import RefundDialog from './RefundDialog'
@@ -82,17 +83,17 @@ export default {
     },
     async mounted() {
         const req = []
-        if (_.isEmpty(this.$store.state.payments)) {
+        if (isEmpty(this.$store.state.payments)) {
             req.push(this.$store.dispatch('getdata', { items: 'payments' }))
         }
-        if (_.isEmpty(this.$store.state.registered)) {
+        if (isEmpty(this.$store.state.registered)) {
             req.push(this.$store.dispatch('getdata', { items: 'registered' }))
         }
 
         await Promise.all(req)
 
         const carids = new Set(
-            _(this.payments).values().flatten().map(p => p.carid).value(),
+            flatten(Object.values(this.payments)).map(p => p.carid),
             this.registered[this.eventid].map(r => r.carid))
         this.$store.dispatch('ensureCarDriverInfo', carids)
     }

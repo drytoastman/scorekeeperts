@@ -22,7 +22,7 @@ export default {
     },
     methods: {
         buildPaypalOrder() {
-            /* eslint-disable @typescript-eslint/camelcase */
+            /* xxxeslint-disable @typescript-eslint/camelcase */
             let total = 0
             const items = []
             this.purchase.forEach(pur => {

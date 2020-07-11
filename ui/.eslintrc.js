@@ -7,7 +7,8 @@ rules = {
     'no-debugger': 'off',
     'key-spacing': 'off',
     indent: ['warn', 4, {SwitchCase: 1}],
-    'vue/no-unused-components': 'warn'
+    'vue/no-unused-components': 'warn',
+    '@typescript-eslint/explicit-module-boundary-types': 'off' // tmp
 }
 
 if (process.env.NODE_ENV === 'production') {

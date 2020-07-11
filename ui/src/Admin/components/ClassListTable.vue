@@ -31,7 +31,7 @@
 </template>
 
 <script>
-import _ from 'lodash'
+import orderBy from 'lodash/orderBy'
 import { mapState } from 'vuex'
 import { mdiPencil, mdiDelete } from '@mdi/js'
 import ClassDialog from './ClassDialog'
@@ -67,7 +67,7 @@ export default {
     },
     computed: {
         ...mapState(['classes', 'busyClass']),
-        classlist() { return _(this.classes).values().filter(v => v.classcode !== 'HOLD').orderBy('classcode').value() }
+        classlist() { return orderBy(Object.values(this.classes).filter(v => v.classcode !== 'HOLD'), 'classcode') }
     },
     methods: {
         newclass() {

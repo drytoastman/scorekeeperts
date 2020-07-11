@@ -1,5 +1,11 @@
-import _ from 'lodash'
-import validator from 'validator'
+import isNumeric from 'validator/es/lib/isNumeric'
+import isEmail from 'validator/es/lib/isEmail'
+import isISO8601 from 'validator/es/lib/isISO8601'
+import isURL from 'validator/es/lib/isURL'
+import isUUID from 'validator/es/lib/isUUID'
+import isInt from 'validator/es/lib/isInt'
+import isDecimal from 'validator/es/lib/isDecimal'
+import isCurrency from 'validator/es/lib/isCurrency'
 
 export type UUID = string;
 export type DateString = string;
@@ -11,27 +17,27 @@ export interface DataValidationRules {
 }
 
 export const nonBlank: VuetifyValidationRule   = v => { return v.length > 0 || 'this field is required' }
-export const isNumber: VuetifyValidationRule   = v => { return typeof v === 'number' || (typeof v === 'string' && validator.isNumeric(v)) || 'must be a number ' }
-export const isEmail: VuetifyValidationRule    = v => { return validator.isEmail(v) || 'must be a valid email address' }
-export const isUUID: VuetifyValidationRule     = v => { return validator.isUUID(v) || 'must be UUID' }
+export const isNumber: VuetifyValidationRule   = v => { return typeof v === 'number' || (typeof v === 'string' && isNumeric(v)) || 'must be a number ' }
+export const isEmailV: VuetifyValidationRule   = v => { return isEmail(v) || 'must be a valid email address' }
+export const isUUIDV: VuetifyValidationRule    = v => { return isUUID(v) || 'must be UUID' }
 export const isDate: VuetifyValidationRule     = v => { return (v instanceof Date && !isNaN(v.getTime())) || 'must be a date object' }
 export const isBarcode: VuetifyValidationRule  = v => { return /^([0-9A-Z]+|)$/.test(v) || 'Barcode can only accept characters 0-9 an capital A-Z' }
-export const isISODate: VuetifyValidationRule  = v => { return validator.isISO8601(v) || 'Not a valid ISO Date value' }
+export const isISODate: VuetifyValidationRule  = v => { return isISO8601(v) || 'Not a valid ISO Date value' }
 
-export const isURL: VuetifyValidationRule      = v => {
-    return (v === undefined) || (v === '') || validator.isURL(v) || 'must be a valid URL'
+export const isURLV: VuetifyValidationRule      = v => {
+    return (v === undefined) || (v === '') || isURL(v) || 'must be a valid URL'
 }
 
 export const isInteger: VuetifyValidationRule  = v => {
-    return (v === undefined) || typeof v === 'number' || validator.isInt(v) || 'must be an integer'
+    return (v === undefined) || typeof v === 'number' || isInt(v) || 'must be an integer'
 }
 
 export const isDecimal3: VuetifyValidationRule = v => {
-    return (v === undefined) || typeof v === 'number' || validator.isDecimal(v, { decimal_digits: '0,3' }) || 'must be a decimal with max 3 places'
+    return (v === undefined) || typeof v === 'number' || isDecimal(v, { decimal_digits: '0,3' }) || 'must be a decimal with max 3 places'
 }
 
 export const isDollar: VuetifyValidationRule = v => {
-    return (v === undefined) || typeof v === 'number' || validator.isCurrency(v, { digits_after_decimal: [0, 1, 2] }) || 'Needs to be a valid dollar amount'
+    return (v === undefined) || typeof v === 'number' || isCurrency(v, { digits_after_decimal: [0, 1, 2] }) || 'Needs to be a valid dollar amount'
 }
 
 export function isPrintable(allowblank: boolean): VuetifyValidationRule {

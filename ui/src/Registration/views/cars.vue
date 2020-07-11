@@ -21,10 +21,10 @@
 </template>
 
 <script>
+import orderBy from 'lodash/orderBy'
 import { mapState } from 'vuex'
 import CarDisplay from '../../components/CarCard'
 import CarDialog from '../../components/CarDialog'
-import _ from 'lodash'
 
 export default {
     components: {
@@ -42,7 +42,7 @@ export default {
     computed: {
         ...mapState(['series', 'cars', 'errors']),
         orderedCars() {
-            const ret = _.orderBy(this.cars, ['classcode', 'number'])
+            const ret = orderBy(this.cars, ['classcode', 'number'])
             if (this.loadingCard) ret.push(this.loadingCard)
             return ret
         },

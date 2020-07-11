@@ -41,7 +41,7 @@
 </template>
 
 <script>
-import _ from 'lodash'
+import isEqual from 'lodash/isEqual'
 import { mapState } from 'vuex'
 import 'prismjs'
 import 'prismjs/themes/prism-coy.css'
@@ -62,7 +62,7 @@ export default {
     },
     computed: {
         ...mapState(['settings']),
-        unchanged() { return _.isEqual(this.settings, this.settingsm) }
+        unchanged() { return isEqual(this.settings, this.settingsm) }
     },
     methods: {
         saveSettings() {

@@ -25,9 +25,9 @@
 </template>
 
 <script>
+import pickBy from 'lodash/pickBy'
 import Vue from 'vue'
 import { mapState } from 'vuex'
-import _ from 'lodash'
 
 export default {
     name: 'EmailGroupsDialog',
@@ -44,7 +44,7 @@ export default {
         save() {
             this.$store.dispatch('setdata', {
                 type: 'update',
-                items: { unsubscribe: _(this.checks).pickBy(v => !v).keys().value() }
+                items: { unsubscribe: Object.keys(pickBy(this.checks, v => !v)) }
             })
             this.opened = false
         }

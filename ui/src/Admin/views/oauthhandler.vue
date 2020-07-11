@@ -16,7 +16,7 @@
 </template>
 
 <script>
-import _ from 'lodash'
+import isEmpty from 'lodash/isEmpty'
 import { mapState } from 'vuex'
 
 export default {
@@ -28,7 +28,7 @@ export default {
     },
     computed: {
         ...mapState(['squareoauthresp']),
-        haveResponse() { return !_.isEmpty(this.squareoauthresp) }
+        haveResponse() { return !isEmpty(this.squareoauthresp) }
     },
     methods: {
         setLocation() {

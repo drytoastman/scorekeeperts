@@ -25,7 +25,10 @@
 </template>
 
 <script>
-import _ from 'lodash'
+import filter from 'lodash/filter'
+import flatten from 'lodash/flatten'
+import cloneDeep from 'lodash/cloneDeep'
+import sumBy from 'lodash/sumBy'
 import { mapState } from 'vuex'
 
 export default {
@@ -48,8 +51,8 @@ export default {
     computed: {
         ...mapState(['drivers', 'cars', 'events', 'payments']),
         txpayments() {
-            return _(this.payments).values().flatten()
-                .filter({ txid: this.base.txid, refunded: false })
+            return filter(flatten(Object.values(this.payments)),
+                { txid: this.base.txid, refunded: false })
                 .map(p => {
                     const d = this.drivers[this.cars[p.carid]?.driverid]
                     return {
@@ -57,9 +60,9 @@ export default {
                         firstname: d?.firstname,
                         lastname: d?.lastname
                     }
-                }).value()
+                })
         },
-        actionbutton() { return `Square Refund ${this.$options.filters.dollars(_(this.selected).sumBy('amount'))}` }
+        actionbutton() { return `Square Refund ${this.$options.filters.dollars(sumBy(this.selected, 'amount'))}` }
     },
     methods: {
         refund() {
@@ -71,7 +74,7 @@ export default {
             this.$emit('input')
         },
         mark() {
-            const toupdate = _.cloneDeep(this.selected)
+            const toupdate = cloneDeep(this.selected)
             toupdate.forEach(p => { p.refunded = true })
             this.$store.dispatch('setdata', {
                 type: 'update',

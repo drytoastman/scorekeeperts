@@ -1,14 +1,15 @@
 import Vue from 'vue'
 import VueRouter, { RouterOptions } from 'vue-router'
-import Placeholder from './views/placeholder.vue'
-import OAuthHandler from './views/oauthhandler.vue'
-import Accounts from './views/accounts.vue'
-import Classes from './views/classes.vue'
-import Indexes from './views/indexes.vue'
-import EventInfo from './views/eventinfo.vue'
-import Payments from './views/payments.vue'
-import Settings from './views/settings.vue'
-import Summary from './views/summary.vue'
+
+const Placeholder  = () => import(/* webpackChunkName: "adminviews" */  './views/placeholder.vue')
+const Summary      = () => import(/* webpackChunkName: "adminviews" */  './views/summary.vue')
+const OAuthHandler = () => import(/* webpackChunkName: "adminviews" */  './views/oauthhandler.vue')
+const Accounts     = () => import(/* webpackChunkName: "adminviews" */  './views/accounts.vue')
+const Classes      = () => import(/* webpackChunkName: "adminviews" */  './views/classes.vue')
+const Indexes      = () => import(/* webpackChunkName: "adminviews" */  './views/indexes.vue')
+const EventInfo    = () => import(/* webpackChunkName: "adminviews" */  './views/eventinfo.vue')
+const Payments     = () => import(/* webpackChunkName: "adminviews" */  './views/payments.vue')
+const Settings     = () => import(/* webpackChunkName: "adminviews" */  './views/settings.vue')
 
 Vue.use(VueRouter)
 

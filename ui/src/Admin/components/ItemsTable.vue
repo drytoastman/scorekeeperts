@@ -3,7 +3,7 @@
                  disable-pagination hide-default-footer dense
   >
     <template v-slot:item.price="{ item }">
-        {{item.price|dollars}}
+        {{item.price|cents2dollars}}
     </template>
 
     <template v-slot:item.actions="{ item }">
@@ -15,7 +15,7 @@
 </template>
 
 <script>
-import _ from 'lodash'
+import orderBy from 'lodash/orderBy'
 import { mapState } from 'vuex'
 import { mdiPencil, mdiDelete, mdiPlus } from '@mdi/js'
 
@@ -39,7 +39,7 @@ export default {
     },
     computed: {
         ...mapState(['paymentitems']),
-        itemsList() { return  _.orderBy(this.paymentitems, 'name') }
+        itemsList() { return  orderBy(this.paymentitems, 'name') }
     }
 }
 </script>

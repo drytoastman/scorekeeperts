@@ -1,4 +1,4 @@
-import { DataValidationRules, Length, isUUID, isDate, UUID, Range, Min, DateString, VuetifyValidationRule, MaxLength } from './util'
+import { DataValidationRules, Length, isUUIDV, isDate, UUID, Range, Min, DateString, VuetifyValidationRule, MaxLength } from './util'
 
 export interface SeriesEvent
 {
@@ -47,7 +47,7 @@ export function getSessions(event: SeriesEvent) {
 export const isSession: VuetifyValidationRule = v => { return ['', 'AM', 'PM', 'Day'].includes(v) || 'Session can only be one of AM, PM or Day' }
 
 export const EventValidator: DataValidationRules = {
-    eventid:       [isUUID],
+    eventid:       [isUUIDV],
     name:          [Length(4, 64)],
     date:          [isDate],
     champrequire:  [],

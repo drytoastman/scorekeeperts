@@ -26,7 +26,7 @@
 </template>
 
 <script>
-import _ from 'lodash'
+import range from 'lodash/range'
 import { mapState } from 'vuex'
 import { mdiCloseBox } from '@mdi/js'
 
@@ -43,7 +43,7 @@ export default {
     },
     computed: {
         ...mapState(['usednumbers']),
-        allnumbers() { return _.range(1, 1000) }
+        allnumbers() { return range(1, 1000) }
     },
     methods: {
         numberClass(num) {

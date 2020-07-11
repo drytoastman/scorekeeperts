@@ -33,19 +33,19 @@
     "typeRoots": [
       "./node_modules/@types",
       "./node_modules/vuetify/types"
-    ]
+    ],
+    "outDir": "tstest"
   },
   "include": [
     "src/**/*.ts",
     "src/**/*.tsx",
     "src/**/*.vue",
     "tests/**/*.ts",
-    "tests/**/*.tsx", "src/components/PasswordEyeMixin.js"
+    "tests/**/*.tsx",
+    "../common/lib/*.ts",
+    "src/components/PasswordEyeMixin.js"
   ],
   "exclude": [
     "node_modules"
-  ],
-  "files": [
-    "notarealfile"
   ]
 }

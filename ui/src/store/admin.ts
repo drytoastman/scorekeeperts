@@ -1,4 +1,4 @@
-import _ from 'lodash'
+import orderBy from 'lodash/orderBy'
 import axios from 'axios'
 import { Api2State, API2ROOT } from './state'
 import { ActionContext, ActionTree, Store, GetterTree } from 'vuex'
@@ -103,12 +103,12 @@ export const adminActions = {
 const getters = {
     // make defaultdict(true) like thing out of the store
     haveSeriesAuth: (state) => { return state.currentSeries in state.seriesAuthenticated ? state.seriesAuthenticated[state.currentSeries] : true },
-    orderedEvents: (state) => { return _.orderBy(state.events, ['date']) }
+    orderedEvents: (state) => { return orderBy(state.events, ['date']) }
 
 } as GetterTree<Api2State, Api2State>
 
 
-export function createAdminStore(router: VueRouter) {
+export function createAdminStore(router: VueRouter): Store<Api2State> {
     const store = new Store({
         state: new Api2State(),
         mutations: api2Mutations,
@@ -124,7 +124,7 @@ export function createAdminStore(router: VueRouter) {
     /*
         On route changes, check to see if we have data or need to load it
     */
-    router.beforeResolve(function(to: Route, from: Route, next: Function): void {
+    router.beforeResolve(function(to: Route, from: Route, next): void {
         if ((to.params.series) && (to.params.series !== store.state.currentSeries)) {
             store.commit('changeSeries', to.params.series)
         }
