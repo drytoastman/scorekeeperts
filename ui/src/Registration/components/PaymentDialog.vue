@@ -9,7 +9,7 @@
                     <div v-for="r in unpaidReg(registered[e.eventid])" :key="r.eventid+r.carid+r.session" class='eventgrid'>
 
                         <CarLabel :car=cars[r.carid] fontsize="110%"></CarLabel>
-                        <v-select :items="payitems(e)" return-object hide-details solo dense v-model="selects[JSON.stringify(r)]"> <!-- @input="newpurchase(r, $event)"> -->
+                        <v-select :items="payitems(e)" return-object hide-details solo dense item-value="itemid" v-model="selects[JSON.stringify(r)]">
                             <template v-slot:selection="d">
                                 <span class='name'>{{ d.item.name }}</span> <span class='price'>{{ d.item.price|cents2dollars }}</span>
                             </template>
