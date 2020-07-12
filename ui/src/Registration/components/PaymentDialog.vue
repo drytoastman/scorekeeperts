@@ -6,10 +6,10 @@
 
                 <v-card-text v-for="e in accountEvents" :key="e.eventid" class='eventwrap'>
                     <h3>{{e.name}}</h3>
-                    <div v-for="r in unpaidReg(registered[e.eventid])" :key="r.eventid+r.carid" class='eventgrid'>
+                    <div v-for="r in unpaidReg(registered[e.eventid])" :key="r.eventid+r.carid+r.session" class='eventgrid'>
 
                         <CarLabel :car=cars[r.carid] fontsize="110%"></CarLabel>
-                        <v-select :items="payitems" return-object hide-details solo dense v-model="selects[JSON.stringify(r)]"> <!-- @input="newpurchase(r, $event)"> -->
+                        <v-select :items="payitems(e)" return-object hide-details solo dense v-model="selects[JSON.stringify(r)]"> <!-- @input="newpurchase(r, $event)"> -->
                             <template v-slot:selection="d">
                                 <span class='name'>{{ d.item.name }}</span> <span class='price'>{{ d.item.price|cents2dollars }}</span>
                             </template>
@@ -22,7 +22,7 @@
 
                 <v-card-text>
                     <div class='total'>
-                        Total: {{total}}
+                        Total: {{total|cents2dollars}}
                     </div>
                 </v-card-text>
 
@@ -83,10 +83,6 @@ export default {
         accountEvents() {
             return this.orderedOpenEvents.filter(e => e.accountid === this.accountid)
         },
-        payitems() {
-            const arr = orderBy(filter(Object.values(this.paymentitems), i => i.accountid === this.accountid), 'name')
-            return [{ itemid: null, name: '' }, ...arr]
-        },
         orderedOpenEvents() {
             return filter(orderBy(this.events, ['date']), e => isOpen(e))
         },
@@ -113,12 +109,16 @@ export default {
                 carid: o.car.carid,
                 session: o.session,
                 itemname: o.item.name,
-                amount: o.item.price * 100
+                amount: o.item.price
             }))
         },
         devMode() { return process.env.NODE_ENV === 'development' }
     },
     methods: {
+        payitems(event) {
+            const arr = orderBy(filter(Object.values(this.paymentitems), i => event.items.includes(i.itemid)), 'name')
+            return [{ itemid: null, name: '' }, ...arr]
+        }
     },
     watch: {
         value: async function(newv) {
@@ -144,7 +144,7 @@ export default {
     text-align:right;
     margin-top: 2rem;
     padding-top: 0.5rem;
-    padding-right: 5rem;
+    padding-right: 1rem;
     border-top: 1px solid lightgray;
     font-size: 150%;
 }

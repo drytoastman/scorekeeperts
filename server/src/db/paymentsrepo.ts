@@ -18,7 +18,6 @@ export class PaymentsRepository {
                 { name: 'eventid',  cast: 'uuid' },
                 { name: 'carid',    cast: 'uuid' },
                 { name: 'session' },
-                { name: 'refid',    def: '' },
                 { name: 'txtype' },
                 { name: 'txid' },
                 { name: 'txtime',   cast: 'timestamp' },

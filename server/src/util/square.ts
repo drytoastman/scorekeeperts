@@ -74,7 +74,6 @@ export async function squareOrder(conn: ScorekeeperProtocol, square: any, paymen
 
     payments.forEach(p => {
         p.payid  = uuidv1()
-        p.refid  = ''
         p.txtype = 'square'
         p.txid   = paymentresponse.payment!.id as string
         p.txtime = paymentresponse.payment!.created_at as string

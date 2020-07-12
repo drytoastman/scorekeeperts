@@ -51,7 +51,6 @@ export async function paypalCapture(conn: ScorekeeperProtocol, paypal: any, paym
         const capture = data.purchase_units[0].payments.captures[0]
         payments.forEach(p => {
             p.payid  = uuidv1()
-            p.refid  = ''
             p.txtype = 'paypal'
             p.txid   = capture.id
             p.txtime = capture.create_time

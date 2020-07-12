@@ -7,7 +7,7 @@
                     Refunded
                 </span>
                 <span v-else>
-                    {{item.amount | dollars}}
+                    {{item.amount | cents2dollars}}
                 </span>
             </template>
 

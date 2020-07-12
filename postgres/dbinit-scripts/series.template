@@ -109,7 +109,7 @@ COMMENT ON TABLE paymentaccounts IS 'the list of configured merchant data availa
 CREATE TABLE paymentitems (
     itemid    TEXT      PRIMARY KEY,
     name      TEXT      NOT NULL,
-    price     INTEGER   NOT NULL DEFAULT 100,
+    price     INTEGER   NOT NULL,
     currency  CHAR(3)   NOT NULL DEFAULT 'USD',
     modified  TIMESTAMP NOT NULL DEFAULT now()
 );
@@ -129,21 +129,6 @@ CREATE TABLE paymentsecrets (
 REVOKE ALL ON paymentsecrets FROM public;
 GRANT ALL  ON paymentsecrets TO localuser;
 COMMENT ON TABLE paymentsecrets IS 'Local only table for payment account details that only need to be on the main server, localuser required to access, no remotes';
-
--- DEPRECATED
-CREATE SEQUENCE ordercounter;
-REVOKE ALL ON ordercounter FROM public;
-GRANT ALL  ON ordercounter TO localuser;
-COMMENT ON SEQUENCE ordercounter IS 'Unsynced counter for main server when counting orders for series payments';
-
--- DEPRECATED
-CREATE TABLE tempcache (
-    key       TEXT      PRIMARY KEY,
-    data      JSONB     NOT NULL DEFAULT '{}'
-);
-REVOKE ALL ON tempcache FROM public;
-GRANT ALL  ON tempcache TO localuser;
-COMMENT ON TABLE tempcache IS 'Local only table that can be used for caching data on the webserver, only needs to be on the main server, localuser required to access, no remotes';
 
 
 CREATE TABLE events (
@@ -291,8 +276,8 @@ CREATE TABLE payments (
     txtime     TIMESTAMP,
     itemname   TEXT,
     accountid  TEXT,
-    refunded   BOOLEAN NOT NULL;
-    amount     FLOAT,
+    refunded   BOOLEAN NOT NULL,
+    amount     INTEGER NOT NULL,
     modified   TIMESTAMP NOT NULL DEFAULT now()
 );
 REVOKE ALL ON payments FROM public;

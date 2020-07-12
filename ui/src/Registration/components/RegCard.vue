@@ -9,7 +9,7 @@
                 <SessionCarLabel :car=car :session="reg.session" fontsize="110%" display="inline"></SessionCarLabel>
             </div>
             <div v-for="p in paymentsForReg" :key="p.payid">
-                {{p.amount|dollars}} ({{p.itemname}})
+                {{p.amount|cents2dollars}} ({{p.itemname}})
             </div>
             <div v-if="isOpen && event.attr.paymentreq && !paymentsForReg.length" class='paymentreq'>
                 Payment Required
@@ -39,7 +39,7 @@ export default {
         event() { return this.events[this.reg.eventid] },
         isOpen() { return isOpen(this.event) },
         paymentsForReg() {
-            try { return this.payments[this.reg.eventid].filter(p => p.carid === this.reg.carid && !p.refunded) || [] } catch {}
+            try { return this.payments[this.reg.eventid].filter(p => p.carid === this.reg.carid && p.session === this.reg.session && !p.refunded) || [] } catch {}
             return []
         }
     }

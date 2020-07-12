@@ -129,7 +129,7 @@ export class SeriesRepository {
                 return ret
             }
             if (type === 'update') {
-                await this.db.none(this.pgp.helpers.update(events, eventcols))
+                await this.db.none(this.pgp.helpers.update(events, eventcols) + ' WHERE v.eventid=t.eventid')
                 await this.updateItemMap(tx, events)
                 // UPDATE won't return event if nothing changed, still need return for item only updates
                 const ret: SeriesEvent[] = await tx.any('SELECT * FROM events WHERE eventid in ($1:csv)', events.map(e => e.eventid))

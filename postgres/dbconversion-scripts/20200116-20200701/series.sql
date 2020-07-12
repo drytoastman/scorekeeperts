@@ -1,10 +1,16 @@
+DROP TABLE tempcache;
+DROP SEQUENCE ordercounter;
 
 ALTER TABLE paymentitems DROP CONSTRAINT paymentitems_accountid_fkey;
 
 ALTER TABLE paymentsecrets ADD COLUMN attr JSONB NOT NULL DEFAULT '{}';
 
+ALTER TABLE payments DROP COLUMN refid;
+ALTER TABLE payments DROP COLUMN amount;
+
 ALTER TABLE payments ADD COLUMN accountid TEXT NOT NULL DEFAULT '';
 ALTER TABLE payments ADD COLUMN refunded BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE payments ADD COLUMN amount INTEGER NOT NULL;
 
 CREATE TABLE itemeventmap (
     eventid   UUID        NOT NULL REFERENCES events,

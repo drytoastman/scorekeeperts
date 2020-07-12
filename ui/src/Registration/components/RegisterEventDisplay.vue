@@ -43,7 +43,7 @@
             <v-col>
                 <v-container class='inner'>
                     <v-row dense v-if="ereg.length > 0">
-                        <v-col v-for="reg in ereg" :key="reg.carid">
+                        <v-col v-for="reg in ereg" :key="reg.session+reg.carid">
                             <RegCard :reg="reg"></RegCard>
                         </v-col>
                     </v-row>

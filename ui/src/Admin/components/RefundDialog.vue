@@ -7,7 +7,7 @@
             <v-card-text>
                 <v-data-table :items="txpayments" :headers="headers" item-key="payid" v-model="selected" disable-pagination hide-default-footer show-select>
                     <template v-slot:item.amount="{ item }">
-                        {{item.amount | dollars}}
+                        {{item.amount | cents2dollars}}
                     </template>
                     <template v-slot:item.eventid="{ item }">
                         {{events[item.eventid].name}}
@@ -62,7 +62,7 @@ export default {
                     }
                 })
         },
-        actionbutton() { return `Square Refund ${this.$options.filters.dollars(sumBy(this.selected, 'amount'))}` }
+        actionbutton() { return `Square Refund ${this.$options.filters.cents2dollars(sumBy(this.selected, 'amount'))}` }
     },
     methods: {
         refund() {
