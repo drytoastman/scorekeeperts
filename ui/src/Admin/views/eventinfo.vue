@@ -1,5 +1,5 @@
 <template>
-    <div class='outer'>
+    <div class='outer' v-if="event">
         <h2>{{event.name}} {{fmtdate}}</h2>
         <div><router-link :to="{name: 'epayments'}">Payments</router-link></div>
         <div class='cardswrap'>
@@ -8,7 +8,7 @@
             <v-btn @click='carddownload' color='secondary' style='grid-column: 1/span 2'>Generate Cards</v-btn>
         </div>
 
-        <EventSettings :event="event"></EventSettings>
+        <EventSettings :seriesevent="event"></EventSettings>
     </div>
 </template>
 

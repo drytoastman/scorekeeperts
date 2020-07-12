@@ -11,7 +11,7 @@
                 <div class='basics'>
                     <v-text-field   v-model="eventm.name"       style="grid-area: name"      label="Event Name" :rules="vrules.name" ></v-text-field>
                     <DateTimePicker v-model="eventm.date"       fieldstyle="grid-area: date" label="Date" dateOnly></DateTimePicker>
-                    <v-text-field v-model="eventm.attr.location" style="grid-area: loc"      label="Location" :rules="vrules.location"></v-text-field>
+                    <v-text-field   v-model="eventm.attr.location" style="grid-area: loc"      label="Location" :rules="vrules.location"></v-text-field>
                     <DateTimePicker v-model="eventm.regopened"  fieldstyle="grid-area: rego" label="Registration Opens"></DateTimePicker>
                     <DateTimePicker v-model="eventm.regclosed"  fieldstyle="grid-area: regc" label="Registration Closes"></DateTimePicker>
                     <v-textarea     v-model="eventm.attr.notes" style="grid-area: notes"     label="Notes" :rules="vrules.notes" outlined></v-textarea>
@@ -46,7 +46,7 @@
             <v-expansion-panel-header>Payments</v-expansion-panel-header>
             <v-expansion-panel-content>
                 <div class='payments'>
-                    <v-select v-model="eventm.accountid" style="grid-area: acct"  label="Payment Account" :items="acctlist" item-value="accountid" item-text="name"></v-select>
+                    <v-select   v-model="eventm.accountid" style="grid-area: acct"  label="Payment Account" :items="acctlist" item-value="accountid" item-text="name"></v-select>
                     <v-checkbox v-model="eventm.attr.paymentreq" style="grid-area: preq" label="Payment Required"></v-checkbox>
 
                     <v-combobox v-model="eventitems" style="grid-area: pitem" :items="itemlist"
@@ -97,7 +97,7 @@ import DateTimePicker from '../../components/DateTimePicker'
 export default {
     name: 'SettingsForm',
     props: {
-        event
+        seriesevent: Object
     },
     components: {
         DateTimePicker
@@ -116,7 +116,7 @@ export default {
     },
     computed: {
         ...mapState(['paymentaccounts', 'paymentitems']),
-        unchanged() { return isEqual(this.event, this.eventm) },
+        unchanged() { return isEqual(this.seriesevent, this.eventm) },
         acctlist() { return Object.values(this.paymentaccounts) },
         itemlist() { return orderBy(Object.values(this.paymentitems), 'name') },
         noclassesevent() { return this.eventm.regtype !== 0 }
@@ -130,13 +130,13 @@ export default {
             }).then(() => this.$store.commit('gettingData', false))
         },
         reset() {
-            this.eventm = cloneDeep(this.event)
+            this.eventm = cloneDeep(this.seriesevent)
             // v-combobox only sets/returns object so create object list here
-            this.eventitems = this.event.items.map(itemid => this.paymentitems[itemid])
+            this.eventitems = this.seriesevent.items.map(itemid => this.paymentitems[itemid])
         }
     },
     watch: {
-        event() { this.reset() },
+        seriesevent() { this.reset() },
         'eventm.regtype': function() {
             if (this.eventm.regtype !== 0) {
                 this.eventm.ispractice = true
