@@ -4,7 +4,7 @@ import { MutationTree } from 'vuex'
 import { Registration, UUID, Payment } from '@common/lib'
 import { Api2State } from './state'
 
-export function clearApi2SeriesData(state: Api2State) {
+export function clearApi2SeriesData(state: Api2State): void {
     state.paymentaccounts = {}
     state.paymentitems = {}
     state.classes = {}

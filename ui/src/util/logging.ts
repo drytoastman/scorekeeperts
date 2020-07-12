@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import Vue from 'vue'
 
-export function installLoggingHandlers() {
+export function installLoggingHandlers(): void {
     window.onerror = function(message, filename, lineno) {
         console.log(`OnEr: ${filename}:${lineno}: ${message}`)
     }

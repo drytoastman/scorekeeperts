@@ -1,19 +1,18 @@
-rules = {
+let rules = {
     'max-len': ['error', { code: 180, ignoreTemplateLiterals: true }],
     '@typescript-eslint/no-explicit-any': 'off',
-    'space-before-function-paren': ["warn", "never"],
+    'space-before-function-paren': ['warn', 'never'],
     'no-multi-spaces': 'off',
     'no-multiple-empty-lines': 'off',
     'no-debugger': 'off',
     'key-spacing': 'off',
-    indent: ['warn', 4, {SwitchCase: 1}],
-    'vue/no-unused-components': 'warn',
-    '@typescript-eslint/explicit-module-boundary-types': 'off' // tmp
+    indent: ['warn', 4, { SwitchCase: 1 }],
+    'vue/no-unused-components': 'warn'
 }
 
 if (process.env.NODE_ENV === 'production') {
     rules = Object.assign(rules, {
-        'no-debugger': 'error',
+        'no-debugger': 'error'
     })
 }
 
@@ -27,10 +26,17 @@ module.exports = {
         parser: '@typescript-eslint/parser'
     },
     extends: [
-        "plugin:@typescript-eslint/recommended",
+        'plugin:@typescript-eslint/recommended',
         'plugin:vue/essential',
         '@vue/standard',
         '@vue/typescript/recommended'
     ],
-    rules: rules
+    rules: rules,
+    overrides: [{
+        files: ['*.vue', '*.js'],
+        rules: {
+            // most vue files are not typescript, and .js definitely isn't
+            '@typescript-eslint/explicit-module-boundary-types': 'off'
+        }
+    }]
 }

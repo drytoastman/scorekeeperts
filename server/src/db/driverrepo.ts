@@ -44,8 +44,9 @@ export class DriverRepository {
 
     async getDriverByNameEmail(firstname: string, lastname: string, email: string): Promise<Driver[]> {
         return this.filterDrivers(await this.db.any('SELECT * FROM drivers WHERE ' +
-            'lower(firstname)=$1 AND lower(lastname)=$2 AND lower(email)=$3',
-            [firstname.toLowerCase().trim(), lastname.toLowerCase().trim(), email.toLowerCase().trim()]))
+            'lower(firstname)=$1 AND lower(lastname)=$2 AND lower(email)=$3', [
+            firstname.toLowerCase().trim(), lastname.toLowerCase().trim(), email.toLowerCase().trim()
+        ]))
     }
 
     async getDriverByUsername(username: string): Promise<Driver[]> {
