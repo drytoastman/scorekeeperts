@@ -30,7 +30,7 @@
 
                 <v-list-item>
                     <v-list-item-content>
-                        <v-select :items="serieslist" v-model="selectedSeries" solo dense hide-details placeholder="Select A Series"></v-select>
+                        <v-select :items="serieslist" v-model="selectedSeries" solo dense hide-details placeholder="Select A Series" ref="sselect"></v-select>
                     </v-list-item-content>
                 </v-list-item>
                 <v-list-item :to="{name:'events', params:{series:currentSeries}}" link>
@@ -48,14 +48,13 @@
             <v-app-bar-nav-icon @click.stop="drawer = !drawer" :disabled="!driverAuthenticated" />
             <v-toolbar-title>{{displayName}}</v-toolbar-title>
             <v-spacer></v-spacer>
+            <v-progress-linear :active="!!gettingData" indeterminate absolute bottom color="green accent-4"></v-progress-linear>
         </v-app-bar>
 
         <v-main>
-            <v-progress-circular class='loadingicon' v-if="gettingData" indeterminate color="secondary"></v-progress-circular>
-            <div v-if="!$route.name" class='pushdown main-page-warning'>Unknown Page</div>
+            <div v-if="loadDelay && !$route.name" class='pushdown main-page-warning'>Unknown Page</div>
             <router-view v-else-if="driverAuthenticated" />
             <Login v-else-if="driverAuthenticated===false"></Login>
-            <!--<div v-else class='pushdown main-page-warning'>Loading Data ...</div>-->
         </v-main>
 
         <v-snackbar :value="snackbar" :timeout=-1>
@@ -82,7 +81,8 @@ export default {
         profileicon: mdiAccount,
         eventsicon: mdiTrafficCone,
         carsicon: mdiCar,
-        logouticon: mdiLogout
+        logouticon: mdiLogout,
+        loadDelay: false
     }),
     methods: {
         logout: function() {
@@ -113,9 +113,22 @@ export default {
             }
         }
     },
+    watch: {
+        drawer: function(newv) {
+            if ((newv) && (!this.currentSeries)) {
+                this.$refs.sselect.activateMenu() // show menu if nothing is selected
+            }
+        },
+        serieslist: function() {
+            if (this.currentSeries) {
+                this.$refs.sselect.blur() // clear after load if it doesn't need to be open
+            }
+        }
+    },
     mounted() {
         console.log('mounted getdata')
         this.$store.dispatch('getdata')
+        setTimeout(() => { this.loadDelay = true }, 3000)
     }
 }
 </script>
@@ -130,12 +143,6 @@ export default {
 .main-page-warning {
     font-size: 150%;
     text-align: center;
-}
-.loadingicon {
-    position: fixed;
-    z-index: 200;
-    left: 50vw;
-    top: 20vh;
 }
 .v-list-item--active {
     filter: grayscale(60%) opacity(40%);

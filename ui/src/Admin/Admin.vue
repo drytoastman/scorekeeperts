@@ -3,7 +3,7 @@
         <v-app-bar app dense dark color="primary">
             <!-- <v-app-bar-nav-icon @click.stop="drawer = !drawer" /> -->
             <span class='btitle'>Admin</span>
-            <v-select :items="serieslist" v-model="selectedSeries" solo light dense hide-details placeholder="Select A Series"></v-select>
+            <v-select :items="serieslist" v-model="selectedSeries" solo light dense hide-details placeholder="Select A Series" ref="sselect"></v-select>
             <span class='bdesc'>{{$route.name}}</span>
             <v-divider inset vertical></v-divider>
 
@@ -44,10 +44,11 @@
             </v-menu>
             -->
 
+            <v-progress-linear :active="!!gettingData" indeterminate absolute bottom color="green accent-4"></v-progress-linear>
+
         </v-app-bar>
 
         <v-main>
-            <v-progress-circular class="loadingicon" v-if="gettingData" indeterminate color="secondary"></v-progress-circular>
             <div v-if="!$route.name" class="pushdown main-page-warning">Unknown Page</div>
             <router-view v-else-if="haveSeriesAuth" />
             <v-container v-else-if="!haveSeriesAuth">
@@ -114,6 +115,13 @@ export default {
                 })
             }
         }
+    },
+    watch: {
+        serieslist: function() {
+            if (!this.currentSeries) {
+                this.$refs.sselect.activateMenu()
+            }
+        }
     }
 }
 </script>
@@ -156,13 +164,6 @@ html {
             display: none;
         }
     }
-}
-
-.loadingicon {
-    position: fixed;
-    z-index: 200;
-    left: 50vw;
-    top: 20vh;
 }
 @import '@/styles/general.scss'
 </style>

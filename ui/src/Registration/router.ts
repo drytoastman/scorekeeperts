@@ -34,6 +34,12 @@ const routes = [
         redirect: {
             name: 'profile'
         }
+    },
+    {
+        path: '/:series',
+        redirect: {
+            name: 'events'
+        }
     }
 ]
 
