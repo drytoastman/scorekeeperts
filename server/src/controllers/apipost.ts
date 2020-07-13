@@ -130,6 +130,6 @@ export async function apipost(req: Request, res: Response) {
             return ret
         }))
     } catch (error) {
-        res.status(400).send({ error: error.toString() })
+        res.status(500).send({ error: error.toString() })
     }
 }

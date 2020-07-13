@@ -100,7 +100,7 @@ export async function changepassword(req: Request, res: Response) {
         await db.drivers.changePassword(req.auth.driverId(), req.body.currentpassword, req.body.newpassword)
         res.status(200).json({ result: 'Password change successful' })
     } catch (error) {
-        res.status(400).json({ error: error.toString() })
+        res.status(500).json({ error: error.toString() })
     }
 }
 
@@ -169,7 +169,7 @@ export async function regreset(req: Request, res: Response) {
         }
         res.status(200).json(req.query)
     } catch (error) {
-        res.status(400).json({ error: error.toString() })
+        res.status(500).json({ error: error.toString() })
     }
 }
 
