@@ -1,5 +1,10 @@
-import { PaymentAccount, SeriesClass, SeriesIndex, SeriesEvent, Car, Registration, Payment, Driver } from '@common/lib'
 import ReconnectingWebSocket from 'reconnecting-websocket'
+import { Driver } from '@/common/driver'
+import { PaymentAccount } from '@/common/payments'
+import { SeriesClass, SeriesIndex } from '@/common/classindex'
+import { SeriesEvent } from '@/common/event'
+import { Car } from '@/common/car'
+import { Registration, Payment } from '@/common/register'
 
 export const EMPTY = ''
 export const API2ROOT = '/api2'

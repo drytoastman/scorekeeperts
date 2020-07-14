@@ -3,7 +3,10 @@ import { ScorekeeperProtocol } from '../db'
 import SquareConnect, { Money, ApiClient, CurrencyType } from 'square-connect'
 import { v1 as uuidv1 } from 'uuid'
 
-import { Payment, UUID, PaymentAccount } from '@common/lib'
+import { PaymentAccount } from '@common/payments'
+import { Payment } from '@common/register'
+import { UUID } from '@common/util'
+
 import { gCache } from './cache'
 import { SQ_APPLICATION_ID, SQ_APPLICATION_SECRET } from '../db/generalrepo'
 import { paymentslog } from './logging'

@@ -1,6 +1,10 @@
-import { SeriesEvent, SeriesSettings, DefaultSettings, UUID } from '@common/lib'
 import { IDatabase, IMain, ColumnSet } from 'pg-promise'
 import { ScorekeeperProtocol } from '.'
+
+import { SeriesSettings, DefaultSettings } from '@common/settings'
+import { SeriesEvent } from '@common/event'
+import { UUID } from '@common/util'
+import { cleanAttr } from './helper'
 
 let eventcols: ColumnSet|undefined
 
@@ -15,7 +19,7 @@ export class SeriesRepository {
                 'name', 'champrequire', 'useastiebreak', 'isexternal', 'ispro', 'ispractice',
                 'regtype', 'courses', 'runs', 'countedruns', 'segments', 'perlimit', 'totlimit', 'sinlimit',
                 'conepen', 'gatepen', 'accountid',
-                { name: 'attr', cast: 'json' },
+                { name: 'attr',     cast: 'json', init: (col: any): any => { return cleanAttr(col.value) } },
                 { name: 'modified', cast: 'timestamp', mod: ':raw', init: (): any => { return 'now()' } },
                 { name: 'created',  cast: 'timestamp', init: (col: any): any => { return col.exists ? col.value : 'now()' } }
             ], { table: 'events' })

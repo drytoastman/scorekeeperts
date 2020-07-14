@@ -24,7 +24,7 @@
 </template>
 
 <script>
-import { DriverValidator } from '@common/lib'
+import { DriverValidator } from '@/common/driver'
 import BaseDialog from './BaseDialog'
 
 export default {

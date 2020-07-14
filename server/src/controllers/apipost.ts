@@ -5,7 +5,7 @@ import * as square from '../util/square'
 import { paypalCapture } from '../util/paypal'
 import { checkAuth } from './apiauth'
 import _ from 'lodash'
-import { Car } from '@common/lib'
+import { Car } from '@common/car'
 
 export async function apipost(req: Request, res: Response) {
 

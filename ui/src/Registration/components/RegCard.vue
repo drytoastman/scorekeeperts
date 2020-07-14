@@ -20,10 +20,9 @@
 
 <script>
 import { mapState } from 'vuex'
-import { Registration } from '@common/lib'
-import { isOpen } from '@common/lib/event'
-import CarLabel from '../../components/CarLabel'
-import SessionCarLabel from '../../components/SessionCarLabel'
+import { isOpen } from '@/common/event'
+import CarLabel from '@/components/CarLabel'
+import SessionCarLabel from '@/components/SessionCarLabel'
 
 export default {
     components: {
@@ -31,7 +30,7 @@ export default {
         SessionCarLabel
     },
     props: {
-        reg: Registration
+        reg: Object // Registration
     },
     computed: {
         ...mapState(['events', 'cars', 'payments']),

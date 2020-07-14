@@ -1,5 +1,6 @@
-import { SeriesClass, SeriesIndex, validateObj, IndexValidator, ClassValidator } from '@common/lib'
 import { IDatabase, ColumnSet, IMain } from 'pg-promise'
+import { SeriesClass, ClassValidator, SeriesIndex, IndexValidator } from '@common/classindex'
+import { validateObj } from '@common/util'
 
 let classcols: ColumnSet|undefined
 let indexcols: ColumnSet|undefined

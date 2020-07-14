@@ -4,11 +4,12 @@ module.exports = {
         // mirror the tsconfig.json 'paths' addition
         const common = require('path').resolve(config.get('context'), '../common')
         config.resolve.alias.set('@common', common).end()
+        /*
         config.plugin('friendly-errors').tap(args => [Object.assign(args[0], {
             onErrors: (severity, errors) => {
                 errors.splice(0, errors.length, ...errors.filter(error => !error.message.match(/export '.*' was not found in/)))
             }
-        })])
+        })]) */
 
         // const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
         // config.plugin('analyze').use(BundleAnalyzerPlugin)

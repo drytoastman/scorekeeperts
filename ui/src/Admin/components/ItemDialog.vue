@@ -14,7 +14,7 @@
 </template>
 
 <script>
-import { isDollar } from '@common/lib/util'
+import { isDollar } from '@/common/util'
 import BaseDialog from '../../components/BaseDialog'
 
 export default {

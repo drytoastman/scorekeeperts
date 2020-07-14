@@ -14,7 +14,7 @@
 
 <script>
 import Alert from '../../components/Alert'
-import { DriverValidator } from '@common/lib'
+import { DriverValidator } from '@/common/driver'
 import { PasswordEyeMixin } from '../../components/PasswordEyeMixin.js'
 
 export default {

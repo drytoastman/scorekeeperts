@@ -40,7 +40,7 @@ import map from 'lodash/map'
 import filter from 'lodash/filter'
 import Vue from 'vue'
 import { mapState } from 'vuex'
-import { getSessions } from '@common/lib/event'
+import { getSessions } from '@/common/event'
 import SessionCarLabel from '../../components/SessionCarLabel'
 
 export default {

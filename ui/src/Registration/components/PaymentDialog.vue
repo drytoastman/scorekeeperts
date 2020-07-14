@@ -51,7 +51,7 @@ import sumBy from 'lodash/sumBy'
 import { mapState, mapGetters } from 'vuex'
 import { mdiCloseBox } from '@mdi/js'
 
-import { isOpen } from '@common/lib/event'
+import { isOpen } from '@/common/event'
 import CarLabel from '../../components/CarLabel.vue'
 import SquarePaymentForm from './SquarePaymentForm'
 import PayPalButton from './PayPalButton'

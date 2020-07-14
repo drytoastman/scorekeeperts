@@ -1,4 +1,5 @@
-import { UUID, Registration, Payment } from '@common/lib'
+import { Registration, Payment } from '@common/register'
+import { UUID } from '@common/util'
 import { IDatabase, IMain, ColumnSet } from 'pg-promise'
 import _ from 'lodash'
 import { verifyDriverRelationship } from './helper'

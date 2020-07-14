@@ -20,7 +20,7 @@
 
 <script>
 import squaresvg from '../../images/square.svg'
-import { PaymentAccount } from '@common/lib'
+import { PaymentAccount } from '@/common/payments'
 
 export default {
     props: {

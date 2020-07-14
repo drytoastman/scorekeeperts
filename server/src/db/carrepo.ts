@@ -1,7 +1,9 @@
-import { Car, UUID } from '@common/lib'
+import _ from 'lodash'
 import { IDatabase, IMain, ColumnSet } from 'pg-promise'
 import { v1 as uuidv1 } from 'uuid'
-import { verifyDriverRelationship } from './helper'
+import { verifyDriverRelationship, cleanAttr } from './helper'
+import { UUID } from '@common/util'
+import { Car } from '@common/car'
 
 let carcols: ColumnSet|undefined
 
@@ -13,7 +15,7 @@ export class CarRepository {
                 { name: 'driverid', cast: 'uuid' },
                 'classcode', 'indexcode', 'number:value',
                 { name: 'useclsmult', def: false },
-                { name: 'attr', cast: 'json' },
+                { name: 'attr',     cast: 'json', init: (col: any): any => { return cleanAttr(col.value) } },
                 { name: 'modified', cast: 'timestamp', mod: ':raw', init: (): any => { return 'now()' } },
                 { name: 'created',  cast: 'timestamp', init: (col: any): any => { return col.exists ? col.value : 'now()' } }
             ], { table: 'cars' })

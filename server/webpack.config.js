@@ -46,7 +46,7 @@ module.exports = {
     resolve: {
         extensions: ['.ts', '.js'],
         alias: {
-            '@common': path.resolve(__dirname, '../common')
+            '@common': path.resolve(__dirname, '../ui/src/common')
         }
     },
     module: {

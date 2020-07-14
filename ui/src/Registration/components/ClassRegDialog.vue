@@ -51,7 +51,7 @@ import map from 'lodash/map'
 import pickBy from 'lodash/pickBy'
 import Vue from 'vue'
 import { mapState } from 'vuex'
-import CarLabel from '../../components/CarLabel'
+import CarLabel from '@/components/CarLabel'
 
 export default {
     components: {

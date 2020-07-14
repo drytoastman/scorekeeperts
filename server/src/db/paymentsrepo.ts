@@ -1,8 +1,10 @@
 import { IDatabase, ColumnSet, IMain } from 'pg-promise'
 import _ from 'lodash'
 
-import { PaymentAccount, PaymentItem, UUID, Payment, PaymentAccountSecret } from '@common/lib'
-import { verifyDriverRelationship } from './helper'
+import { verifyDriverRelationship, cleanAttr } from './helper'
+import { PaymentAccount, PaymentItem, PaymentAccountSecret } from '@common/payments'
+import { UUID } from '@common/util'
+import { Payment } from '@common/register'
 
 let paymentcols: ColumnSet|undefined
 let secretcols: ColumnSet|undefined
@@ -34,7 +36,7 @@ export class PaymentsRepository {
                 { name: 'accountid', cnd: true },
                 { name: 'name' },
                 { name: 'type' },
-                { name: 'attr', cast: 'json' },
+                { name: 'attr',     cast: 'json', init: (col: any): any => { return cleanAttr(col.value) } },
                 { name: 'modified', cast: 'timestamp', mod: ':raw', init: (): any => { return 'now()' } }
             ], { table: 'paymentaccounts' })
         }
@@ -43,7 +45,7 @@ export class PaymentsRepository {
             secretcols = new pgp.helpers.ColumnSet([
                 { name: 'accountid', cnd: true },
                 { name: 'secret' },
-                { name: 'attr', cast: 'json' },
+                { name: 'attr',     cast: 'json', init: (col: any): any => { return cleanAttr(col.value) } },
                 { name: 'modified', cast: 'timestamp', mod: ':raw', init: (): any => { return 'now()' } }
             ], { table: 'paymentsecrets' })
         }

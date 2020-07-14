@@ -46,7 +46,7 @@ import { mapState } from 'vuex'
 import 'prismjs'
 import 'prismjs/themes/prism-coy.css'
 import PrismEditor from 'vue-prism-editor'
-import { SettingsValidator } from '@common/lib'
+import { SettingsValidator } from '@/common/settings'
 
 export default {
     name: 'SettingsForm',

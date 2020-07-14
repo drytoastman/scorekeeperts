@@ -63,7 +63,7 @@
 
 <script>
 import { mapState, mapGetters } from 'vuex'
-import { isOpen, hasClosed, hasOpened } from '@common/lib/event'
+import { isOpen, hasClosed, hasOpened } from '@/common/event'
 import RegCard from './RegCard'
 
 export default {

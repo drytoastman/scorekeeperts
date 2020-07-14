@@ -4,10 +4,11 @@ import { Request, Response } from 'express'
 import KeyGrip from 'keygrip'
 
 import { db } from '../db'
-import { UUID, validateObj, RegisterValidator } from '@common/lib'
 import { wrapObj } from '../util/statelessdata'
 import { IS_MAIN_SERVER } from '../db/generalrepo'
 import { controllog } from '../util/logging'
+import { UUID, validateObj } from '@common/util'
+import { RegisterValidator } from '@common/driver'
 
 declare global {
     module Express {

@@ -1,5 +1,5 @@
 import { VueConstructor } from 'vue'
-import { DateString } from '@common/lib'
+import { DateString } from '@/common/util'
 
 export function capitalize(v: string): string {
     if (!v) { return v }

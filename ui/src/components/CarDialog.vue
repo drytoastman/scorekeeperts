@@ -33,7 +33,8 @@
 <script>
 import Vue from 'vue'
 import { mapState } from 'vuex'
-import { CarValidator, restrictedRegistrationIndexes } from '@common/lib'
+import { CarValidator } from '@/common/car'
+import { restrictedRegistrationIndexes } from '@/common/classdata'
 import NumberPicker from './NumberPicker'
 import BaseDialog from './BaseDialog'
 

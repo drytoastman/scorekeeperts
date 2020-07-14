@@ -1,8 +1,9 @@
 import remove from 'lodash/remove'
 import Vue from 'vue'
 import { MutationTree } from 'vuex'
-import { Registration, UUID, Payment } from '@common/lib'
 import { Api2State } from './state'
+import { UUID } from '@/common/util'
+import { Payment, Registration } from '@/common/register'
 
 export function clearApi2SeriesData(state: Api2State): void {
     state.paymentaccounts = {}

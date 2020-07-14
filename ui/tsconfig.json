@@ -19,9 +19,6 @@
     "paths": {
       "@/*": [
         "src/*"
-      ],
-      "@common/*": [
-        "../common/*"
       ]
     },
     "lib": [
@@ -42,7 +39,6 @@
     "src/**/*.vue",
     "tests/**/*.ts",
     "tests/**/*.tsx",
-    "../common/lib/*.ts",
     "src/components/PasswordEyeMixin.js"
   ],
   "exclude": [

@@ -91,8 +91,8 @@ import cloneDeep from 'lodash/cloneDeep'
 import isEqual from 'lodash/isEqual'
 import orderBy from 'lodash/orderBy'
 import { mapState } from 'vuex'
-import { EventValidator } from '@common/lib'
-import DateTimePicker from '../../components/DateTimePicker'
+import { EventValidator } from '@/common/event'
+import DateTimePicker from '@/components/DateTimePicker'
 
 export default {
     name: 'SettingsForm',

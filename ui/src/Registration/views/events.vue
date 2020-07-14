@@ -32,7 +32,7 @@
 import orderBy from 'lodash/orderBy'
 import filter from 'lodash/filter'
 import { mapState } from 'vuex'
-import { isOpen, hasClosed } from '@common/lib/event'
+import { isOpen, hasClosed } from '@/common/event'
 import ClassRegDialog from '../components/ClassRegDialog'
 import SessionRegDialog from '../components/SessionRegDialog'
 import PaymentDialog from '../components/PaymentDialog'

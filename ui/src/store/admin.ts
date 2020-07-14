@@ -5,7 +5,7 @@ import { ActionContext, ActionTree, Store, GetterTree } from 'vuex'
 import VueRouter, { Route } from 'vue-router'
 import { api2Mutations } from './api2mutations'
 import { api2Actions } from './api2actions'
-import { UUID } from '@common/lib'
+import { UUID } from '@/common/util'
 
 
 export const adminActions = {

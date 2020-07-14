@@ -9,7 +9,7 @@
 </template>
 
 <script>
-import { IndexValidator } from '@common/lib'
+import { IndexValidator } from '@/common/classindex'
 import BaseDialog from '../../components/BaseDialog'
 
 export default {

@@ -1,6 +1,8 @@
 import bcrypt from 'bcryptjs'
-import { UUID, Driver } from '@common/lib'
 import { IDatabase, ColumnSet, IMain } from 'pg-promise'
+import { UUID } from '@common/util'
+import { Driver } from '@common/driver'
+import { cleanAttr } from './helper'
 
 let drivercols: ColumnSet|undefined
 let unsubcols: ColumnSet|undefined
@@ -13,7 +15,7 @@ export class DriverRepository {
                 { name: 'driverid', cnd: true, cast: 'uuid' },
                 'firstname', 'lastname', 'email', 'username', 'barcode',
                 { name: 'optoutmail', def: false },
-                { name: 'attr', cast: 'json' },
+                { name: 'attr',     cast: 'json', init: (col: any): any => { return cleanAttr(col.value) } },
                 { name: 'modified', cast: 'timestamp', mod: ':raw', init: (): any => { return 'now()' } },
                 { name: 'created',  cast: 'timestamp', init: (col: any): any => { return col.exists ? col.value : 'now()' } }
             ], { table: 'drivers' })

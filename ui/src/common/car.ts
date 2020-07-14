@@ -1,13 +1,5 @@
 import { UUID, DataValidationRules, isUUIDV, MaxLength, Max, isDate, nonBlank, isPrintable, isNumber } from './util'
 
-export interface CarAttr
-{
-    year:  string;
-    make:  string;
-    model: string;
-    color: string;
-}
-
 export interface Car
 {
     carid:      UUID;
@@ -16,7 +8,12 @@ export interface Car
     indexcode:  string;
     number:     number;
     useclsmult: boolean;
-    attr:       CarAttr;
+    attr: {
+        year:  string;
+        make:  string;
+        model: string;
+        color: string;
+    }
     modified:   Date;
     created:    Date;
 }

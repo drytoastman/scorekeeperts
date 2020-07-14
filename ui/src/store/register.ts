@@ -4,7 +4,9 @@ import { ActionContext, ActionTree, Store, GetterTree } from 'vuex'
 import VueRouter, { Route } from 'vue-router'
 import { api2Mutations } from './api2mutations'
 import { api2Actions } from './api2actions'
-import { UUID, Registration, Driver } from '@common/lib'
+import { UUID } from '../common/util'
+import { Registration } from '../common/register'
+import { Driver } from '../common/driver'
 
 export const registerActions = {
 

@@ -74,6 +74,7 @@ export function Length(min: number, max: number): VuetifyValidationRule {
     return (v): (boolean|string) => { return (v === undefined) || ((min <= v.length) && (v.length <= max)) || `must be between ${min} and ${max} characters` }
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function validateValue(value: any, rules: VuetifyValidationRules): boolean|string {
     for (const rule of rules) {
         const res = rule(value)
@@ -84,7 +85,7 @@ export function validateValue(value: any, rules: VuetifyValidationRules): boolea
     return true
 }
 
-export function validateObj(obj: any, ruleobj: DataValidationRules): void {
+export function validateObj(obj: {[key:string]: any}, ruleobj: DataValidationRules): void {
     for (const key of Object.keys(ruleobj)) {
         if (key in obj) {
             for (const rule of ruleobj[key]) {

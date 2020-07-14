@@ -10,7 +10,7 @@
 
 <script>
 import Alert from '../../components/Alert'
-import { DriverValidator } from '@common/lib'
+import { DriverValidator } from '../../common/driver'
 export default {
     name: 'ResetForm',
     components: {
