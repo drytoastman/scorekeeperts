@@ -1,6 +1,6 @@
 import { CronJob } from 'cron'
 import { oauthrefresh } from './squareoauth'
-import { sendQueuedEmail, checkMailmanErrors } from './mailman'
+import { sendQueuedEmail, checkMailmanErrors, mailmaninit } from './mailman'
 import { backupNow } from './cloud'
 import { cronlog } from '../util/logging'
 
@@ -11,6 +11,7 @@ import { cronlog } from '../util/logging'
 */
 export function startCronJobs() {  // times in UTC
     cronlog.info('scheduling cron jobs')
+    mailmaninit()
     new CronJob('0    0  11    *  *  *', oauthrefresh).start()  // 4am
     new CronJob('0    0  8,20  *  *  *', backupNow).start()    // 1am, 1pm
     new CronJob('*/15 *  *     *  *  *', sendQueuedEmail).start()

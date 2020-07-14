@@ -1,16 +1,13 @@
-import express from 'express'
-import morgan from 'morgan'
-import helmet from 'helmet'
 import cookieSession from 'cookie-session'
+import express, { Request, Response } from 'express'
+import helmet from 'helmet'
+import morgan from 'morgan'
+import promiseRetry from 'promise-retry'
 
-import { api2, live } from './controllers'
+import { api2, live, liveStart } from './controllers'
 import { db, tableWatcher, pgp } from './db'
 import { startCronJobs } from './cron'
 import { mainlog } from './util/logging'
-
-if (process.env.NODE_ENV !== 'development') {
-    startCronJobs()
-}
 
 const app = express()
 app.use(helmet())
@@ -23,8 +20,25 @@ app.use(morgan('dev', {
 }))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
+app.use('/public', express.static('public'))
+app.use('/api2', async function(req: Request, res: Response, next: Function) {
+    return res.status(503).json({ error: 'waiting for db initializtion' })
+})
 
-db.general.getKeyGrip().then(keygrip => {
+
+async function dbWaitAndApiSetup() {
+    const keygrip = await promiseRetry(async function(retry, number) {
+        mainlog.info('db connect, attempt number %d', number)
+        try {
+            return await db.general.getKeyGrip()
+        } catch (error) {
+            mainlog.warn(error.message)
+            retry(error)
+        }
+    })
+
+    app._router.stack.pop() // remove placeholder /api2
+
     app.use(cookieSession({
         name: 'scorekeeper',
         keys: keygrip,
@@ -36,12 +50,15 @@ db.general.getKeyGrip().then(keygrip => {
         if (req.session) { req.session.now = Math.floor(Date.now() / 60e3) }
         next()
     })
-
     app.use('/api2', api2)
-    app.use('/public', express.static('public'))
-}).catch(error => {
-    mainlog.error(`Unable to load keys (${error}), sessions will not work`)
-})
+
+    liveStart()
+    if (process.env.NODE_ENV !== 'development') {
+        startCronJobs()
+    }
+}
+
+dbWaitAndApiSetup()
 
 const PORT = process.env.PORT || 4000
 const server = app.listen(PORT, () => {
@@ -67,7 +84,10 @@ process.on('SIGTERM', () => {
     })
 })
 
-process.on('uncaughtException', function(err) {
-    // Don't die if a library throws an exception the wrong way
-    console.log('Uncaught exception: ' + err)
+// Don't die if a library throws an exception the wrong way
+process.on('uncaughtException', error => {
+    console.log('Uncaught exception: ' + error)
+})
+process.on('unhandledRejection', error => {
+    console.log('unhandledRejection', error)
 })

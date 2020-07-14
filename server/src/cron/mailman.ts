@@ -64,11 +64,10 @@ async function createReceiverConfig(): Promise<any> {
 }
 
 let smtp, imapConfig
-async function init() {
+export async function mailmaninit() {
     smtp = await createSender()
     imapConfig = await createReceiverConfig()
 }
-init()
 
 export async function sendQueuedEmail() {
     if (!smtp) { return }

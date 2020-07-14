@@ -2,7 +2,9 @@ import { tableWatcher, db } from '../db'
 import WebSocket from 'ws'
 import { controllog } from '../util/logging'
 
-tableWatcher.addTables(['runs', 'timertimes', 'localeventstream', 'registered', 'events'])
+export function liveStart() {
+    tableWatcher.addTables(['runs', 'timertimes', 'localeventstream', 'registered', 'events'])
+}
 
 export const live = new WebSocket.Server({ noServer: true })
 
