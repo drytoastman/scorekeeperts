@@ -13,6 +13,8 @@ import { checkAuth } from './apiauth'
 import { db } from '../db'
 import { controllog } from '../util/logging'
 
+const asyncRead = util.promisify(fs.readFile)
+
 interface RegData
 {
     g: {
@@ -22,10 +24,6 @@ interface RegData
     registered: any[]
     barcodescript: string
 }
-
-nunjucks.configure('templates', {
-    autoescape: true
-})
 
 
 let chromeargs: puppeteer.LaunchOptions
@@ -77,10 +75,44 @@ function loadRegData(series: string, eventid: UUID): Promise<RegData> {
 }
 
 
-async function cardtemplate(regData: RegData, res: Response) {
+/**
+ * This is used so infrequently, we create a new environment each time so there is no
+ * overlap of data between requests and the system can free the memory later
+ */
+class MemLoader extends nunjucks.Loader {
+    constructor(private cardspage: string, private cardtemplate: string) {
+        super()
+    }
+
+    getSource(tempname: string): nunjucks.LoaderSource {
+        const ret = {
+            src: `unknown template '${tempname}'`,
+            path: tempname,
+            noCache: false
+        }
+        switch (tempname) {
+            case 'cardspage':  ret.src = this.cardspage; break
+            case 'singlecard': ret.src = this.cardtemplate; break
+        }
+        return ret
+    }
+}
+
+async function cardHTML(regData: RegData, series: String): Promise<string> {
+    const cardspage   = await asyncRead('templates/cards.html', 'utf-8')
+    let cardtemplate = regData.g.settings.cardtemplate
+    if (!cardtemplate) {
+        cardtemplate = await asyncRead('templates/defaultcard.html', 'utf-8')
+    }
+    const renderer = new nunjucks.Environment(new MemLoader(cardspage, cardtemplate))
+    return renderer.render('cardspage', regData)
+}
+
+
+async function cardtemplate(regData: RegData, series: string, res: Response) {
     try {
         regData.barcodescript = '<script type="text/javascript" src="/public/JsBarcode.code128.3.1.1.min.js"></script>'
-        res.send(nunjucks.render('cards.html', regData))
+        res.send(await cardHTML(regData, series))
     } catch (error) {
         controllog.error(error)
         return res.status(500).json({ error: error.message })
@@ -88,12 +120,10 @@ async function cardtemplate(regData: RegData, res: Response) {
 }
 
 
-async function cardpdf(regData: RegData, res: Response) {
+async function cardpdf(regData: RegData, series: string, res: Response) {
     try {
-        const read = util.promisify(fs.readFile)
-        regData.barcodescript = '<script type="text/javascript">\n' + await read('public/JsBarcode.code128.3.1.1.min.js', 'utf-8') + '\n</script>'
-        const html = nunjucks.render('cards.html', regData)
-
+        regData.barcodescript = '<script type="text/javascript">\n' + await asyncRead('public/JsBarcode.code128.3.1.1.min.js', 'utf-8') + '\n</script>'
+        const html    = await cardHTML(regData, series)
         const browser = await puppeteer.launch(chromeargs)
         const page    = await browser.newPage()
         await page.setContent(html, { waitUntil: 'load' })
@@ -157,8 +187,8 @@ export async function cards(req: Request, res: Response) {
     }
 
     switch (param.cardtype) {
-        case 'template': return cardtemplate(regData, res)
-        case 'pdf':      return cardpdf(regData, res)
+        case 'template': return cardtemplate(regData, param.series, res)
+        case 'pdf':      return cardpdf(regData, param.series, res)
         case 'csv':      return cardcsv(regData, res)
         default: return res.status(400).json({ error: `invalid cardtype provideded "${param.cardtype}"` })
     }
