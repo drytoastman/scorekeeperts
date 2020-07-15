@@ -1,12 +1,9 @@
 FROM node:12.18.2-buster-slim as builder
 WORKDIR /code
-COPY common/package*.json ./common/
-COPY     ui/package*.json ./ui/
-RUN cd common && npm install
-RUN cd ui     && npm install
-COPY common common
+COPY ui/package*.json ./ui/
+RUN  cd ui && npm install
 COPY ui ui
-RUN  cd ui    && npm run build
+RUN  cd ui && npm run build
 
 FROM nginx:1.18.0
 # RUN apt-get update && apt-get install -y -q vim
