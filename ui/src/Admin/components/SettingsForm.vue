@@ -72,7 +72,12 @@ export default {
                 items: { settings: this.settingsm }
             }).then(() => this.$store.commit('gettingData', false))
         },
-        reset() { this.settingsm = Object.assign({}, this.settings) }
+        reset() {
+            this.settingsm = Object.assign({}, this.settings)
+            for (const template of ['resultscss', 'resultsheader', 'cardtemplate']) {
+                this.settingsm[template] = this.settingsm[template] || '\n'
+            }
+        }
     },
     watch: { settings() { this.reset() } },
     mounted() { this.reset() }

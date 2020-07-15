@@ -1,9 +1,11 @@
 <template>
     <div class='formbox'>
-        Need series password for <b>{{currentSeries}}</b>
-        <v-text-field v-model="password" label="Password" required :type="pType" @click:append="showp=!showp" :append-icon="pIcon">
-        </v-text-field>
-        <v-btn :dark=dark color="primary" @click='login'>Login</v-btn>
+        <v-form @submit.prevent='login'>
+            Need series password for <b>{{currentSeries}}</b>
+            <v-text-field v-model="password" label="Password" required :type="pType" @click:append="showp=!showp" :append-icon="pIcon">
+            </v-text-field>
+            <v-btn :dark=dark color="primary" @click="login">Login</v-btn>
+        </v-form>
     </div>
 </template>
 
