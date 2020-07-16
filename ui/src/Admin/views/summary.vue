@@ -1,7 +1,7 @@
 <template>
     <div class='outer'>
         <div v-if="series">
-            Series Summary {{series}}
+            Series {{series}}
         </div>
         <div v-else>
             Select a series above...

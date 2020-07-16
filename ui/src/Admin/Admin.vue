@@ -84,7 +84,8 @@ export default {
             { title: 'Settings', link: { name:'settings' } },
             { title: 'Classes',  link: { name:'classes' }  },
             { title: 'Indexes',  link: { name:'indexes' }  },
-            { title: 'Accounts', link: { name:'accounts' }  }
+            { title: 'Accounts', link: { name:'accounts' }  },
+            { title: 'Payments', link: { name:'payments' } }
         ],
         adminitems: [ /*
             { title: 'Host Settings', link: { name:'hostsettings' } },

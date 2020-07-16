@@ -1,7 +1,23 @@
 <template>
     <div class='paymenttable'>
-        <v-data-table :items="paymentlist" :headers="headers" item-key="indexcode" :sort-by="['lastname', 'firstname']"
+        <v-data-table :items="paymentlist" :headers="headers" :search="search" item-key="indexcode" :sort-by="['lastname', 'firstname']"
                         disable-pagination hide-default-footer multi-sort>
+            <template v-slot:top>
+                <div class='topgrid'>
+                <div v-if="eventid" class='left'>
+                    <h2>{{events[eventid].name}} Payments</h2>
+                </div>
+                <div v-else class='left'>
+                    <h2>Series Payments</h2>
+                </div>
+                <v-text-field class='right' v-model="search" :append-icon="icons.mdiMagnify" label="Search" single-line hide-details></v-text-field>
+                </div>
+            </template>
+
+            <template v-slot:item.eventid="{ item }">
+                {{events[item.eventid].name}}
+            </template>
+
             <template v-slot:item.amount="{ item }">
                 <span v-if="item.refunded">
                     Refunded
@@ -32,7 +48,7 @@
 import isEmpty from 'lodash/isEmpty'
 import flatten from 'lodash/flatten'
 import { mapState } from 'vuex'
-import { mdiCreditCardRefund, mdiDelete } from '@mdi/js'
+import { mdiCreditCardRefund, mdiDelete, mdiMagnify } from '@mdi/js'
 import RefundDialog from './RefundDialog'
 
 export default {
@@ -49,23 +65,22 @@ export default {
             RefundDialog: false,
             icons: {
                 mdiCreditCardRefund,
-                mdiDelete
+                mdiDelete,
+                mdiMagnify
             },
-            headers: [
-                { text: 'First',   value: 'firstname' },
-                { text: 'Last',    value: 'lastname' },
-                { text: 'Item',    value: 'itemname' },
-                { text: 'Type',    value: 'txtype' },
-                { text: 'Amount',  value: 'amount' },
-                { text: 'Mark/Refund',  value: 'actions', sortable: false }
-            ]
+            search: ''
         }
     },
     computed: {
-        ...mapState(['drivers', 'cars', 'payments', 'registered', 'busyPayment']),
+        ...mapState(['drivers', 'cars', 'events', 'payments', 'registered', 'busyPayment']),
         paymentlist() {
-            if (!(this.eventid in this.payments)) { return [] }
-            return this.payments[this.eventid].map(p => {
+            let plist = []
+            if (!this.eventid) {
+                plist = flatten(Object.values(this.payments))
+            } else if (this.eventid in this.payments) {
+                plist = this.payments[this.eventid]
+            }
+            return plist.map(p => {
                 const d = this.drivers[this.cars[p.carid]?.driverid]
                 return {
                     ...p,
@@ -73,6 +88,21 @@ export default {
                     lastname: d?.lastname
                 }
             })
+        },
+        headers() {
+            const headers = [
+                { text: 'First',   value: 'firstname' },
+                { text: 'Last',    value: 'lastname' },
+                { text: 'Event',   value: 'eventid' },
+                { text: 'Item',    value: 'itemname' },
+                { text: 'Type',    value: 'txtype' },
+                { text: 'Amount',  value: 'amount' },
+                { text: 'Mark/Refund',  value: 'actions', sortable: false }
+            ]
+            if (this.eventid) {
+                headers.splice(2, 1) // remove event column when looking at a single event
+            }
+            return headers
         }
     },
     methods: {
@@ -94,7 +124,7 @@ export default {
 
         const carids = new Set(
             flatten(Object.values(this.payments)).map(p => p.carid),
-            this.registered[this.eventid].map(r => r.carid))
+            flatten(Object.values(this.registered)).map(p => p.carid))
         this.$store.dispatch('ensureCarDriverInfo', carids)
     }
 }
@@ -107,6 +137,22 @@ export default {
     }
     .v-data-table__wrapper {
         overflow-x: hidden;
+    }
+    .topgrid {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        align-items: baseline;
+        margin-bottom: 1rem;
+    }
+
+    @media (max-width: 700px) {
+        .topgrid {
+            display: initial;
+        }
+        .right {
+            padding-top: 0;
+            margin-bottom: 1rem;
+        }
     }
 }
 </style>
