@@ -1,7 +1,8 @@
 <template>
     <div class='outer' v-if="event">
         <h2>{{event.name}} {{fmtdate}}</h2>
-        <div><router-link :to="{name: 'epayments'}">Payments</router-link></div>
+        <div><router-link :to="{name: 'entrants'}">Entrants</router-link></div>
+
         <div class='cardswrap'>
             <v-select v-model="cardtype" label="Download Type" :items="['pdf', 'template', 'csv']"></v-select>
             <v-select v-model="order" label="Order" :items="['lastname', 'classnumber']"></v-select>

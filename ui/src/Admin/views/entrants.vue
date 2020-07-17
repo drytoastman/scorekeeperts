@@ -1,16 +1,16 @@
 <template>
     <div class='outer'>
-        <PaymentTable :eventid=eventid></PaymentTable>
+        <EntrantTable :eventid=eventid></EntrantTable>
     </div>
 </template>
 
 <script>
-import PaymentTable from '../components/PaymentTable.vue'
+import EntrantTable from '../components/EntrantTable.vue'
 
 export default {
-    name: 'EventInfo',
+    name: 'EntrantInfo',
     components: {
-        PaymentTable
+        EntrantTable
     },
     props: {
         eventid: String

@@ -35,6 +35,7 @@ export interface SeriesEvent
 
 export function hasOpened(event: SeriesEvent): boolean { return new Date() > new Date(event.regopened) }
 export function hasClosed(event: SeriesEvent): boolean { return new Date() > new Date(event.regclosed) }
+export function hasFinished(event: SeriesEvent): boolean { return new Date() >= new Date(event.date) }
 export function isOpen(event: SeriesEvent):    boolean { return hasOpened(event) && !hasClosed(event) }
 export function getSessions(event: SeriesEvent): string[] {
     switch (event.regtype) {
