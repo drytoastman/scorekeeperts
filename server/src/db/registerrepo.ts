@@ -112,11 +112,18 @@ export class RegisterRepository {
     }
 
     async updateRegistration(type: string, reg: Registration[], eventid: UUID, driverid: UUID): Promise<Object> {
-        await verifyDriverRelationship(this.db, reg.map(r => r.carid), driverid)
+        if (driverid) {
+            await verifyDriverRelationship(this.db, reg.map(r => r.carid), driverid)
+        }
 
         function keys(v:any) {  return v.carid + v.session }
 
-        if (type === 'eventupdate') {
+        if (type === 'delete') {
+            for (const r of reg)   {
+                await this.db.none('DELETE FROM registered WHERE eventid=$(eventid) AND carid=$(carid) AND session=$(session)', r)
+            }
+            return { registered: reg }
+        } else if (type === 'eventupdate') {
             const curreg  = await this.eventReg(driverid, eventid)
             const curpay  = await this.eventPay(driverid, eventid)
             const toadd   = _.differenceBy(reg, curreg, keys)
@@ -137,13 +144,9 @@ export class RegisterRepository {
                 })
             }
 
-            await this.db.tx(async t => {
-                for (const d of todel)   { await t.none('DELETE FROM registered WHERE eventid=$(eventid) AND carid=$(carid) AND session=$(session)', d) }
-                for (const i of toadd)   { await t.none(this.pgp.helpers.insert(i, regcols)) }
-                for (const p of deadpay) { await t.none('UPDATE payments SET carid=$(newcarid), session=$(newsession), modified=now() WHERE payid=$(payid)', p) }
-            }).catch(e => {
-                throw e
-            })
+            for (const d of todel)   { await this.db.none('DELETE FROM registered WHERE eventid=$(eventid) AND carid=$(carid) AND session=$(session)', d) }
+            for (const i of toadd)   { await this.db.none(this.pgp.helpers.insert(i, regcols)) }
+            for (const p of deadpay) { await this.db.none('UPDATE payments SET carid=$(newcarid), session=$(newsession), modified=now() WHERE payid=$(payid)', p) }
 
             return {
                 registered: await this.eventReg(driverid, eventid),

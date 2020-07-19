@@ -18,7 +18,7 @@ export async function apipost(req: Request, res: Response) {
     }
 
     try {
-        res.json(await db.task('apipost', async t => {
+        res.json(await db.tx('apipost', async t => {
             const ret: any = {
                 type: param.type,
                 series: param.series
@@ -42,7 +42,8 @@ export async function apipost(req: Request, res: Response) {
                         break
 
                     case 'registered':
-                        Object.assign(ret, await t.register.updateRegistration(param.type, param.items.registered, param.eventid, req.auth.driverId()))
+                        Object.assign(ret, await t.register.updateRegistration(param.type, param.items.registered, param.eventid,
+                            (param.authtype === 'driver') ? req.auth.driverId() : null))
                         addsummary = true
                         break
 
