@@ -1,4 +1,4 @@
-import remove from 'lodash/remove'
+import findIndex from 'lodash/findIndex'
 import Vue from 'vue'
 import { MutationTree } from 'vuex'
 import { Api2State } from './state'
@@ -132,20 +132,26 @@ export const api2Mutations = {
                 if (data.type === 'eventupdate') {
                     Vue.set(state[key], data.eventid, data[key])
                 } else {
-                    // get, insert
+                    // get, insert, delete
                     if (data.type === 'get') { state[key] = {} }
                     if (key === 'payments') {
                         data[key].forEach((p: Payment) => {
                             if (!(p.eventid in state[key])) { Vue.set(state[key], p.eventid, []) }
-                            remove(state[key][p.eventid], { payid: p.payid })
-                            state[key][p.eventid].push(p)
+                            const i = findIndex(state[key][p.eventid], { payid: p.payid })
+                            if (i > 0) state[key][p.eventid].splice(i, 1)
+                            if (data.type !== 'delete') {
+                                state[key][p.eventid].push(p)
+                            }
                         })
                     }
                     if (key === 'registered') {
                         data[key].forEach((r: Registration) => {
                             if (!(r.eventid in state[key])) { Vue.set(state[key], r.eventid, []) }
-                            remove(state[key][r.eventid], { eventid: r.eventid, carid: r.carid, session: r.session })
-                            state[key][r.eventid].push(r)
+                            const i = findIndex(state[key][r.eventid], { eventid: r.eventid, carid: r.carid, session: r.session })
+                            if (i > 0) state[key][r.eventid].splice(i, 1)
+                            if (data.type !== 'delete') {
+                                state[key][r.eventid].push(r)
+                            }
                         })
                     }
                 }

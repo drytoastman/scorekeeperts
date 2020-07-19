@@ -1,35 +1,33 @@
 <template>
     <div class='entranttable'>
-        <v-data-table :items="entrantlist" :headers="headers" :search="search" item-key="indexcode" :sort-by="['lastname', 'firstname']"
-                        disable-pagination hide-default-footer multi-sort>
+        <v-data-table :items="entrantlist" :headers="headers" :search="search" :custom-filter="itemFilter"
+                        :footer-props="{itemsPerPageOptions: [10,20,35,-1]}" :items-per-page.sync="$store.state.itemsPerPage"
+                        :sort-by="['lastname']" multi-sort dense>
             <template v-slot:top>
                 <div class='topgrid'>
                 <div v-if="eventid" class='left'>
-                    <h2>{{events[eventid].name}} Entries</h2>
+                    <h2>{{event.name}} Entries</h2>
                 </div>
                 <div v-else class='left'>
                     <h2>Series Payments</h2>
                 </div>
-                <v-text-field class='right' v-model="search" :append-icon="icons.mdiMagnify" label="Search" single-line hide-details></v-text-field>
+                <v-text-field class='right' v-model="search" :append-icon="icons.mdiMagnify" single-line hide-details label="Search">
+                </v-text-field>
                 </div>
             </template>
 
-            <template v-slot:item.firstname="{ item }">{{item.driver && item.driver.firstname}}</template>
-            <template v-slot:item.lastname="{ item }"> {{item.driver && item.driver.lastname}}</template>
-            <template v-slot:item.eventid="{ item }">  {{events[item.eventid].name}}</template>
-            <template v-slot:item.carid="{ item }">    <CarLabel :car="cars[item.carid]"></CarLabel></template>
-            <template v-slot:item.payment="{ item }">  <PaymentLabel :payment=item.payment></PaymentLabel></template>
+            <template v-slot:item.car="{ item }"><CarLabel :car=item.car></CarLabel></template>
+            <template v-slot:item.payment="{ item }"><PaymentLabel :payment=item.payment></PaymentLabel></template>
 
             <template v-slot:item.actions="{ item }">
-                <div v-if="item.refunded">
+                <div v-if='!item.busy && !busyPayment[item.payment && item.payment.payid]'>
+                    <v-icon v-if="item.payment && !item.payment.refunded" @click.stop="refund(item)">{{icons.mdiCreditCardRefund}}</v-icon>
+
+                    <v-icon v-if="doRunEdit" @click.stop="editruns(item)">{{icons.mdiCarSettings}}</v-icon>
+                    <v-icon v-else-if="eventid && (!item.payment || item.payment.refunded)" @click.stop="unregister(item)">{{icons.mdiAccountRemove}}</v-icon>
                 </div>
-                <div v-else-if="busyPayment[item.payid]" class='busy'>
+                <div v-else>
                     busy
-                </div>
-                <div v-else class='buttongrid'>
-                    <v-icon @click.stop="refund(item)">{{icons.mdiCreditCardRefund}}</v-icon>
-                    <v-icon v-if="doRunEdit" @click.stop="refund(item)">{{icons.mdiCarSettings}}</v-icon>
-                    <v-icon v-else @click.stop="refund(item)">{{icons.mdiAccountRemove}}</v-icon>
                 </div>
             </template>
         </v-data-table>
@@ -44,6 +42,7 @@ import flatten from 'lodash/flatten'
 import { mapState } from 'vuex'
 import { mdiCreditCardRefund, mdiDelete, mdiMagnify, mdiAccountRemove, mdiCarSettings } from '@mdi/js'
 import { hasFinished } from '@/common/event'
+import { carMatch } from '@/common/car'
 import RefundDialog from './RefundDialog'
 import CarLabel from '../../components/CarLabel'
 import PaymentLabel from './PaymentLabel'
@@ -75,8 +74,11 @@ export default {
     },
     computed: {
         ...mapState(['drivers', 'cars', 'events', 'payments', 'registered', 'busyPayment']),
+        event() {
+            return this.eventid in this.events ? this.events[this.eventid] : {}
+        },
         doRunEdit() {
-            return this.eventid && hasFinished(this.events[this.eventid])
+            return hasFinished(this.event)
         },
         entrantlist() {
             if (this.eventid) { // use registration, add payments
@@ -85,35 +87,47 @@ export default {
                 }
                 return this.registered[this.eventid].map(r => {
                     const c = this.cars[r.carid]
+                    const d = this.drivers[c?.driverid]
                     return {
-                        driver: this.drivers[c?.driverid],
-                        carid: r.carid,
-                        registration: r,
-                        payment: this.payments[this.eventid].find(p => p.carid === r.carid)
+                        firstname: d?.firstname,
+                        lastname: d?.lastname,
+                        eventname: '',
+                        session: r.session,
+                        car: c,
+                        payment: (this.payments && this.payments[this.eventid].find(p => p.carid === r.carid)) || null,
+                        busy: false
                     }
                 })
             } else { // use payments
-                return flatten(Object.values(this.payments)).map(p => ({
-                    driver: this.drivers[this.cars[p.carid]?.driverid],
-                    carid: p.carid,
-                    eventid: p.eventid,
-                    payment: p
-                }))
+                return flatten(Object.values(this.payments)).map(p => {
+                    const c = this.cars[p.carid]
+                    const d = this.drivers[c?.driverid]
+                    const e = this.events[p.eventid]
+                    return {
+                        firstname: d?.firstname,
+                        lastname: d?.lastname,
+                        eventname: e?.name,
+                        car: c,
+                        payment: p,
+                        busy: false
+                    }
+                })
             }
         },
         headers() {
             const headers = [
                 { text: 'First',   value: 'firstname' },
                 { text: 'Last',    value: 'lastname' },
-                { text: 'Event',   value: 'eventid' },
-                { text: 'Car',     value: 'carid' },
-                { text: 'Payment', value: 'payment' },
-                { text: 'Actions',  value: 'actions', sortable: false }
+                { text: 'Event',   value: 'eventname' },
+                { text: 'Session', value: 'session' },
+                { text: 'Car',     value: 'car',     sortable: false },
+                { text: 'Payment', value: 'payment', sortable: false },
+                { text: 'Actions', value: 'actions', sortable: false }
             ]
             if (this.eventid) {
                 headers.splice(2, 1) // remove event column when looking at a single event
             } else {
-                headers.splice(3, 1) // otherwise remove the car
+                headers.splice(3, 2) // otherwise remove the session/car
             }
             return headers
         }
@@ -122,6 +136,30 @@ export default {
         refund(item) {
             this.dialogData = item.payment
             this.RefundDialog = true
+        },
+        editruns(item) {
+            return 0
+        },
+        unregister(item) {
+            item.busy = true
+            this.$store.dispatch('setdata', {
+                type: 'delete',
+                items: {
+                    registered: [{
+                        carid: item.car.carid,
+                        eventid: this.eventid,
+                        session: item.session
+                    }]
+                }
+            }).finally(() => { item.busy = false })
+        },
+        itemFilter(value, search, item) {
+            if (!search) return true
+            const r = new RegExp(search, 'i')
+            return (
+                r.test(item.firstname) || r.test(item.lastname) || r.test(item.eventname) || r.test(item.session) ||
+                carMatch(item.car, r) || (item.payment && (item.payment.refunded ? r.test('Refunded') : r.test(item.payment.itemname)))
+            )
         }
     },
     async mounted() {
@@ -146,10 +184,6 @@ export default {
 <style lang='scss'>
 .entranttable {
     margin: 1rem;
-    .buttongrid {
-        display: grid;
-        grid-template-columns: 25px 25px;
-    }
     .v-btn {
         margin-right: 1rem;
     }
@@ -163,17 +197,14 @@ export default {
     .v-data-table__wrapper {
         overflow-x: hidden;
     }
-    th {
-        min-width: 100px;
-    }
-    td {
-        padding: 0 7px !important;
-    }
     .topgrid {
         display: grid;
-        grid-template-columns: 1fr 2fr;
+        grid-template-columns: 2fr 3fr;
         align-items: baseline;
         margin-bottom: 1rem;
+    }
+    .right {
+        width: 100%;
     }
 
     @media (max-width: 700px) {

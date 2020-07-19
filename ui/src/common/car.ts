@@ -18,6 +18,12 @@ export interface Car
     created:    Date;
 }
 
+export function carMatch(car: Car, r: RegExp): boolean {
+    if (!car) return false
+    return r.test(car.classcode) || r.test(car.indexcode) || r.test(car.number.toString()) ||
+        r.test(car.attr.year) || r.test(car.attr.make) || r.test(car.attr.model) || r.test(car.attr.color)
+}
+
 export const CarValidator: DataValidationRules = {
     carid:      [isUUIDV],
     driverid:   [isUUIDV],

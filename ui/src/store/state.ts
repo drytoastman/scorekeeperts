@@ -53,6 +53,7 @@ export class Api2State {
     busyClass:  {[key: string]: boolean} = {} // classcode set
     busyIndex:  {[key: string]: boolean} = {} // indexcode set
     busyPayment: {[key: string]: boolean} = {} // txid set
+    itemsPerPage = 20
 
     // used for communications
     authtype= ''

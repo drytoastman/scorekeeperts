@@ -1,6 +1,8 @@
 <template>
     <div class='paymentlabel' :style="{'font-size': this.fontsize}">
-        <span v-if="payment.refunded">
+        <span v-if="!payment">
+        </span>
+        <span v-else-if="payment.refunded">
             <div class='refund'>Refunded</div>
         </span>
         <span v-else>
