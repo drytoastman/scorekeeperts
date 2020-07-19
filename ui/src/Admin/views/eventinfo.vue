@@ -1,15 +1,28 @@
 <template>
     <div class='outer' v-if="event">
         <h2>{{event.name}} {{fmtdate}}</h2>
-        <div><router-link :to="{name: 'entrants'}">Entrants</router-link></div>
+        <v-tabs center-active color="secondary">
+            <v-tab>Entry Admin</v-tab>
+            <v-tab>Event Settings</v-tab>
+            <v-tab>Grid Order</v-tab>
+            <v-tab>Cards</v-tab>
 
-        <div class='cardswrap'>
-            <v-select v-model="cardtype" label="Download Type" :items="['pdf', 'template', 'csv']"></v-select>
-            <v-select v-model="order" label="Order" :items="['lastname', 'classnumber']"></v-select>
-            <v-btn @click='carddownload' color='secondary' style='grid-column: 1/span 2'>Generate Cards</v-btn>
-        </div>
-
-        <EventSettings :seriesevent="event"></EventSettings>
+            <v-tab-item>
+                <EntrantTable :eventid=eventid></EntrantTable>
+            </v-tab-item>
+            <v-tab-item>
+                <EventSettings :seriesevent="event"></EventSettings>
+            </v-tab-item>
+            <v-tab-item>
+            </v-tab-item>
+            <v-tab-item>
+                <div class='cardswrap'>
+                    <v-select v-model="cardtype" label="Download Type" :items="['pdf', 'template', 'csv']"></v-select>
+                    <v-select v-model="order" label="Order" :items="['lastname', 'classnumber', 'blank']"></v-select>
+                    <v-btn @click='carddownload' color='secondary' style='grid-column: 1/span 2'>Generate Cards</v-btn>
+                </div>
+            </v-tab-item>
+        </v-tabs>
     </div>
 </template>
 
@@ -17,11 +30,13 @@
 import { format } from 'date-fns'
 import { mapState } from 'vuex'
 import EventSettings from '../components/EventSettings.vue'
+import EntrantTable from '../components/EntrantTable.vue'
 
 export default {
     name: 'EventInfo',
     components: {
-        EventSettings
+        EventSettings,
+        EntrantTable
     },
     props: {
         eventid: String
@@ -54,10 +69,8 @@ export default {
     margin: 1rem;
 }
 .cardswrap {
-    border: 1px solid #ccc;
-    border-radius: 3px;
-    max-width: 30rem;
-    padding: 1rem;
+    margin-top: 1rem;
+    max-width: 40rem;
     display: grid;
     grid-template-columns: 1fr 1fr;
     column-gap: 1rem;

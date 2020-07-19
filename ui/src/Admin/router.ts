@@ -37,8 +37,7 @@ const routes = [
     { path: '/:series/indexes',  name: 'indexes',  component: Indexes },
     { path: '/:series/accounts', name: 'accounts', component: Accounts },
     { path: '/:series/payments', name: 'payments', component: Entrants },
-    { path: '/:series/event/:eventid',          name: 'event',    component: EventInfo, props: true },
-    { path: '/:series/event/:eventid/payments', name: 'entrants', component: Entrants,  props: true },
+    { path: '/:series/event/:eventid', name: 'event', component: EventInfo, props: true },
     { path: '/:series/oauth/:code',    name: 'oauth', component: OAuthHandler }
 ]
 

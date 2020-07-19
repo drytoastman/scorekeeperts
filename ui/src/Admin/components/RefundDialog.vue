@@ -5,7 +5,8 @@
                 <span class="headline primary--text text--darken-2">Refund Payment Items</span>
             </v-card-title>
             <v-card-text>
-                <v-data-table :items="txpayments" :headers="headers" item-key="payid" v-model="selected" disable-pagination hide-default-footer show-select>
+                <v-data-table :items="txpayments" :headers="headers" item-key="payid" v-model="selected"
+                                disable-pagination disable-sort hide-default-footer show-select>
                     <template v-slot:item.amount="{ item }">
                         {{item.amount | cents2dollars}}
                     </template>

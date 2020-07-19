@@ -6,7 +6,7 @@
             <template v-slot:top>
                 <div class='topgrid'>
                 <div v-if="eventid" class='left'>
-                    <h2>{{event.name}} Entries</h2>
+                    <h2>Entries</h2>
                 </div>
                 <div v-else class='left'>
                     <h2>Series Payments</h2>
@@ -82,7 +82,7 @@ export default {
         },
         entrantlist() {
             if (this.eventid) { // use registration, add payments
-                if (isEmpty(this.registered)) {
+                if (isEmpty(this.registered) || isEmpty(this.payments)) {
                     return [] // no data yet
                 }
                 return this.registered[this.eventid].map(r => {
@@ -94,7 +94,7 @@ export default {
                         eventname: '',
                         session: r.session,
                         car: c,
-                        payment: (this.payments && this.payments[this.eventid].find(p => p.carid === r.carid)) || null,
+                        payment: this.payments[this.eventid].find(p => p.carid === r.carid) || null,
                         busy: false
                     }
                 })
@@ -189,6 +189,9 @@ export default {
     }
     .busy {
         color: #F44;
+    }
+    .v-text-field {
+        padding-top: 0;
     }
 
     .v-data-table td, .v-data-table th {

@@ -1,12 +1,11 @@
 <template>
     <v-expansion-panels multiple focusable hover accordion class='epanels'>
-        <h2>Settings</h2>
         <div class='buttons'>
             <v-btn style='grid-area: reset' color="secondary" :disabled="unchanged" @click="reset">Reset</v-btn>
             <v-btn style='grid-area: save'  color="secondary" :disabled="unchanged" @click="saveSettings">Save</v-btn>
         </div>
         <v-expansion-panel>
-            <v-expansion-panel-header>Basics</v-expansion-panel-header>
+            <v-expansion-panel-header>Name/Times/Notes</v-expansion-panel-header>
             <v-expansion-panel-content>
                 <div class='basics'>
                     <v-text-field   v-model="eventm.name"       style="grid-area: name"      label="Event Name" :rules="vrules.name" ></v-text-field>

@@ -42,26 +42,29 @@ if (process.platform === 'win32') {
 }
 
 
-function loadRegData(series: string, eventid: UUID): Promise<RegData> {
+function loadRegData(series: string, eventid: UUID, loadEntrants: boolean): Promise<RegData> {
     return db.task('apiget', async t => {
         await t.series.setSeries(series)
 
         const settings = await t.series.seriesSettings()
         const event    = await t.series.getEvent(eventid)
         event.date     = new Date(event.date).toDateString()
-        const reg      = await t.register.getFullEventRegistration(eventid, false)
+        let reg: any[] = [{}]
 
-        reg.forEach(v => {
-            if (v.carid) {
-                // quickid is first portion of UUID converted to base 10 and prepadded with zeros
-                const q = `${parseInt(v.carid.substr(0,  8), 16)}`.padStart(10, '0')
-                v.quickentry = `${q.substr(0, 3)} ${q.substr(3, 3)} ${q.substr(6, 4)}`
+        if (loadEntrants)  {
+            reg = await t.register.getFullEventRegistration(eventid, false)
+            reg.forEach(v => {
+                if (v.carid) {
+                    // quickid is first portion of UUID converted to base 10 and prepadded with zeros
+                    const q = `${parseInt(v.carid.substr(0,  8), 16)}`.padStart(10, '0')
+                    v.quickentry = `${q.substr(0, 3)} ${q.substr(3, 3)} ${q.substr(6, 4)}`
 
-                // UUID in base 10 with extra zeros to make 40 digits which fits into 128C
-                // eslint-disable-next-line no-undef
-                v.caridbarcode = `${BigInt('0x' + v.carid.split('-').join(''))}`.padStart(40, '0')
-            }
-        })
+                    // UUID in base 10 with extra zeros to make 40 digits which fits into 128C
+                    // eslint-disable-next-line no-undef
+                    v.caridbarcode = `${BigInt('0x' + v.carid.split('-').join(''))}`.padStart(40, '0')
+                }
+            })
+        }
 
         return {
             g: {
@@ -176,13 +179,14 @@ export async function cards(req: Request, res: Response) {
         return res.status(401).json({ error: error.message, authtype: error.authtype })
     }
 
-    const regData = await loadRegData(param.series, param.eventid)
+    const regData = await loadRegData(param.series, param.eventid, param.order !== 'blank')
     const firstNameSorter = r => r.firstname.toLowerCase()
     const lastNameSorter  = r => r.lastname.toLowerCase()
 
     switch (param.order) {
         case 'lastname':    regData.registered = _.sortBy(regData.registered, [lastNameSorter, firstNameSorter]); break
         case 'classnumber': regData.registered = _.sortBy(regData.registered, ['classcode', 'number']); break
+        case 'blank': break
         default: return res.status(400).json({ error: `invalid order provided "${param.order}"` })
     }
 

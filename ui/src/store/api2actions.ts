@@ -74,7 +74,11 @@ export const api2Actions = {
             }
 
             if (typeof error.response.data === 'object') {
-                context.commit('setErrors', [error.response.data.result || error.response.data.error])
+                let data = error.response.data
+                if (error.response.data.constructor.name === 'Blob') {
+                    data = JSON.parse(await error.response.data.text())
+                }
+                context.commit('setErrors', [data.result || data.error])
             } else {
                 const ct = error.response.headers['content-type']
                 if (ct && ct.includes('text/html')) {
