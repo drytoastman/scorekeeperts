@@ -13,7 +13,10 @@
                     <v-text-field   v-model="eventm.attr.location" style="grid-area: loc"      label="Location" :rules="vrules.location"></v-text-field>
                     <DateTimePicker v-model="eventm.regopened"  fieldstyle="grid-area: rego" label="Registration Opens"></DateTimePicker>
                     <DateTimePicker v-model="eventm.regclosed"  fieldstyle="grid-area: regc" label="Registration Closes"></DateTimePicker>
-                    <v-textarea     v-model="eventm.attr.notes" style="grid-area: notes"     label="Notes" :rules="vrules.notes" outlined></v-textarea>
+                    <div style="grid-area: notes">
+                        <label class='noteslabel'>Notes (HTML)</label>
+                        <PrismEditor v-model="eventm.attr.notes" language="html"></PrismEditor>
+                    </div>
                 </div>
             </v-expansion-panel-content>
         </v-expansion-panel>
@@ -89,6 +92,9 @@
 import cloneDeep from 'lodash/cloneDeep'
 import isEqual from 'lodash/isEqual'
 import orderBy from 'lodash/orderBy'
+import 'prismjs'
+import 'prismjs/themes/prism-coy.css'
+import PrismEditor from 'vue-prism-editor'
 import { mapState } from 'vuex'
 import { EventValidator } from '@/common/event'
 import DateTimePicker from '@/components/DateTimePicker'
@@ -99,7 +105,8 @@ export default {
         seriesevent: Object
     },
     components: {
-        DateTimePicker
+        DateTimePicker,
+        PrismEditor
     },
     data() {
         return {
@@ -240,6 +247,15 @@ export default {
     grid-template-columns: 1fr 1fr;
     grid-template-areas: "save reset";
     width: 100%;
+}
+
+.noteslabel {
+    font-size: 12px;
+    color: rgba(0, 0, 0, 0.6);
+}
+
+.epanels >>> code {
+    white-space: pre-wrap;
 }
 
 @media (max-width: 560px) {
