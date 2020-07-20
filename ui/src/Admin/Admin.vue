@@ -1,51 +1,17 @@
 <template>
     <v-app fluid>
         <v-app-bar app dense dark color="primary">
-            <!-- <v-app-bar-nav-icon @click.stop="drawer = !drawer" /> -->
             <span class='btitle'>Admin</span>
             <v-select :items="serieslist" v-model="selectedSeries" solo light dense hide-details placeholder="Select A Series" ref="sselect"></v-select>
-            <span class='bdesc'>{{$route.name}}</span>
+            <span class='bdesc'>{{$route.meta.marker || $route.name}}</span>
             <v-divider inset vertical></v-divider>
 
-            <!-- Events Menu -->
-            <v-menu close-on-content-click :disabled="!currentSeries">
-                <template v-slot:activator="{ on }">
-                    <v-btn color=white icon v-on="on"><v-icon>{{icons.mdiFlagCheckered}}</v-icon></v-btn>
-                </template>
-                <v-list>
-                    <v-list-item v-for="event in orderedEvents" :key="event.eventid" :to="{name: 'event', params: { eventid: event.eventid }}">
-                        <v-list-item-title>{{ event.name }}</v-list-item-title>
-                    </v-list-item>
-                </v-list>
-            </v-menu>
-
-            <!-- Settings Menu -->
-            <v-menu close-on-content-click :disabled="!currentSeries">
-                <template v-slot:activator="{ on }">
-                    <v-btn color=white icon v-on="on"><v-icon>{{icons.mdiCog}}</v-icon></v-btn>
-                </template>
-                <v-list v-if="currentSeries">
-                    <v-list-item v-for="item in settings" :key="item.title" :to="item.link">
-                        <v-list-item-title>{{ item.title }}</v-list-item-title>
-                    </v-list-item>
-                </v-list>
-            </v-menu>
-
-            <!-- Admin Menu --
-            <v-menu close-on-content-click>
-                <template v-slot:activator="{ on }">
-                    <v-btn color=white icon v-on="on"><v-icon>{{icons.mdiAccountCowboyHat}}</v-icon></v-btn>
-                </template>
-                <v-list>
-                    <v-list-item v-for="item in adminitems" :key="item.title" :to="item.link">
-                        <v-list-item-title>{{ item.title }}</v-list-item-title>
-                    </v-list-item>
-                </v-list>
-            </v-menu>
-            -->
+            <AdminMenu :items="eventMenu" :icon="icons.mdiFlagCheckered"    :disabled="!currentSeries"></AdminMenu>
+            <AdminMenu :items="settings"  :icon="icons.mdiCog"              :disabled="!currentSeries"></AdminMenu>
+            <AdminMenu :items="reports"   :icon="icons.mdiFileTable"        :disabled="!currentSeries"></AdminMenu>
+            <AdminMenu :items="admins"    :icon="icons.mdiAccountCowboyHat" :disabled="!currentSeries"></AdminMenu>
 
             <v-progress-linear :active="!!gettingData" indeterminate absolute bottom color="green accent-4"></v-progress-linear>
-
         </v-app-bar>
 
         <v-main>
@@ -65,29 +31,39 @@
 
 <script>
 import { mapState, mapGetters } from 'vuex'
-import { mdiCog, mdiFlagCheckered, mdiAccountHardHat, mdiAccountCowboyHat } from '@mdi/js'
+import { mdiCog, mdiFlagCheckered, mdiAccountHardHat, mdiAccountCowboyHat, mdiFileTable } from '@mdi/js'
 import LoginForm from './components/LoginForm'
+import AdminMenu from './components/AdminMenu'
 
 export default {
     name: 'Admin',
     components: {
-        LoginForm
+        LoginForm,
+        AdminMenu
     },
     data: () => ({
         icons: {
             mdiCog,
             mdiFlagCheckered,
             mdiAccountHardHat,
-            mdiAccountCowboyHat
+            mdiAccountCowboyHat,
+            mdiFileTable
         },
         settings: [
             { title: 'Settings', link: { name:'settings' } },
-            { title: 'Classes',  link: { name:'classes' }  },
-            { title: 'Indexes',  link: { name:'indexes' }  },
-            { title: 'Accounts', link: { name:'accounts' }  },
-            { title: 'Payments', link: { name:'payments' } }
+            { title: 'Classes',  link: { name:'classes' } },
+            { title: 'Indexes',  link: { name:'indexes' } },
+            { title: 'Accounts', link: { name:'accounts' } }
         ],
-        adminitems: [ /*
+        reports: [
+            { title: 'Series Attendance',    link: { name:'attendseries' } },
+            { title: 'Events Attendance',    link: { name:'attendevent' } },
+            { title: 'Unique Attendance',    link: { name:'attendunique' } },
+            { title: 'Used Car Number List', link: { name:'usednumbers' } },
+            {},
+            { title: 'Payments',             link: { name:'payments' } }
+        ],
+        admins: [ /*
             { title: 'Host Settings', link: { name:'hostsettings' } },
             { title: 'Driver Editor', link: { name:'drivereditor' } }
         */]
@@ -115,6 +91,15 @@ export default {
                     }
                 })
             }
+        },
+        eventMenu() {
+            return this.orderedEvents.map(e => ({
+                title: e.name,
+                link: {
+                    name: 'event',
+                    params: { eventid: e.eventid }
+                }
+            }))
         }
     },
     watch: {
@@ -166,5 +151,15 @@ html {
         }
     }
 }
+
+@media print {
+    .v-toolbar, .v-snack {
+        display: none;
+    }
+    .v-main {
+        padding-top: 0 !important;
+    }
+}
+
 @import '@/styles/general.scss'
 </style>

@@ -10,6 +10,7 @@ const Indexes      = () => import(/* webpackChunkName: "adminviews" */  './views
 const EventInfo    = () => import(/* webpackChunkName: "adminviews" */  './views/eventinfo.vue')
 const Entrants     = () => import(/* webpackChunkName: "adminviews" */  './views/entrants.vue')
 const Settings     = () => import(/* webpackChunkName: "adminviews" */  './views/settings.vue')
+const UsedNumbers  = () => import(/* webpackChunkName: "adminviews" */  './views/usednumbers.vue')
 
 Vue.use(VueRouter)
 
@@ -37,6 +38,10 @@ const routes = [
     { path: '/:series/indexes',  name: 'indexes',  component: Indexes },
     { path: '/:series/accounts', name: 'accounts', component: Accounts },
     { path: '/:series/payments', name: 'payments', component: Entrants },
+    { path: '/:series/attendseries',   name: 'attendseries', meta: { marker: 'attendance' }, component: Entrants },
+    { path: '/:series/attendevent',    name: 'attendevent',  meta: { marker: 'attendance' }, component: Entrants },
+    { path: '/:series/attendunique',   name: 'attendunique', meta: { marker: 'attendance' }, component: Entrants },
+    { path: '/:series/usednumbers',    name: 'usednumbers',  component: UsedNumbers },
     { path: '/:series/event/:eventid', name: 'event', component: EventInfo, props: true },
     { path: '/:series/oauth/:code',    name: 'oauth', component: OAuthHandler }
 ]

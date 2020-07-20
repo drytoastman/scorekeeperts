@@ -164,14 +164,9 @@ export default {
     },
     async mounted() {
         const req = []
-        if (isEmpty(this.payments)) {
-            req.push(this.$store.dispatch('getdata', { items: 'payments' }))
-        }
-        if (isEmpty(this.registered)) {
-            req.push(this.$store.dispatch('getdata', { items: 'registered' }))
-        }
-
-        await Promise.all(req)
+        if (isEmpty(this.payments))   { req.push('payments')   }
+        if (isEmpty(this.registered)) { req.push('registered') }
+        await this.$store.dispatch('getdata', { items: req.join(',') })
 
         const carids = new Set([
             ...flatten(Object.values(this.payments)).map(p => p.carid),
