@@ -79,7 +79,7 @@ export const adminActions = {
             const p = {
                 series: this.state.currentSeries,
                 authtype: this.state.authtype,
-                type: 'update', // we are not getting entire list
+                type: 'update', // we are not necessarily getting entire list
                 items: {
                     carids: Object.keys(cids),
                     driverids: Object.keys(dids)
@@ -87,6 +87,28 @@ export const adminActions = {
             }
 
             // We end up using POST so we can specify a large amount of data even though we are really getting data
+            context.commit('gettingData', true)
+            const data = (await axios.post(API2ROOT, p, { withCredentials: true })).data
+            context.commit('apiData', data)
+        } catch (error) {
+            context.dispatch('axiosError', error)
+        } finally {
+            context.commit('gettingData', false)
+        }
+    },
+
+    async ensureSeriesCarDriverInfo(context: ActionContext<Api2State, any>) {
+        try {
+            const p = {
+                series: this.state.currentSeries,
+                authtype: this.state.authtype,
+                type: 'update', // we are not necessarily getting entire list
+                items: {
+                    notcarids: Object.keys(this.state.cars),
+                    notdriverids: Object.keys(this.state.drivers)
+                }
+            }
+
             context.commit('gettingData', true)
             const data = (await axios.post(API2ROOT, p, { withCredentials: true })).data
             context.commit('apiData', data)

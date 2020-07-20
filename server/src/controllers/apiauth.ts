@@ -179,7 +179,7 @@ export const COMMONITEMS  = [
     SERIESLIST, 'listids', 'classes', 'indexes',
     'events', 'paymentaccounts', 'paymentitems', 'counts'
 ]
-export const SERIESEXTRA    = ['squareapplicationid', 'settings']
+export const SERIESEXTRA    = ['squareapplicationid', 'settings', 'attendance']
 export const DRIVEREXTRA    = ['summary', 'drivers', 'payments', 'registered', 'cars', 'unsubscribe']
 export const API_NON_SERIES = [SERIESLIST, 'drivers', 'summary', 'listids', 'unsubscribe']
 

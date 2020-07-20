@@ -7,6 +7,7 @@ import { RegisterRepository } from './registerrepo'
 import { TableWatcher } from './tablewatcher'
 import { PaymentsRepository } from './paymentsrepo'
 import { GeneralRepository } from './generalrepo'
+import { RunsRepository } from './runsrepo'
 import { dblog } from '../util/logging'
 
 export interface DBExtensions {
@@ -17,6 +18,7 @@ export interface DBExtensions {
     register: RegisterRepository;
     payments: PaymentsRepository;
     general: GeneralRepository;
+    runs: RunsRepository;
 }
 
 export type ScorekeeperProtocol = IBaseProtocol<DBExtensions> & DBExtensions;
@@ -32,6 +34,7 @@ const initOptions: IInitOptions<DBExtensions> = {
         obj.register = new RegisterRepository(obj, pgp)
         obj.payments = new PaymentsRepository(obj, pgp)
         obj.general = new GeneralRepository(obj)
+        obj.runs = new RunsRepository(obj, pgp)
     }
 }
 

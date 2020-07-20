@@ -33,6 +33,7 @@ export async function apiget(req: Request, res: Response) {
                     case 'indexes':     ret.indexes     = await t.clsidx.indexList(); break
                     case 'paymentitems': ret.paymentitems = await t.payments.getPaymentItems(); break
                     case 'paymentaccounts': ret.paymentaccounts = await t.payments.getPaymentAccounts(); break
+                    case 'attendance':      ret.attendance      = await t.runs.attendance(); break
 
                         // dependent on auth type
                     case 'settings':

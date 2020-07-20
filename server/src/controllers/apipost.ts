@@ -24,6 +24,7 @@ export async function apipost(req: Request, res: Response) {
                 series: param.series
             }
             let addsummary = false
+            let dids
 
             await t.series.setSeries(param.series)
             for (const key in param.items) {
@@ -115,6 +116,16 @@ export async function apipost(req: Request, res: Response) {
                         req.auth.requireSeries(param.series)
                         ret.cars = await t.cars.getCarsById(param.items.carids)
                         param.items.driverids = Array.from(new Set([...param.items.driverids, ...ret.cars.map((c:Car) => c.driverid)]))
+                        break
+
+                    case 'notcarids':
+                        req.auth.requireSeries(param.series)
+                        ret.cars = await t.cars.getCarsByNotId(param.items.notcarids)
+                        dids = new Set(ret.cars.map((c:Car) => c.driverid))
+                        for (const did of param.items.notdriverids) {
+                            dids.delete(did)
+                        }
+                        param.items.driverids = Array.from(dids)
                         break
                 }
             }

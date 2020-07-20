@@ -5,6 +5,7 @@ import { SeriesClass, SeriesIndex } from '@/common/classindex'
 import { SeriesEvent } from '@/common/event'
 import { Car } from '@/common/car'
 import { Registration, Payment } from '@/common/register'
+import { UUID } from '../common/util'
 
 export const EMPTY = ''
 export const API2ROOT = '/api2'
@@ -38,6 +39,7 @@ export class Api2State {
     cars: {[key: string]: Car} = {}
     registered: {[key: string]: Registration[]} = {}
     payments: {[key: string]: Payment[]} = {}
+    attendance: {[key: string]: UUID[]} = {}
     counts: {[key: string]: any} = {}
 
     // square oauth

@@ -119,6 +119,7 @@ html {
 
 .v-main__wrap, .v-content__wrap {
     max-width: initial;
+    margin: 1rem;
 }
 
 .v-navigation-drawer .v-subheader.labelheader {

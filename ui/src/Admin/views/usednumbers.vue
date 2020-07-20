@@ -47,8 +47,7 @@ export default {
         }
     },
     async mounted() {
-        await this.$store.dispatch('getdata', { items: 'cars' })
-        this.$store.dispatch('ensureCarDriverInfo', Object.values(this.cars).map(c => c.carid))
+        this.$store.dispatch('ensureSeriesCarDriverInfo')
     }
 }
 </script>
