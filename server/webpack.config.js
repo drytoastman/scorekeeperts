@@ -46,6 +46,7 @@ module.exports = {
     resolve: {
         extensions: ['.ts', '.js'],
         alias: {
+            '@': path.resolve(__dirname, 'src'),
             '@common': path.resolve(__dirname, '../ui/src/common')
         }
     },

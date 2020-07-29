@@ -5,6 +5,7 @@ import { SeriesSettings, DefaultSettings } from '@common/settings'
 import { SeriesEvent } from '@common/event'
 import { UUID } from '@common/util'
 import { cleanAttr } from './helper'
+import { dblog } from '@/util/logging'
 
 let eventcols: ColumnSet|undefined
 
@@ -110,17 +111,27 @@ export class SeriesRepository {
     }
 
     private async loadItemMap(tx: ScorekeeperProtocol, events: SeriesEvent[]) {
-        for (const event of events) {
-            event.items = (await tx.any('SELECT itemid FROM itemeventmap WHERE eventid=$1', [event.eventid])).map(r => r.itemid)
+        try {
+            for (const event of events) {
+                event.items = (await tx.any('SELECT itemid FROM itemeventmap WHERE eventid=$1', [event.eventid])).map(r => r.itemid)
+            }
+        } catch (error) {
+            if (!process.env.OLD_DATABASE) throw error
+            dblog.warn(`loadItemMap failure (${error}) but using old database so ignoring`)
         }
     }
 
     private async updateItemMap(tx: ScorekeeperProtocol, events: SeriesEvent[]) {
-        for (const event of events) {
-            await tx.none('DELETE FROM itemeventmap WHERE eventid=$1 AND itemid NOT IN ($1:csv)', [event.eventid, event.items])
-            for (const itemid of event.items) {
-                await tx.any('INSERT INTO itemeventmap (eventid, itemid) VALUES ($1, $2) ON CONFLICT (eventid, itemid) DO NOTHING', [event.eventid, itemid])
+        try {
+            for (const event of events) {
+                await tx.none('DELETE FROM itemeventmap WHERE eventid=$1 AND itemid NOT IN ($1:csv)', [event.eventid, event.items])
+                for (const itemid of event.items) {
+                    await tx.any('INSERT INTO itemeventmap (eventid, itemid) VALUES ($1, $2) ON CONFLICT (eventid, itemid) DO NOTHING', [event.eventid, itemid])
+                }
             }
+        } catch (error) {
+            if (!process.env.OLD_DATABASE) throw error
+            dblog.warn(`updateItemMap failure (${error}) but using old database so ignoring`)
         }
     }
 

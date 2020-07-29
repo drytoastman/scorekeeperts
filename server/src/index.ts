@@ -9,6 +9,8 @@ import { db, tableWatcher, pgp } from './db'
 import { startCronJobs } from './cron'
 import { mainlog } from './util/logging'
 
+process.env.OLD_DATABASE = 'true'
+
 const app = express()
 app.use(helmet())
 app.use(morgan('dev', {
@@ -86,8 +88,8 @@ process.on('SIGTERM', () => {
 
 // Don't die if a library throws an exception the wrong way
 process.on('uncaughtException', error => {
-    console.log('Uncaught exception: ' + error)
+    mainlog.error('Uncaught Exception: ' + error)
 })
 process.on('unhandledRejection', error => {
-    console.log('unhandledRejection', error)
+    mainlog.error('Unhandled Rejection: ' + error)
 })
