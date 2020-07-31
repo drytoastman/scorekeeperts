@@ -1,11 +1,31 @@
 #!/bin/sh
 set -e
 mkdir -p /var/log/nginx
+
 if [ -z "${MAIN_SERVER}" ]; then
     echo "Running in Local mode"
     cp /etc/nginx/servers.local.conf /etc/nginx/servers.conf
+    rotater() {
+        echo "local, no rotating to do"
+    }
 else
     echo "Running in SSL mode"
     cp /etc/nginx/servers.ssl.conf /etc/nginx/servers.conf
+    rotater() {
+        # this saves me 40MB of junk if installing cron from apt-get
+        while true
+        do
+            SLEEPFOR=`eval expr $(date -d '23:59' +%s) - $(date +%s)`
+            DATELABEL=$(date +%y-%m-%d)
+            sleep $SLEEPFOR
+            echo `date` "rotating logs"
+            mv /var/log/nginxerror.log  /var/log/nginxerror-$DATELABEL.log
+            mv /var/log/nginxaccess.log /var/log/nginxaccess-$DATELABEL.log
+            nginx -s reopen
+            sleep 300 # Wait until tomorrow to recalculate SLEEPFOR
+        done
+    }
 fi
+
+rotater &
 nginx -g 'daemon off;'
