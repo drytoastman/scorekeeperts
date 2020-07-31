@@ -1,5 +1,5 @@
 /* eslint-disable quotes */
-import { Storage } from '@google-cloud/storage'
+import { Storage, StorageOptions } from '@google-cloud/storage'
 import _ from 'lodash'
 import child from 'child_process'
 import fs from 'fs'
@@ -7,14 +7,15 @@ import moment from 'moment'
 import net from 'net'
 import util from 'util'
 import zlib from 'zlib'
-import { cronlog } from '../util/logging'
+import { cronlog, reopenLogs } from '@/util/logging'
 
-let config
+let config: StorageOptions | undefined
 if (fs.existsSync('creds.json')) {
     config = { keyFilename: 'creds.json' }
 }
-const storage    = new Storage(config)
-const bucketName = 'scorekeeperbackup'
+const storage      = new Storage(config)
+const backupBucket = 'scorekeeperbackup'
+const logBucket    = 'scorekeeperlogs'
 
 export function backupNow() {
     const name   = `scorekeeper-${moment().format('YYYY-MM-DD-HH-mm')}`
@@ -29,7 +30,7 @@ export function backupNow() {
         if (s.trim() === 'done') {
             cronlog.info('backup complete')
             const path = `/var/log/${name}.sql.gz`
-            const bucket = storage.bucket(bucketName)
+            const bucket = storage.bucket(backupBucket)
             bucket.upload(path)
                 .then(() => cronlog.info('upload complete'))
                 .catch(error => cronlog.error('upload failure: ' + error))
@@ -41,8 +42,37 @@ export function backupNow() {
     })
 }
 
+export function logRotateUpload() {
+    const loglabel = moment().format('YYYY-MM-DD')
+
+    cronlog.info('starting log upload')
+    const bucket = storage.bucket(logBucket)
+    for (const name of ['serverall', 'serverwarn', 'nginxerror', 'nginxaccess']) {
+        const local = `/var/log/${name}.log`
+        const dated = `/var/log/${name}-${loglabel}.log`
+
+        if (!fs.existsSync(dated)) {
+            cronlog.debug(`rename ${local} to ${dated}`)
+            try {
+                fs.renameSync(local, dated)
+            } catch (error) {
+                cronlog.warn(`Unable to move ${local}`)
+                continue
+            }
+        }
+
+        bucket.upload(dated)
+            .then(() => {
+                cronlog.info(`upload of ${dated} complete`)
+                fs.unlinkSync(dated)
+            })
+            .catch(error => cronlog.error(`upload of ${dated} failed: ` + error))
+    }
+    reopenLogs()
+}
+
 export async function restoreBackup() {
-    const files  = (await storage.bucket(bucketName).getFiles())[0]
+    const files  = (await storage.bucket(backupBucket).getFiles())[0]
     const latest = _(files).filter(f => !!f.name.match(/scorekeeper\S+.sql.gz/)).maxBy('metadata.timeCreated')
     if (!latest) {
         throw Error('No backups present')

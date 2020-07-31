@@ -5,11 +5,19 @@ const line1 = format.printf(({ level, message, label, timestamp }) => {
     return `${timestamp} [${label}/${level}]: ${message}`
 })
 
-const transports =
-    (process.env.NODE_ENV === 'development')
-        ? [ new winston.transports.Console({ level: 'silly' })]
-        : [ new winston.transports.Console({ level: 'warn' }),
-            new winston.transports.File({ level: 'verbose', filename: '/var/log/server.log' }) ]
+const transports = [
+    new winston.transports.Console({ level: (process.env.NODE_ENV === 'development') ? 'silly' : 'warn' }),
+    new winston.transports.File({ level: 'verbose', filename: '/var/log/serverall.log' }),
+    new winston.transports.File({ level: 'warn', filename: '/var/log/serverwarn.log' })
+]
+
+export function reopenLogs() {
+    for (const t of transports) {
+        if ('open' in t) {  // reopen openable transports (File)
+            (t as any).open()
+        }
+    }
+}
 
 const formats = [
     format.splat(),

@@ -1,7 +1,7 @@
 import { CronJob } from 'cron'
 import { oauthrefresh } from './squareoauth'
 import { sendQueuedEmail, checkMailmanErrors, mailmaninit } from './mailman'
-import { backupNow } from './cloud'
+import { backupNow, logRotateUpload } from './cloud'
 import { cronlog } from '../util/logging'
 
 /*
@@ -12,10 +12,13 @@ import { cronlog } from '../util/logging'
 export function startCronJobs() {  // times in UTC
     cronlog.info('scheduling cron jobs')
     mailmaninit()
-    new CronJob('0    0  11    *  *  *', oauthrefresh).start()  // 4am
-    new CronJob('0    0  8,20  *  *  *', backupNow).start()    // 1am, 1pm
-    new CronJob('*/15 *  *     *  *  *', sendQueuedEmail).start()
-    new CronJob('0    0  */4   *  *  *', checkMailmanErrors).start()
+    /* eslint-disable no-new */
+    new CronJob('0    0  4    * * *', oauthrefresh).start()
+    new CronJob('0    0  1,13 * * *', backupNow).start()
+    new CronJob('*/15 *  *    * * *', sendQueuedEmail).start()
+    new CronJob('0    0  */4  * * *', checkMailmanErrors).start()
+    new CronJob('30  59  11   * * *', logRotateUpload).start()
+    /* eslint-enable no-new */
 }
 
 process.on('SIGPIPE', () => {
