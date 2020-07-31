@@ -13,7 +13,6 @@ networks:
 services:
     db:
         image: drytoastman/scdb:${VERSION}
-        logging: { driver: gcplogs }
         networks: { net1: {}}
         ports:
             - '54329:5432'
@@ -23,6 +22,7 @@ services:
             - socket:/var/run/postgresql
             - logs:/var/log
             - certs:/certs
+        restart: unless-stopped
 
     pythonweb:
         image: drytoastman/scpython:${VERSION}
@@ -44,19 +44,19 @@ services:
 
     nodeweb:
         image: drytoastman/scnodejs:${VERSION}
-        logging: { driver: gcplogs }
         networks: { net1: {}}
         depends_on:
             - db
         environment:
             - DBHOST=db
             - DBPORT=6432
+            - TZ=America/Los_Angeles
         volumes:
             - logs:/var/log
+        restart: unless-stopped
 
     proxy:
         image: drytoastman/scproxy:${VERSION}
-        logging: { driver: gcplogs }
         networks: { net1: {}}
         depends_on:
             - nodeweb
