@@ -13,7 +13,7 @@ process.env.OLD_DATABASE = 'true'
 
 const app = express()
 app.use(helmet())
-app.use(morgan('dev', {
+app.use(morgan('combined', {
     stream: {
         write(message: string): void {
             mainlog.info(message.substring(0, message.lastIndexOf('\n')))
