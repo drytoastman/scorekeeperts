@@ -16,7 +16,7 @@ else
         while true
         do
             SLEEPFOR=`eval expr $(date -d '23:59' +%s) - $(date +%s)`
-            DATELABEL=$(date +%y-%m-%d)
+            DATELABEL=$(date +%Y-%m-%d)
             sleep $SLEEPFOR
             echo `date` "rotating logs"
             mv /var/log/nginxerror.log  /var/log/nginxerror-$DATELABEL.log
