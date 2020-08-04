@@ -8,6 +8,7 @@ import net from 'net'
 import util from 'util'
 import zlib from 'zlib'
 import { cronlog, reopenLogs } from '@/util/logging'
+import { sendLogs } from './mailman'
 
 let config: StorageOptions | undefined
 if (fs.existsSync('creds.json')) {
@@ -42,7 +43,12 @@ export function backupNow() {
     })
 }
 
-export function logRotateUpload() {
+
+const unlinkAsync  = util.promisify(fs.unlink)
+const renameAsync  = util.promisify(fs.rename)
+const readdirAsync = util.promisify(fs.readdir)
+
+export async function logRotateUpload() {
     const loglabel = moment().format('YYYY-MM-DD')
     const torotate = ['serverall', 'serverwarn', 'scweb']
 
@@ -52,7 +58,7 @@ export function logRotateUpload() {
         const dated = `/var/log/${loglabel}-${name}.log`
         cronlog.debug(`rename ${local} to ${dated}`)
         try {
-            fs.renameSync(local, dated)
+            await renameAsync(local, dated)
         } catch (error) {
             cronlog.warn(`Unable to move ${local}`)
             continue
@@ -60,26 +66,28 @@ export function logRotateUpload() {
     }
 
     cronlog.info('starting log upload')
-    const bucket = storage.bucket(logBucket)
-    fs.readdir('/var/log', (err, files) => {
-        if (err) {
-            cronlog.warn(err)
-            return
-        }
+    const bucket   = storage.bucket(logBucket)
+    const files    = await readdirAsync('/var/log')
+    const toupload = files.filter(f => f[0] === '2').map(f => `/var/log/${f}`)
+    const toemail  = toupload.filter(f => /(nginxerrors|serverwarn)/.test(f))
 
-        for (const file of files) {
-            if (file[0] !== '2') continue
-            bucket.upload(file).then(() => {
-                cronlog.info(`upload of ${file} complete`)
-                fs.unlinkSync(file)
-            }).catch(error =>
-                cronlog.error(`upload of ${file} failed: ` + error)
-            )
+    for (const path of toupload) {
+        try {
+            await bucket.upload(path)
+            cronlog.info(`upload of ${path} complete`)
+        } catch (error) {
+            cronlog.error(`upload of ${path} failed: ` + error)
         }
-    })
+    }
+
+    await sendLogs(toemail)
+    for (const path of toupload) {
+        await unlinkAsync(path)
+    }
 
     reopenLogs()
 }
+
 
 export async function restoreBackup() {
     const files  = (await storage.bucket(backupBucket).getFiles())[0]

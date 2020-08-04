@@ -97,6 +97,23 @@ export async function sendQueuedEmail() {
     })
 }
 
+export async function sendLogs(filenames: string[]) {
+    if (!smtp) { return }
+
+    await db.task(async t => {
+        const from    = await t.general.getLocalSetting(MAIL_SEND_FROM)
+        const replyto = await t.general.getLocalSetting(MAIL_SEND_REPLYTO)
+        await smtp.sendMail({
+            from: `"Admin via Scorekeeper" <${from}>`,
+            to:   `"Scorekeeper Admin" <${replyto}>`,
+            subject: 'Logs',
+            text: 'select logs attached',
+            attachments: filenames.map(f => ({ path: f }))
+        })
+    }).catch(error => {
+        cronlog.error(error)
+    })
+}
 
 /**
  * This is only checking the mailman account for delivery failure notices
