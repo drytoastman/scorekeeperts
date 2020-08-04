@@ -44,30 +44,40 @@ export function backupNow() {
 
 export function logRotateUpload() {
     const loglabel = moment().format('YYYY-MM-DD')
+    const torotate = ['serverall', 'serverwarn', 'scweb']
+
+    // nginx will rotate itself 30 seconds earlier so it can reopen files
+    for (const name of torotate) {
+        const local = `/var/log/${name}.log`
+        const dated = `/var/log/${loglabel}-${name}.log`
+        cronlog.debug(`rename ${local} to ${dated}`)
+        try {
+            fs.renameSync(local, dated)
+        } catch (error) {
+            cronlog.warn(`Unable to move ${local}`)
+            continue
+        }
+    }
 
     cronlog.info('starting log upload')
     const bucket = storage.bucket(logBucket)
-    for (const name of ['serverall', 'serverwarn', 'nginxerror', 'nginxaccess']) {
-        const local = `/var/log/${name}.log`
-        const dated = `/var/log/${name}-${loglabel}.log`
-
-        if (!fs.existsSync(dated)) {
-            cronlog.debug(`rename ${local} to ${dated}`)
-            try {
-                fs.renameSync(local, dated)
-            } catch (error) {
-                cronlog.warn(`Unable to move ${local}`)
-                continue
-            }
+    fs.readdir('/var/log', (err, files) => {
+        if (err) {
+            cronlog.warn(err)
+            return
         }
 
-        bucket.upload(dated)
-            .then(() => {
-                cronlog.info(`upload of ${dated} complete`)
-                fs.unlinkSync(dated)
-            })
-            .catch(error => cronlog.error(`upload of ${dated} failed: ` + error))
-    }
+        for (const file of files) {
+            if (file[0] !== '2') continue
+            bucket.upload(file).then(() => {
+                cronlog.info(`upload of ${file} complete`)
+                fs.unlinkSync(file)
+            }).catch(error =>
+                cronlog.error(`upload of ${file} failed: ` + error)
+            )
+        }
+    })
+
     reopenLogs()
 }
 

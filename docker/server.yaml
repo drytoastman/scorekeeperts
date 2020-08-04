@@ -26,7 +26,6 @@ services:
 
     pythonweb:
         image: drytoastman/scpython:${VERSION}
-        logging: { driver: gcplogs }
         command: webserver.py
         networks: { net1: {}}
         depends_on:
