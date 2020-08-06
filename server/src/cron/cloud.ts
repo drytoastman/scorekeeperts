@@ -50,7 +50,7 @@ const readdirAsync = util.promisify(fs.readdir)
 
 export async function logRotateUpload() {
     const loglabel = moment().format('YYYY-MM-DD')
-    const torotate = ['serverall', 'serverwarn', 'scweb']
+    const torotate = ['serverall', 'serverwarn', 'scweb', 'postgres']
 
     // nginx will rotate itself 30 seconds earlier so it can reopen files
     for (const name of torotate) {
@@ -69,7 +69,7 @@ export async function logRotateUpload() {
     const bucket   = storage.bucket(logBucket)
     const files    = await readdirAsync('/var/log')
     const toupload = files.filter(f => f[0] === '2').map(f => `/var/log/${f}`)
-    const toemail  = toupload.filter(f => /(nginxerrors|serverwarn)/.test(f))
+    const toemail  = toupload.filter(f => /(nginxerror|serverwarn|postgres)/.test(f))
 
     for (const path of toupload) {
         try {

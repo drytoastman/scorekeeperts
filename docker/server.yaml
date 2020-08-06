@@ -17,6 +17,8 @@ services:
         ports:
             - '54329:5432'
             - '127.0.0.1:6432:6432'
+        environment:
+            - TZ=America/Los_Angeles
         volumes:
             - database:/var/lib/postgresql/data
             - socket:/var/run/postgresql

@@ -24,11 +24,16 @@ ssl = on
 ssl_ca_file = '/certs/root.cert'
 ssl_cert_file = '/certs/server.cert'
 ssl_key_file = '/certs/server.key'
+
 log_destination = stderr
 log_line_prefix = '%t %a '
 log_timezone=$UI_TIME_ZONE
 log_statement = none
 log_min_duration_statement = 1000
+logging_collector = on
+log_directory = '/var/log'
+log_filename = 'postgres.log'
+log_truncate_on_rotation = off
 " >> postgresql.conf
 
 cp /docker-entrypoint-initdb.d/series.template series.sql

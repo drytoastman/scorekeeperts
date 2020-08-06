@@ -29,5 +29,20 @@ fi
 socat TCP-LISTEN:6432,reuseaddr,fork, UNIX-CLIENT:/var/run/postgresql/.s.PGSQL.5432 &
 socat TCP-LISTEN:6666,reuseaddr,fork, EXEC:"backup.sh" &
 
+# Start log rotater
+rotater() {
+    while true
+    do
+        SLEEPFOR=`eval expr $(date -d '23:59' +%s) - $(date +%s)`
+        DATELABEL=$(date +%Y-%m-%d)
+        sleep $SLEEPFOR
+        echo `date` "rotating logs"
+        mv /var/log/postgres.log  /var/log/$DATELABEL-postgres.log
+        kill -USR1 `pgrep logger`
+        sleep 300 # Wait until tomorrow to recalculate SLEEPFOR
+    done
+}
+rotater &
+
 # Start postgres here
 exec /usr/local/bin/docker-entrypoint.sh "$@"
