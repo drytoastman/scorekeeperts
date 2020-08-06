@@ -50,9 +50,9 @@ const readdirAsync = util.promisify(fs.readdir)
 
 export async function logRotateUpload() {
     const loglabel = moment().format('YYYY-MM-DD')
-    const torotate = ['serverall', 'serverwarn', 'scweb', 'postgres']
+    const torotate = ['serverall', 'serverwarn', 'scweb']
 
-    // nginx will rotate itself 30 seconds earlier so it can reopen files
+    // nginx/postgres will rotate themselves 30 seconds earlier so it can reopen files
     for (const name of torotate) {
         const local = `/var/log/${name}.log`
         const dated = `/var/log/${loglabel}-${name}.log`
@@ -80,7 +80,7 @@ export async function logRotateUpload() {
         }
     }
 
-    await sendLogs(toemail)
+    await sendLogs(loglabel, toemail)
     for (const path of toupload) {
         await unlinkAsync(path)
     }
