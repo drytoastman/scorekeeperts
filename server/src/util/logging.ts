@@ -13,8 +13,8 @@ const transports = [
     new winston.transports.File({ level: 'verbose', filename: '/var/log/server.log' })
 ]
 const atransports = [
-    new winston.transports.Console({ level: (process.env.NODE_ENV === 'development') ? 'silly' : 'warn' }),
-    new winston.transports.File({ level: 'verbose', filename: '/var/log/servaccess.log' })
+    new winston.transports.Console({ level: (process.env.NODE_ENV === 'development') ? 'silly' : 'warn' })
+    // new winston.transports.File({ level: 'verbose', filename: '/var/log/servaccess.log' })
 ]
 
 // rotate our logs
@@ -22,7 +22,7 @@ export async function rotateLogs() {
     const loglabel = moment().format('YYYY-MM-DD')
     const renameAsync  = util.promisify(fs.rename)
 
-    async function rotate(name) {
+    async function rotate(name: string) {
         const local = `/var/log/${name}.log`
         const dated = `/var/log/${loglabel}-${name}.log`
         cronlog.debug(`rename ${local} to ${dated}`)
@@ -46,7 +46,7 @@ export async function rotateLogs() {
         }
     }
 
-    // helper while we still have python
+    // FINISH ME: helper while we still have python, remove later
     rotate('scweb.log')
 }
 

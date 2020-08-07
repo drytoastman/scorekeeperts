@@ -32,7 +32,7 @@ log_statement = none
 log_min_duration_statement = 1000
 logging_collector = on
 log_directory = '/var/log'
-log_filename = 'postgres.log'
+log_filename = 'db.log'
 log_truncate_on_rotation = off
 " >> postgresql.conf
 

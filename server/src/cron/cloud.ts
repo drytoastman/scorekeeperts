@@ -64,7 +64,7 @@ export async function logRotateUpload() {
         }
     }
 
-    const toemail  = toupload.filter(f => /(nginxerror|server|postgres)/.test(f))
+    const toemail  = toupload.filter(f => /(proxy|server|db)/.test(f))
     await sendLogs("Logs", toemail)
     for (const path of toupload) {
         await unlinkAsync(path)
