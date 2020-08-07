@@ -38,7 +38,7 @@ export async function rotateLogs() {
         try {
             if ('filename' in t) {
                 const ta:any = t
-                await rotate(ta.filename)
+                await rotate(ta.filename.replace('.log', ''))
                 ta.open()
             }
         } catch (error) {
@@ -47,7 +47,7 @@ export async function rotateLogs() {
     }
 
     // FINISH ME: helper while we still have python, remove later
-    rotate('scweb.log')
+    rotate('scweb')
 }
 
 

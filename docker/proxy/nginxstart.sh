@@ -20,6 +20,7 @@ rotater() {
         echo `date` "rotating logs"
         mv /var/log/proxy.log  /var/log/$DATELABEL-proxy.log
         mv /var/log/access.log /var/log/$DATELABEL-access.log
+        gzip /var/log/$DATELABEL-access.log
         nginx -s reopen
         sleep 300 # Wait until tomorrow to recalculate SLEEPFOR
     done
