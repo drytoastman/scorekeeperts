@@ -18,8 +18,8 @@ rotater() {
         DATELABEL=$(date +%Y-%m-%d)
         sleep $SLEEPFOR
         echo `date` "rotating logs"
-        mv /var/log/nginxerror.log  /var/log/$DATELABEL-nginxerror.log
-        mv /var/log/nginxaccess.log /var/log/$DATELABEL-nginxaccess.log
+        mv /var/log/proxy.log  /var/log/$DATELABEL-proxy.log
+        mv /var/log/access.log /var/log/$DATELABEL-access.log
         nginx -s reopen
         sleep 300 # Wait until tomorrow to recalculate SLEEPFOR
     done

@@ -37,7 +37,7 @@ rotater() {
         DATELABEL=$(date +%Y-%m-%d)
         sleep $SLEEPFOR
         echo `date` "rotating logs"
-        mv /var/log/postgres.log  /var/log/$DATELABEL-postgres.log
+        mv /var/log/db.log  /var/log/$DATELABEL-db.log
         kill -USR1 `pgrep logger`
         sleep 300 # Wait until tomorrow to recalculate SLEEPFOR
     done
