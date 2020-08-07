@@ -7,7 +7,7 @@ import moment from 'moment'
 import net from 'net'
 import util from 'util'
 import zlib from 'zlib'
-import { cronlog, reopenLogs } from '@/util/logging'
+import { cronlog, rotateLogs } from '@/util/logging'
 import { sendLogs } from './mailman'
 
 let config: StorageOptions | undefined
@@ -45,32 +45,16 @@ export function backupNow() {
 
 
 const unlinkAsync  = util.promisify(fs.unlink)
-const renameAsync  = util.promisify(fs.rename)
 const readdirAsync = util.promisify(fs.readdir)
 
 export async function logRotateUpload() {
-    const loglabel = moment().format('YYYY-MM-DD')
-    const torotate = ['serverall', 'serverwarn', 'scweb']
-
-    // nginx/postgres will rotate themselves 30 seconds earlier so it can reopen files
-    for (const name of torotate) {
-        const local = `/var/log/${name}.log`
-        const dated = `/var/log/${loglabel}-${name}.log`
-        cronlog.debug(`rename ${local} to ${dated}`)
-        try {
-            await renameAsync(local, dated)
-        } catch (error) {
-            cronlog.warn(`Unable to move ${local}`)
-            continue
-        }
-    }
+    await rotateLogs()
+    // postgres and proxy containers rotate themselves earlier
 
     cronlog.info('starting log upload')
     const bucket   = storage.bucket(logBucket)
     const files    = await readdirAsync('/var/log')
     const toupload = files.filter(f => f[0] === '2').map(f => `/var/log/${f}`)
-    const toemail  = toupload.filter(f => /(nginxerror|serverwarn|postgres)/.test(f))
-
     for (const path of toupload) {
         try {
             await bucket.upload(path)
@@ -80,12 +64,11 @@ export async function logRotateUpload() {
         }
     }
 
-    await sendLogs(loglabel, toemail)
+    const toemail  = toupload.filter(f => /(nginxerror|server|postgres)/.test(f))
+    await sendLogs("Logs", toemail)
     for (const path of toupload) {
         await unlinkAsync(path)
     }
-
-    reopenLogs()
 }
 
 

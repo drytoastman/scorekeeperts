@@ -97,7 +97,7 @@ export async function sendQueuedEmail() {
     })
 }
 
-export async function sendLogs(date: string, filenames: string[]) {
+export async function sendLogs(subject: string, filenames: string[]) {
     if (!smtp) { return }
 
     await db.task(async t => {
@@ -106,7 +106,7 @@ export async function sendLogs(date: string, filenames: string[]) {
         await smtp.sendMail({
             from: `"Admin via Scorekeeper" <${from}>`,
             to:   `"Scorekeeper Admin" <${replyto}>`,
-            subject: 'Logs ' + date,
+            subject: subject,
             text: 'select logs attached',
             attachments: filenames.map(f => ({ path: f }))
         })

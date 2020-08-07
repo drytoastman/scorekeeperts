@@ -7,7 +7,7 @@ import promiseRetry from 'promise-retry'
 import { api2, live, liveStart } from './controllers'
 import { db, tableWatcher, pgp } from './db'
 import { startCronJobs } from './cron'
-import { mainlog } from './util/logging'
+import { accesslog, mainlog } from './util/logging'
 
 process.env.OLD_DATABASE = 'true'
 
@@ -16,7 +16,7 @@ app.use(helmet())
 app.use(morgan('combined', {
     stream: {
         write(message: string): void {
-            mainlog.info(message.substring(0, message.lastIndexOf('\n')))
+            accesslog.info(message.substring(0, message.lastIndexOf('\n')))
         }
     }
 }))
