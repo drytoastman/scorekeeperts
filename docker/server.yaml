@@ -60,7 +60,7 @@ services:
         image: drytoastman/scproxy:${VERSION}
         networks: { net1: {}}
         depends_on:
-            - nodeweb
+            - server
             - pythonweb
         environment:
             - MAIN_SERVER=1
