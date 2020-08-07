@@ -8,11 +8,9 @@ RUN  cd ui && npm run build
 FROM nginx:1.18.0
 # RUN apt-get update && apt-get install -y -q vim
 COPY --from=builder /code/ui/dist /app
-COPY docker/dhparam.pem    /etc/nginx/
-COPY docker/services.conf  /etc/nginx/
-COPY docker/nginx*         /etc/nginx/
-COPY docker/servers.*.conf /etc/nginx/
-# Temp large static files from pythonweb, goes away with pythonweb
-COPY docker/pystatic       /app/pystatic/
+COPY docker/proxy/dhparam.pem    /etc/nginx/
+COPY docker/proxy/services.conf  /etc/nginx/
+COPY docker/proxy/nginx*         /etc/nginx/
+COPY docker/proxy/servers.*.conf /etc/nginx/
 RUN rm -rf /var/log/*
 CMD ["/etc/nginx/nginxstart.sh"]

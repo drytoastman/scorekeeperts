@@ -6,4 +6,4 @@ fi
 echo "Pushing VERSION=$1"
 docker push drytoastman/scdb:$1
 docker push drytoastman/scproxy:$1
-docker push drytoastman/scnodejs:$1
+docker push drytoastman/scserver:$1

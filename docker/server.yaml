@@ -43,8 +43,8 @@ services:
             - MAIL_SEND_DEFAULT_REPLYTO=admin@scorekeeper.wwscc.org
             - SECRETS_FILE=/webdata/websecrets.json
 
-    nodeweb:
-        image: drytoastman/scnodejs:${VERSION}
+    server:
+        image: drytoastman/scserver:${VERSION}
         networks: { net1: {}}
         depends_on:
             - db

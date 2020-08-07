@@ -19,6 +19,8 @@ services:
             - database:/var/lib/postgresql/data
             - socket:/var/run/postgresql
             - certs:/certs
+        environment:
+            - TZ=America/Los_Angeles
         stop_grace_period: 2s
 
     pythonweb:

@@ -6,4 +6,4 @@ fi
 echo "Pulling VERSION=$1"
 docker pull drytoastman/scdb:$1
 docker pull drytoastman/scproxy:$1
-docker pull drytoastman/scnodejs:$1
+docker pull drytoastman/scserver:$1
