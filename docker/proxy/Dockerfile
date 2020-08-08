@@ -6,7 +6,7 @@ COPY ui ui
 RUN  cd ui && npm run build
 
 FROM nginx:1.18.0
-# RUN apt-get update && apt-get install -y -q vim
+RUN apt-get update && apt-get install -y -q --no-install-recommends certbot && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /var/log/*
 COPY --from=builder /code/ui/dist /app
 COPY docker/proxy/dhparam.pem    /etc/nginx/
 COPY docker/proxy/services.conf  /etc/nginx/
