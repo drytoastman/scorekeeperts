@@ -147,6 +147,9 @@ export async function regreset(req: Request, res: Response) {
 
             try {
                 if (filter === null) {
+                    if (/[<>+]/.test(request.email.includes)) {
+                        throw Error('Bad char in email and not whitelisted')
+                    }
                     await dns.promises.lookup(request.email.split('@').pop())
                 } else if (filter === false) {
                     throw Error('Email matched filter drop')
@@ -164,7 +167,7 @@ export async function regreset(req: Request, res: Response) {
                 })
             } catch (error) {
                 const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress
-                controllog.warn(`Ignore ${request.email} (${ip}`)
+                controllog.warn(`Ignore ${request.email} ${ip}`)
                 return res.status(400).json({ error: 'Request filtered due to suspicious parameters' })
             }
         }
