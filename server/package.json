@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@google-cloud/storage": "^5.1.2",
+    "adm-zip": "^0.4.16",
     "axios": "^0.19.2",
     "bcryptjs": "^2.4.3",
     "bufferutil": "^4.0.1",
@@ -43,6 +44,7 @@
     "ws": "^7.3.1"
   },
   "devDependencies": {
+    "@types/adm-zip": "^0.4.33",
     "@types/bcryptjs": "^2.4.2",
     "@types/cookie-session": "^2.0.41",
     "@types/cors": "^2.8.6",
