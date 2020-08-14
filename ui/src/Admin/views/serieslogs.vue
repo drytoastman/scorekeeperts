@@ -11,13 +11,12 @@
 
         <div class='log' v-for="name in Object.keys(logs).sort()" :key="name">
             <div class='name'>{{name}}</div>
-            <div class='text' v-for="line in logs[name].split('\r\n')" :key="line[-1]">{{line}}</div>
+            <div class='text' v-for="line in logs[name].split('\n')" :key="line[-1]">{{line}}</div>
         </div>
     </div>
 </template>
 
 <script>
-import axios from 'axios'
 import { API2ROOT } from '@/store/state'
 
 export default {
@@ -35,7 +34,7 @@ export default {
     },
     methods: {
         reload() {
-            this.$store.dispatch('getLogs').then(data => { this.logs = data })
+            this.$store.dispatch('getLogs', { lines: this.lines }).then(data => { this.logs = data })
         }
     },
     mounted() {
