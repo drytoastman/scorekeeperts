@@ -43,6 +43,14 @@ export const adminActions = {
         }
     },
 
+    async getLogs(context: ActionContext<Api2State, any>, p: any) {
+        try {
+            return (await axios.get(API2ROOT + '/logs', { params: p, withCredentials: true })).data
+        } catch (error) {
+            context.dispatch('axiosError', error)
+        }
+    },
+
     async carddownload(context: ActionContext<Api2State, any>, p: any) {
         const URL = API2ROOT + '/cards'
         try {
@@ -52,7 +60,6 @@ export const adminActions = {
             context.commit('gettingData', true)
             if (p.cardtype === 'template') {
                 const url = axios.getUri({ url: URL, params: p })
-                console.log(url)
                 window.open(url, 'cardtemplte')
                 return
             }

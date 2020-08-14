@@ -89,7 +89,6 @@ export default {
         haveAuth() {
             // const r = this.$router.matcher.match(this.$route.name)
             if (this.$route.meta.adminauth) {
-                console.log('admin only')
                 return this.adminAuthenticated
             }
             return this.seriesAuthenticated[this.currentSeries] || this.adminAuthenticated

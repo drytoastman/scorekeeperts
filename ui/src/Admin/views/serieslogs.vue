@@ -35,11 +35,7 @@ export default {
     },
     methods: {
         reload() {
-            axios.get(API2ROOT + '/logs', { params: { lines: this.lines }, withCredentials: true }).then(resp => {
-                this.logs = resp.data
-            }).catch(error => {
-                console.log(error)
-            })
+            this.$store.dispatch('getLogs').then(data => { this.logs = data })
         }
     },
     mounted() {

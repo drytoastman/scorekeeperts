@@ -32,6 +32,7 @@ module.exports = {
     transpileDependencies: [
         'vuetify'
     ],
+    productionSourceMap: false,
     devServer: {
         proxy: {
             '/api2': {
