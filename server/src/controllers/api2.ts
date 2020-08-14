@@ -2,9 +2,10 @@ import { Router, Request, Response } from 'express'
 import delay from 'express-delay'
 import { apiget } from './apiget'
 import { apipost } from './apipost'
-import { login, logout, changepassword, AuthData, regreset, serieslogin, serieslogout, adminlogin, adminlogout } from './apiauth'
+import { login, logout, changepassword, AuthData, regreset, serieslogin, adminlogin, adminlogout } from './apiauth'
 import { controllog } from '../util/logging'
 import { cards } from './cards'
+import { logs } from './logs'
 
 export const api2 = Router()
 
@@ -28,12 +29,12 @@ api2.post('/login', login)
 api2.get('/logout', logout)
 api2.post('/regreset', regreset)
 api2.post('/serieslogin', serieslogin)
-api2.post('/serieslogout', serieslogout)
 api2.post('/adminlogin', adminlogin)
-api2.post('/adminlogout', adminlogout)
+api2.get('/adminlogout', adminlogout)
 
 // Authenticated items
 api2.post('/changepassword', changepassword)
 api2.get('/', apiget)
 api2.post('/', apipost)
 api2.get('/cards', cards)
+api2.get('/logs', logs)

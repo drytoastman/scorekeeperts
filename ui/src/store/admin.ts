@@ -10,6 +10,19 @@ import { UUID } from '@/common/util'
 
 export const adminActions = {
 
+    async adminlogin(context: ActionContext<Api2State, any>, p: any) {
+        try {
+            await axios.post(API2ROOT + '/adminlogin', p, { withCredentials: true })
+            context.commit('adminAuthenticated', { ok: true })
+            if (this.state.currentSeries) {
+                console.log('authenticated getdata')
+                context.dispatch('getdata')
+            }
+        } catch (error) {
+            context.dispatch('axiosError', error)
+        }
+    },
+
     async serieslogin(context: ActionContext<Api2State, any>, p: any) {
         try {
             await axios.post(API2ROOT + '/serieslogin', p, { withCredentials: true })
@@ -21,10 +34,10 @@ export const adminActions = {
         }
     },
 
-    async serieslogout(context: ActionContext<Api2State, any>, p: any) {
+    async logout(context: ActionContext<Api2State, any>) {
         try {
-            await axios.post(API2ROOT + '/serieslogout', p, { withCredentials: true })
-            context.commit('seriesAuthenticated', { series: p.series, ok: true })
+            await axios.get(API2ROOT + '/adminlogout', { withCredentials: true })
+            context.commit('adminlogout')
         } catch (error) {
             context.dispatch('axiosError', error)
         }
@@ -123,10 +136,7 @@ export const adminActions = {
 
 
 const getters = {
-    // make defaultdict(true) like thing out of the store
-    haveSeriesAuth: (state) => { return state.currentSeries in state.seriesAuthenticated ? state.seriesAuthenticated[state.currentSeries] : true },
     orderedEvents: (state) => { return orderBy(state.events, ['date']) }
-
 } as GetterTree<Api2State, Api2State>
 
 

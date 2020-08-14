@@ -7,8 +7,7 @@ import moment from 'moment'
 import net from 'net'
 import util from 'util'
 import zlib from 'zlib'
-import { cronlog, rotateLogs } from '@/util/logging'
-import { sendLogs } from './mailman'
+import { cronlog } from '@/util/logging'
 
 let config: StorageOptions | undefined
 if (fs.existsSync('creds.json')) {
@@ -16,7 +15,6 @@ if (fs.existsSync('creds.json')) {
 }
 const storage      = new Storage(config)
 const backupBucket = 'scorekeeperbackup'
-const logBucket    = 'scorekeeperlogs'
 
 export function backupNow() {
     const name   = `scorekeeper-${moment().format('YYYY-MM-DD-HH-mm')}`
@@ -44,6 +42,7 @@ export function backupNow() {
 }
 
 
+/*
 const unlinkAsync  = util.promisify(fs.unlink)
 const readdirAsync = util.promisify(fs.readdir)
 
@@ -70,6 +69,7 @@ export async function logRotateUpload() {
         await unlinkAsync(path)
     }
 }
+*/
 
 
 export async function restoreBackup() {

@@ -9,16 +9,16 @@
             <AdminMenu :items="eventMenu" :icon="icons.mdiFlagCheckered"    :disabled="!currentSeries"></AdminMenu>
             <AdminMenu :items="settings"  :icon="icons.mdiCog"              :disabled="!currentSeries"></AdminMenu>
             <AdminMenu :items="reports"   :icon="icons.mdiFileTable"        :disabled="!currentSeries"></AdminMenu>
-            <AdminMenu :items="admins"    :icon="icons.mdiAccountCowboyHat" :disabled="!currentSeries"></AdminMenu>
-
+            <AdminMenu :items="admins"    :icon="icons.mdiAccountCowboyHat" ></AdminMenu>
+            <v-btn icon @click='logout'><v-icon>{{icons.mdiAccountHardHat}}</v-icon></v-btn>
             <v-progress-linear :active="!!gettingData" indeterminate absolute bottom color="green accent-4"></v-progress-linear>
         </v-app-bar>
 
         <v-main>
             <div v-if="!$route.name" class="pushdown main-page-warning">Unknown Page</div>
-            <router-view v-else-if="haveSeriesAuth" />
-            <v-container v-else-if="!haveSeriesAuth">
-                <LoginForm ></LoginForm>
+            <router-view v-else-if="haveAuth || $route.name === 'noseries'" />
+            <v-container v-else-if="!haveAuth">
+                <LoginForm :series="this.$route.meta.adminauth ? null : currentSeries" :admin=true></LoginForm>
             </v-container>
         </v-main>
 
@@ -48,34 +48,19 @@ export default {
             mdiAccountHardHat,
             mdiAccountCowboyHat,
             mdiFileTable
-        },
-        settings: [
-            { title: 'Settings', link: { name:'settings' } },
-            { title: 'Classes',  link: { name:'classes' } },
-            { title: 'Indexes',  link: { name:'indexes' } },
-            { title: 'Accounts', link: { name:'accounts' } }
-        ],
-        reports: [
-            { title: 'Series Attendance',    link: { name:'attendseries' } },
-            { title: 'Events Attendance',    link: { name:'attendevent' } },
-            { title: 'Unique Attendance',    link: { name:'attendunique' } },
-            { title: 'Used Car Number List', link: { name:'usednumbers' } },
-            {},
-            { title: 'Payments',             link: { name:'payments' } }
-        ],
-        admins: [ /*
-            { title: 'Host Settings', link: { name:'hostsettings' } },
-            { title: 'Driver Editor', link: { name:'drivereditor' } }
-        */]
+        }
     }),
     methods: {
         errorclose: function() {
             this.$store.commit('clearErrors')
+        },
+        logout: function() {
+            this.$store.dispatch('logout')
         }
     },
     computed: {
-        ...mapState(['adminAuthenticated', 'currentSeries', 'serieslist', 'events', 'errors', 'gettingData']),
-        ...mapGetters(['haveSeriesAuth', 'orderedEvents']),
+        ...mapState(['adminAuthenticated', 'seriesAuthenticated', 'currentSeries', 'serieslist', 'events', 'errors', 'gettingData']),
+        ...mapGetters(['haveAuth', 'orderedEvents']),
         snackbar() { return this.errors.length > 0 },
         selectedSeries: {
             get() {
@@ -84,11 +69,11 @@ export default {
             set(value) {
                 this.$store.commit('changeSeries', value)
                 const name = this.$route.name === 'noseries' ? 'summary' : this.$route.name
+                // const r = this.$router.matcher.match(name)
+                // if (!('series' in r.params)) return
+
                 this.$router.push({ name: name, params: { series: value } }).catch(error => {
-                    // If we change series while on a non-series link, don't throw any errors
-                    if (error.name !== 'NavigationDuplicated') {
-                        throw error
-                    }
+                    console.log(error)
                 })
             }
         },
@@ -100,14 +85,51 @@ export default {
                     params: { eventid: e.eventid }
                 }
             }))
+        },
+        haveAuth() {
+            // const r = this.$router.matcher.match(this.$route.name)
+            if (this.$route.meta.adminauth) {
+                console.log('admin only')
+                return this.adminAuthenticated
+            }
+            return this.seriesAuthenticated[this.currentSeries] || this.adminAuthenticated
+        },
+        settings() {
+            if (!this.currentSeries) { return [] }
+            return [
+                { title: 'Settings', link: { name:'settings' } },
+                { title: 'Classes',  link: { name:'classes' } },
+                { title: 'Indexes',  link: { name:'indexes' } },
+                { title: 'Accounts', link: { name:'accounts' } }
+            ].map(v => { v.link.params = { series: this.currentSeries }; return v })
+        },
+        reports() {
+            if (!this.currentSeries) { return [] }
+            return  [
+                { title: 'Series Attendance',    link: { name:'attendseries' } },
+                { title: 'Events Attendance',    link: { name:'attendevent' } },
+                { title: 'Unique Attendance',    link: { name:'attendunique' } },
+                { title: 'Used Car Number List', link: { name:'usednumbers' } },
+                { link: {} },
+                { title: 'Payments',             link: { name:'payments' } }
+            ].map(v => { v.link.params = { series: this.currentSeries }; return v })
+        },
+        admins() {
+            return [
+                { title: 'Driver Editor', link: { name:'drivereditor' } },
+                { title: 'Host Settings', link: { name:'hostsettings' } },
+                { title: 'Server Logs',   link: { name:'serverlogs'   } }
+            ]
         }
     },
     watch: {
+        /*
         serieslist: function() {
-            if (!this.currentSeries) {
+            if (!this.currentSeries && this.$route.name === 'noseries') {
                 this.$refs.sselect.activateMenu()
             }
         }
+        */
     }
 }
 </script>

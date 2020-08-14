@@ -38,6 +38,18 @@ export const api2Mutations = {
         }
     },
 
+    adminAuthenticated(state: Api2State, ok: boolean) {
+        state.adminAuthenticated = ok
+        if (state.adminAuthenticated) {
+            state.errors = []
+        }
+    },
+
+    adminlogout(state: Api2State) {
+        state.adminAuthenticated = false
+        state.seriesAuthenticated = {}
+    },
+
     clearSeriesData(state: Api2State) {
         clearApi2SeriesData(state)
     },

@@ -70,6 +70,10 @@ export const api2Actions = {
                 }
                 if ((error.response.data.authtype === 'series') && this.state.currentSeries) {
                     context.commit('seriesAuthenticated', { series: this.state.currentSeries, ok: false })
+                    context.commit('adminAuthenticated', false)  // can't be if series fails
+                }
+                if (error.response.data.authtype === 'admin') {
+                    context.commit('adminAuthenticated', false)
                 }
             }
 

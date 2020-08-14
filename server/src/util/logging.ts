@@ -53,7 +53,9 @@ export async function rotateLogs() {
 
 const formats = [
     format.splat(),
-    format.timestamp(),
+    format.timestamp({
+        format: function() { return moment().format('YYYY-MM-DD HH:mm:ss') }
+    }),
     line1
 ]
 

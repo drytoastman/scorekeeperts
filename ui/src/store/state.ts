@@ -23,8 +23,8 @@ export class Api2State {
     emailresult: any = {}
     usednumbers: number[] = []
 
-    // auth pieces
-    driverAuthenticated = true  // assume we are and then fallback if our API requests fail
+    // auth pieces, we always assume we are and then fallback if our API requests fail
+    driverAuthenticated = true
     seriesAuthenticated = {}
     adminAuthenticated = true
 

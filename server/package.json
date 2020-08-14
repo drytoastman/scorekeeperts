@@ -34,6 +34,7 @@
     "pg-promise": "^10.5.8",
     "promise-retry": "^2.0.1",
     "puppeteer-core": "^5.0.0",
+    "read-last-lines": "^1.7.2",
     "square-connect": "^3.20200422.2",
     "utf-8-validate": "^5.0.2",
     "uuid": "^8.2.0",

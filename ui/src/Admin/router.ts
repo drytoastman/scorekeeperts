@@ -12,6 +12,7 @@ const Entrants     = () => import(/* webpackChunkName: "adminviews" */  './views
 const Settings     = () => import(/* webpackChunkName: "adminviews" */  './views/settings.vue')
 const UsedNumbers  = () => import(/* webpackChunkName: "adminviews" */  './views/usednumbers.vue')
 const Attendance   = () => import(/* webpackChunkName: "adminviews" */  './views/attendance.vue')
+const SeriesLogs   = () => import(/* webpackChunkName: "adminviews" */  './views/serieslogs.vue')
 
 Vue.use(VueRouter)
 
@@ -29,22 +30,23 @@ const routes = [
         }
     },
 
-    { path: '/hostsettings',     name: 'hostsettings', component: Placeholder },
-    { path: '/drivereditor',     name: 'drivereditor', component: Placeholder },
+    { path: '/hostsettings',     name: 'hostsettings', meta: { adminauth: 1 }, component: Placeholder },
+    { path: '/drivereditor',     name: 'drivereditor', meta: { adminauth: 1 }, component: Placeholder },
+    { path: '/serverlogs',       name: 'serverlogs',   meta: { adminauth: 1 }, component: SeriesLogs },
 
-    { path: '/',                 name: 'noseries',  component: Summary, props: true },
-    { path: '/:series',          name: 'summary',  component: Summary, props: true },
-    { path: '/:series/settings', name: 'settings', component: Settings },
-    { path: '/:series/classes',  name: 'classes',  component: Classes },
-    { path: '/:series/indexes',  name: 'indexes',  component: Indexes },
-    { path: '/:series/accounts', name: 'accounts', component: Accounts },
-    { path: '/:series/payments', name: 'payments', component: Entrants },
+    { path: '/',                       name: 'noseries',  component: Summary, props: true },
+    { path: '/:series',                name: 'summary',   component: Summary, props: true },
+    { path: '/:series/settings',       name: 'settings',  component: Settings },
+    { path: '/:series/classes',        name: 'classes',   component: Classes },
+    { path: '/:series/indexes',        name: 'indexes',   component: Indexes },
+    { path: '/:series/accounts',       name: 'accounts',  component: Accounts },
+    { path: '/:series/payments',       name: 'payments',  component: Entrants },
     { path: '/:series/attendseries',   name: 'attendseries', meta: { marker: 'attendance' }, component: Attendance, props: { type: 'series' } },
     { path: '/:series/attendevent',    name: 'attendevent',  meta: { marker: 'attendance' }, component: Attendance, props: { type: 'event'  } },
     { path: '/:series/attendunique',   name: 'attendunique', meta: { marker: 'attendance' }, component: Attendance, props: { type: 'unique' } },
     { path: '/:series/usednumbers',    name: 'usednumbers',  component: UsedNumbers },
-    { path: '/:series/event/:eventid', name: 'event', component: EventInfo, props: true },
-    { path: '/:series/oauth/:code',    name: 'oauth', component: OAuthHandler }
+    { path: '/:series/event/:eventid', name: 'event',        component: EventInfo, props: true },
+    { path: '/:series/oauth/:code',    name: 'oauth',        component: OAuthHandler }
 ]
 
 declare const VUE_BASE: string

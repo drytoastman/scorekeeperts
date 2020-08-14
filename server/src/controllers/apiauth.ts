@@ -42,7 +42,8 @@ export class AuthData {
 
     seriesAuthenticated(series: string) { this.session.series[series] = true }
     clearSeries(series: string)         { delete this.session.series[series] }
-    hasSeriesAuth(series: string)       { return series in this.session.series }
+    clearAllSeries()                    { this.session.series = {} }
+    hasSeriesAuth(series: string)       { return series in this.session.series || this.session.admin === true }
     requireSeries(series: string)       { if (!this.hasSeriesAuth(series)) { throw new Error(`Series auth for ${series} failed`) } }
 
     adminAuthenticated()                { this.session.admin = true }
@@ -75,17 +76,14 @@ export async function serieslogin(req: Request, res: Response) {
     }
 }
 
-export async function serieslogout(req: Request, res: Response) {
-    req.auth.clearSeries(req.body.series)
-    res.status(200).json({ result: 'logged out' })
-}
-
 export async function adminlogin(req: Request, res: Response) {
     try {
         if (await db.general.checkAdminPassword(req.body.password)) {
             req.auth.adminAuthenticated()
+            res.status(200).json({ result: 'authenticated' })
+        } else {
+            throw Error('Admin password incorrect')
         }
-        res.status(200).json({ result: 'authenticated' })
     } catch (error) {
         res.status(401).json({ error: error.toString() })
     }
@@ -93,6 +91,7 @@ export async function adminlogin(req: Request, res: Response) {
 
 export async function adminlogout(req: Request, res: Response) {
     req.auth.clearAdmin()
+    req.auth.clearAllSeries()
     res.status(200).json({ result: 'logged out' })
 }
 
@@ -225,6 +224,10 @@ export function checkAuth(req: Request): any {
     } else if (authtype === 'series') {
         if (!req.auth.hasSeriesAuth(series)) {
             throw new AuthError('not authenticated', 'series')
+        }
+    } else if (authtype === 'admin') {
+        if (!req.auth.hasAdminAuth()) {
+            throw new AuthError('not authenticated', 'admin')
         }
     } else {
         throw new AuthError('unknown authtype', authtype)
