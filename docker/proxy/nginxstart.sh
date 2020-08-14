@@ -19,8 +19,7 @@ daily() {
         SLEEPFOR=`eval expr $(date -d '23:59' +%s) - $(date +%s)`
         DATELABEL=$(date +%Y-%m-%d)
         sleep $SLEEPFOR
-        echo `date` "rotating logs"
-        mv /var/log/proxy.log  /var/log/$DATELABEL-proxy.log
+        echo `date` "rotating access log"
         mv /var/log/access.log /var/log/$DATELABEL-access.log
         gzip /var/log/$DATELABEL-access.log
         nginx -s reopen

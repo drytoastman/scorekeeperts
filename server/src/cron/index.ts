@@ -1,7 +1,7 @@
 import { CronJob } from 'cron'
 import { oauthrefresh } from './squareoauth'
 import { sendQueuedEmail, checkMailmanErrors, mailmaninit } from './mailman'
-import { backupNow } from './cloud'
+import { backupNow, rotatedLogUpload } from './cloud'
 import { cronlog } from '../util/logging'
 
 /*
@@ -17,7 +17,7 @@ export function startCronJobs() {  // times in local time zone
     new CronJob('0    0  1,13 * * *', backupNow).start()
     new CronJob('*/15 *  *    * * *', sendQueuedEmail).start()
     new CronJob('0    0  */4  * * *', checkMailmanErrors).start()
-    // new CronJob('30  59  23   * * *', logRotateUpload).start()
+    new CronJob('30  59  23   * * *', rotatedLogUpload).start()
     /* eslint-enable no-new */
 }
 

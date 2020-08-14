@@ -13,14 +13,15 @@ export async function logs(req: Request, res: Response) {
         return res.status(401).json({ error: 'not authenticated', authtype: 'admin' })
     }
 
-    const lines = req.query.lines || 10
+    const linecount = req.query.lines || 10
     const download = 'separate' in req.query
     const interleave = 'interleave' in req.query
+    const files = (await readdirAsync('/var/log')).filter(f => f.endsWith('.log'))
 
     if (!download && !interleave) {
         const ret = {}
-        for (const file of await readdirAsync('/var/log')) {
-            ret[file] = await readLastLines.read(`/var/log/${file}`, lines)
+        for (const file of files) {
+            ret[file] = await readLastLines.read(`/var/log/${file}`, linecount)
         }
         return res.json(ret)
     }
@@ -28,7 +29,7 @@ export async function logs(req: Request, res: Response) {
     if (download) {
         const ret = {}
         const zip = new AdmZip()
-        for (const file of await readdirAsync('/var/log')) {
+        for (const file of files) {
             zip.addLocalFile(`/var/log/${file}`)
         }
 
@@ -40,7 +41,7 @@ export async function logs(req: Request, res: Response) {
     if (interleave) {
         const ret:string[] = []
 
-        for (const file of await readdirAsync('/var/log')) {
+        for (const file of files) {
             const data = await readfileAsync(`/var/log/${file}`, 'utf-8')
             const lines = data.split('\n')
             for (const line of lines) {

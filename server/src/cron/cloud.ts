@@ -15,6 +15,7 @@ if (fs.existsSync('creds.json')) {
 }
 const storage      = new Storage(config)
 const backupBucket = 'scorekeeperbackup'
+const logBucket    = 'scorekeeperlogs'
 
 export function backupNow() {
     const name   = `scorekeeper-${moment().format('YYYY-MM-DD-HH-mm')}`
@@ -42,14 +43,11 @@ export function backupNow() {
 }
 
 
-/*
 const unlinkAsync  = util.promisify(fs.unlink)
 const readdirAsync = util.promisify(fs.readdir)
 
-export async function logRotateUpload() {
-    await rotateLogs()
-    // postgres and proxy containers rotate themselves earlier
-
+export async function rotatedLogUpload() {
+    // Upload anything that has been rotated to 2*.log during the day
     cronlog.info('starting log upload')
     const bucket   = storage.bucket(logBucket)
     const files    = await readdirAsync('/var/log')
@@ -63,13 +61,10 @@ export async function logRotateUpload() {
         }
     }
 
-    const toemail  = toupload.filter(f => /(proxy|server|db)/.test(f))
-    await sendLogs("Logs", toemail)
     for (const path of toupload) {
         await unlinkAsync(path)
     }
 }
-*/
 
 
 export async function restoreBackup() {
