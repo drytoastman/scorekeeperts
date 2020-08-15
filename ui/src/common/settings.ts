@@ -1,4 +1,4 @@
-import { DataValidationRules, Length, isURLV, VuetifyValidationRule, Range } from './util'
+import { DataValidationRules, Length, isURLV, VuetifyValidationRule, Range, isDomain, isAlphaNum, isEmailV, isOneZero } from './util'
 
 export interface SeriesSettings
 {
@@ -70,4 +70,15 @@ export const SettingsValidator: DataValidationRules = {
     resultscss:          [],
     resultsheader:       [],
     cardtemplate:        []
+}
+
+export const LocalSettingsValidator: DataValidationRules = {
+    IS_MAIN_SERVER:    [isOneZero],
+    MAIL_RECEIVE_HOST: [isDomain],
+    MAIL_SEND_HOST:    [isDomain],
+    MAIL_SEND_FROM:    [isEmailV],
+    MAIL_SEND_REPLYTO: [isEmailV],
+    MAIL_SEND_USER:    [isAlphaNum],
+    MAIL_RECEIVE_USER: [isAlphaNum],
+    SQ_APPLICATION_ID: []
 }

@@ -127,6 +127,16 @@ export async function apipost(req: Request, res: Response) {
                         }
                         param.items.driverids = Array.from(dids)
                         break
+
+                    case 'localsettings':
+                        req.auth.requireAdmin()
+                        ret.localsettings = await t.general.updateLocalSettings(param.items.localsettings)
+                        break
+
+                    case 'rotatekeygrip':
+                        req.auth.requireAdmin()
+                        await t.general.rotateKeyGrip()
+                        break
                 }
             }
 

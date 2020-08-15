@@ -40,6 +40,7 @@ export const api2Mutations = {
 
     adminAuthenticated(state: Api2State, ok: boolean) {
         state.adminAuthenticated = ok
+        state.authtype = 'admin'
         if (state.adminAuthenticated) {
             state.errors = []
         }

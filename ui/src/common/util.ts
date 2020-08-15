@@ -6,6 +6,8 @@ import isUUID from 'validator/es/lib/isUUID'
 import isInt from 'validator/es/lib/isInt'
 import isDecimal from 'validator/es/lib/isDecimal'
 import isCurrency from 'validator/es/lib/isCurrency'
+import isFQDN from 'validator/es/lib/isFQDN'
+import isAlphanumeric from 'validator/es/lib/isAlphanumeric'
 
 export type UUID = string;
 export type DateString = string;
@@ -21,8 +23,12 @@ export const isNumber: VuetifyValidationRule   = v => { return typeof v === 'num
 export const isEmailV: VuetifyValidationRule   = v => { return isEmail(v) || 'must be a valid email address' }
 export const isUUIDV: VuetifyValidationRule    = v => { return isUUID(v) || 'must be UUID' }
 export const isDate: VuetifyValidationRule     = v => { return (v instanceof Date && !isNaN(v.getTime())) || 'must be a date object' }
-export const isBarcode: VuetifyValidationRule  = v => { return /^([0-9A-Z]+|)$/.test(v) || 'Barcode can only accept characters 0-9 an capital A-Z' }
-export const isISODate: VuetifyValidationRule  = v => { return isISO8601(v) || 'Not a valid ISO Date value' }
+export const isBarcode: VuetifyValidationRule  = v => { return /^([0-9A-Z]+|)$/.test(v) || 'barcode can only accept characters 0-9 an capital A-Z' }
+export const isISODate: VuetifyValidationRule  = v => { return isISO8601(v) || 'not a valid ISO Date value' }
+export const isDomain: VuetifyValidationRule   = v => { return isFQDN(v) || 'not a valid domain name' }
+export const isAlphaNum: VuetifyValidationRule = v => { return isAlphanumeric(v) || 'must be alpha numeric' }
+export const isOneZero: VuetifyValidationRule  = v => { return ['0', '1'].includes(v) || 'must be 1 or 0' }
+
 
 export const isURLV: VuetifyValidationRule      = v => {
     return (v === undefined) || (v === '') || isURL(v) || 'must be a valid URL'
@@ -37,7 +43,7 @@ export const isDecimal3: VuetifyValidationRule = v => {
 }
 
 export const isDollar: VuetifyValidationRule = v => {
-    return (v === undefined) || typeof v === 'number' || isCurrency(v, { digits_after_decimal: [0, 1, 2] }) || 'Needs to be a valid dollar amount'
+    return (v === undefined) || typeof v === 'number' || isCurrency(v, { digits_after_decimal: [0, 1, 2] }) || 'must be a valid dollar amount'
 }
 
 export function isPrintable(allowblank: boolean): VuetifyValidationRule {
@@ -63,11 +69,11 @@ export function Range(min: number, max: number): VuetifyValidationRule {
 }
 
 export function MinLength(len: number): VuetifyValidationRule {
-    return (v): (boolean|string) => { return v.length >= len || `must greater than ${len} characters` }
+    return (v): (boolean|string) => { return v.length >= len || `must be at least ${len} characters` }
 }
 
 export function MaxLength(len: number): VuetifyValidationRule {
-    return (v): (boolean|string) => { return (v === undefined || v.length <= len) || `must less than ${len} characters` }
+    return (v): (boolean|string) => { return (v === undefined || v.length <= len) || `cannot be more than ${len} characters` }
 }
 
 export function Length(min: number, max: number): VuetifyValidationRule {

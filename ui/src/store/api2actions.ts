@@ -35,6 +35,7 @@ export const api2Actions = {
             context.commit('gettingData', true)
             const data = (await axios.get(API2ROOT, { params: p, withCredentials: true })).data
             context.commit('apiData', data)
+            return data
         } catch (error) {
             context.dispatch('axiosError', error)
         } finally {
@@ -51,11 +52,14 @@ export const api2Actions = {
             }
             p.series = this.state.currentSeries
             p.authtype = this.state.authtype
+            context.commit('gettingData', true)
             const data = (await axios.post(API2ROOT, p, { withCredentials: true })).data
             context.commit('apiData', data)
+            return data
         } catch (error) {
             context.dispatch('axiosError', error)
         } finally {
+            context.commit('gettingData', false)
             if (busy) {
                 context.commit('clearBusy', busy)
             }

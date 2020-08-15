@@ -21,7 +21,7 @@ export async function apiget(req: Request, res: Response) {
                 series: param.series
             }
 
-            const isSeries = param.authtype === 'series'
+            const isSeries = ['series', 'admin'].includes(param.authtype)
             await t.series.setSeries(ret.series)
             for (const item of param.items) {
                 switch (item) {
@@ -38,6 +38,10 @@ export async function apiget(req: Request, res: Response) {
                         // dependent on auth type
                     case 'settings':
                         ret.settings = isSeries ? await t.series.seriesSettings() : {}
+                        break
+
+                    case 'localsettings':
+                        ret.localsettings = await t.general.getLocalSettings()
                         break
 
                     case 'drivers':

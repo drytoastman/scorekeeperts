@@ -49,6 +49,7 @@ export class AuthData {
     adminAuthenticated()                { this.session.admin = true }
     hasAdminAuth()                      { return this.session.admin === true }
     clearAdmin()                        { this.session.admin = null }
+    requireAdmin()                      { if (!this.hasAdminAuth()) { throw new Error('Admin auth required for this request') } }
 }
 
 
@@ -181,9 +182,9 @@ export const COMMONITEMS  = [
     SERIESLIST, 'listids', 'classes', 'indexes',
     'events', 'paymentaccounts', 'paymentitems', 'counts'
 ]
-export const SERIESEXTRA    = ['squareapplicationid', 'settings', 'attendance']
+export const SERIESEXTRA    = ['squareapplicationid', 'settings', 'attendance', 'localsettings', 'rotatekeygrip']
 export const DRIVEREXTRA    = ['summary', 'drivers', 'payments', 'registered', 'cars', 'unsubscribe']
-export const API_NON_SERIES = [SERIESLIST, 'drivers', 'summary', 'listids', 'unsubscribe']
+export const API_NON_SERIES = [SERIESLIST, 'drivers', 'summary', 'listids', 'unsubscribe', 'localsettings', 'rotatekeygrip']
 
 export class AuthError extends Error {
     authtype: string

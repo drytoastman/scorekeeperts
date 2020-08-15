@@ -1,6 +1,7 @@
 import { IDatabase } from 'pg-promise'
 import KeyGrip from 'keygrip'
 import bcrypt from 'bcryptjs'
+import crypto from 'crypto'
 
 export const IS_MAIN_SERVER = 'IS_MAIN_SERVER'
 export const SQ_APPLICATION_ID = 'SQ_APPLICATION_ID'
@@ -14,6 +15,11 @@ export const MAIL_RECEIVE_USER = 'MAIL_RECEIVE_USER'
 export const MAIL_RECEIVE_PASS = 'MAIL_RECEIVER_PASS'
 export const MAIL_RECEIVE_HOST = 'MAIL_RECEIVE_HOST'
 export const ADMIN_PASSWORD = 'ADMIN_PASSWORD'
+
+const viewable = [
+    MAIL_SEND_USER, MAIL_SEND_HOST, MAIL_SEND_FROM, MAIL_SEND_REPLYTO, MAIL_RECEIVE_USER, MAIL_RECEIVE_HOST,
+    IS_MAIN_SERVER, SQ_APPLICATION_ID
+]
 
 export class GeneralRepository {
     // eslint-disable-next-line no-useless-constructor
@@ -42,12 +48,51 @@ export class GeneralRepository {
         return await this.db.none('UPDATE localsettings SET value=$1 WHERE key=$2', [value, key])
     }
 
+    async getLocalSettings(): Promise<any[]> {
+        const rows = await this.db.any('SELECT * FROM localsettings')
+        for (const row of rows) {
+            if (!viewable.includes(row.key)) {
+                row.value = ''
+            }
+        }
+        return rows.filter(s => !s.key.startsWith('KEYGRIP'))
+    }
+
+    async updateLocalSettings(settings: any[]): Promise<any[]> {
+        for (const s of settings) {
+            if (!viewable.includes(s.key) && s.value === '') continue
+            if (s.key === ADMIN_PASSWORD && s.value !== '') {
+                s.value = await bcrypt.hash(s.value, 12)
+            }
+            await this.setLocalSetting(s.key, s.value)
+        }
+        return this.getLocalSettings()
+    }
+
+
     async getKeyGrip(): Promise<KeyGrip> {
-        const rows = await this.db.any('SELECT value FROM localsettings WHERE key LIKE $1 ORDER BY key DESC', ['KEYGRIP%'])
+        const rows = await this.db.any('SELECT value FROM localsettings WHERE key LIKE \'KEYGRIP%\' ORDER BY key DESC')
         if (rows.length === 0) {
             throw Error('No keys to create KeyGrip')
         }
         return new KeyGrip(rows.map(r => r.value))
+    }
+
+    async rotateKeyGrip(): Promise<void> {
+        const rows  = await this.db.any('SELECT key FROM localsettings WHERE key LIKE \'KEYGRIP%\' ORDER BY key DESC')
+        const limit = 5
+
+        let nextidx = -1
+        if (rows.length > 0) {
+            nextidx = parseInt(rows[0].key[7])
+        }
+        nextidx += 1
+        await this.db.none('INSERT INTO localsettings (key, value) VALUES ($1, $2)', [`KEYGRIP${nextidx}`, crypto.randomBytes(32).toString('base64')])
+
+        if (rows.length >= limit) {
+            const toremove = rows.length - limit + 1
+            await this.db.none('DELETE FROM localsettings WHERE key IN (SELECT key FROM localsettings WHERE key LIKE \'KEYGRIP%\' ORDER BY key LIMIT $1)', [toremove])
+        }
     }
 
     async queueEmail(content: any): Promise<null> {

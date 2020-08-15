@@ -13,6 +13,7 @@ const Settings     = () => import(/* webpackChunkName: "adminviews" */  './views
 const UsedNumbers  = () => import(/* webpackChunkName: "adminviews" */  './views/usednumbers.vue')
 const Attendance   = () => import(/* webpackChunkName: "adminviews" */  './views/attendance.vue')
 const SeriesLogs   = () => import(/* webpackChunkName: "adminviews" */  './views/serieslogs.vue')
+const HostSettings = () => import(/* webpackChunkName: "adminviews" */  './views/hostsettings.vue')
 
 Vue.use(VueRouter)
 
@@ -30,7 +31,7 @@ const routes = [
         }
     },
 
-    { path: '/hostsettings',     name: 'hostsettings', meta: { adminauth: 1 }, component: Placeholder },
+    { path: '/hostsettings',     name: 'hostsettings', meta: { adminauth: 1 }, component: HostSettings },
     { path: '/drivereditor',     name: 'drivereditor', meta: { adminauth: 1 }, component: Placeholder },
     { path: '/serverlogs',       name: 'serverlogs',   meta: { adminauth: 1 }, component: SeriesLogs },
 

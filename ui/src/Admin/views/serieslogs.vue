@@ -20,7 +20,7 @@
 import { API2ROOT } from '@/store/state'
 
 export default {
-    name: 'Summary',
+    name: 'SeriesLogs',
     props: {
         series: String
     },
