@@ -2,6 +2,7 @@ import { IDatabase } from 'pg-promise'
 import KeyGrip from 'keygrip'
 import bcrypt from 'bcryptjs'
 import crypto from 'crypto'
+import { dblog } from '@/util/logging'
 
 export const IS_MAIN_SERVER = 'IS_MAIN_SERVER'
 export const SQ_APPLICATION_ID = 'SQ_APPLICATION_ID'
@@ -15,6 +16,7 @@ export const MAIL_RECEIVE_USER = 'MAIL_RECEIVE_USER'
 export const MAIL_RECEIVE_PASS = 'MAIL_RECEIVER_PASS'
 export const MAIL_RECEIVE_HOST = 'MAIL_RECEIVE_HOST'
 export const ADMIN_PASSWORD = 'ADMIN_PASSWORD'
+export const KEYGRIP = 'KEYGRIP'
 
 const viewable = [
     MAIL_SEND_USER, MAIL_SEND_HOST, MAIL_SEND_FROM, MAIL_SEND_REPLYTO, MAIL_RECEIVE_USER, MAIL_RECEIVE_HOST,
@@ -55,7 +57,7 @@ export class GeneralRepository {
                 row.value = ''
             }
         }
-        return rows.filter(s => !s.key.startsWith('KEYGRIP'))
+        return rows.filter(s => !(s.key === KEYGRIP))
     }
 
     async updateLocalSettings(settings: any[]): Promise<any[]> {
@@ -71,28 +73,22 @@ export class GeneralRepository {
 
 
     async getKeyGrip(): Promise<KeyGrip> {
-        const rows = await this.db.any('SELECT value FROM localsettings WHERE key LIKE \'KEYGRIP%\' ORDER BY key DESC')
-        if (rows.length === 0) {
-            throw Error('No keys to create KeyGrip')
-        }
-        return new KeyGrip(rows.map(r => r.value))
+        const row = await this.db.one('SELECT value FROM localsettings WHERE key=$1', [KEYGRIP])
+        return new KeyGrip(row.value.split(','))
     }
 
     async rotateKeyGrip(): Promise<void> {
-        const rows  = await this.db.any('SELECT key FROM localsettings WHERE key LIKE \'KEYGRIP%\' ORDER BY key DESC')
-        const limit = 5
+        dblog.info('Rotating keygrip keys')
+        const row     = await this.db.one('SELECT value FROM localsettings WHERE key=$1', [KEYGRIP])
+        const current = row.value.split(',')
+        const size    = 5
 
-        let nextidx = -1
-        if (rows.length > 0) {
-            nextidx = parseInt(rows[0].key[7])
+        // Make sure its full enough and remove the last entry
+        while (current.length < size + 1) {
+            current.unshift(crypto.randomBytes(32).toString('base64'))
         }
-        nextidx += 1
-        await this.db.none('INSERT INTO localsettings (key, value) VALUES ($1, $2)', [`KEYGRIP${nextidx}`, crypto.randomBytes(32).toString('base64')])
-
-        if (rows.length >= limit) {
-            const toremove = rows.length - limit + 1
-            await this.db.none('DELETE FROM localsettings WHERE key IN (SELECT key FROM localsettings WHERE key LIKE \'KEYGRIP%\' ORDER BY key LIMIT $1)', [toremove])
-        }
+        current.pop()
+        await this.db.none('UPDATE localsettings SET value=$1 WHERE key=$2', [current.join(','), KEYGRIP])
     }
 
     async queueEmail(content: any): Promise<null> {

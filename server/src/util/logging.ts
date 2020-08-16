@@ -13,8 +13,7 @@ const transports = [
     new winston.transports.File({ level: 'verbose', filename: '/var/log/server.log' })
 ]
 const atransports = [
-    new winston.transports.Console({ level: (process.env.NODE_ENV === 'development') ? 'silly' : 'warn' })
-    // new winston.transports.File({ level: 'verbose', filename: '/var/log/servaccess.log' })
+    new winston.transports.Console({ level: 'silly', silent: true }) // turn on when needed
 ]
 
 // rotate our logs
