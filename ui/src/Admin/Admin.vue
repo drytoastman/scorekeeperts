@@ -6,11 +6,11 @@
             <span class='bdesc'>{{$route.meta.marker || $route.name}}</span>
             <v-divider inset vertical></v-divider>
 
-            <AdminMenu :items="eventMenu" :icon="icons.mdiFlagCheckered"    :disabled="!currentSeries"></AdminMenu>
-            <AdminMenu :items="settings"  :icon="icons.mdiCog"              :disabled="!currentSeries"></AdminMenu>
-            <AdminMenu :items="reports"   :icon="icons.mdiFileTable"        :disabled="!currentSeries"></AdminMenu>
-            <AdminMenu :items="admins"    :icon="icons.mdiAccountCowboyHat" ></AdminMenu>
-            <v-btn icon @click='logout'><v-icon>{{icons.mdiAccountHardHat}}</v-icon></v-btn>
+            <AdminMenu :items="eventMenu" text="event"    :disabled="!currentSeries"></AdminMenu>
+            <AdminMenu :items="settings"  text="settings" :disabled="!currentSeries"></AdminMenu>
+            <AdminMenu :items="reports"   text="reports"  :disabled="!currentSeries"></AdminMenu>
+            <AdminMenu :items="admins"    text="admin"></AdminMenu>
+            <v-btn color=white text small @click='logout'>Logout</v-btn>
             <v-progress-linear :active="!!gettingData" indeterminate absolute bottom color="green accent-4"></v-progress-linear>
         </v-app-bar>
 
@@ -99,7 +99,8 @@ export default {
                 { title: 'Settings', link: { name:'settings' } },
                 { title: 'Classes',  link: { name:'classes' } },
                 { title: 'Indexes',  link: { name:'indexes' } },
-                { title: 'Accounts', link: { name:'accounts' } }
+                { title: 'Accounts', link: { name:'accounts' } },
+                { title: 'Driver Editor', link: { name:'serieseditor' } }
             ].map(v => { v.link.params = { series: this.currentSeries }; return v })
         },
         reports() {

@@ -1,13 +1,13 @@
 <template>
     <div class='outer'>
-        <v-form @submit.prevent='login' v-if='series' class='formbox'>
+        <v-form @submit.prevent='loginseries' v-if='series' class='formbox'>
             Series Password For <b>{{series}}</b>
             <v-text-field v-model="seriespassword" label="Password" required :type="pType" @click:append="showp=!showp" :append-icon="pIcon">
             </v-text-field>
             <v-btn :dark=dark color="primary" @click="loginseries">Login</v-btn>
         </v-form>
         <div v-if='series && admin' class='or'>Or</div>
-        <v-form @submit.prevent='login' v-if='admin' class='formbox'>
+        <v-form @submit.prevent='loginadmin' v-if='admin' class='formbox'>
             System Admin Password
             <v-text-field v-model="adminpassword" label="Password" required :type="pType" @click:append="showp=!showp" :append-icon="pIcon">
             </v-text-field>

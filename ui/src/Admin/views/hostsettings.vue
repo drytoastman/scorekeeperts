@@ -50,7 +50,7 @@ export default {
     },
     mounted() {
         this.$store.dispatch('getdata', { items: 'localsettings' }).then(data => {
-            this.localsettings = orderBy(data.localsettings, 'key')
+            if (data) this.localsettings = orderBy(data.localsettings, 'key')
         })
     }
 }

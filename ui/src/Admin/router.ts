@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import VueRouter, { RouterOptions } from 'vue-router'
 
-const Placeholder  = () => import(/* webpackChunkName: "adminviews" */  './views/placeholder.vue')
+// const Placeholder  = () => import(/* webpackChunkName: "adminviews" */  './views/placeholder.vue')
 const Summary      = () => import(/* webpackChunkName: "adminviews" */  './views/summary.vue')
 const OAuthHandler = () => import(/* webpackChunkName: "adminviews" */  './views/oauthhandler.vue')
 const Accounts     = () => import(/* webpackChunkName: "adminviews" */  './views/accounts.vue')
@@ -14,6 +14,7 @@ const UsedNumbers  = () => import(/* webpackChunkName: "adminviews" */  './views
 const Attendance   = () => import(/* webpackChunkName: "adminviews" */  './views/attendance.vue')
 const SeriesLogs   = () => import(/* webpackChunkName: "adminviews" */  './views/serieslogs.vue')
 const HostSettings = () => import(/* webpackChunkName: "adminviews" */  './views/hostsettings.vue')
+const DriverEditor = () => import(/* webpackChunkName: "adminviews" */  './views/drivereditor.vue')
 
 Vue.use(VueRouter)
 
@@ -31,8 +32,8 @@ const routes = [
         }
     },
 
+    { path: '/drivereditor',     name: 'drivereditor', component: DriverEditor },
     { path: '/hostsettings',     name: 'hostsettings', meta: { adminauth: 1 }, component: HostSettings },
-    { path: '/drivereditor',     name: 'drivereditor', meta: { adminauth: 1 }, component: Placeholder },
     { path: '/serverlogs',       name: 'serverlogs',   meta: { adminauth: 1 }, component: SeriesLogs },
 
     { path: '/',                       name: 'noseries',  component: Summary, props: true },

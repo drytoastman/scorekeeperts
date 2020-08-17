@@ -40,8 +40,8 @@ export const api2Mutations = {
 
     adminAuthenticated(state: Api2State, ok: boolean) {
         state.adminAuthenticated = ok
-        state.authtype = 'admin'
         if (state.adminAuthenticated) {
+            state.authtype = 'admin'
             state.errors = []
         }
     },
@@ -97,7 +97,7 @@ export const api2Mutations = {
     gettingData(state: Api2State, value: boolean) {
         if (value) {
             state.gettingData++
-        } else {
+        } else if (state.gettingData > 0) {
             state.gettingData--
         }
     },
@@ -109,7 +109,7 @@ export const api2Mutations = {
             state.serieslist = data.serieslist.sort()
         }
 
-        for (const key of ['listids', 'unsubscribe', 'summary', 'counts', 'attendance',
+        for (const key of ['listids', 'unsubscribe', 'summary', 'counts', 'attendance', 'driverbrief',
             'usednumbers', 'emailresult', 'settings', 'squareapplicationid', 'squareoauthresp']) {
             // easy straight assignments/replacements
             if (key in data) {

@@ -1,7 +1,7 @@
 <template>
     <v-menu close-on-content-click :disabled="disabled">
         <template v-slot:activator="{ on }">
-            <v-btn color=white icon v-on="on"><v-icon>{{icon}}</v-icon></v-btn>
+            <v-btn color=white text small v-on="on">{{text}}</v-btn>
         </template>
         <v-list>
             <template v-for="item in items">
@@ -19,7 +19,7 @@ export default {
     name: 'AdminMenu',
     props: {
         items: Array,
-        icon: String,
+        text: String,
         disabled: Boolean
     }
 }

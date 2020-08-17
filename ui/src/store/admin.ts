@@ -1,4 +1,5 @@
 import orderBy from 'lodash/orderBy'
+import isEmpty from 'lodash/isEmpty'
 import axios from 'axios'
 import { Api2State, API2ROOT } from './state'
 import { ActionContext, ActionTree, Store, GetterTree } from 'vuex'
@@ -81,6 +82,37 @@ export const adminActions = {
         }
     },
 
+    async ensureDriverInfo(context: ActionContext<Api2State, any>, driverids: Set<UUID>) {
+        try {
+            const dids = {}
+            for (const driverid of driverids) {
+                if (!(driverid in this.state.drivers)) {
+                    dids[driverid] = 1
+                }
+            }
+
+            if (isEmpty(dids)) return
+
+            const p = {
+                series: this.state.currentSeries,
+                authtype: this.state.authtype,
+                type: 'update', // we are not necessarily getting entire list
+                items: {
+                    driverids: Object.keys(dids)
+                }
+            }
+
+            // We end up using POST so we can specify a large amount of data even though we are really getting data
+            context.commit('gettingData', true)
+            const data = (await axios.post(API2ROOT, p, { withCredentials: true })).data
+            context.commit('apiData', data)
+        } catch (error) {
+            context.dispatch('axiosError', error)
+        } finally {
+            context.commit('gettingData', false)
+        }
+    },
+
     async ensureCarDriverInfo(context: ActionContext<Api2State, any>, carids: Set<UUID>) {
         try {
             const cids = {}
@@ -95,6 +127,8 @@ export const adminActions = {
                     cids[carid] = 1
                 }
             }
+
+            if (isEmpty(carids) && isEmpty(dids)) return
 
             const p = {
                 series: this.state.currentSeries,
