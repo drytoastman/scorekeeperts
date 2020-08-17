@@ -44,6 +44,10 @@ export async function apiget(req: Request, res: Response) {
                         ret.localsettings = await t.general.getLocalSettings()
                         break
 
+                    case 'driverbrief':
+                        ret.driverbrief = await t.drivers.getDriversBrief()
+                        break
+
                     case 'drivers':
                         ret.drivers = await (isSeries
                             ? t.drivers.getAllDrivers()

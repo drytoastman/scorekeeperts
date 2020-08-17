@@ -182,9 +182,9 @@ export const COMMONITEMS  = [
     SERIESLIST, 'listids', 'classes', 'indexes',
     'events', 'paymentaccounts', 'paymentitems', 'counts'
 ]
-export const SERIESEXTRA    = ['squareapplicationid', 'settings', 'attendance', 'localsettings', 'rotatekeygrip']
+export const SERIESEXTRA    = ['squareapplicationid', 'settings', 'attendance', 'localsettings', 'rotatekeygrip', 'driverbrief']
 export const DRIVEREXTRA    = ['summary', 'drivers', 'payments', 'registered', 'cars', 'unsubscribe']
-export const API_NON_SERIES = [SERIESLIST, 'drivers', 'summary', 'listids', 'unsubscribe', 'localsettings', 'rotatekeygrip']
+export const API_NON_SERIES = [SERIESLIST, 'drivers', 'summary', 'listids', 'unsubscribe', 'localsettings', 'rotatekeygrip', 'driverbrief', 'driverids', 'carids']
 
 export class AuthError extends Error {
     authtype: string
