@@ -5,18 +5,23 @@
             <div class='namelist'>
                 <table class='nametable'>
                     <tr v-for="d in searched" :key="d.driverid" @click="trclick($event, d.driverid)">
-                        <td>{{d.firstname}}</td>
-                        <td>{{d.lastname}}</td>
-                        <td>{{d.email}}</td>
+                        <td>{{d.firstname|lenlimit(12)}}</td>
+                        <td>{{d.lastname|lenlimit(16)}}</td>
+                        <td>{{d.email|lenlimit(20)}}</td>
                     </tr>
                 </table>
             </div>
         </div>
         <div class='displaybox'>
-            <div v-for="driver in selectedDrivers" :key="driver.driverid">
-                {{driver}}
+            <div v-for="driver in selectedDrivers" :key="driver.driverid" class='driverbox'>
+                <div class='buttons'>
+                    <v-btn color=secondary outlined small>Edit</v-btn>
+                    <v-btn color=secondary outlined small>Delete</v-btn>
+                    <v-btn color=secondary outlined small>Merge Into This</v-btn>
+                    <v-btn color=secondary outlined small :disabled="!driver.email">Send Password Reset</v-btn>
+                </div>
+                <Driver :driver=driver class='driverinfo'></Driver>
             </div>
-            Display Here
         </div>
     </div>
 </template>
@@ -25,9 +30,13 @@
 import isEmpty from 'lodash/isEmpty'
 import { mapState } from 'vuex'
 import Vue from 'vue'
+import Driver from '../../components/Driver'
 
 export default {
     name: 'DriverEditor',
+    components: {
+        Driver
+    },
     data() {
         return {
             search: '',
@@ -94,7 +103,7 @@ export default {
 }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .outer {
     display: flex;
     column-gap: 1rem;
@@ -102,31 +111,53 @@ export default {
 .searchbox {
     display: flex;
     flex-direction: column;
+    .searchfield {
+        flex-grow: 0;
+    }
+    .namelist {
+        flex-grow: 1;
+        height: 80vh;
+        width: 45vw;
+        overflow: scroll;
+    }
+    .nametable {
+        border-collapse: collapse;
+        width: 100%;
+
+        tr.selected {
+            background-color: rgba(0,150,0,0.25) !important;
+        }
+        tr:nth-of-type(2n+1) {
+            background-color: rgba(0,0,0,0.05);
+        }
+        td {
+            padding: 2px 10px 2px 3px;
+            border: 1px solid lightgray;
+            font-size: 80%;
+            cursor: pointer;
+            user-select: none;
+        }
+    }
 }
 .displaybox {
-    min-width: 10rem;
+    .driverbox {
+        margin-bottom: 1rem;
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, auto);
+            column-gap: 5px;
+        }
+    }
+    ::v-deep {
+        .driverid {
+            white-space: nowrap;
+        }
+        .barcodescca, .csz {
+            padding-bottom: 0;
+            margin-bottom: 0;
+            border-bottom: none;
+        }
+    }
 }
-.searchfield {
-    flex-grow: 0;
-}
-.namelist {
-    flex-grow: 1;
-}
-.nametable {
-    border-collapse: collapse;
-    width: 100%;
-}
-.nametable tr.selected {
-    background-color: rgba(0,150,0,0.25) !important;
-}
-.nametable tr:nth-of-type(2n+1) {
-    background-color: rgba(0,0,0,0.05);
-}
-.nametable td {
-    padding: 2px 10px 2px 3px;
-    border: 1px solid lightgray;
-    font-size: 80%;
-    cursor: pointer;
-    user-select: none;
-}
+
 </style>

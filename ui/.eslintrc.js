@@ -6,6 +6,7 @@ let rules = {
     'no-multiple-empty-lines': 'off',
     'no-debugger': 'off',
     'key-spacing': 'off',
+    'spaced-comment': 'off',
     indent: ['warn', 4, { SwitchCase: 1 }],
     'vue/no-unused-components': 'warn'
 }

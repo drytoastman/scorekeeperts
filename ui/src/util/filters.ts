@@ -15,10 +15,18 @@ function dmdy(v: DateString): string {
     return new Date(v).toDateString()
 }
 
+function lenlimit(v: string, limit: number) {
+    if (v.length > limit) {
+        return v.substr(0, limit - 3) + '...'
+    }
+    return v
+}
+
 export default {
     install(Vue: VueConstructor<Vue>): void {
         Vue.filter('capitalize', capitalize)
         Vue.filter('cents2dollars', cents2dollars)
         Vue.filter('dmdy', dmdy)
+        Vue.filter('lenlimit', lenlimit)
     }
 }

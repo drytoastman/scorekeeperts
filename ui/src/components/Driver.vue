@@ -1,8 +1,8 @@
 <template>
     <div v-if="driver && driver.attr">
         <div class='title'>{{driver.firstname}} {{driver.lastname}}</div>
-        <div>{{driver.driverid}}</div>
-        <div>
+        <div class='driverid'>{{driver.driverid}}</div>
+        <div v-if="driver.email">
             {{driver.email}}
             <v-tooltip right>
                 <template v-slot:activator="{ on }">
@@ -10,6 +10,9 @@
                 </template>
                 <span>{{dnctooltip}}</span>
             </v-tooltip>
+        </div>
+        <div v-else class='noemail'>
+            No email
         </div>
         <div class='barcodescca'>
             <span class='barcode' v-if="driver.barcode"><b>Barcode:</b> {{driver.barcode}}</span>
@@ -66,5 +69,9 @@ export default {
     display: grid;
     grid-template-columns: auto auto;
     column-gap: 10px;
+}
+.noemail {
+    font-style: italic;
+    color: rgb(160, 177, 8);
 }
 </style>
