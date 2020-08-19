@@ -1,6 +1,6 @@
 import { Request, Response } from 'express'
 import { db } from '../db'
-import { allSeriesSummary } from './summary'
+import { allSeriesSummary, allSeriesCars } from './summary'
 import * as square from '../util/square'
 import { paypalCapture } from '../util/paypal'
 import { checkAuth } from './apiauth'
@@ -149,6 +149,12 @@ export async function apipost(req: Request, res: Response) {
             if (addsummary && param.authtype === 'driver') {
                 ret.summary = await allSeriesSummary(t, req.auth.driverId())
             }
+
+            if (param.items.editorids) {
+                ret.drivers = await t.drivers.getDriversById(param.items.editorids)
+                ret.cars = await allSeriesCars(t, param.items.editorids)
+            }
+
             return ret
         }))
     } catch (error) {

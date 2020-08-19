@@ -21,6 +21,13 @@
                     <v-btn color=secondary outlined small :disabled="!driver.email">Send Password Reset</v-btn>
                 </div>
                 <Driver :driver=driver class='driverinfo'></Driver>
+                <CarLabel v-for="car in drivercars(driver.driverid)" :key="car.carid" :car=car>
+                    <div>{{car.series}}</div>
+                    <div class='smallbuttons'>
+                        <v-btn color=secondary outlined small>Edit</v-btn>
+                        <v-btn color=secondary outlined small>Delete</v-btn>
+                    </div>
+                </CarLabel>
             </div>
         </div>
     </div>
@@ -31,11 +38,13 @@ import isEmpty from 'lodash/isEmpty'
 import { mapState } from 'vuex'
 import Vue from 'vue'
 import Driver from '../../components/Driver'
+import CarLabel from '../../components/CarLabel'
 
 export default {
     name: 'DriverEditor',
     components: {
-        Driver
+        Driver,
+        CarLabel
     },
     data() {
         return {
@@ -44,7 +53,7 @@ export default {
         }
     },
     computed: {
-        ...mapState(['drivers', 'driverbrief']),
+        ...mapState(['drivers', 'driverbrief', 'cars']),
         searched() {
             if (!this.search) return this.driverbrief
             const reg = this.search.split(' ').map(t => new RegExp(t, 'i'))
@@ -87,7 +96,10 @@ export default {
         select(driverid, trelement) {
             trelement.classList.add('selected')
             Vue.set(this.selected, driverid, trelement)
-            this.$store.dispatch('ensureDriverInfo', [driverid])
+            this.$store.dispatch('ensureEditorInfo', [driverid])
+        },
+        drivercars(driverid) {
+            return Object.values(this.cars).filter(c => c.driverid === driverid)
         }
     },
     watch: {
@@ -146,6 +158,13 @@ export default {
             display: grid;
             grid-template-columns: repeat(4, auto);
             column-gap: 5px;
+        }
+        .smallbuttons {
+            display: flex;
+            column-gap: 5px;
+            .v-btn {
+                height: 22px;
+            }
         }
     }
     ::v-deep {

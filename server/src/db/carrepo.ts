@@ -26,6 +26,10 @@ export class CarRepository {
         return this.db.any('SELECT * FROM cars WHERE driverid=$1', [driverid])
     }
 
+    async getCarsbyDriverIds(driverids: UUID[]): Promise<Car[]> {
+        return this.db.any('SELECT * FROM cars WHERE driverid IN ($1:csv)', [driverids])
+    }
+
     async getCarsById(carids: UUID[]): Promise<Car[]> {
         if (carids.length === 0) { return [] }
         return this.db.any('SELECT * FROM cars WHERE carid IN ($1:csv)', [carids])

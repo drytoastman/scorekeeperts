@@ -68,14 +68,8 @@ export const adminActions = {
         }
     },
 
-    async ensureDriverInfo(context: ActionContext<Api2State, any>, driverids: Set<UUID>) {
-        const dids = {}
-        for (const driverid of driverids) {
-            if (!(driverid in this.state.drivers)) {
-                dids[driverid] = 1
-            }
-        }
-
+    async ensureEditorInfo(context: ActionContext<Api2State, any>, driverids: UUID[]) {
+        const dids = driverids.filter(did => !(did in this.state.drivers))
         if (isEmpty(dids)) return
 
         const p = {
@@ -83,27 +77,16 @@ export const adminActions = {
             authtype: this.state.authtype,
             type: 'update', // we are not necessarily getting entire list
             items: {
-                driverids: Object.keys(dids)
+                editorids: dids
             }
         }
 
         return await getDataWrap(context, axios.post(API2.ROOT, p, { withCredentials: true }))
     },
 
-    async ensureCarDriverInfo(context: ActionContext<Api2State, any>, carids: Set<UUID>) {
-        const cids = {}
-        const dids = {}
-        for (const carid of carids) {
-            if (carid in this.state.cars) {
-                const driverid = this.state.cars[carid].driverid
-                if (!(driverid in this.state.drivers)) {
-                    dids[driverid] = 1
-                }
-            } else {
-                cids[carid] = 1
-            }
-        }
-
+    async ensureCarDriverInfo(context: ActionContext<Api2State, any>, carids: UUID[]) {
+        const cids = carids.filter(cid => !(cid in this.state.cars))
+        const dids = carids.filter(cid => cid in this.state.cars).map(cid => this.state.cars[cid].driverid)
         if (isEmpty(carids) && isEmpty(dids)) return
 
         const p = {
@@ -111,8 +94,8 @@ export const adminActions = {
             authtype: this.state.authtype,
             type: 'update', // we are not necessarily getting entire list
             items: {
-                carids: Object.keys(cids),
-                driverids: Object.keys(dids)
+                carids: cids,
+                driverids: dids
             }
         }
 

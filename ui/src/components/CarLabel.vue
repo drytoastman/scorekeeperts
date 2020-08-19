@@ -8,6 +8,7 @@
         <div class='descrip'>
             {{car.attr.year}} {{car.attr.make}} {{car.attr.model}} {{car.attr.color}}
         </div>
+        <slot></slot>
     </div>
 </template>
 

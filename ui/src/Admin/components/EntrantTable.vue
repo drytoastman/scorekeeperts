@@ -16,10 +16,10 @@
                 </div>
             </template>
 
-            <template v-slot:item.car="{ item }"><CarLabel :car=item.car></CarLabel></template>
-            <template v-slot:item.payment="{ item }"><PaymentLabel :payment=item.payment></PaymentLabel></template>
+            <template v-slot:[`item.car`]="{ item }"><CarLabel :car=item.car></CarLabel></template>
+            <template v-slot:[`item.payment`]="{ item }"><PaymentLabel :payment=item.payment></PaymentLabel></template>
 
-            <template v-slot:item.actions="{ item }">
+            <template v-slot:[`item.actions`]="{ item }">
                 <div v-if='!item.busy && !busyPayment[item.payment && item.payment.payid]'>
                     <v-icon v-if="item.payment && !item.payment.refunded" @click.stop="refund(item)">{{icons.mdiCreditCardRefund}}</v-icon>
 
@@ -138,7 +138,7 @@ export default {
             this.RefundDialog = true
         },
         editruns(item) {
-            return 0
+            console.log(item)
         },
         unregister(item) {
             item.busy = true
@@ -168,9 +168,9 @@ export default {
         if (isEmpty(this.registered)) { req.push('registered') }
         await this.$store.dispatch('getdata', { items: req.join(',') })
 
-        const carids = new Set([
+        const carids = [...new Set([
             ...flatten(Object.values(this.payments)).map(p => p.carid),
-            ...flatten(Object.values(this.registered)).map(r => r.carid)])
+            ...flatten(Object.values(this.registered)).map(r => r.carid)])]
         this.$store.dispatch('ensureCarDriverInfo', carids)
     }
 }
