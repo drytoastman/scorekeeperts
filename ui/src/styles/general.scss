@@ -55,3 +55,10 @@
 .v-list-item.v-list-item--link:hover {
     background: #eeeef0;
 }
+
+.prism-editor-wrapper {
+    border: 1px solid lightgray !important;
+    border-radius: 4px;
+    border-left: 4px solid rgb(116, 160, 149) !important;
+    padding: 0.3rem 0.5rem !important;
+}

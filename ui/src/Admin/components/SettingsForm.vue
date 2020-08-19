@@ -23,15 +23,15 @@
         <v-expansion-panels multiple focusable hover accordion style="grid-area: temp; margin-bottom: 1rem">
             <v-expansion-panel>
                 <v-expansion-panel-header>Results Extra CSS</v-expansion-panel-header>
-                <v-expansion-panel-content><PrismEditor language="css" v-model="settingsm.resultscss"></PrismEditor></v-expansion-panel-content>
+                <v-expansion-panel-content><PrismEditor :highlight="css" v-model="settingsm.resultscss"></PrismEditor></v-expansion-panel-content>
             </v-expansion-panel>
             <v-expansion-panel>
                 <v-expansion-panel-header>Results Header (HTML)</v-expansion-panel-header>
-                <v-expansion-panel-content><PrismEditor language="html" v-model="settingsm.resultsheader"></PrismEditor></v-expansion-panel-content>
+                <v-expansion-panel-content><PrismEditor :highlight="html" v-model="settingsm.resultsheader"></PrismEditor></v-expansion-panel-content>
             </v-expansion-panel>
             <v-expansion-panel>
                 <v-expansion-panel-header>Card Template (HTML)</v-expansion-panel-header>
-                <v-expansion-panel-content><PrismEditor language="html" v-model="settingsm.cardtemplate"></PrismEditor></v-expansion-panel-content>
+                <v-expansion-panel-content><PrismEditor :highlight="html" v-model="settingsm.cardtemplate"></PrismEditor></v-expansion-panel-content>
             </v-expansion-panel>
         </v-expansion-panels>
 
@@ -43,9 +43,8 @@
 <script>
 import isEqual from 'lodash/isEqual'
 import { mapState } from 'vuex'
-import 'prismjs'
-import 'prismjs/themes/prism-coy.css'
-import PrismEditor from 'vue-prism-editor'
+import { PrismEditor } from 'vue-prism-editor'
+import { prismlangs } from '@/util/prismwrapper'
 import { SettingsValidator } from '@/common/settings'
 
 export default {
@@ -65,6 +64,7 @@ export default {
         unchanged() { return isEqual(this.settings, this.settingsm) }
     },
     methods: {
+        ...prismlangs,
         saveSettings() {
             this.$store.commit('gettingData', true)
             this.$store.dispatch('setdata', {
@@ -104,5 +104,8 @@ export default {
 
 .settingsform >>> .v-input--selection-controls__input {
     align-self: baseline;
+}
+.settingsform >>> .v-expansion-panel-content__wrap {
+    padding-top: 1rem;
 }
 </style>

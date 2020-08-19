@@ -15,7 +15,7 @@
                     <DateTimePicker v-model="eventm.regclosed"  fieldstyle="grid-area: regc" label="Registration Closes"></DateTimePicker>
                     <div style="grid-area: notes">
                         <label class='noteslabel'>Notes (HTML)</label>
-                        <PrismEditor v-model="eventm.attr.notes" language="html"></PrismEditor>
+                        <div><PrismEditor v-model="eventm.attr.notes" :highlight="html"></PrismEditor></div>
                     </div>
                 </div>
             </v-expansion-panel-content>
@@ -92,9 +92,8 @@
 import cloneDeep from 'lodash/cloneDeep'
 import isEqual from 'lodash/isEqual'
 import orderBy from 'lodash/orderBy'
-import 'prismjs'
-import 'prismjs/themes/prism-coy.css'
-import PrismEditor from 'vue-prism-editor'
+import { PrismEditor } from 'vue-prism-editor'
+import { prismlangs } from '@/util/prismwrapper'
 import { mapState } from 'vuex'
 import { EventValidator } from '@/common/event'
 import DateTimePicker from '@/components/DateTimePicker'
@@ -128,6 +127,7 @@ export default {
         noclassesevent() { return this.eventm.regtype !== 0 }
     },
     methods: {
+        ...prismlangs,
         saveSettings() {
             this.$store.commit('gettingData', true)
             this.$store.dispatch('setdata', {
