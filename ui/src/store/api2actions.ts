@@ -1,6 +1,6 @@
-import axios from 'axios'
+import axios, { AxiosResponse } from 'axios'
 import { ActionTree, ActionContext } from 'vuex'
-import { Api2State, API2ROOT } from './state'
+import { Api2State, API2 } from './state'
 
 
 export interface ApiGetData {
@@ -24,51 +24,46 @@ export interface ApiPostData {
     authtype?: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+export async function getDataWrap(context: ActionContext<Api2State, any>, axioscall: Promise<AxiosResponse<any>>, busy?: any): Promise<any> {
+    try {
+        if (busy) {
+            context.commit('markBusy', busy)
+        }
+        context.commit('gettingData', true)
+        const resp = await axioscall
+        context.commit('apiData', resp.data)
+        return resp.data
+    } catch (error) {
+        context.dispatch('axiosError', error)
+    } finally {
+        context.commit('gettingData', false)
+        if (busy) {
+            context.commit('clearBusy', busy)
+        }
+    }
+    return undefined
+}
+
 export const api2Actions = {
 
     async getdata(context: ActionContext<Api2State, any>, p: ApiGetData) {
-        try {
-            if (!p) { p = { items: '' } }
-            p.series = this.state.currentSeries
-            p.authtype = this.state.authtype
-
-            context.commit('gettingData', true)
-            const data = (await axios.get(API2ROOT, { params: p, withCredentials: true })).data
-            context.commit('apiData', data)
-            return data
-        } catch (error) {
-            context.dispatch('axiosError', error)
-        } finally {
-            context.commit('gettingData', false)
-        }
+        if (!p) { p = { items: '' } }
+        p.series = this.state.currentSeries
+        p.authtype = this.state.authtype
+        return await getDataWrap(context, axios.get(API2.ROOT, { params: p, withCredentials: true }))
     },
 
-    async setdata(context: ActionContext<Api2State, any>, p: ApiPostData) {
-        let busy = null
-        try {
-            if ((busy = p.busy) != null) {
-                context.commit('markBusy', busy)
-                delete p.busy
-            }
-            p.series = this.state.currentSeries
-            p.authtype = this.state.authtype
-            context.commit('gettingData', true)
-            const data = (await axios.post(API2ROOT, p, { withCredentials: true })).data
-            context.commit('apiData', data)
-            return data
-        } catch (error) {
-            context.dispatch('axiosError', error)
-        } finally {
-            context.commit('gettingData', false)
-            if (busy) {
-                context.commit('clearBusy', busy)
-            }
-        }
+    async setdata(context: ActionContext<Api2State, any>, porig: ApiPostData) {
+        const { busy, ...p } = porig
+        p.series = this.state.currentSeries
+        p.authtype = this.state.authtype
+        return await getDataWrap(context, axios.post(API2.ROOT, p, { withCredentials: true }), busy)
     },
 
     async axiosError(context: ActionContext<Api2State, any>, error: any) {
         if (error.response) {
-            if ((error.response) && (error.response.status === 401) && (error.response.data.authtype)) {
+            if ((error.response.status === 401) && (error.response.data.authtype)) {
                 if (error.response.data.authtype === 'driver')  {
                     context.commit('driverAuthenticated', false)
                 }

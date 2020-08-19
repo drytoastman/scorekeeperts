@@ -8,7 +8,19 @@ import { Registration, Payment } from '@/common/register'
 import { UUID } from '../common/util'
 
 export const EMPTY = ''
-export const API2ROOT = '/api2'
+export const API2 = {
+    ROOT:  '/api2',
+    LOGIN: '/api2/login',
+    LIVE:  '/api2/live',
+    LOGOUT: '/api2/logout',
+    REGRESET: '/api2/regreset',
+    CHANGEPASSWORD: '/api2/changepassword',
+    ADMINLOGIN: '/api2/adminlogin',
+    SERIESLOGIN: '/api2/serieslogin',
+    ADMINLOGOUT: '/api2/adminlogout',
+    LOGS: '/api2/logs',
+    CARDS: '/api2/cards'
+}
 
 export class Api2State {
     errors: string[] = []
@@ -60,7 +72,7 @@ export class Api2State {
 
     // used for communications
     authtype= ''
-    ws: ReconnectingWebSocket = new ReconnectingWebSocket(`ws://${window.location.host}${API2ROOT}/live`, undefined, {
+    ws: ReconnectingWebSocket = new ReconnectingWebSocket(`ws://${window.location.host}${API2.LIVE}`, undefined, {
         minReconnectionDelay: 1000,
         maxRetries: 10,
         startClosed: true

@@ -1,71 +1,57 @@
 import orderBy from 'lodash/orderBy'
 import isEmpty from 'lodash/isEmpty'
 import axios from 'axios'
-import { Api2State, API2ROOT } from './state'
+import { Api2State, API2 } from './state'
 import { ActionContext, ActionTree, Store, GetterTree } from 'vuex'
 import VueRouter, { Route } from 'vue-router'
 import { api2Mutations } from './api2mutations'
-import { api2Actions } from './api2actions'
+import { api2Actions, getDataWrap } from './api2actions'
 import { UUID } from '@/common/util'
 
 
 export const adminActions = {
 
     async adminlogin(context: ActionContext<Api2State, any>, p: any) {
-        try {
-            await axios.post(API2ROOT + '/adminlogin', p, { withCredentials: true })
+        if (await getDataWrap(context, axios.post(API2.ADMINLOGIN, p, { withCredentials: true }))) {
+            // undefined means an error occured, otherwise we believe we are authenticated (until next call)
             context.commit('adminAuthenticated', { ok: true })
             if (this.state.currentSeries) {
                 console.log('authenticated getdata')
                 context.dispatch('getdata')
             }
-        } catch (error) {
-            context.dispatch('axiosError', error)
         }
     },
 
     async serieslogin(context: ActionContext<Api2State, any>, p: any) {
-        try {
-            await axios.post(API2ROOT + '/serieslogin', p, { withCredentials: true })
+        if (await getDataWrap(context, axios.post(API2.SERIESLOGIN, p, { withCredentials: true }))) {
             context.commit('seriesAuthenticated', { series: p.series, ok: true })
             console.log('authenticated getdata')
             context.dispatch('getdata')
-        } catch (error) {
-            context.dispatch('axiosError', error)
         }
     },
 
     async logout(context: ActionContext<Api2State, any>) {
-        try {
-            await axios.get(API2ROOT + '/adminlogout', { withCredentials: true })
-            context.commit('adminlogout')
-        } catch (error) {
-            context.dispatch('axiosError', error)
-        }
+        await getDataWrap(context, axios.get(API2.ADMINLOGOUT, { withCredentials: true }))
+        context.commit('adminlogout')
     },
 
     async getLogs(context: ActionContext<Api2State, any>, p: any) {
-        try {
-            return (await axios.get(API2ROOT + '/logs', { params: p, withCredentials: true })).data
-        } catch (error) {
-            context.dispatch('axiosError', error)
-        }
+        return await getDataWrap(context, axios.get(API2.LOGS, { params: p, withCredentials: true }))
     },
 
     async carddownload(context: ActionContext<Api2State, any>, p: any) {
-        const URL = API2ROOT + '/cards'
         try {
             p.series   = this.state.currentSeries
             p.authtype = this.state.authtype
 
             context.commit('gettingData', true)
             if (p.cardtype === 'template') {
-                const url = axios.getUri({ url: URL, params: p })
+                const url = axios.getUri({ url: API2.CARDS, params: p })
                 window.open(url, 'cardtemplte')
                 return
             }
 
-            const response = await axios.get(API2ROOT + '/cards', {
+            const response = await axios.get(API2.CARDS, {
                 params: p,
                 withCredentials: true,
                 responseType: 'blob'
@@ -83,94 +69,67 @@ export const adminActions = {
     },
 
     async ensureDriverInfo(context: ActionContext<Api2State, any>, driverids: Set<UUID>) {
-        try {
-            const dids = {}
-            for (const driverid of driverids) {
-                if (!(driverid in this.state.drivers)) {
-                    dids[driverid] = 1
-                }
+        const dids = {}
+        for (const driverid of driverids) {
+            if (!(driverid in this.state.drivers)) {
+                dids[driverid] = 1
             }
-
-            if (isEmpty(dids)) return
-
-            const p = {
-                series: this.state.currentSeries,
-                authtype: this.state.authtype,
-                type: 'update', // we are not necessarily getting entire list
-                items: {
-                    driverids: Object.keys(dids)
-                }
-            }
-
-            // We end up using POST so we can specify a large amount of data even though we are really getting data
-            context.commit('gettingData', true)
-            const data = (await axios.post(API2ROOT, p, { withCredentials: true })).data
-            context.commit('apiData', data)
-        } catch (error) {
-            context.dispatch('axiosError', error)
-        } finally {
-            context.commit('gettingData', false)
         }
+
+        if (isEmpty(dids)) return
+
+        const p = {
+            series: this.state.currentSeries,
+            authtype: this.state.authtype,
+            type: 'update', // we are not necessarily getting entire list
+            items: {
+                driverids: Object.keys(dids)
+            }
+        }
+
+        return await getDataWrap(context, axios.post(API2.ROOT, p, { withCredentials: true }))
     },
 
     async ensureCarDriverInfo(context: ActionContext<Api2State, any>, carids: Set<UUID>) {
-        try {
-            const cids = {}
-            const dids = {}
-            for (const carid of carids) {
-                if (carid in this.state.cars) {
-                    const driverid = this.state.cars[carid].driverid
-                    if (!(driverid in this.state.drivers)) {
-                        dids[driverid] = 1
-                    }
-                } else {
-                    cids[carid] = 1
+        const cids = {}
+        const dids = {}
+        for (const carid of carids) {
+            if (carid in this.state.cars) {
+                const driverid = this.state.cars[carid].driverid
+                if (!(driverid in this.state.drivers)) {
+                    dids[driverid] = 1
                 }
+            } else {
+                cids[carid] = 1
             }
-
-            if (isEmpty(carids) && isEmpty(dids)) return
-
-            const p = {
-                series: this.state.currentSeries,
-                authtype: this.state.authtype,
-                type: 'update', // we are not necessarily getting entire list
-                items: {
-                    carids: Object.keys(cids),
-                    driverids: Object.keys(dids)
-                }
-            }
-
-            // We end up using POST so we can specify a large amount of data even though we are really getting data
-            context.commit('gettingData', true)
-            const data = (await axios.post(API2ROOT, p, { withCredentials: true })).data
-            context.commit('apiData', data)
-        } catch (error) {
-            context.dispatch('axiosError', error)
-        } finally {
-            context.commit('gettingData', false)
         }
+
+        if (isEmpty(carids) && isEmpty(dids)) return
+
+        const p = {
+            series: this.state.currentSeries,
+            authtype: this.state.authtype,
+            type: 'update', // we are not necessarily getting entire list
+            items: {
+                carids: Object.keys(cids),
+                driverids: Object.keys(dids)
+            }
+        }
+
+        return await getDataWrap(context, axios.post(API2.ROOT, p, { withCredentials: true }))
     },
 
     async ensureSeriesCarDriverInfo(context: ActionContext<Api2State, any>) {
-        try {
-            const p = {
-                series: this.state.currentSeries,
-                authtype: this.state.authtype,
-                type: 'update', // we are not necessarily getting entire list
-                items: {
-                    notcarids: Object.keys(this.state.cars),
-                    notdriverids: Object.keys(this.state.drivers)
-                }
+        const p = {
+            series: this.state.currentSeries,
+            authtype: this.state.authtype,
+            type: 'update', // we are not necessarily getting entire list
+            items: {
+                notcarids: Object.keys(this.state.cars),
+                notdriverids: Object.keys(this.state.drivers)
             }
-
-            context.commit('gettingData', true)
-            const data = (await axios.post(API2ROOT, p, { withCredentials: true })).data
-            context.commit('apiData', data)
-        } catch (error) {
-            context.dispatch('axiosError', error)
-        } finally {
-            context.commit('gettingData', false)
         }
+        return await getDataWrap(context, axios.post(API2.ROOT, p, { withCredentials: true }))
     }
 
 }  as ActionTree<Api2State, any>

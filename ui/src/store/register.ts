@@ -1,9 +1,9 @@
 import axios from 'axios'
-import { Api2State, API2ROOT } from './state'
+import { Api2State, API2 } from './state'
 import { ActionContext, ActionTree, Store, GetterTree } from 'vuex'
 import VueRouter, { Route } from 'vue-router'
 import { api2Mutations } from './api2mutations'
-import { api2Actions } from './api2actions'
+import { api2Actions, getDataWrap } from './api2actions'
 import { UUID } from '../common/util'
 import { Registration } from '../common/register'
 import { Driver } from '../common/driver'
@@ -11,41 +11,26 @@ import { Driver } from '../common/driver'
 export const registerActions = {
 
     async login(context: ActionContext<Api2State, any>, p: any) {
-        try {
-            await axios.post(API2ROOT + '/login', p, { withCredentials: true })
+        if (await getDataWrap(context, axios.post(API2.LOGIN, p, { withCredentials: true }))) {
             context.commit('driverAuthenticated', true)
             console.log('authenticated getdata')
             context.dispatch('getdata')
-        } catch (error) {
-            context.dispatch('axiosError', error)
         }
     },
 
     async changePassword(context: ActionContext<Api2State, any>, p: any) {
-        try {
-            await axios.post(API2ROOT + '/changepassword', p, { withCredentials: true })
+        if (await getDataWrap(context, axios.post(API2.CHANGEPASSWORD, p, { withCredentials: true }))) {
             context.commit('setErrors', ['Password change successful'])
-        } catch (error) {
-            context.dispatch('axiosError', error)
         }
     },
 
     async logout(context: ActionContext<Api2State, any>) {
-        try {
-            await axios.get(API2ROOT + '/logout', { withCredentials: true })
-            context.commit('driverAuthenticated', false)
-        } catch (error) {
-            context.dispatch('axiosError', error)
-        }
+        await getDataWrap(context, axios.get(API2.LOGOUT, { withCredentials: true }))
+        context.commit('driverAuthenticated', false)
     },
 
     async regreset(context: ActionContext<Api2State, any>, p: any) {
-        try {
-            const data = (await axios.post(API2ROOT + '/regreset', p, { withCredentials: true })).data
-            context.commit('apiData', data)
-        } catch (error) {
-            context.dispatch('axiosError', error)
-        }
+        await getDataWrap(context, axios.post(API2.REGRESET, p, { withCredentials: true }))
     }
 
 }  as ActionTree<Api2State, any>
