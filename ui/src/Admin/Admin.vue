@@ -1,17 +1,19 @@
 <template>
     <v-app fluid>
-        <v-app-bar app dense dark color="primary">
+        <v-app-bar app height=45 extension-height=35 dark color="primary">
             <span class='btitle'>Admin</span>
             <v-select :items="serieslist" v-model="selectedSeries" solo light dense hide-details placeholder="Select A Series" ref="sselect"></v-select>
             <span class='bdesc'>{{$route.meta.marker || $route.name}}</span>
-            <v-divider inset vertical></v-divider>
 
-            <AdminMenu :items="eventMenu" text="event"    :disabled="!currentSeries"></AdminMenu>
-            <AdminMenu :items="settings"  text="settings" :disabled="!currentSeries"></AdminMenu>
-            <AdminMenu :items="reports"   text="reports"  :disabled="!currentSeries"></AdminMenu>
-            <AdminMenu :items="admins"    text="admin"></AdminMenu>
-            <v-btn color=white text small @click='logout'>Logout</v-btn>
-            <v-progress-linear :active="!!gettingData" indeterminate absolute bottom color="green accent-4"></v-progress-linear>
+            <template v-slot:extension>
+                <AdminMenu :items="eventMenu" text="event"    :disabled="!currentSeries"></AdminMenu>
+                <AdminMenu :items="settings"  text="settings" :disabled="!currentSeries"></AdminMenu>
+                <AdminMenu :items="reports"   text="reports"  :disabled="!currentSeries"></AdminMenu>
+                <AdminMenu :items="admins"    text="admin"></AdminMenu>
+                <v-btn color=white text small @click='logout'>Logout</v-btn>
+                <v-progress-linear :active="!!gettingData" indeterminate absolute bottom color="green accent-4"></v-progress-linear>
+            </template>
+
         </v-app-bar>
 
         <v-main>
@@ -148,29 +150,25 @@ html {
 }
 
 .v-toolbar__content {
+    justify-content: center;
     .v-text-field {
         max-width: 10rem;
         margin-left: 1rem;
         margin-right: 1rem;
     }
-    .btitle {
+    .v-text-field.v-text-field--solo.v-input--dense > .v-input__control {
+        min-height: 30px;
+    }
+    .btitle, .bdesc {
         font-weight: bold;
         font-size: 130%;
     }
-    .bdesc {
-        font-weight: bold;
-        font-size: 120%;
-    }
-    .v-divider {
-        border-color:#FFFA;
-        border-width: 1px;
-        margin-left: 1rem;
-        margin-right: 0.5rem;
-    }
-    @media (max-width: 700px) {
-        .v-divider, .bdesc {
-            display: none;
-        }
+}
+
+.v-toolbar__extension {
+    justify-content: center;
+    @media (min-width: 700px) {
+        gap: 15px;
     }
 }
 
