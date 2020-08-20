@@ -20,11 +20,11 @@ export class RunsRepository {
     }
 
     async attendance(): Promise<{[key: string]: UUID[]}> {
-        const rows = await this.db.any('SELECT eventid,carid FROM runs r')
+        const rows = await this.db.any('SELECT DISTINCT r.eventid,c.driverid FROM runs r JOIN cars c ON c.carid=r.carid')
         const ret = {}
         for (const row of rows) {
             if (!(row.eventid in ret)) ret[row.eventid] = new Set()
-            ret[row.eventid].add(row.carid)
+            ret[row.eventid].add(row.driverid)
         }
         for (const eventid in ret) {
             ret[eventid] = Array.from(ret[eventid])

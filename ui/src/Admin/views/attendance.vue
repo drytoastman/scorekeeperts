@@ -25,10 +25,16 @@ export default {
     props: {
         type: String
     },
+    data() {
+        return {
+            dataLoaded: false
+        }
+    },
     computed: {
-        ...mapState(['drivers', 'cars', 'attendance']),
+        ...mapState(['drivers', 'attendance']),
         ...mapGetters(['orderedEvents']),
         lists() {
+            if (!this.dataLoaded) return []
             if (this.type === 'series') return this.seriesList
 
             const ret = []
@@ -44,11 +50,12 @@ export default {
             const all = []
             const driverset = new Set()
             for (const list of Object.values(this.attendance)) {
-                for (const carid of list) {
-                    const driverid = this.cars[carid].driverid
+                for (const driverid of list) {
                     if (driverset.has(driverid)) continue
                     driverset.add(driverid)
-                    all.push(this.drivers[driverid])
+                    if (driverid in this.drivers) {
+                        all.push(this.drivers[driverid])
+                    }
                 }
             }
             return [{ key: 'series', attendance: sortBy(all, [d => d.lastname.toLowerCase(), d => d.firstname.toLowerCase()]) }]
@@ -58,8 +65,8 @@ export default {
         getEventAttendance(eventid, driverset) {
             const ret = []
             if (eventid in this.attendance) {
-                for (const carid of this.attendance[eventid]) {
-                    const driver = this.drivers[this.cars[carid].driverid]
+                for (const driverid of this.attendance[eventid]) {
+                    const driver = this.drivers[driverid]
                     if (driverset) {
                         if (driverset.has(driver.driverid)) continue
                         driverset.add(driver.driverid)
@@ -71,7 +78,9 @@ export default {
         }
     },
     async mounted() {
-        this.$store.dispatch('ensureSeriesCarDriverInfo')
+        this.$store.dispatch('ensureSeriesCarDriverInfo').then(() => {
+            this.dataLoaded = true
+        })
     }
 }
 </script>
