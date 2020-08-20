@@ -1,8 +1,7 @@
 {
 	"eslint.workingDirectories": [
 		"./ui",
-		"./server",
-		"./common"
+		"./server"
 	],
 	"files.associations": {
 		"series.template": "sql",

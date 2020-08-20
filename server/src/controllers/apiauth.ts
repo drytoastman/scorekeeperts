@@ -140,7 +140,6 @@ export function checkAuth(req: Request): any {
     if (req.method === 'GET') {
         // only unauth items, skip by auth checks
         const items = param.items ? param.items.split(',') : ['blankmeansmorestufflater']
-        console.log(items.filter((v: string) => !UNAUTH.includes(v)).length)
         if (items.filter((v: string) => !UNAUTH.includes(v)).length === 0) {
             param.items = items
             return param

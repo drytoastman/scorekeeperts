@@ -5,7 +5,7 @@
   "scripts": {
     "build": "webpack",
     "watch": "cross-env NODE_ENV=development webpack",
-    "node": "cd build && cross-env NODE_ENV=development nodemon index.js",
+    "node": "cd build && cross-env NODE_ENV=development nodemon --trace-deprecation index.js",
     "serve": "concurrently \"npm:watch\" \"npm:node\"",
     "lint": "eslint . --ext .ts"
   },
@@ -15,7 +15,7 @@
     "axios": "^0.19.2",
     "bcryptjs": "^2.4.3",
     "bufferutil": "^4.0.1",
-    "cookie-session": "^1.4.0",
+    "cookie-session": "^2.0.0-rc.1",
     "cors": "^2.8.5",
     "cron": "^1.8.2",
     "csv-stringify": "^5.5.0",
