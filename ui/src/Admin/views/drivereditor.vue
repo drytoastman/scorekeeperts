@@ -65,7 +65,7 @@ export default {
             })
         },
         selectedDrivers() {
-            return Object.keys(this.selected).map(did => this.drivers[did])
+            return Object.keys(this.selected).map(did => this.drivers[did]).filter(v => v)
         }
     },
     methods: {
@@ -100,11 +100,6 @@ export default {
         },
         drivercars(driverid) {
             return Object.values(this.cars).filter(c => c.driverid === driverid)
-        }
-    },
-    watch: {
-        selected() {
-            console.log('selected changed')
         }
     },
     mounted() {
