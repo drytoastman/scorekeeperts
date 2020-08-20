@@ -8,7 +8,9 @@
         <v-text-field v-model="password"  label="Password"   required :rules="vrules.password"
                       :type="pType" @click:append="showp=!showp" :append-icon="pIcon">
         </v-text-field>
-        <v-btn :dark=dark :color=color type="submit">Create New Profile</v-btn>
+        <v-btn v-if='ready' :dark=dark :color=color type="submit">Create New Profile</v-btn>
+        <div v-else>Waiting for Captcha</div>
+        <div ref="captchadiv"></div>
     </v-form>
 </template>
 
@@ -25,7 +27,9 @@ export default {
     },
     props: {
         dark: Boolean,
-        color: String
+        color: String,
+        recaptchaLoaded: Boolean,
+        sitekey: String
     },
     data() {
         return {
@@ -38,8 +42,15 @@ export default {
             vrules: DriverValidator
         }
     },
+    computed: {
+        ready() { return this.recaptchaLoaded && this.sitekey }
+    },
     methods: {
         register: function() {
+            // eslint-disable-next-line no-undef
+            grecaptcha.execute()
+        },
+        registerFinish: function(token) {
             if (!this.$refs.form.validate()) { return }
             this.$store.dispatch('regreset', {
                 type: 'register',
@@ -47,11 +58,23 @@ export default {
                 lastname: this.lastname,
                 email: this.email,
                 username: this.username,
-                password: this.lastname
+                password: this.lastname,
+                recaptcha: token
             }).then(() => {
-                this.$router.push('emailresult')
+                this.$router.push({ name: 'emailresult' })
             }).catch(e => {
                 this.error = e.toString()
+            })
+        }
+    },
+    watch: {
+        recaptchaLoaded() {
+            console.log('loaded and rendering')
+            // eslint-disable-next-line no-undef
+            grecaptcha.render(this.$refs.captchadiv, {
+                sitekey : this.sitekey,
+                callback : this.registerFinish,
+                size: 'invisible'
             })
         }
     }

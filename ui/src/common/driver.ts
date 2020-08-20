@@ -1,4 +1,4 @@
-import { DataValidationRules, MaxLength, Length, isUUIDV, isEmailV, isBarcode, isDate, UUID } from './util'
+import { DataValidationRules, MaxLength, Length, isUUIDV, isEmailV, isBarcode, isDate, UUID, MinLength } from './util'
 
 export interface Driver
 {
@@ -54,7 +54,8 @@ export const RegisterValidator: DataValidationRules = {
     lastname:   [Length(2, 32)],
     email:      [isEmailV],
     username:   [Length(6, 32)],
-    password:   [Length(6, 32)]
+    password:   [Length(6, 32)],
+    recaptcha:  [MinLength(64)]
 }
 
 export const ResetValidator: DataValidationRules = {

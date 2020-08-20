@@ -1,6 +1,8 @@
 <template>
     <div>
-        {{emailresult}}
+        <div v-for="key in Object.keys(emailresult)" :key="key">
+            {{key}}: {{emailresult[key]}}
+        </div>
     </div>
 </template>
 

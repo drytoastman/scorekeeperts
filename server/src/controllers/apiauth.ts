@@ -1,14 +1,8 @@
 import _ from 'lodash'
-import dns from 'dns'
 import { Request, Response } from 'express'
-import KeyGrip from 'keygrip'
 
 import { db } from '../db'
-import { wrapObj } from '../util/statelessdata'
-import { IS_MAIN_SERVER } from '../db/generalrepo'
-import { controllog } from '../util/logging'
-import { UUID, validateObj } from '@common/util'
-import { RegisterValidator } from '@common/driver'
+import { UUID } from '@common/util'
 
 declare global {
     module Express {
@@ -105,86 +99,18 @@ export async function changepassword(req: Request, res: Response) {
     }
 }
 
-export async function regreset(req: Request, res: Response) {
-    try {
-        if (req.body.type === 'register') {
-            validateObj(req.body, RegisterValidator)
-
-            const request = {
-                request: 'register',
-                firstname: req.body.firstname.trim(),
-                lastname: req.body.lastname.trim(),
-                email: req.body.email.trim(),
-                username: req.body.username.trim(),
-                password: req.body.password
-            }
-            const token = wrapObj(req.sessionOptions.keys as KeyGrip, request)
-            // Do most db lookup in one task
-            let ismain: boolean, filter: boolean|null
-            try {
-                [ismain, filter] = await db.task(async t => {
-                    if ((await t.drivers.getDriverByNameEmail(req.body.firstname, req.body.lastname, req.body.email)).length) {
-                        throw Error('That combination of name/email already exists, please use the reset tab instead')
-                    }
-                    if ((await t.drivers.getDriverByUsername(req.body.username)).length) {
-                        throw Error('That username is already taken')
-                    }
-                    const ismain = await db.general.getLocalSetting(IS_MAIN_SERVER) === '1'
-                    const filter = await db.general.getEmailFilterMatch(request.email)
-                    return [ismain, filter]
-                })
-            } catch (error) {
-                controllog.error(error)
-                return res.status(400).json({ error: error.toString() })
-            }
-
-            if (!ismain) {
-                // Off main server (onsite), we let them register without the email verification, jump directly there
-                // request.args = dict(token=token)
-                // return finish()
-                throw Error('on site not implemented yet')
-            }
-
-            try {
-                if (filter === null) {
-                    if (/[<>+]/.test(request.email.includes)) {
-                        throw Error('Bad char in email and not whitelisted')
-                    }
-                    await dns.promises.lookup(request.email.split('@').pop())
-                } else if (filter === false) {
-                    throw Error('Email matched filter drop')
-                }
-
-                const url  = `https://${req.hostname}/register2/finish?token=${token}`
-                const body = `  <h3>Scorekeeper Profile Creation</h3>
-                                <p>Use the following link to complete the registration process</p>
-                                <a href='${url}'>${url}</a>`
-
-                await db.general.queueEmail({
-                    subject: 'Scorekeeper Profile Request',
-                    recipient: request,
-                    body: body
-                })
-            } catch (error) {
-                const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress
-                controllog.warn(`Ignore ${request.email} ${ip}`)
-                return res.status(400).json({ error: 'Request filtered due to suspicious parameters' })
-            }
-        }
-        res.status(200).json(req.query)
-    } catch (error) {
-        res.status(500).json({ error: error.toString() })
-    }
-}
-
-export const SERIESLIST   = 'serieslist'
+export const UNAUTH = ['serieslist', 'recaptchasitekey']
 export const COMMONITEMS  = [
-    SERIESLIST, 'listids', 'classes', 'indexes',
+    'serieslist', 'listids', 'classes', 'indexes',
     'events', 'paymentaccounts', 'paymentitems', 'counts'
 ]
 export const SERIESEXTRA    = ['squareapplicationid', 'settings', 'attendance', 'localsettings', 'rotatekeygrip', 'driverbrief', 'editorids']
 export const DRIVEREXTRA    = ['summary', 'drivers', 'payments', 'registered', 'cars', 'unsubscribe']
-export const API_NON_SERIES = [SERIESLIST, 'drivers', 'summary', 'listids', 'unsubscribe', 'localsettings', 'rotatekeygrip', 'driverbrief', 'driverids', 'carids', 'editorids']
+
+export const NO_SERIES_FILTER = ['serieslist',
+    'drivers', 'listids', 'summary', 'unsubscribe',
+    'carids', 'editorids', 'driverbrief', 'driverids', 'localsettings', 'recaptchasitekey', 'rotatekeygrip'
+]
 
 export class AuthError extends Error {
     authtype: string
@@ -212,8 +138,11 @@ export function checkAuth(req: Request): any {
     const series   = param.series
 
     if (req.method === 'GET') {
-        if (param.items === SERIESLIST) { // always allow plain series list
-            param.items = [SERIESLIST]
+        // only unauth items, skip by auth checks
+        const items = param.items ? param.items.split(',') : ['blankmeansmorestufflater']
+        console.log(items.filter((v: string) => !UNAUTH.includes(v)).length)
+        if (items.filter((v: string) => !UNAUTH.includes(v)).length === 0) {
+            param.items = items
             return param
         }
     }
@@ -244,12 +173,12 @@ export function checkAuth(req: Request): any {
             }
         }
         if (!series) {
-            param.items = param.items.filter(val => API_NON_SERIES.includes(val))
+            param.items = param.items.filter(val => NO_SERIES_FILTER.includes(val))
         }
 
     } else { // POST
         if (!series) {
-            param.items = _.pick(param.items, API_NON_SERIES)
+            param.items = _.pick(param.items, NO_SERIES_FILTER)
         }
     }
 

@@ -2,7 +2,7 @@ import { Request, Response } from 'express'
 import { db } from '../db'
 import { allSeriesSummary } from './summary'
 import { checkAuth } from './apiauth'
-import { SQ_APPLICATION_ID } from '../db/generalrepo'
+import { SQ_APPLICATION_ID, RECAPTCHA_SITEKEY } from '../db/generalrepo'
 
 export async function apiget(req: Request, res: Response) {
 
@@ -83,6 +83,10 @@ export async function apiget(req: Request, res: Response) {
 
                     case 'squareapplicationid':
                         ret.squareapplicationid = await t.general.getLocalSetting(SQ_APPLICATION_ID)
+                        break
+
+                    case 'recaptchasitekey':
+                        ret.recaptchasitekey = await t.general.getLocalSetting(RECAPTCHA_SITEKEY)
                         break
 
                     case 'usednumbers':

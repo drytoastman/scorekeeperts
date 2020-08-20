@@ -16,7 +16,7 @@
                 <v-divider></v-divider>
                 <v-subheader class='ndsh'>General</v-subheader>
 
-                <v-list-item :to="{name:'profile', params:{}}" link>
+                <v-list-item v-if="currentSeries" :to="{name:'profile', params:{}}" link>
                     <v-list-item-action><v-icon color=blue>{{profileicon}}</v-icon></v-list-item-action>
                     <v-list-item-content><v-list-item-title>Profile</v-list-item-title></v-list-item-content>
                 </v-list-item>
@@ -33,11 +33,11 @@
                         <v-select :items="serieslist" v-model="selectedSeries" solo dense hide-details placeholder="Select A Series" ref="sselect"></v-select>
                     </v-list-item-content>
                 </v-list-item>
-                <v-list-item :to="{name:'events', params:{series:currentSeries}}" link>
+                <v-list-item v-if="currentSeries" :to="{name:'events', params:{series:currentSeries}}" link>
                     <v-list-item-action><v-icon color=orange>{{eventsicon}}</v-icon></v-list-item-action>
                     <v-list-item-content><v-list-item-title>Events</v-list-item-title></v-list-item-content>
                 </v-list-item>
-                <v-list-item :to="{name:'cars', params:{series:currentSeries}}" link>
+                <v-list-item v-if="currentSeries" :to="{name:'cars', params:{series:currentSeries}}" link>
                     <v-list-item-action><v-icon color=black>{{carsicon}}</v-icon></v-list-item-action>
                     <v-list-item-content><v-list-item-title>Cars</v-list-item-title></v-list-item-content>
                 </v-list-item>
@@ -53,7 +53,7 @@
 
         <v-main>
             <div v-if="loadDelay && !$route.name" class='pushdown main-page-warning'>Unknown Page</div>
-            <router-view v-else-if="driverAuthenticated" />
+            <router-view v-else-if="driverAuthenticated || $route.name === 'emailresult'" />
             <Login v-else-if="driverAuthenticated===false"></Login>
         </v-main>
 

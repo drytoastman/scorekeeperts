@@ -7,16 +7,20 @@
                 <v-tab ripple>Register</v-tab>
                 <v-tab-item padding="1rem"><LoginForm color="primary" dark></LoginForm></v-tab-item>
                 <v-tab-item padding="1rem"><ResetForm color="primary" dark></ResetForm></v-tab-item>
-                <v-tab-item padding="1rem"><RegisterForm color="primary" dark></RegisterForm></v-tab-item>
+                <v-tab-item padding="1rem" eager>
+                    <RegisterForm color="primary" dark :recaptchaLoaded='recaptchaLoaded' :sitekey='sitekey'></RegisterForm>
+                </v-tab-item>
             </v-tabs>
         </v-row>
     </v-container>
 </template>
 
 <script>
+import Vue from 'vue'
 import LoginForm from '../components/LoginForm'
 import ResetForm from '../components/ResetForm'
 import RegisterForm from '../components/RegisterForm'
+
 export default {
     name: 'Login',
     components: {
@@ -26,8 +30,26 @@ export default {
     },
     data() {
         return {
-            active: null
+            active: null,
+            recaptchaLoaded: false,
+            sitekey: ''
         }
+    },
+    methods: {
+        captchaLoadedEvent() {
+            this.recaptchaLoaded = true
+        }
+    },
+    mounted() {
+        this.$store.dispatch('getdata', { items: 'recaptchasitekey' }).then(data => {
+            if (data) this.sitekey = data.recaptchasitekey
+        })
+        Object.assign(window, { captchaLoadedEvent: this.captchaLoadedEvent }) // tie in for below url
+        Vue.loadScript('https://www.google.com/recaptcha/api.js?onload=captchaLoadedEvent&render=explicit')
+    },
+    destroyed() {
+        this.recaptchaLoaded = false
+        Vue.unloadScript(this.recaptchaURL)
     }
 }
 </script>

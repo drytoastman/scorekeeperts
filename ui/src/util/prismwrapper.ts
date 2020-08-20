@@ -4,7 +4,7 @@ import 'prismjs/components/prism-markup'
 import 'prismjs/components/prism-css'
 import 'prismjs/themes/prism-coy.css'
 const prismlangs = {
-    html(code) { return highlight(code, languages.html, 'html') },
-    css(code) { return highlight(code, languages.css, 'css') }
+    html(code: string): string { return highlight(code, languages.html, 'html') },
+    css(code: string): string { return highlight(code, languages.css, 'css') }
 }
 export { prismlangs }
