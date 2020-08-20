@@ -62,6 +62,15 @@ export class GeneralRepository {
         return rows.filter(s => !(s.key === KEYGRIP))
     }
 
+    async getLocalSettingsObj(): Promise<{[key: string]: string}> {
+        const ret = {}
+        const rows = await this.db.any('SELECT * FROM localsettings')
+        for (const row of rows) {
+            ret[row.key] = row.value
+        }
+        return ret
+    }
+
     async updateLocalSettings(settings: any[]): Promise<any[]> {
         for (const s of settings) {
             if (!viewable.includes(s.key) && s.value === '') continue
