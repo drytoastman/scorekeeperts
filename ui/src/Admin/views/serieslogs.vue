@@ -5,8 +5,8 @@
         </v-slider>
         <div class='controls'>
             <v-btn @click='reload'>Reload</v-btn>
-            <a :href="links" download>Download All Separate</a>
-            <a :href="linki" download>Download All Interleaved</a>
+            <a :href="api2.LOGS+'?separate'"   download>Download All Separate</a>
+            <a :href="api2.LOGS+'?interleave'" download>Download All Interleaved</a>
         </div>
 
         <div class='log' v-for="name in Object.keys(logs).sort()" :key="name">
@@ -17,7 +17,7 @@
 </template>
 
 <script>
-import { API2ROOT } from '@/store/state'
+import { API2 } from '@/store/state'
 
 export default {
     name: 'SeriesLogs',
@@ -28,8 +28,7 @@ export default {
         return {
             logs: {},
             lines: 20,
-            links: API2ROOT + '/logs?separate',
-            linki: API2ROOT + '/logs?interleave'
+            api2: API2
         }
     },
     methods: {
