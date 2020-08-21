@@ -1,34 +1,45 @@
 <template>
     <div class='outer'>
-        <div class='searchbox'>
-            <v-text-field v-model="search" dense placeholder="search" class='searchfield'></v-text-field>
-            <div class='namelist'>
-                <table class='nametable'>
-                    <tr v-for="d in searched" :key="d.driverid" @click="trclick($event, d.driverid)">
-                        <td>{{d.firstname|lenlimit(12)}}</td>
-                        <td>{{d.lastname|lenlimit(16)}}</td>
-                        <td>{{d.email|lenlimit(20)}}</td>
-                    </tr>
-                </table>
-            </div>
-        </div>
-        <div class='displaybox'>
-            <div v-if="sizeWarning" class='sizewarning'>The display width is less then the recommended minimum 950px for this tool</div>
-            <div v-for="driver in selectedDrivers" :key="driver.driverid" class='driverbox'>
-                <div class='smallbuttons'>
-                    <v-btn color=secondary outlined small>Edit</v-btn>
-                    <v-btn color=secondary outlined small>Delete</v-btn>
-                    <v-btn color=secondary outlined small>Merge Into This</v-btn>
-                    <v-btn color=secondary outlined small :disabled="!driver.email">Send Password Reset</v-btn>
+        <div v-if="sizeWarning" class='sizewarning'>The display width is less then the recommended minimum 950px for this tool</div>
+        <div class='twocol'>
+            <div class='searchbox'>
+                <v-text-field v-model="search" dense placeholder="search" class='searchfield'></v-text-field>
+                <div class='namelist'>
+                    <table class='nametable'>
+                        <tr v-for="d in searched" :key="d.driverid" @click="trclick($event, d.driverid)">
+                            <td>{{d.firstname|lenlimit(12)}}</td>
+                            <td>{{d.lastname|lenlimit(16)}}</td>
+                            <td>{{d.email|lenlimit(20)}}</td>
+                        </tr>
+                    </table>
                 </div>
-                <Driver :driver=driver class='driverinfo'></Driver>
-                <div class='serieswrapper' v-for="(cars, series) in drivercars(driver.driverid)" :key="series">
-                    <div class='series'>{{series}}</div>
-                    <div class='carbox' v-for="car in cars" :key="car.carid">
-                        <CarLabel :car=car></CarLabel>
-                        <div class='smallbuttons'>
-                            <v-btn color=secondary outlined small>Edit</v-btn>
-                            <v-btn color=secondary outlined small>Delete</v-btn>
+            </div>
+            <div class='displaybox'>
+                <div v-for="driver in selectedDrivers" :key="driver.driverid" class='driverbox'>
+                    <div class='smallbuttons'>
+                        <v-btn color=secondary outlined small>Edit</v-btn>
+                        <v-btn color=secondary outlined small :disabled="driveruse(driver.driverid)">Delete</v-btn>
+                        <v-btn color=secondary outlined small>Merge Into This</v-btn>
+                        <v-btn color=secondary outlined small :disabled="!driver.email">Password Reset</v-btn>
+                    </div>
+                    <Driver :driver=driver class='driverinfo'></Driver>
+                    <div class='serieswrapper' v-for="(cars, series) in drivercars(driver.driverid)" :key="series">
+                        <div class='series'>{{series}}</div>
+                        <div class='carbox' v-for="car in cars" :key="car.carid">
+                            <CarLabel :car=car></CarLabel>
+                            <div class='smallbuttons'>
+                                <template v-if="car.eventsrun || car.eventsreg">
+                                    <v-btn color=secondary outlined small>Edit <span class='use'>*In Use</span></v-btn>
+                                </template>
+                                <template v-else>
+                                    <v-btn color=secondary outlined small>Edit</v-btn>
+                                    <v-btn color=secondary outlined small>Delete</v-btn>
+                                </template>
+                            </div>
+                            <!--
+                            {{car.carid}}
+                            {{car.eventsrun}}
+                            {{car.eventsreg}} -->
                         </div>
                     </div>
                 </div>
@@ -106,6 +117,9 @@ export default {
                 ret[c.series].push(c)
             }
             return ret
+        },
+        driveruse(driverid) {
+            return Object.values(this.cars).filter(c => c.driverid === driverid && (c.eventsrun || c.eventsreg)).length > 0
         }
     },
     mounted() {
@@ -117,7 +131,12 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.outer {
+.sizewarning {
+    background: yellow;
+    font-size: 80%;
+    color: #777;
+}
+.twocol {
     display: flex;
     column-gap: 1rem;
 }
@@ -153,10 +172,11 @@ export default {
     }
 }
 .displaybox {
-    .sizewarning {
-        background: yellow;
+    .use {
+        margin-left: 5px;
+        margin-bottom: 5px;
         font-size: 80%;
-        color: #777;
+        color: orange;
     }
     .driverbox {
         border-bottom: 3px double #464;
@@ -169,6 +189,8 @@ export default {
         .smallbuttons {
             display: flex;
             column-gap: 5px;
+            row-gap: 5px;
+            flex-wrap: wrap;
             .v-btn {
                 height: 22px;
             }
@@ -192,9 +214,14 @@ export default {
             margin-left: 1rem;
             margin-bottom: 0.5rem;
             column-gap: 1rem;
-            display: flex;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: auto 10rem;
             align-items: center;
+        }
+        @media (max-width: 800px) {
+            .carbox {
+                display: block;
+            }
         }
     }
     ::v-deep {

@@ -18,7 +18,7 @@ export async function allSeriesCars(db: ScorekeeperProtocol, driverids: UUID[]):
     const ret:Car[] = []
     for (const series of await db.series.seriesList()) {
         await db.series.setSeries(series)
-        for (const c of await db.cars.getCarsbyDriverIds(driverids)) {
+        for (const c of await db.cars.getCarsActivityForDriverIds(driverids)) {
             ret.push(Object.assign(c, { series: series }))
         }
     }
