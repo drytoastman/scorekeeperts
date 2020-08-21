@@ -20,6 +20,7 @@ import Vue from 'vue'
 import LoginForm from '../components/LoginForm'
 import ResetForm from '../components/ResetForm'
 import RegisterForm from '../components/RegisterForm'
+const RECAPTCHAURL = 'https://www.google.com/recaptcha/api.js?onload=captchaLoadedEvent&render=explicit'
 
 export default {
     name: 'Login',
@@ -45,11 +46,11 @@ export default {
             if (data) this.sitekey = data.recaptchasitekey
         })
         Object.assign(window, { captchaLoadedEvent: this.captchaLoadedEvent }) // tie in for below url
-        Vue.loadScript('https://www.google.com/recaptcha/api.js?onload=captchaLoadedEvent&render=explicit')
+        Vue.loadScript(RECAPTCHAURL)
     },
     destroyed() {
         this.recaptchaLoaded = false
-        Vue.unloadScript(this.recaptchaURL)
+        Vue.unloadScript(RECAPTCHAURL).catch(error => { console.log(error) })
     }
 }
 </script>

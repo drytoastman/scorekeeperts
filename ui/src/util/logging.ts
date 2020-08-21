@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import Vue from 'vue'
 
 export function installLoggingHandlers(): void {

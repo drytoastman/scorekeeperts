@@ -39,5 +39,10 @@ module.exports = {
             // most vue files are not typescript, and .js definitely isn't
             '@typescript-eslint/explicit-module-boundary-types': 'off'
         }
-    }]
+    }],
+    globals: {
+        grecaptcha: true,
+        paypal: true,
+        SqPaymentForm: true
+    }
 }

@@ -14,9 +14,10 @@ import { IS_MAIN_SERVER, RECAPTCHA_SECRET } from '@/db/generalrepo'
 
 async function verifyCaptcha(token: string, secret: string): Promise<void> {
     const resp = await axios.post('https://www.google.com/recaptcha/api/siteverify', `secret=${secret}&response=${token}`)
-    console.log(resp.data)
     if (!resp.data.success) {
         throw Error(`ReCaptcha verification failed: ${resp.data['error-codes']}`)
+    } else {
+        controllog.info('Recaptcha vertification success')
     }
 }
 

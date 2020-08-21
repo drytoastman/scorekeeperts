@@ -44,7 +44,6 @@ export default {
     },
     methods: {
         createSquareForm() {
-            // eslint-disable-next-line no-undef
             return new SqPaymentForm({
                 applicationId: this.account.attr.applicationid,
                 inputClass: 'sq-input',

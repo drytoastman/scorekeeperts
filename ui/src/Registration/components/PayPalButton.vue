@@ -61,7 +61,6 @@ export default {
             await Vue.loadScript(this.paypalURL)
             const func = this.buildPaypalOrder
 
-            // eslint-disable-next-line no-undef
             paypal.Buttons({
                 style: {
                     layout: 'horizontal',

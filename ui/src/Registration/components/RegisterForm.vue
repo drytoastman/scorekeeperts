@@ -1,5 +1,5 @@
 <template>
-    <v-form ref="form" lazy-validation @submit.prevent="register">
+    <v-form ref="form" lazy-validation @submit.prevent="captchaexecute">
         <Alert :error=error></Alert>
         <v-text-field v-model="firstname" label="First Name" required :rules="vrules.firstname"></v-text-field>
         <v-text-field v-model="lastname"  label="Last Name"  required :rules="vrules.lastname"></v-text-field>
@@ -46,11 +46,10 @@ export default {
         ready() { return this.recaptchaLoaded && this.sitekey }
     },
     methods: {
-        register: function() {
-            // eslint-disable-next-line no-undef
+        captchaexecute: function() {
             grecaptcha.execute()
         },
-        registerFinish: function(token) {
+        register: function(token) {
             if (!this.$refs.form.validate()) { return }
             this.$store.dispatch('regreset', {
                 type: 'register',
@@ -68,14 +67,14 @@ export default {
         }
     },
     watch: {
-        recaptchaLoaded() {
-            console.log('loaded and rendering')
-            // eslint-disable-next-line no-undef
-            grecaptcha.render(this.$refs.captchadiv, {
-                sitekey : this.sitekey,
-                callback : this.registerFinish,
-                size: 'invisible'
-            })
+        ready() {
+            if (this.ready) {
+                grecaptcha.render(this.$refs.captchadiv, {
+                    sitekey : this.sitekey,
+                    callback : this.register,
+                    size: 'invisible'
+                })
+            }
         }
     }
 }
