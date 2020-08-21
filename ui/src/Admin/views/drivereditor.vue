@@ -13,21 +13,25 @@
             </div>
         </div>
         <div class='displaybox'>
+            <div v-if="sizeWarning" class='sizewarning'>The display width is less then the recommended minimum 950px for this tool</div>
             <div v-for="driver in selectedDrivers" :key="driver.driverid" class='driverbox'>
-                <div class='buttons'>
+                <div class='smallbuttons'>
                     <v-btn color=secondary outlined small>Edit</v-btn>
                     <v-btn color=secondary outlined small>Delete</v-btn>
                     <v-btn color=secondary outlined small>Merge Into This</v-btn>
                     <v-btn color=secondary outlined small :disabled="!driver.email">Send Password Reset</v-btn>
                 </div>
                 <Driver :driver=driver class='driverinfo'></Driver>
-                <CarLabel v-for="car in drivercars(driver.driverid)" :key="car.carid" :car=car>
-                    <div>{{car.series}}</div>
-                    <div class='smallbuttons'>
-                        <v-btn color=secondary outlined small>Edit</v-btn>
-                        <v-btn color=secondary outlined small>Delete</v-btn>
+                <div class='serieswrapper' v-for="(cars, series) in drivercars(driver.driverid)" :key="series">
+                    <div class='series'>{{series}}</div>
+                    <div class='carbox' v-for="car in cars" :key="car.carid">
+                        <CarLabel :car=car></CarLabel>
+                        <div class='smallbuttons'>
+                            <v-btn color=secondary outlined small>Edit</v-btn>
+                            <v-btn color=secondary outlined small>Delete</v-btn>
+                        </div>
                     </div>
-                </CarLabel>
+                </div>
             </div>
         </div>
     </div>
@@ -66,25 +70,22 @@ export default {
         },
         selectedDrivers() {
             return Object.keys(this.selected).map(did => this.drivers[did]).filter(v => v)
+        },
+        sizeWarning() {
+            return this.$vuetify.breakpoint.width < 950
         }
     },
     methods: {
         trclick(event, driverid) {
             const trelement = event.target.parentElement // clicks return td
-
             if (driverid in this.selected) {
                 this.unselect(driverid)
             } else {
-                if (event.getModifierState('Shift')) {
-                    // select all between?  TBD, FINISH ME
-                } else if (event.getModifierState('Control')) {
-                    // individual select of new value
+                if (event.getModifierState('Shift')) {          // select all between?  TBD, FINISH ME
+                } else if (event.getModifierState('Control')) { // individual select of new value
                     this.select(driverid, trelement)
-                } else {
-                    // unselect others
-                    for (const did of Object.keys(this.selected)) {
-                        this.unselect(did)
-                    }
+                } else {                                        // unselect others
+                    Object.keys(this.selected).forEach(did => this.unselect(did))
                     this.select(driverid, trelement)
                 }
             }
@@ -99,7 +100,12 @@ export default {
             this.$store.dispatch('ensureEditorInfo', [driverid])
         },
         drivercars(driverid) {
-            return Object.values(this.cars).filter(c => c.driverid === driverid)
+            const ret = {}
+            for (const c of Object.values(this.cars).filter(c => c.driverid === driverid)) {
+                if (!(c.series in ret)) ret[c.series] = []
+                ret[c.series].push(c)
+            }
+            return ret
         }
     },
     mounted() {
@@ -147,7 +153,13 @@ export default {
     }
 }
 .displaybox {
+    .sizewarning {
+        background: yellow;
+        font-size: 80%;
+        color: #777;
+    }
     .driverbox {
+        border-bottom: 3px double #464;
         margin-bottom: 1rem;
         .buttons {
             display: grid;
@@ -160,6 +172,29 @@ export default {
             .v-btn {
                 height: 22px;
             }
+        }
+        .driverinfo {
+            font-size: 90%;
+        }
+        .serieswrapper {
+            width: 95%;
+            margin-left: auto;
+            margin-right: auto;
+            margin-top: 1rem;
+            border-top: 1px solid lightgrey;
+        }
+        .series {
+            font-weight: bold;
+            font-size: 110%;
+            color: #859985;
+        }
+        .carbox {
+            margin-left: 1rem;
+            margin-bottom: 0.5rem;
+            column-gap: 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
         }
     }
     ::v-deep {
