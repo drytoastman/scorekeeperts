@@ -10,10 +10,8 @@
                     <v-btn class='close' icon @click="opened = false"><v-icon>{{close}}</v-icon></v-btn>
                 </v-card-title>
 
-                <v-card-text v-if="loading" class='loading'>
-                    <div>
-                        {{loading}}
-                    </div>
+                <v-card-text v-if="!usednumbers" class='loading'>
+                    <div>Loading used numbers ...</div>
                 </v-card-text>
                 <v-card-text v-else class='numbergrid'>
                     <div v-for="num in allnumbers" :key="num" :class="numberClass(num)" @click="$emit('selected', num); opened=false">
@@ -27,47 +25,26 @@
 
 <script>
 import range from 'lodash/range'
-import { mapState } from 'vuex'
 import { mdiCloseBox } from '@mdi/js'
 
 export default {
     props: {
-        classcode: undefined
+        classcode: String,
+        usednumbers: Array
     },
     data() {
         return {
             close: mdiCloseBox,
-            opened: false,
-            loading: 'initializing'
+            opened: false
         }
     },
     computed: {
-        ...mapState(['usednumbers']),
         allnumbers() { return range(1, 1000) }
     },
     methods: {
         numberClass(num) {
-            return (this.usednumbers.includes(num)) ? 'taken' : 'avail'
-        },
-        loadNumbers() {
-            if (this.classcode) {
-                this.loading = 'Loading numbers'
-                this.$store.dispatch('getdata', { items: 'usednumbers', classcode: this.classcode })
-            } else {
-                this.loading = 'No classcode selected'
-            }
+            return (this.usednumbers && this.usednumbers.includes(num)) ? 'taken' : 'avail'
         }
-    },
-    watch: {
-        classcode: function() {
-            this.loadNumbers()
-        },
-        usednumbers: function() {
-            this.loading = null
-        }
-    },
-    mounted() {
-        this.loadNumbers()
     }
 }
 </script>

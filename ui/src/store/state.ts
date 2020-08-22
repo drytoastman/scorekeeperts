@@ -34,7 +34,6 @@ export class Api2State {
     unsubscribe: string[] = []
     summary: any[] = []
     emailresult: any = {}
-    usednumbers: number[] = []
 
     // auth pieces, we always assume we are and then fallback if our API requests fail
     driverAuthenticated = true

@@ -19,7 +19,6 @@ export function clearApi2SeriesData(state: Api2State): void {
     state.busyReg = {}
     state.busyPay = {}
     state.panelstate = []
-    state.usednumbers = []
 }
 
 export const api2Mutations = {
@@ -110,7 +109,7 @@ export const api2Mutations = {
         }
 
         for (const key of ['listids', 'unsubscribe', 'summary', 'counts', 'attendance', 'driverbrief',
-            'usednumbers', 'emailresult', 'settings', 'squareapplicationid', 'squareoauthresp']) {
+            'emailresult', 'settings', 'squareapplicationid', 'squareoauthresp']) {
             // easy straight assignments/replacements
             if (key in data) {
                 state[key] = data[key]
