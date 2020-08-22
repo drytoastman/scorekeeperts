@@ -48,7 +48,8 @@ export default {
         car: Object,
         apiType: String,
         eClasses: Object,
-        eIndexes: Object
+        eIndexes: Object,
+        eSeries: String
     },
     data() {
         return {
@@ -85,7 +86,7 @@ export default {
     methods: {
         loadNumbers() {
             if (this.carm.classcode) {
-                this.$store.dispatch('getdata', { items: 'usednumbers', classcode: this.carm.classcode }).then(data => {
+                this.$store.dispatch('getdata', { items: 'usednumbers', series: this.eSeries, classcode: this.carm.classcode }).then(data => {
                     this.usednumbers = data.usednumbers
                 })
             } else {
@@ -107,6 +108,7 @@ export default {
 
                 this.$store.dispatch('setdata', {
                     type: this.apiType,
+                    series: this.eSeries,
                     items: { cars: [this.carm] },
                     busy: { key: 'busyCars', id: this.carm.carid }
                 })
@@ -121,6 +123,7 @@ export default {
             if (newv) { // dialog open
                 if ('form' in this.$refs) { this.$refs.form.resetValidation() } // reset validations if present
                 this.carm = JSON.parse(JSON.stringify(this.car || { attr: {} }))
+                this.loadNumbers()
             }
         }
     }

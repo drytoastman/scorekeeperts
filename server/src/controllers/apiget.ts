@@ -1,6 +1,6 @@
 import { Request, Response } from 'express'
 import { db } from '../db'
-import { allSeriesSummary } from './summary'
+import { allSeriesSummary, allClassesAndIndexes } from './summary'
 import { checkAuth } from './apiauth'
 import { SQ_APPLICATION_ID, RECAPTCHA_SITEKEY } from '../db/generalrepo'
 
@@ -98,6 +98,10 @@ export async function apiget(req: Request, res: Response) {
             // This has to happen last as it plays with the series schema setting
             if (param.items.includes('summary')) {
                 ret.summary = await allSeriesSummary(t, req.auth.driverId())
+            }
+
+            if (param.items.includes('allclassindex')) {
+                ret.allclassindex = await allClassesAndIndexes(t)
             }
 
             return ret

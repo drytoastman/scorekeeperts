@@ -1,12 +1,16 @@
 <template>
     <div class='driverbox'>
         <div class='smallbuttons'>
-            <v-btn color=secondary outlined small>Edit</v-btn>
-            <v-btn color=secondary outlined small :disabled="driveruse">Delete</v-btn>
-            <v-btn color=secondary outlined small>Merge Into This</v-btn>
-            <v-btn color=secondary outlined small :disabled="!driver.email">Password Reset</v-btn>
+            <v-btn color=secondary outlined small @click="$emit('buttons', 'editdriver', driver.driverid)">Edit</v-btn>
+            <v-btn color=secondary outlined small @click="$emit('buttons', 'deldriver',  driver.driverid)" :disabled="driveruse">Delete</v-btn>
+            <v-btn color=secondary outlined small @click="$emit('buttons', 'merge',      driver.driverid)">Merge Into This</v-btn>
+            <v-btn color=secondary outlined small @click="$emit('buttons', 'reset',      driver.driverid)" :disabled="!driver.email">Password Reset</v-btn>
         </div>
         <Driver :driver=driver class='driverinfo'></Driver>
+        <div class='createbox'>
+            <v-btn color="secondary" outlined small @click="$emit('buttons', 'newcar', driver.driverid, newcarseries)">Create A Car In</v-btn>
+            <v-select dense hide-details solo light :items="serieslist" v-model="newcarseries"></v-select>
+        </div>
         <div class='serieswrapper' v-for="(cars, series) in seriescars" :key="series">
             <div class='series'>{{series}}</div>
             <div class='carbox' v-for="car in cars" :key="car.carid">
@@ -15,11 +19,11 @@
                 </CarLabel>
                 <div class='smallbuttons'>
                     <template v-if="car.eventsrun || car.eventsreg">
-                        <v-btn color=secondary outlined small>Edit <span class='use'>*In Use</span></v-btn>
+                        <v-btn color=secondary outlined small @click="$emit('buttons', 'editcar', car.carid, series)">Edit <span class='use'>*In Use</span></v-btn>
                     </template>
                     <template v-else>
-                        <v-btn color=secondary outlined small>Edit</v-btn>
-                        <v-btn color=secondary outlined small>Delete</v-btn>
+                        <v-btn color=secondary outlined small @click="$emit('buttons', 'editcar', car.carid, series)">Edit</v-btn>
+                        <v-btn color=secondary outlined small @click="$emit('buttons', 'delcar',  car.carid, series)">Delete</v-btn>
                     </template>
                 </div>
             </div>
@@ -33,7 +37,7 @@ import Driver from '../../components/Driver'
 import CarLabel from '../../components/CarLabel'
 
 export default {
-    name: 'DriverEditor',
+    name: 'DriverEditorDisplay',
     components: {
         Driver,
         CarLabel
@@ -41,8 +45,13 @@ export default {
     props: {
         driver: Object
     },
+    data() {
+        return {
+            newcarseries: ''
+        }
+    },
     computed: {
-        ...mapState(['cars']),
+        ...mapState(['serieslist', 'cars']),
         drivercars() {
             return Object.values(this.cars).filter(c => c.driverid === this.driver.driverid)
         },
@@ -88,6 +97,14 @@ export default {
     .driverinfo {
         font-size: 90%;
     }
+    .createbox {
+        display: grid;
+        grid-template-columns: auto 10rem;
+        align-items: center;
+        column-gap: 1rem;
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+    }
     .serieswrapper {
         width: 95%;
         margin-left: auto;
@@ -126,6 +143,9 @@ export default {
         padding-bottom: 0;
         margin-bottom: 0;
         border-bottom: none;
+    }
+    .v-text-field.v-text-field--solo.v-input--dense > .v-input__control {
+        min-height: 30px;
     }
 }
 </style>

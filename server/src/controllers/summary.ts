@@ -24,3 +24,16 @@ export async function allSeriesCars(db: ScorekeeperProtocol, driverids: UUID[]):
     }
     return ret
 }
+
+
+export async function allClassesAndIndexes(db: ScorekeeperProtocol): Promise<object> {
+    const ret = {}
+    for (const series of await db.series.seriesList()) {
+        await db.series.setSeries(series)
+        ret[series] = {
+            classes: await db.clsidx.classList(),
+            indexes: await db.clsidx.indexList()
+        }
+    }
+    return ret
+}

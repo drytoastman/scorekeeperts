@@ -4,12 +4,12 @@
 
         <v-data-table :items="classlist" :headers="headers" item-key="classcode" disable-pagination hide-default-footer>
 
-            <template v-slot:item.eventtrophy="{ item }"><span v-if="item.eventtrophy">&checkmark;</span></template>
-            <template v-slot:item.champtrophy="{ item }"><span v-if="item.champtrophy">&checkmark;</span></template>
-            <template v-slot:item.carindexed="{ item }"><span v-if="item.carindexed">&checkmark;</span></template>
-            <template v-slot:item.secondruns="{ item }"><span v-if="item.secondruns">&checkmark;</span></template>
+            <template v-slot:item[`eventtrophy`]="{ item }"><span v-if="item.eventtrophy">&checkmark;</span></template>
+            <template v-slot:item[`champtrophy`]="{ item }"><span v-if="item.champtrophy">&checkmark;</span></template>
+            <template v-slot:item[`carindexed`]="{ item }"><span v-if="item.carindexed">&checkmark;</span></template>
+            <template v-slot:item[`secondruns`]="{ item }"><span v-if="item.secondruns">&checkmark;</span></template>
 
-            <template v-slot:item.actions="{ item }">
+            <template v-slot:item[`actions`]="{ item }">
                 <div v-if="busyClass[item.classcode]" class='busy'>
                     busy
                 </div>
@@ -20,10 +20,10 @@
             </template>
 
             <!-- for wide table, use letter headers as columns is just checkmarks -->
-            <template v-slot:header.eventtrophy="">E</template>
-            <template v-slot:header.champtrophy="">C</template>
-            <template v-slot:header.carindexed="">I</template>
-            <template v-slot:header.secondruns="">S</template>
+            <template v-slot:header[`eventtrophy`]="">E</template>
+            <template v-slot:header[`champtrophy`]="">C</template>
+            <template v-slot:header[`carindexed`]="">I</template>
+            <template v-slot:header[`secondruns`]="">S</template>
         </v-data-table>
 
         <ClassDialog :classobj="dialogData" :apiType="dialogApiType" v-model="classDialog"></ClassDialog>

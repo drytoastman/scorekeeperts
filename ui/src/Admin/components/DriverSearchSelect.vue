@@ -14,12 +14,13 @@
 </template>
 
 <script>
-import isEmpty from 'lodash/isEmpty'
-import { mapState } from 'vuex'
 import Vue from 'vue'
 
 export default {
     name: 'DriverSearchSelect',
+    props: {
+        driverbrief: Array
+    },
     data() {
         return {
             search: '',
@@ -27,7 +28,6 @@ export default {
         }
     },
     computed: {
-        ...mapState(['driverbrief']),
         searched() {
             if (!this.search) return this.driverbrief
             const reg = this.search.split(' ').map(t => new RegExp(t, 'i'))
@@ -63,12 +63,6 @@ export default {
             trelement.classList.add('selected')
             Vue.set(this.selected, driverid, trelement)
             this.$emit('add', driverid)
-        }
-    },
-    mounted() {
-        console.log('load driverbrief')
-        if (isEmpty(this.driverbrief)) {
-            this.$store.dispatch('getdata', { items: 'driverbrief' })
         }
     }
 }

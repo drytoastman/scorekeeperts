@@ -49,14 +49,14 @@ export const api2Actions = {
 
     async getdata(context: ActionContext<Api2State, any>, p: ApiGetData) {
         if (!p) { p = { items: '' } }
-        p.series = this.state.currentSeries
+        p.series = p.series || this.state.currentSeries
         p.authtype = this.state.authtype
         return await getDataWrap(context, axios.get(API2.ROOT, { params: p, withCredentials: true }))
     },
 
     async setdata(context: ActionContext<Api2State, any>, porig: ApiPostData) {
         const { busy, ...p } = porig
-        p.series = this.state.currentSeries
+        p.series = p.series || this.state.currentSeries
         p.authtype = this.state.authtype
         return await getDataWrap(context, axios.post(API2.ROOT, p, { withCredentials: true }), busy)
     },

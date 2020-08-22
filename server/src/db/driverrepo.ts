@@ -88,7 +88,7 @@ export class DriverRepository {
     }
 
     async updateDriver(type: string, drivers: Driver[], driverid: UUID): Promise<Driver[]> {
-        if (drivers[0].driverid !== driverid) {
+        if (driverid && drivers[0].driverid !== driverid) {
             throw Error(`Trying to modify a driver that isn't you ${JSON.stringify(drivers[0])} ${driverid}`)
         }
 

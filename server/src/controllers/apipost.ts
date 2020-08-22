@@ -27,10 +27,12 @@ export async function apipost(req: Request, res: Response) {
             let dids
 
             await t.series.setSeries(param.series)
+            const isSeries = ['series', 'admin'].includes(param.authtype)
+
             for (const key in param.items) {
                 switch (key) {
                     case 'drivers':
-                        ret.drivers = await t.drivers.updateDriver(param.type, param.items.drivers, req.auth.driverId())
+                        ret.drivers = await t.drivers.updateDriver(param.type, param.items.drivers, isSeries ? undefined : req.auth.driverId())
                         break
 
                     case 'unsubscribe':
