@@ -8,7 +8,8 @@ let rules = {
     'key-spacing': 'off',
     'spaced-comment': 'off',
     indent: ['warn', 4, { SwitchCase: 1 }],
-    'vue/no-unused-components': 'warn'
+    'vue/no-unused-components': 'warn',
+    'object-curly-spacing': ['warn', 'always', { objectsInObjects: false }]
 }
 
 if (process.env.NODE_ENV === 'production') {

@@ -22,6 +22,19 @@ export async function allSeriesDeleteDriverLinks(db: ScorekeeperProtocol, driver
     }
 }
 
+export async function allSeriesMerge(db: ScorekeeperProtocol, newid: UUID, oldids: UUID[]): Promise<any> {
+    const ret = { cars: [] as Car[] }
+    for (const series of await db.series.seriesList()) {
+        await db.series.setSeries(series)
+        for (const c of await db.cars.updateCarDriverIds(newid, oldids)) {
+            c.series = series
+            ret.cars.push(c)
+        }
+    }
+    await db.drivers.updateDriver('delete', oldids.map(id => ({ driverid: id } as any)), '')
+    return ret
+}
+
 export async function allSeriesCars(db: ScorekeeperProtocol, driverids: UUID[]): Promise<Car[]> {
     const ret:Car[] = []
     for (const series of await db.series.seriesList()) {

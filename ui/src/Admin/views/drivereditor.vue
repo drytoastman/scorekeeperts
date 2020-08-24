@@ -66,12 +66,16 @@ export default {
         delid(driverid) {
             Vue.delete(this.selected, driverid)
         },
+        removeFromBrief(driverid) {
+            this.driverbrief.splice(findIndex(this.driverbrief, d => d.driverid === driverid), 1)
+        },
         driverComplete(type, driver) {
             if (type === 'delete') {
-                this.driverbrief.splice(findIndex(this.driverbrief, d => d.driverid === driver.driverid), 1)
+                this.removeFromBrief(driver.driverid)
             }
         },
         buttons(name, series, driverid, carid) {
+            let oldids = []
             this.eSeries = series
             this.eDriverId = driverid
             if (series) {
@@ -91,6 +95,22 @@ export default {
                     this.driverDialog = true
                     break
                 case 'merge':
+                    oldids = Object.keys(this.selected).filter(did => did !== driverid)
+                    this.$store.dispatch('setdata', {
+                        type: 'update',
+                        items: {
+                            merge: {
+                                newid: driverid,
+                                oldids: oldids
+                            }
+                        }
+                    }).then(() => {
+                        // special handling as type is update for most things but some drivers are delete
+                        for (const did of oldids) {
+                            Vue.delete(this.$store.state.drivers, did)
+                            this.removeFromBrief(did)
+                        }
+                    })
                     break
                 case 'reset':
                     break
@@ -120,7 +140,7 @@ export default {
                 this.driverbrief = data.driverbrief
                 const all = {}
                 for (const [series, clsidx] of Object.entries(data.allclassindex)) {
-                    all[series] = { classes: {}, indexes: {} }
+                    all[series] = { classes: {}, indexes: {}}
                     for (const entry of clsidx.classes) all[series].classes[entry.classcode] = entry
                     for (const entry of clsidx.indexes) all[series].indexes[entry.indexcode] = entry
                 }

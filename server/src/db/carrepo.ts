@@ -64,6 +64,14 @@ export class CarRepository {
         throw Error(`Unknown operation type ${JSON.stringify(type)}`)
     }
 
+    async updateCarDriverIds(newid: UUID, oldids: UUID[]): Promise<Car[]> {
+        const cars = await this.db.any('UPDATE cars SET driverid=$1,modified=now() WHERE driverid IN ($2:csv) RETURNING *', [newid, oldids])
+        for (const c of cars) {
+            await this.getActivityForCar(c)
+        }
+        return cars
+    }
+
     async getActivityForCar(car: Car): Promise<Car> {
         car.eventsrun = (await this.db.one('SELECT COUNT(distinct eventid)::int FROM runs WHERE carid=$1', [car.carid])).count
         car.eventsreg = (await this.db.one('SELECT COUNT(distinct eventid)::int FROM registered WHERE carid=$1', [car.carid])).count

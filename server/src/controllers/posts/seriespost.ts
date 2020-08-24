@@ -4,7 +4,7 @@ import { Car } from '@common/car'
 import { ScorekeeperProtocol } from '@/db'
 import * as square from '@/util/square'
 
-import { allSeriesCars, allSeriesDeleteDriverLinks } from '../allseries'
+import { allSeriesCars, allSeriesDeleteDriverLinks, allSeriesMerge } from '../allseries'
 import { AuthData } from '../auth'
 
 export async function seriespost(tx: ScorekeeperProtocol, auth: AuthData, param: any) {
@@ -111,6 +111,10 @@ export async function seriespost(tx: ScorekeeperProtocol, auth: AuthData, param:
                 ret.drivers = await tx.drivers.getDriversById(param.items.editorids)
                 ret.cars = await allSeriesCars(tx, param.items.editorids)
                 await tx.series.setSeries(param.series)  // restore series
+                break
+
+            case 'merge':
+                Object.assign(ret, await allSeriesMerge(tx, param.items.merge.newid, param.items.merge.oldids))
                 break
         }
     }

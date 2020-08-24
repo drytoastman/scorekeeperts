@@ -59,7 +59,7 @@ export default {
             classrules: [v => { return this.classlist.map(c => c.classcode).includes(v) || 'Need to select a valid class' }],
             indexrules: [v => { return !this.needindex || this.indexlist.map(i => i.indexcode).includes(v) || 'Need to select a valid index' }],
             numberrules: [...CarValidator.number, v => this.anyNumber || !(this.usednumbers && this.usednumbers.includes(parseInt(v))) || 'Number taken'],
-            carm: { attr: {} }, // we get a copy when the dialog arg changes, data initializer won't catch that
+            carm: { attr: {}}, // we get a copy when the dialog arg changes, data initializer won't catch that
             usednumbers: undefined // [1, 2, 3]
         }
     },
@@ -132,7 +132,7 @@ export default {
         value: function(newv) {
             if (newv) { // dialog open
                 if ('form' in this.$refs) { this.$refs.form.resetValidation() } // reset validations if present
-                this.carm = JSON.parse(JSON.stringify(this.car || { attr: {} }))
+                this.carm = JSON.parse(JSON.stringify(this.car || { attr: {}}))
                 this.loadNumbers()
             }
         }

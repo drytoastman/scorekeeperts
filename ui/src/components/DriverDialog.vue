@@ -40,7 +40,7 @@ export default {
         return {
             vrules: DriverValidator,
             opened: false,
-            driverm: { attr: {} }
+            driverm: { attr: {}}
         }
     },
     methods: {
@@ -62,7 +62,7 @@ export default {
         value: function(newv) {
             if (newv) { // dialog open
                 if ('form' in this.$refs) { this.$refs.form.resetValidation() } // reset validations if present
-                this.driverm = JSON.parse(JSON.stringify(this.driver || { attr: {} }))
+                this.driverm = JSON.parse(JSON.stringify(this.driver || { attr: {}}))
             }
         }
     }
