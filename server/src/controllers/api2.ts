@@ -34,8 +34,8 @@ api2.post('/adminlogin', adminlogin)
 api2.get('/adminlogout', adminlogout)
 
 // Authenticated items
-api2.post('/changepassword', changepassword)
 api2.get('/', apiget)
-api2.post('/', apipost)
 api2.get('/cards', cards)
 api2.get('/logs', logs)
+api2.post('/', apipost)
+api2.post('/changepassword', changepassword)

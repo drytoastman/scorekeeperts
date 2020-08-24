@@ -94,6 +94,11 @@ export default {
                     break
                 case 'reset':
                     break
+                case 'newcar':
+                    this.dialogData = null
+                    this.dialogType = 'insert'
+                    this.carDialog = true
+                    break
                 case 'editcar':
                     this.dialogData = this.cars[carid]
                     this.dialogType = 'update'

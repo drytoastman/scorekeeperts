@@ -8,7 +8,7 @@
         </div>
         <Driver :driver=driver class='driverinfo'></Driver>
         <div class='createbox'>
-            <v-btn color="secondary" outlined small @click="$emit('buttons', 'newcar', newcarseries, driver.driverid, '')">Create A Car In</v-btn>
+            <v-btn color="secondary" outlined small :disabled="!newcarseries" @click="$emit('buttons', 'newcar', newcarseries, driver.driverid, '')">Create A Car In</v-btn>
             <v-select dense hide-details solo light :items="serieslist" v-model="newcarseries"></v-select>
         </div>
         <div class='serieswrapper' v-for="(cars, series) in seriescars" :key="series">
