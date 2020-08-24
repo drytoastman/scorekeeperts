@@ -45,12 +45,15 @@ export default {
     },
     methods: {
         update() {
-            if (this.$refs.form.validate()) {
+            if (this.apiType === 'delete' || this.$refs.form.validate()) {
                 this.$store.dispatch('setdata', {
                     type: this.apiType,
                     items: { drivers: [this.driverm] },
                     busy: { key: 'busyDriver', id: this.driver.driverid }
-                })
+                }).then(() =>
+                    this.$emit('complete', this.apiType, this.driverm)
+                )
+                this.$emit('save', this.driverm)
                 this.$emit('input')
             }
         }

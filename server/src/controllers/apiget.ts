@@ -1,6 +1,6 @@
 import { Request, Response } from 'express'
 import { db } from '../db'
-import { allSeriesSummary, allClassesAndIndexes } from './summary'
+import { allSeriesSummary, allClassesAndIndexes } from './allseries'
 import { checkAuth } from './apiauth'
 import { SQ_APPLICATION_ID, RECAPTCHA_SITEKEY } from '../db/generalrepo'
 
@@ -78,9 +78,6 @@ export async function apiget(req: Request, res: Response) {
                             : t.cars.getCarsbyDriverId(req.auth.driverId()))
                         break
 
-                    case 'summary':
-                        break // deal with later
-
                     case 'squareapplicationid':
                         ret.squareapplicationid = await t.general.getLocalSetting(SQ_APPLICATION_ID)
                         break
@@ -92,16 +89,17 @@ export async function apiget(req: Request, res: Response) {
                     case 'usednumbers':
                         ret.usednumbers = await t.register.usedNumbers(isSeries ? param.driverid : req.auth.driverId(), param.classcode, await t.series.superUniqueNumbers())
                         break
+
+                    case 'summary':
+                        ret.summary = await allSeriesSummary(t, req.auth.driverId())
+                        await t.series.setSeries(ret.series)
+                        break
+
+                    case 'allclassindex':
+                        ret.allclassindex = await allClassesAndIndexes(t)
+                        await t.series.setSeries(ret.series)
+                        break
                 }
-            }
-
-            // This has to happen last as it plays with the series schema setting
-            if (param.items.includes('summary')) {
-                ret.summary = await allSeriesSummary(t, req.auth.driverId())
-            }
-
-            if (param.items.includes('allclassindex')) {
-                ret.allclassindex = await allClassesAndIndexes(t)
             }
 
             return ret

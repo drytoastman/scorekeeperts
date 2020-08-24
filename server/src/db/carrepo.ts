@@ -26,6 +26,10 @@ export class CarRepository {
         return this.db.any('SELECT * FROM cars WHERE driverid=$1', [driverid])
     }
 
+    async deleteCarsbyDriverId(driverid: UUID): Promise<null> {
+        return this.db.none('DELETE FROM cars WHERE driverid=$1', [driverid])
+    }
+
     async getCarsActivityForDriverIds(driverids: UUID[]): Promise<Car[]> {
         return this.db.any('SELECT c.*, COUNT(distinct r.eventid)::int as eventsrun, COUNT(distinct re.eventid)::int as eventsreg FROM cars c ' +
                            'LEFT JOIN runs r ON c.carid=r.carid LEFT JOIN registered re ON c.carid=re.carid ' +

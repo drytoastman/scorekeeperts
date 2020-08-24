@@ -105,7 +105,7 @@ export default {
             Vue.set(this.carm, 'number', num) // use Vue.set to catch it even if we started blank
         },
         update() {
-            if (this.$refs.form.validate()) {
+            if (this.apiType === 'delete' || this.$refs.form.validate()) {
                 if (!this.carm.carid) {
                     this.carm.carid = 'placeholder'
                 }
@@ -119,6 +119,8 @@ export default {
                     driverid: this.eDriverId,
                     items: { cars: [this.carm] },
                     busy: { key: 'busyCars', id: this.carm.carid }
+                }).then(() => {
+                    this.$emit('complete', this.apiType, this.carm)
                 })
 
                 this.$emit('save', this.carm)

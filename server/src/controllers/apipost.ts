@@ -1,6 +1,6 @@
 import { Request, Response } from 'express'
 import { db } from '../db'
-import { allSeriesSummary, allSeriesCars } from './summary'
+import { allSeriesSummary, allSeriesCars, allSeriesDeleteDriverLinks } from './allseries'
 import * as square from '../util/square'
 import { paypalCapture } from '../util/paypal'
 import { checkAuth } from './apiauth'
@@ -39,6 +39,10 @@ export async function apipost(req: Request, res: Response) {
             for (const key in param.items) {
                 switch (key) {
                     case 'drivers':
+                        if (param.type === 'delete') {
+                            await allSeriesDeleteDriverLinks(t, param.items.drivers.map(d => d.driverid))
+                            await t.series.setSeries(param.series)
+                        }
                         ret.drivers = await t.drivers.updateDriver(param.type, param.items.drivers, (param.authtype === 'driver') ? req.auth.driverId() : null)
                         break
 
@@ -153,6 +157,12 @@ export async function apipost(req: Request, res: Response) {
                         req.auth.requireAdmin()
                         await t.general.rotateKeyGrip()
                         break
+
+                    case 'editorids':
+                        ret.drivers = await t.drivers.getDriversById(param.items.editorids)
+                        ret.cars = await allSeriesCars(t, param.items.editorids)
+                        await t.series.setSeries(param.series)  // restore series
+                        break
                 }
             }
 
@@ -164,11 +174,6 @@ export async function apipost(req: Request, res: Response) {
 
             if (addsummary && param.authtype === 'driver') {
                 ret.summary = await allSeriesSummary(t, verifyDriverId)
-            }
-
-            if (param.items.editorids) {
-                ret.drivers = await t.drivers.getDriversById(param.items.editorids)
-                ret.cars = await allSeriesCars(t, param.items.editorids)
             }
 
             return ret

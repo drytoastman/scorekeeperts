@@ -13,6 +13,14 @@ export async function allSeriesSummary(db: ScorekeeperProtocol, driverid: string
     return _.sortBy(ret, ['date'])
 }
 
+export async function allSeriesDeleteDriverLinks(db: ScorekeeperProtocol, driverids: UUID[]): Promise<void> {
+    for (const series of await db.series.seriesList()) {
+        await db.series.setSeries(series)
+        for (const id of driverids) {
+            await db.cars.deleteCarsbyDriverId(id)
+        }
+    }
+}
 
 export async function allSeriesCars(db: ScorekeeperProtocol, driverids: UUID[]): Promise<Car[]> {
     const ret:Car[] = []

@@ -9,7 +9,7 @@
                 </div>
             </div>
         </div>
-        <DriverDialog :driver="dialogData" :apiType="dialogType" v-model=driverDialog></DriverDialog>
+        <DriverDialog :driver="dialogData" :apiType="dialogType" v-model=driverDialog @complete='driverComplete'></DriverDialog>
         <CarDialog    :car="dialogData"    :apiType="dialogType" v-model=carDialog anyNumber
                       :eClasses="eClasses" :eIndexes="eIndexes" :eSeries="eSeries" :eDriverId="eDriverId">
         </CarDialog>
@@ -17,6 +17,7 @@
 </template>
 
 <script>
+import findIndex from 'lodash/findIndex'
 import isEmpty from 'lodash/isEmpty'
 import { mapState } from 'vuex'
 import Vue from 'vue'
@@ -64,6 +65,11 @@ export default {
         },
         delid(driverid) {
             Vue.delete(this.selected, driverid)
+        },
+        driverComplete(type, driver) {
+            if (type === 'delete') {
+                this.driverbrief.splice(findIndex(this.driverbrief, d => d.driverid === driver.driverid), 1)
+            }
         },
         buttons(name, series, driverid, carid) {
             this.eSeries = series
