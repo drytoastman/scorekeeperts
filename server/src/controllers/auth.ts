@@ -1,7 +1,6 @@
 import _ from 'lodash'
 import { Request, Response } from 'express'
-
-import { db } from '../db'
+import { db } from '@/db'
 import { UUID } from '@common/util'
 
 declare global {
@@ -99,18 +98,14 @@ export async function changepassword(req: Request, res: Response) {
     }
 }
 
-export const UNAUTH = ['serieslist', 'recaptchasitekey']
-export const COMMONITEMS  = [
-    'serieslist', 'listids', 'classes', 'indexes',
-    'events', 'paymentaccounts', 'paymentitems', 'counts'
-]
-export const SERIESEXTRA    = ['squareapplicationid', 'settings', 'attendance', 'localsettings', 'rotatekeygrip', 'driverbrief', 'editorids', 'allclassindex']
-export const DRIVEREXTRA    = ['summary', 'drivers', 'payments', 'registered', 'cars', 'unsubscribe']
+const UNAUTHSPECIAL = ['recaptchasitekey', 'serieslist']
+const COMMONDEFAULT = ['classes', 'counts', 'events', 'indexes', 'listids', 'paymentaccounts', 'paymentitems', 'serieslist']
+const SERIESDEFAULT = [...COMMONDEFAULT, 'allclassindex', 'attendance', 'driverbrief', 'editorids', 'localsettings', 'rotatekeygrip', 'settings', 'squareapplicationid']
+const DRIVERDEFAULT = [...COMMONDEFAULT, 'cars', 'drivers', 'payments', 'registered', 'summary', 'unsubscribe']
 
-export const NO_SERIES_FILTER = ['serieslist',
-    'drivers', 'listids', 'summary', 'unsubscribe',
-    'allclassindex', 'carids', 'editorids', 'driverbrief', 'driverids', 'localsettings', 'recaptchasitekey', 'rotatekeygrip'
-]
+export const AUTHTYPE_DRIVER = 'driver'
+export const AUTHTYPE_SERIES = 'series'
+export const AUTHTYPE_ADMIN  = 'admin'
 
 export class AuthError extends Error {
     authtype: string
@@ -138,47 +133,28 @@ export function checkAuth(req: Request): any {
     const series   = param.series
 
     if (req.method === 'GET') {
-        // only unauth items, skip by auth checks
-        const items = param.items ? param.items.split(',') : ['blankmeansmorestufflater']
-        if (items.filter((v: string) => !UNAUTH.includes(v)).length === 0) {
-            param.items = items
+        param.items = param.items ? param.items.split(',') : ['BLANK']
+        // only special unauth items, skip by auth checks
+        if (param.items.filter((v: string) => !UNAUTHSPECIAL.includes(v)).length === 0) {
             return param
         }
     }
 
-    if (authtype === 'driver') {
-        if (!req.auth.hasDriverAuth()) {
-            throw new AuthError('not authenticated', 'driver')
-        }
-    } else if (authtype === 'series') {
-        if (!req.auth.hasSeriesAuth(series)) {
-            throw new AuthError('not authenticated', 'series')
-        }
-    } else if (authtype === 'admin') {
-        if (!req.auth.hasAdminAuth()) {
-            throw new AuthError('not authenticated', 'admin')
-        }
-    } else {
-        throw new AuthError('unknown authtype', authtype)
-    }
-
-    if (req.method === 'GET') {
-        param.items = param.items ? param.items.split(',') : []
-        if (param.items.length === 0) {
-            if (authtype === 'series') {
-                param.items = [...COMMONITEMS, ...SERIESEXTRA]
-            } else {
-                param.items = [...COMMONITEMS, ...DRIVEREXTRA]
-            }
-        }
-        if (!series) {
-            param.items = param.items.filter(val => NO_SERIES_FILTER.includes(val))
-        }
-
-    } else { // POST
-        if (!series) {
-            param.items = _.pick(param.items, NO_SERIES_FILTER)
-        }
+    switch (authtype) {
+        case AUTHTYPE_DRIVER:
+            if (!req.auth.hasDriverAuth()) throw new AuthError('not authenticated', AUTHTYPE_DRIVER)
+            if (param.items === ['BLANK']) param.items = DRIVERDEFAULT
+            break
+        case AUTHTYPE_SERIES:
+            if (!req.auth.hasSeriesAuth(series)) throw new AuthError('not authenticated', AUTHTYPE_SERIES)
+            if (param.items === ['BLANK']) param.items = SERIESDEFAULT
+            break
+        case AUTHTYPE_ADMIN:
+            if (!req.auth.hasAdminAuth()) throw new AuthError('not authenticated', AUTHTYPE_ADMIN)
+            if (param.items === ['BLANK']) param.items = SERIESDEFAULT
+            break
+        default:
+            throw new AuthError('unknown authtype', authtype)
     }
 
     return param

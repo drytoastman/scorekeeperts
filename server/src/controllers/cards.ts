@@ -9,7 +9,7 @@ import util from 'util'
 import { SeriesSettings } from '@common/settings'
 import { SeriesEvent } from '@common/event'
 import { UUID } from '@common/util'
-import { checkAuth } from './apiauth'
+import { checkAuth } from './auth'
 import { db } from '../db'
 import { controllog } from '../util/logging'
 

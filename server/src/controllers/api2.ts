@@ -1,12 +1,17 @@
 import { Router, Request, Response } from 'express'
 import delay from 'express-delay'
-import { apiget } from './apiget'
-import { apipost } from './apipost'
-import { login, logout, changepassword, AuthData, serieslogin, adminlogin, adminlogout } from './apiauth'
+
+import { db } from '@/db'
+import { controllog } from '@/util/logging'
+
+import { login, logout, changepassword, AuthData, serieslogin, adminlogin, adminlogout, checkAuth, AUTHTYPE_DRIVER, AUTHTYPE_SERIES, AUTHTYPE_ADMIN } from './auth'
 import { regreset } from './regreset'
-import { controllog } from '../util/logging'
 import { cards } from './cards'
 import { logs } from './logs'
+import { driverget } from './gets/driverget'
+import { seriesget } from './gets/seriesget'
+import { driverpost } from './posts/driverpost'
+import { seriespost } from './posts/seriespost'
 
 export const api2 = Router()
 
@@ -24,6 +29,51 @@ api2.use(async function(req: Request, res: Response, next: Function) {
     req.auth = new AuthData(req.session)
     next()
 })
+
+export async function apiget(req: Request, res: Response) {
+    try {
+        const param = checkAuth(req)
+        res.json(await db.task('apiget-' + param.authtype, async task => {
+            switch (param.authtype) {
+                case AUTHTYPE_DRIVER:
+                    return driverget(task, req.auth.driverId(), param)
+                case AUTHTYPE_SERIES:
+                case AUTHTYPE_ADMIN:
+                    return seriesget(task, param)
+            }
+            throw Error('Unknown authtype')
+        }))
+    } catch (error) {
+        if (error.authtype) {
+            res.status(401).json({ error: error.message, authtype: error.authtype })
+        } else {
+            res.status(500).json({ error: error.message })
+        }
+    }
+}
+
+export async function apipost(req: Request, res: Response) {
+    try {
+        const param = checkAuth(req)
+        res.json(await db.tx('apipost', async tx => {
+            switch (param.authtype) {
+                case AUTHTYPE_DRIVER:
+                    return driverpost(tx, req.auth.driverId(), param)
+                case AUTHTYPE_SERIES:
+                case AUTHTYPE_ADMIN:
+                    return seriespost(tx, req.auth, param)
+            }
+            throw Error('Unknown authtype')
+        }))
+    } catch (error) {
+        if (error.authtype) {
+            res.status(401).json({ error: error.message, types: error.types })
+        } else {
+            res.status(500).send({ error: error.toString() })
+        }
+    }
+}
+
 
 // items where we don't care about being pre authenticated
 api2.post('/login', login)
