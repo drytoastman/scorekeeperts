@@ -1,14 +1,14 @@
 <template>
     <div class='driverbox'>
         <div class='smallbuttons'>
-            <v-btn color=secondary outlined small @click="$emit('buttons', 'editdriver', driver.driverid)">Edit</v-btn>
-            <v-btn color=secondary outlined small @click="$emit('buttons', 'deldriver',  driver.driverid)" :disabled="driveruse">Delete</v-btn>
-            <v-btn color=secondary outlined small @click="$emit('buttons', 'merge',      driver.driverid)">Merge Into This</v-btn>
-            <v-btn color=secondary outlined small @click="$emit('buttons', 'reset',      driver.driverid)" :disabled="!driver.email">Password Reset</v-btn>
+            <v-btn color=secondary outlined small @click="$emit('buttons', 'editdriver', '', driver.driverid, '')">Edit</v-btn>
+            <v-btn color=secondary outlined small @click="$emit('buttons', 'deldriver',  '', driver.driverid, '')" :disabled="driveruse">Delete</v-btn>
+            <v-btn color=secondary outlined small @click="$emit('buttons', 'merge',      '', driver.driverid, '')">Merge Into This</v-btn>
+            <v-btn color=secondary outlined small @click="$emit('buttons', 'reset',      '', driver.driverid, '')" :disabled="!driver.email">Password Reset</v-btn>
         </div>
         <Driver :driver=driver class='driverinfo'></Driver>
         <div class='createbox'>
-            <v-btn color="secondary" outlined small @click="$emit('buttons', 'newcar', driver.driverid, newcarseries)">Create A Car In</v-btn>
+            <v-btn color="secondary" outlined small @click="$emit('buttons', 'newcar', newcarseries, driver.driverid, '')">Create A Car In</v-btn>
             <v-select dense hide-details solo light :items="serieslist" v-model="newcarseries"></v-select>
         </div>
         <div class='serieswrapper' v-for="(cars, series) in seriescars" :key="series">
@@ -19,11 +19,11 @@
                 </CarLabel>
                 <div class='smallbuttons'>
                     <template v-if="car.eventsrun || car.eventsreg">
-                        <v-btn color=secondary outlined small @click="$emit('buttons', 'editcar', car.carid, series)">Edit <span class='use'>*In Use</span></v-btn>
+                        <v-btn color=secondary outlined small @click="$emit('buttons', 'editcar', series, driver.driverid, car.carid)">Edit <span class='use'>*In Use</span></v-btn>
                     </template>
                     <template v-else>
-                        <v-btn color=secondary outlined small @click="$emit('buttons', 'editcar', car.carid, series)">Edit</v-btn>
-                        <v-btn color=secondary outlined small @click="$emit('buttons', 'delcar',  car.carid, series)">Delete</v-btn>
+                        <v-btn color=secondary outlined small @click="$emit('buttons', 'editcar', series, driver.driverid, car.carid)">Edit</v-btn>
+                        <v-btn color=secondary outlined small @click="$emit('buttons', 'delcar',  series, driver.driverid, car.carid)">Delete</v-btn>
                     </template>
                 </div>
             </div>

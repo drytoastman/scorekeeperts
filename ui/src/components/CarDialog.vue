@@ -49,14 +49,16 @@ export default {
         apiType: String,
         eClasses: Object,
         eIndexes: Object,
-        eSeries: String
+        eSeries: String,
+        eDriverId: String,
+        anyNumber: Boolean
     },
     data() {
         return {
             vrules: CarValidator,
             classrules: [v => { return this.classlist.map(c => c.classcode).includes(v) || 'Need to select a valid class' }],
             indexrules: [v => { return !this.needindex || this.indexlist.map(i => i.indexcode).includes(v) || 'Need to select a valid index' }],
-            numberrules: [...CarValidator.number, v => !(this.usednumbers && this.usednumbers.includes(parseInt(v))) || 'Number taken'],
+            numberrules: [...CarValidator.number, v => this.anyNumber || !(this.usednumbers && this.usednumbers.includes(parseInt(v))) || 'Number taken'],
             carm: { attr: {} }, // we get a copy when the dialog arg changes, data initializer won't catch that
             usednumbers: undefined // [1, 2, 3]
         }
@@ -86,7 +88,12 @@ export default {
     methods: {
         loadNumbers() {
             if (this.carm.classcode) {
-                this.$store.dispatch('getdata', { items: 'usednumbers', series: this.eSeries, classcode: this.carm.classcode }).then(data => {
+                this.$store.dispatch('getdata', {
+                    items: 'usednumbers',
+                    series: this.eSeries,
+                    driverid: this.eDriverId,
+                    classcode: this.carm.classcode
+                }).then(data => {
                     this.usednumbers = data.usednumbers
                 })
             } else {
@@ -109,6 +116,7 @@ export default {
                 this.$store.dispatch('setdata', {
                     type: this.apiType,
                     series: this.eSeries,
+                    driverid: this.eDriverId,
                     items: { cars: [this.carm] },
                     busy: { key: 'busyCars', id: this.carm.carid }
                 })

@@ -59,4 +59,10 @@ export class CarRepository {
 
         throw Error(`Unknown operation type ${JSON.stringify(type)}`)
     }
+
+    async getActivityForCar(car: Car): Promise<Car> {
+        car.eventsrun = (await this.db.one('SELECT COUNT(distinct eventid) FROM runs WHERE carid=$1', [car.carid])).count
+        car.eventsreg = (await this.db.one('SELECT COUNT(distinct eventid) FROM registered WHERE carid=$1', [car.carid])).count
+        return car
+    }
 }

@@ -90,7 +90,7 @@ export async function apiget(req: Request, res: Response) {
                         break
 
                     case 'usednumbers':
-                        ret.usednumbers = await t.register.usedNumbers(req.auth.driverId(), param.classcode, await t.series.superUniqueNumbers())
+                        ret.usednumbers = await t.register.usedNumbers(isSeries ? param.driverid : req.auth.driverId(), param.classcode, await t.series.superUniqueNumbers())
                         break
                 }
             }

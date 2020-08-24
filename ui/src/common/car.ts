@@ -16,6 +16,10 @@ export interface Car
     }
     modified:   Date;
     created:    Date;
+
+    eventsrun?: number;
+    eventsreg?: number;
+    series?: string;
 }
 
 export function carMatch(car: Car, r: RegExp): boolean {

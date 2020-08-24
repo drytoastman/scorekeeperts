@@ -10,7 +10,9 @@
             </div>
         </div>
         <DriverDialog :driver="dialogData" :apiType="dialogType" v-model=driverDialog></DriverDialog>
-        <CarDialog    :car="dialogData"    :apiType="dialogType" v-model=carDialog :eClasses="eClasses" :eIndexes="eIndexes" :eSeries="eSeries"></CarDialog>
+        <CarDialog    :car="dialogData"    :apiType="dialogType" v-model=carDialog anyNumber
+                      :eClasses="eClasses" :eIndexes="eIndexes" :eSeries="eSeries" :eDriverId="eDriverId">
+        </CarDialog>
     </div>
 </template>
 
@@ -42,7 +44,8 @@ export default {
             carDialog: false,
             eClasses: undefined,
             eIndexes: undefined,
-            eSeries: undefined
+            eSeries: undefined,
+            eDriverId: undefined
         }
     },
     computed: {
@@ -62,8 +65,9 @@ export default {
         delid(driverid) {
             Vue.delete(this.selected, driverid)
         },
-        buttons(name, id, series) {
+        buttons(name, series, driverid, carid) {
             this.eSeries = series
+            this.eDriverId = driverid
             if (series) {
                 this.eClasses = this.allclassindex[series].classes
                 this.eIndexes = this.allclassindex[series].indexes
@@ -71,12 +75,12 @@ export default {
 
             switch (name) {
                 case 'editdriver':
-                    this.dialogData = this.drivers[id]
+                    this.dialogData = this.drivers[driverid]
                     this.dialogType = 'update'
                     this.driverDialog = true
                     break
                 case 'deldriver':
-                    this.dialogData = this.drivers[id]
+                    this.dialogData = this.drivers[driverid]
                     this.dialogType = 'delete'
                     this.driverDialog = true
                     break
@@ -85,17 +89,17 @@ export default {
                 case 'reset':
                     break
                 case 'editcar':
-                    this.dialogData = this.cars[id]
+                    this.dialogData = this.cars[carid]
                     this.dialogType = 'update'
                     this.carDialog = true
                     break
                 case 'delcar':
-                    this.dialogData = this.cars[id]
+                    this.dialogData = this.cars[carid]
                     this.dialogType = 'delete'
                     this.carDialog = true
                     break
                 default:
-                    console.log(`${name} ${id} ${series}`)
+                    console.log(name)
             }
         }
     },

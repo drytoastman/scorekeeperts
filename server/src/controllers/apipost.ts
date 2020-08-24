@@ -17,6 +17,12 @@ export async function apipost(req: Request, res: Response) {
         return
     }
 
+    function assertIsDriver(authtype) {
+        if (!(authtype === 'driver')) {
+            throw new Error('Driver auth required for this request')
+        }
+    }
+
     try {
         res.json(await db.tx('apipost', async t => {
             const ret: any = {
@@ -28,33 +34,41 @@ export async function apipost(req: Request, res: Response) {
 
             await t.series.setSeries(param.series)
             const isSeries = ['series', 'admin'].includes(param.authtype)
+            const verifyDriverId = (param.authtype === 'driver') ? req.auth.driverId() : param.driverid
 
             for (const key in param.items) {
                 switch (key) {
                     case 'drivers':
-                        ret.drivers = await t.drivers.updateDriver(param.type, param.items.drivers, isSeries ? undefined : req.auth.driverId())
-                        break
-
-                    case 'unsubscribe':
-                        ret.unsubscribe = await t.drivers.updateUnsubscribeList(param.items.unsubscribe, req.auth.driverId())
+                        ret.drivers = await t.drivers.updateDriver(param.type, param.items.drivers, (param.authtype === 'driver') ? req.auth.driverId() : null)
                         break
 
                     case 'cars':
-                        ret.cars = await t.cars.updateCars(param.type, param.items.cars, req.auth.driverId())
+                        ret.cars = await t.cars.updateCars(param.type, param.items.cars, verifyDriverId)
+                        if (isSeries) { // append series/activity that it normally gets for admin site
+                            for (const c of ret.cars) {
+                                await t.cars.getActivityForCar(c)
+                                c.series = param.series
+                            }
+                        }
                         addsummary = true
                         break
 
                     case 'registered':
-                        Object.assign(ret, await t.register.updateRegistration(param.type, param.items.registered, param.eventid,
-                            (param.authtype === 'driver') ? req.auth.driverId() : null))
+                        Object.assign(ret, await t.register.updateRegistration(param.type, param.items.registered, param.eventid, verifyDriverId))
                         addsummary = true
+                        break
+
+                    case 'unsubscribe':
+                        ret.unsubscribe = await t.drivers.updateUnsubscribeList(param.items.unsubscribe, verifyDriverId)
                         break
 
                     case 'payments':
                         if (param.paypal) {
-                            ret.payments = await paypalCapture(t, param.paypal, param.items.payments, req.auth.driverId())
+                            assertIsDriver(param.authtype)
+                            ret.payments = await paypalCapture(t, param.paypal, param.items.payments, verifyDriverId)
                         } else if (param.square) {
-                            ret.payments = await square.squareOrder(t, param.square, param.items.payments, req.auth.driverId())
+                            assertIsDriver(param.authtype)
+                            ret.payments = await square.squareOrder(t, param.square, param.items.payments, verifyDriverId)
                         } else {
                             req.auth.requireSeries(param.series)
                             ret.payments = await t.payments.updatePayments(param.type, param.items.payments)
@@ -149,7 +163,7 @@ export async function apipost(req: Request, res: Response) {
             }
 
             if (addsummary && param.authtype === 'driver') {
-                ret.summary = await allSeriesSummary(t, req.auth.driverId())
+                ret.summary = await allSeriesSummary(t, verifyDriverId)
             }
 
             if (param.items.editorids) {

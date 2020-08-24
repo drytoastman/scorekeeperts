@@ -87,13 +87,15 @@ export class DriverRepository {
         await this.db.none('UPDATE drivers SET password=$1,modified=now() WHERE driverid=$2', [hash, driverid])
     }
 
-    async updateDriver(type: string, drivers: Driver[], driverid: UUID): Promise<Driver[]> {
-        if (driverid && drivers[0].driverid !== driverid) {
-            throw Error(`Trying to modify a driver that isn't you ${JSON.stringify(drivers[0])} ${driverid}`)
+    async updateDriver(type: string, drivers: Driver[], verifyid: UUID): Promise<Driver[]> {
+        if (verifyid && drivers[0].driverid !== verifyid) {
+            throw Error(`Trying to modify a driver that you shouldn't ${JSON.stringify(drivers[0].driverid)} ${verifyid}`)
         }
 
         if (type === 'update')  {
             return this.filterDrivers(await this.db.any(this.pgp.helpers.update(drivers, drivercols) + ' WHERE v.driverid = t.driverid RETURNING *'))
+        } else if (type === 'delete') {
+            return this.db.any('DELETE from drivers WHERE driverid in ($1:csv) RETURNING driverid', drivers.map(d => d.driverid))
         }
 
         throw Error(`Unknown operation type ${JSON.stringify(type)}`)
