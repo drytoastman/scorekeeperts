@@ -6,12 +6,13 @@ import nunjucks from 'nunjucks'
 import puppeteer from 'puppeteer-core'
 import util from 'util'
 
+import { db } from '@/db'
 import { SeriesSettings } from '@common/settings'
 import { SeriesEvent } from '@common/event'
 import { UUID } from '@common/util'
-import { checkAuth } from './auth'
-import { db } from '../db'
-import { controllog } from '../util/logging'
+import { controllog } from '@/util/logging'
+
+import { checkAuth } from '../auth'
 
 const asyncRead = util.promisify(fs.readFile)
 

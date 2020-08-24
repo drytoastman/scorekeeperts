@@ -1,8 +1,10 @@
-import { allClassesAndIndexes } from '../allseries'
-import { unauthget } from './unauthget'
 import { ScorekeeperProtocol } from '@/db'
 
-export async function seriesget(task: ScorekeeperProtocol, param: any) {
+import { allClassesAndIndexes } from '../allseries'
+import { AuthData } from '../auth'
+import { unauthget } from './unauthget'
+
+export async function seriesget(task: ScorekeeperProtocol, auth: AuthData, param: any) {
     const ret: any = {
         type: 'get',
         series: param.series

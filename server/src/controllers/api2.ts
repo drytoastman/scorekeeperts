@@ -5,9 +5,9 @@ import { db } from '@/db'
 import { controllog } from '@/util/logging'
 
 import { login, logout, changepassword, AuthData, serieslogin, adminlogin, adminlogout, checkAuth, AUTHTYPE_DRIVER, AUTHTYPE_SERIES, AUTHTYPE_ADMIN } from './auth'
-import { regreset } from './regreset'
-import { cards } from './cards'
-import { logs } from './logs'
+import { register, reset } from './regreset'
+import { cards } from './gets/cards'
+import { logs } from './gets/logs'
 import { driverget } from './gets/driverget'
 import { seriesget } from './gets/seriesget'
 import { driverpost } from './posts/driverpost'
@@ -39,7 +39,7 @@ export async function apiget(req: Request, res: Response) {
                     return driverget(task, req.auth.driverId(), param)
                 case AUTHTYPE_SERIES:
                 case AUTHTYPE_ADMIN:
-                    return seriesget(task, param)
+                    return seriesget(task, req.auth, param)
             }
             throw Error('Unknown authtype')
         }))
@@ -78,14 +78,16 @@ export async function apipost(req: Request, res: Response) {
 // items where we don't care about being pre authenticated
 api2.post('/login', login)
 api2.get('/logout', logout)
-api2.post('/regreset', regreset)
+api2.post('/register', register)
+api2.post('/reset',    reset)
 api2.post('/serieslogin', serieslogin)
-api2.post('/adminlogin', adminlogin)
-api2.get('/adminlogout', adminlogout)
+api2.post('/adminlogin',  adminlogin)
+api2.get('/adminlogout',  adminlogout)
 
 // Authenticated items
 api2.get('/', apiget)
+api2.post('/', apipost)
+
 api2.get('/cards', cards)
 api2.get('/logs', logs)
-api2.post('/', apipost)
 api2.post('/changepassword', changepassword)

@@ -9,9 +9,7 @@ const readdirAsync = util.promisify(fs.readdir)
 const readfileAsync = util.promisify(fs.readFile)
 
 export async function logs(req: Request, res: Response) {
-    if (!req.auth.hasAdminAuth()) {
-        return res.status(401).json({ error: 'not authenticated', authtype: 'admin' })
-    }
+    req.auth.requireAdmin()
 
     const linecount = req.query.lines || 10
     const download = 'separate' in req.query
