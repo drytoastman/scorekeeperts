@@ -32,13 +32,12 @@ export default {
     methods: {
         reset: function() {
             if (!this.$refs.form.validate()) { return }
-            this.$store.dispatch('regreset', {
-                type: 'reset',
-                username: this.username,
-                password: this.lastname,
+            this.$store.dispatch('reset', {
+                firstname: this.firstname,
+                lastname: this.lastname,
                 email: this.email
             }).then(() => {
-                this.$router.push('emailresult')
+                this.$router.push({ name: 'emailresult' })
             }).catch(e => {
                 this.error = e.toString()
             })

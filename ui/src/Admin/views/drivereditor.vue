@@ -13,6 +13,7 @@
         <CarDialog    :car="dialogData"    :apiType="dialogType" v-model=carDialog anyNumber
                       :eClasses="eClasses" :eIndexes="eIndexes" :eSeries="eSeries" :eDriverId="eDriverId">
         </CarDialog>
+        <ConfirmDialog title="Reset Sent" noCancel v-model="resetDialog">Reset email has been sent to {{dialogData.email}}</ConfirmDialog>
     </div>
 </template>
 
@@ -25,6 +26,7 @@ import DriverSearchSelect from '../components/DriverSearchSelect'
 import DriverEditorDisplay from '../components/DriverEditorDisplay'
 import DriverDialog from '../../components/DriverDialog'
 import CarDialog from '../../components/CarDialog'
+import ConfirmDialog from '../../components/ConfirmDialog'
 
 export default {
     name: 'DriverEditor',
@@ -32,7 +34,8 @@ export default {
         DriverSearchSelect,
         DriverEditorDisplay,
         DriverDialog,
-        CarDialog
+        CarDialog,
+        ConfirmDialog
     },
     data() {
         return {
@@ -43,6 +46,7 @@ export default {
             dialogType: '',
             driverDialog: false,
             carDialog: false,
+            resetDialog: false,
             eClasses: undefined,
             eIndexes: undefined,
             eSeries: undefined,
@@ -79,6 +83,7 @@ export default {
         },
         buttons(name, series, driverid, carid) {
             let oldids = []
+            let driver
             this.eSeries = series
             this.eDriverId = driverid
             if (series) {
@@ -118,6 +123,16 @@ export default {
                     }
                     break
                 case 'reset':
+                    driver = this.drivers[driverid]
+                    this.$store.dispatch('reset', {
+                        firstname: driver.firstname,
+                        lastname:  driver.lastname,
+                        email:     driver.email,
+                        admin:     true
+                    }).then(() => {
+                        this.dialogData = driver
+                        this.resetDialog = true
+                    })
                     break
                 case 'newcar':
                     this.dialogData = null

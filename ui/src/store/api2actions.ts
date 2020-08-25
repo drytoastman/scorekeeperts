@@ -61,6 +61,14 @@ export const api2Actions = {
         return await getDataWrap(context, axios.post(API2.ROOT, p, { withCredentials: true }), busy)
     },
 
+    async register(context: ActionContext<Api2State, any>, p: any) {
+        return await getDataWrap(context, axios.post(API2.REGISTER, p, { withCredentials: true }))
+    },
+
+    async reset(context: ActionContext<Api2State, any>, p: any) {
+        return await getDataWrap(context, axios.post(API2.RESET, p, { withCredentials: true }))
+    },
+
     async axiosError(context: ActionContext<Api2State, any>, error: any) {
         if (error.response) {
             if ((error.response.status === 401) && (error.response.data.authtype)) {

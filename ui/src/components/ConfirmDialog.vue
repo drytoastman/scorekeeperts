@@ -1,5 +1,5 @@
 <template>
-    <v-dialog :value="value" @input="$emit('input')" persistent maxWidth="300px">
+    <v-dialog :value="value" @input="$emit('input')" persistent maxWidth="500px">
         <v-card>
             <v-card-title>
                 <span class="headline primary--text">{{title}}</span>
@@ -9,7 +9,7 @@
             </v-card-text>
             <v-card-actions>
                 <v-spacer></v-spacer>
-                <v-btn color="primary" text @click="$emit('input')">Cancel</v-btn>
+                <v-btn color="primary" v-if="!noCancel" text @click="$emit('input')">Cancel</v-btn>
                 <v-btn color="primary" text @click="$emit('ok'); $emit('input')">Ok</v-btn>
             </v-card-actions>
         </v-card>
@@ -21,7 +21,8 @@
 export default {
     props: {
         title: String,
-        value: Boolean
+        value: Boolean,
+        noCancel: Boolean
     }
 }
 </script>
@@ -29,5 +30,6 @@ export default {
 <style scoped>
 .body {
     padding: 1rem !important;
+    text-align: center;
 }
 </style>

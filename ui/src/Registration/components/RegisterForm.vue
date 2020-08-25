@@ -51,8 +51,7 @@ export default {
         },
         register: function(token) {
             if (!this.$refs.form.validate()) { return }
-            this.$store.dispatch('regreset', {
-                type: 'register',
+            this.$store.dispatch('register', {
                 firstname: this.firstname,
                 lastname: this.lastname,
                 email: this.email,

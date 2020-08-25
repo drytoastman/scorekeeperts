@@ -12,8 +12,12 @@ import { controllog } from '@/util/logging'
 import { IS_MAIN_SERVER, RECAPTCHA_SECRET } from '@/db/generalrepo'
 
 
-async function verifyCaptcha(token: string, secret: string): Promise<void> {
-    const resp = await axios.post('https://www.google.com/recaptcha/api/siteverify', `secret=${secret}&response=${token}`)
+async function verifyCaptcha(req: Request, secret: string): Promise<void> {
+    // await verifyCaptcha(req.auth, req.body.recaptcha, captchasecret)
+    if (req.body.admin && req.auth.hasAnySeriesAuth()) {
+        return
+    }
+    const resp = await axios.post('https://www.google.com/recaptcha/api/siteverify', `secret=${secret}&response=${req.body.recaptcha}`)
     if (!resp.data.success) {
         throw Error(`ReCaptcha verification failed: ${resp.data['error-codes']}`)
     } else {
@@ -63,7 +67,7 @@ export async function register(req: Request, res: Response) {
         }
 
         try {
-            await verifyCaptcha(req.body.recaptcha, captchasecret)
+            await verifyCaptcha(req, captchasecret)
 
             if (filter === null) {
                 if (/[<>+]/.test(request.email.includes)) {
@@ -130,7 +134,7 @@ export async function reset(req: Request, res: Response) {
         }
 
         try {
-            await verifyCaptcha(req.body.recaptcha, captchasecret)
+            await verifyCaptcha(req, captchasecret)
             const url  = `https://${req.hostname}/register2/reset?token=${token}`
             const body = `<h3>Scorekeeper Username and Password Reset</h3>
                             <p>Use the following link to continue the reset process.</p>

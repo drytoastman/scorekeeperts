@@ -27,10 +27,6 @@ export const registerActions = {
     async logout(context: ActionContext<Api2State, any>) {
         await getDataWrap(context, axios.get(API2.LOGOUT, { withCredentials: true }))
         context.commit('driverAuthenticated', false)
-    },
-
-    async regreset(context: ActionContext<Api2State, any>, p: any) {
-        await getDataWrap(context, axios.post(API2.REGRESET, p, { withCredentials: true }))
     }
 
 }  as ActionTree<Api2State, any>
