@@ -1,5 +1,4 @@
 import _ from 'lodash'
-import axios from 'axios'
 import dns from 'dns'
 import { Request, Response } from 'express'
 import KeyGrip from 'keygrip'
@@ -9,8 +8,24 @@ import { validateObj } from '@common/util'
 import { db } from '@/db'
 import { wrapObj } from '@/util/statelessdata'
 import { controllog } from '@/util/logging'
-import { IS_MAIN_SERVER } from '@/db/generalrepo'
+import { IS_MAIN_SERVER, MAIL_SEND_REPLYTO, MAIL_SEND_FROM } from '@/db/generalrepo'
 import { verifyCaptcha } from './captcha'
+
+async function emailresult(request: any): Promise<any> {
+    const [from, replyto] = await db.task(async t => {
+        return [await t.general.getLocalSetting(MAIL_SEND_FROM), await t.general.getLocalSetting(MAIL_SEND_REPLYTO)]
+    })
+
+    return {
+        emailresult: {
+            firstname: request.firstname,
+            lastname: request.lastname,
+            email: request.email,
+            replyto: replyto,
+            from: from
+        }
+    }
+}
 
 export async function register(req: Request, res: Response) {
     try {
@@ -53,11 +68,7 @@ export async function register(req: Request, res: Response) {
 
         try {
             await verifyCaptcha(req)
-
             if (filter === null) {
-                if (/[<>+]/.test(request.email.includes)) {
-                    throw Error('Bad char in email and not whitelisted')
-                }
                 await dns.promises.lookup(request.email.split('@').pop())
             } else if (filter === false) {
                 throw Error('Email matched filter drop')
@@ -79,7 +90,7 @@ export async function register(req: Request, res: Response) {
             return res.status(400).json({ error: 'Request filtered due to suspicious parameters' })
         }
 
-        return res.status(200).json({ emailresult: _.pick(request, ['firstname', 'lastname', 'email']) })
+        return res.status(200).json(await emailresult(request))
 
     } catch (error) {
         res.status(500).json({ error: error.toString() })
@@ -132,7 +143,7 @@ export async function reset(req: Request, res: Response) {
             return res.status(400).json({ error: 'Request filtered due to suspicious parameters' })
         }
 
-        return res.status(200).json({ emailresult: request })
+        return res.status(200).json(await emailresult(request))
 
     } catch (error) {
         res.status(500).json({ error: error.toString() })

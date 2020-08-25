@@ -44,7 +44,7 @@
             </v-list>
         </v-navigation-drawer>
 
-        <v-app-bar app dense dark color='primary'>
+        <v-app-bar app dense dark color='primary' v-if="!isEmailResult">
             <v-app-bar-nav-icon @click.stop="drawer = !drawer" :disabled="!driverAuthenticated" />
             <v-toolbar-title>{{displayName}}</v-toolbar-title>
             <v-spacer></v-spacer>
@@ -53,7 +53,7 @@
 
         <v-main>
             <div v-if="loadDelay && !$route.name" class='pushdown main-page-warning'>Unknown Page</div>
-            <router-view v-else-if="driverAuthenticated || $route.name === 'emailresult'" />
+            <router-view v-else-if="driverAuthenticated || isEmailResult" />
             <Login v-else-if="driverAuthenticated===false"></Login>
         </v-main>
 
@@ -96,6 +96,7 @@ export default {
     computed: {
         ...mapState(['currentSeries', 'serieslist', 'driverAuthenticated', 'errors', 'gettingData']),
         snackbar() { return this.errors.length > 0 },
+        isEmailResult() { return this.$route.name === 'emailresult' },
         displayName() {
             if (!this.driverAuthenticated) { return 'Registration' }
             return `Registration${this.$route.path}`.replace(/\//g, ' / ')
