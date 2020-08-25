@@ -3,7 +3,7 @@
         <div class='smallbuttons'>
             <v-btn color=secondary outlined small @click="$emit('buttons', 'editdriver', '', driver.driverid, '')">Edit</v-btn>
             <v-btn color=secondary outlined small @click="$emit('buttons', 'deldriver',  '', driver.driverid, '')" :disabled="driveruse">Delete</v-btn>
-            <v-btn color=secondary outlined small @click="$emit('buttons', 'merge',      '', driver.driverid, '')">Merge Into This</v-btn>
+            <v-btn color=secondary outlined small @click="confirmMergeDialog=true"                                 :disabled="selectedCount<=1">Merge Into This</v-btn>
             <v-btn color=secondary outlined small @click="$emit('buttons', 'reset',      '', driver.driverid, '')" :disabled="!driver.email">Password Reset</v-btn>
         </div>
         <Driver :driver=driver class='driverinfo'></Driver>
@@ -28,6 +28,9 @@
                 </div>
             </div>
         </div>
+        <ConfirmDialog v-model=confirmMergeDialog title="Confirm Merge" @ok='confirmMerge'>
+            Are you sure you wish to merge the other selected drivers cars into <b>{{driver.firstname}} {{driver.lastname}}</b> <i>{{driver.email}}</i>
+        </ConfirmDialog>
     </div>
 </template>
 
@@ -35,19 +38,23 @@
 import { mapState } from 'vuex'
 import Driver from '../../components/Driver'
 import CarLabel from '../../components/CarLabel'
+import ConfirmDialog from '../../components/ConfirmDialog'
 
 export default {
     name: 'DriverEditorDisplay',
     components: {
         Driver,
-        CarLabel
+        CarLabel,
+        ConfirmDialog
     },
     props: {
-        driver: Object
+        driver: Object,
+        selectedCount: Number
     },
     data() {
         return {
-            newcarseries: ''
+            newcarseries: '',
+            confirmMergeDialog: false
         }
     },
     computed: {
@@ -65,6 +72,11 @@ export default {
         },
         driveruse() {
             return this.drivercars.filter(c => c.eventsrun || c.eventsreg).length > 0
+        }
+    },
+    methods: {
+        confirmMerge() {
+            this.$emit('buttons', 'merge', '', this.driver.driverid, '')
         }
     }
 }

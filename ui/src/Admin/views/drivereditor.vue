@@ -5,7 +5,7 @@
             <DriverSearchSelect :driverbrief="driverbrief" @add="addid" @del="delid"></DriverSearchSelect>
             <div class='displaybox'>
                 <div v-for="driver in selectedDrivers" :key="driver.driverid" class='driverbox'>
-                    <DriverEditorDisplay :driver=driver @buttons='buttons'></DriverEditorDisplay>
+                    <DriverEditorDisplay :driver=driver :selectedCount=selectedCount @buttons='buttons'></DriverEditorDisplay>
                 </div>
             </div>
         </div>
@@ -51,6 +51,9 @@ export default {
     },
     computed: {
         ...mapState(['drivers', 'cars']),
+        selectedCount() {
+            return Object.keys(this.selected).length
+        },
         selectedDrivers() {
             return Object.keys(this.selected).map(did => this.drivers[did]).filter(v => v)
         },
@@ -96,21 +99,23 @@ export default {
                     break
                 case 'merge':
                     oldids = Object.keys(this.selected).filter(did => did !== driverid)
-                    this.$store.dispatch('setdata', {
-                        type: 'update',
-                        items: {
-                            merge: {
-                                newid: driverid,
-                                oldids: oldids
+                    if (oldids.length > 0) {
+                        this.$store.dispatch('setdata', {
+                            type: 'update',
+                            items: {
+                                merge: {
+                                    newid: driverid,
+                                    oldids: oldids
+                                }
                             }
-                        }
-                    }).then(() => {
-                        // special handling as type is update for most things but some drivers are delete
-                        for (const did of oldids) {
-                            Vue.delete(this.$store.state.drivers, did)
-                            this.removeFromBrief(did)
-                        }
-                    })
+                        }).then(() => {
+                            // special handling as type is update for most things but some drivers are delete
+                            for (const did of oldids) {
+                                Vue.delete(this.$store.state.drivers, did)
+                                this.removeFromBrief(did)
+                            }
+                        })
+                    }
                     break
                 case 'reset':
                     break
