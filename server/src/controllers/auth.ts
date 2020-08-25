@@ -2,6 +2,7 @@ import _ from 'lodash'
 import { Request, Response } from 'express'
 import { db } from '@/db'
 import { UUID } from '@common/util'
+import { verifyCaptcha } from './captcha'
 
 declare global {
     module Express {
@@ -49,6 +50,7 @@ export class AuthData {
 
 export async function login(req: Request, res: Response) {
     try {
+        await verifyCaptcha(req)
         req.auth.driverAuthenticated(await db.drivers.checkLogin(req.body.username, req.body.password))
         res.status(200).json({ result: 'authenticated' })
     } catch (error) {

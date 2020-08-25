@@ -13,7 +13,7 @@
         <CarDialog    :car="dialogData"    :apiType="dialogType" v-model=carDialog anyNumber
                       :eClasses="eClasses" :eIndexes="eIndexes" :eSeries="eSeries" :eDriverId="eDriverId">
         </CarDialog>
-        <ConfirmDialog title="Reset Sent" noCancel v-model="resetDialog">Reset email has been sent to {{dialogData.email}}</ConfirmDialog>
+        <ConfirmDialog title="Reset Sent" noCancel v-model="resetDialog">Reset email has been sent to {{resetEmail}}</ConfirmDialog>
     </div>
 </template>
 
@@ -43,6 +43,7 @@ export default {
             driverbrief: undefined,
             allclassindex: undefined,
             dialogData: undefined,
+            resetEmail: '',
             dialogType: '',
             driverDialog: false,
             carDialog: false,
@@ -129,9 +130,11 @@ export default {
                         lastname:  driver.lastname,
                         email:     driver.email,
                         admin:     true
-                    }).then(() => {
-                        this.dialogData = driver
-                        this.resetDialog = true
+                    }).then(data => {
+                        if (data) {
+                            this.resetEmail = driver.email
+                            this.resetDialog = true
+                        }
                     })
                     break
                 case 'newcar':

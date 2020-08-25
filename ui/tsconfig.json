@@ -39,7 +39,7 @@
     "src/**/*.vue",
     "tests/**/*.ts",
     "tests/**/*.tsx",
-    "src/components/PasswordEyeMixin.js"
+    "src/components/*.js"
   ],
   "exclude": [
     "node_modules"

@@ -4,20 +4,23 @@
         <v-text-field v-model="password" label="Password" :rules="vrules.password" required
                       :type="pType" @click:append="showp=!showp" :append-icon="pIcon">
         </v-text-field>
-        <v-btn :dark=dark :color=color type="submit">Login</v-btn>
+        <v-btn v-if=ready :dark=dark :color=color type="submit">Login</v-btn>
+        <div v-else>Waiting for Captcha</div>
     </v-form>
 </template>
 
 <script>
 import { DriverValidator } from '@/common/driver'
-import { PasswordEyeMixin } from '../../components/PasswordEyeMixin.js'
+import { PasswordEyeMixin } from '@/components/PasswordEyeMixin.js'
 
 export default {
     name: 'LoginForm',
     mixins: [PasswordEyeMixin],
     props: {
         dark: Boolean,
-        color: String
+        color: String,
+        ready: Boolean,
+        recaptchaToken: String
     },
     data() {
         return {
@@ -28,11 +31,16 @@ export default {
         }
     },
     methods: {
-        login: function() {
+        login() {
             if (!this.$refs.form.validate()) { return }
+            this.$emit('doCaptcha', this.captchaComplete)
+        },
+        captchaComplete(token) {
+            if (!token || !this.$refs.form.validate()) { return }
             this.$store.dispatch('login', {
                 username: this.username,
-                password: this.password
+                password: this.password,
+                recaptcha: token
             })
         }
     }

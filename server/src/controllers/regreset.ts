@@ -9,22 +9,8 @@ import { validateObj } from '@common/util'
 import { db } from '@/db'
 import { wrapObj } from '@/util/statelessdata'
 import { controllog } from '@/util/logging'
-import { IS_MAIN_SERVER, RECAPTCHA_SECRET } from '@/db/generalrepo'
-
-
-async function verifyCaptcha(req: Request, secret: string): Promise<void> {
-    // await verifyCaptcha(req.auth, req.body.recaptcha, captchasecret)
-    if (req.body.admin && req.auth.hasAnySeriesAuth()) {
-        return
-    }
-    const resp = await axios.post('https://www.google.com/recaptcha/api/siteverify', `secret=${secret}&response=${req.body.recaptcha}`)
-    if (!resp.data.success) {
-        throw Error(`ReCaptcha verification failed: ${resp.data['error-codes']}`)
-    } else {
-        controllog.info('Recaptcha vertification success')
-    }
-}
-
+import { IS_MAIN_SERVER } from '@/db/generalrepo'
+import { verifyCaptcha } from './captcha'
 
 export async function register(req: Request, res: Response) {
     try {
@@ -40,9 +26,9 @@ export async function register(req: Request, res: Response) {
         }
         const token = wrapObj(req.sessionOptions.keys as KeyGrip, request)
         // Do most db lookup in one task
-        let ismain: boolean, filter: boolean|null, captchasecret: string
+        let ismain: boolean, filter: boolean|null
         try {
-            [ismain, filter, captchasecret] = await db.task(async t => {
+            [ismain, filter] = await db.task(async t => {
                 if ((await t.drivers.getDriverByNameEmail(req.body.firstname, req.body.lastname, req.body.email)).length) {
                     throw Error('That combination of name/email already exists, please use the reset tab instead')
                 }
@@ -51,8 +37,7 @@ export async function register(req: Request, res: Response) {
                 }
                 const ismain = await db.general.getLocalSetting(IS_MAIN_SERVER) === '1'
                 const filter = await db.general.getEmailFilterMatch(request.email)
-                const secret = await db.general.getLocalSetting(RECAPTCHA_SECRET)
-                return [ismain, filter, secret]
+                return [ismain, filter]
             })
         } catch (error) {
             controllog.error(error)
@@ -67,7 +52,7 @@ export async function register(req: Request, res: Response) {
         }
 
         try {
-            await verifyCaptcha(req, captchasecret)
+            await verifyCaptcha(req)
 
             if (filter === null) {
                 if (/[<>+]/.test(request.email.includes)) {
@@ -115,26 +100,22 @@ export async function reset(req: Request, res: Response) {
         const token = wrapObj(req.sessionOptions.keys as KeyGrip, request)
 
         // Do most db lookup in one task
-        let ismain: boolean, captchasecret: string
         try {
-            [ismain, captchasecret] = await db.task(async t => {
-                const driver = await t.drivers.getDriverByNameEmail(request.firstname, request.lastname, request.email)
-                if (!driver) throw Error('No user could be found with those parameters')
-                const ismain = await db.general.getLocalSetting(IS_MAIN_SERVER) === '1'
-                const secret = await db.general.getLocalSetting(RECAPTCHA_SECRET)
-                return [ismain, secret]
+            await db.task(async t => {
+                if ((await t.drivers.getDriverByNameEmail(request.firstname, request.lastname, request.email)).length === 0) {
+                    throw Error('No user could be found with those parameters')
+                }
+                if (await db.general.getLocalSetting(IS_MAIN_SERVER) !== '1') {
+                    throw Error('Reset only works from main server')
+                }
             })
         } catch (error) {
             controllog.error(error)
             return res.status(400).json({ error: error.toString() })
         }
 
-        if (!ismain) {
-            throw Error('Reset only works from main server')
-        }
-
         try {
-            await verifyCaptcha(req, captchasecret)
+            await verifyCaptcha(req)
             const url  = `https://${req.hostname}/register2/reset?token=${token}`
             const body = `<h3>Scorekeeper Username and Password Reset</h3>
                             <p>Use the following link to continue the reset process.</p>

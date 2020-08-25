@@ -70,7 +70,10 @@ export class DriverRepository {
     }
 
     async checkLogin(username: string, password: string): Promise<UUID> {
-        const d = await this.db.one('SELECT * FROM drivers WHERE username=$1', [username])
+        const d = await this.db.oneOrNone('SELECT * FROM drivers WHERE username=$1', [username])
+        if (!d) {
+            throw Error('Unknown username')
+        }
         if (await bcrypt.compare(password, d.password)) {
             return d.driverid
         }

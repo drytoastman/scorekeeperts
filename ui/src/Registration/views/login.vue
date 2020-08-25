@@ -5,25 +5,30 @@
                 <v-tab ripple>Login</v-tab>
                 <v-tab ripple>Reset</v-tab>
                 <v-tab ripple>Register</v-tab>
-                <v-tab-item padding="1rem"><LoginForm color="primary" dark></LoginForm></v-tab-item>
-                <v-tab-item padding="1rem"><ResetForm color="primary" dark></ResetForm></v-tab-item>
                 <v-tab-item padding="1rem" eager>
-                    <RegisterForm color="primary" dark :recaptchaLoaded='recaptchaLoaded' :sitekey='sitekey'></RegisterForm>
+                    <LoginForm    color="primary" dark :ready=ready @doCaptcha=doCaptcha></LoginForm>
+                </v-tab-item>
+                <v-tab-item padding="1rem" eager>
+                    <ResetForm    color="primary" dark :ready=ready @doCaptcha=doCaptcha></ResetForm>
+                </v-tab-item>
+                <v-tab-item padding="1rem" eager>
+                    <RegisterForm color="primary" dark :ready=ready @doCaptcha=doCaptcha></RegisterForm>
                 </v-tab-item>
             </v-tabs>
         </v-row>
+        <div id='captchadiv'></div>
     </v-container>
 </template>
 
 <script>
-import Vue from 'vue'
 import LoginForm from '../components/LoginForm'
 import ResetForm from '../components/ResetForm'
 import RegisterForm from '../components/RegisterForm'
-const RECAPTCHAURL = 'https://www.google.com/recaptcha/api.js?onload=captchaLoadedEvent&render=explicit'
+import { ReCaptchaMixin } from '@/components/ReCaptchaMixin.js'
 
 export default {
     name: 'Login',
+    mixins: [ReCaptchaMixin],
     components: {
         LoginForm,
         ResetForm,
@@ -31,26 +36,8 @@ export default {
     },
     data() {
         return {
-            active: null,
-            recaptchaLoaded: false,
-            sitekey: ''
+            active: null
         }
-    },
-    methods: {
-        captchaLoadedEvent() {
-            this.recaptchaLoaded = true
-        }
-    },
-    mounted() {
-        this.$store.dispatch('getdata', { items: 'recaptchasitekey' }).then(data => {
-            if (data) this.sitekey = data.recaptchasitekey
-        })
-        Object.assign(window, { captchaLoadedEvent: this.captchaLoadedEvent }) // tie in for below url
-        Vue.loadScript(RECAPTCHAURL)
-    },
-    destroyed() {
-        this.recaptchaLoaded = false
-        Vue.unloadScript(RECAPTCHAURL).catch(error => { console.log(error) })
     }
 }
 </script>
