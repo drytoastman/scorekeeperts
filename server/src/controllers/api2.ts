@@ -5,7 +5,7 @@ import { db } from '@/db'
 import { controllog } from '@/util/logging'
 
 import { login, logout, changepassword, AuthData, serieslogin, adminlogin, adminlogout, checkAuth, AUTHTYPE_DRIVER, AUTHTYPE_SERIES, AUTHTYPE_ADMIN } from './auth'
-import { register, reset } from './regreset'
+import { register, reset, token } from './posts/regreset'
 import { cards } from './gets/cards'
 import { logs } from './gets/logs'
 import { driverget } from './gets/driverget'
@@ -16,7 +16,7 @@ import { seriespost } from './posts/seriespost'
 export const api2 = Router()
 
 if (process.env.NODE_ENV === 'development') {
-    controllog.warn('Using development environment (fake delay and debug login)')
+    controllog.warn('Using development environment fake delay')
     api2.use(delay(500))
 } else {
     controllog.info('Using production environment')
@@ -78,6 +78,7 @@ export async function apipost(req: Request, res: Response) {
 // items where we don't care about being pre authenticated
 api2.post('/login', login)
 api2.get('/logout', logout)
+api2.post('/token',    token)
 api2.post('/register', register)
 api2.post('/reset',    reset)
 api2.post('/serieslogin', serieslogin)

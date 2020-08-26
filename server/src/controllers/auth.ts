@@ -109,6 +109,7 @@ const DRIVERDEFAULT = [...COMMONDEFAULT, 'cars', 'drivers', 'payments', 'registe
 export const AUTHTYPE_DRIVER = 'driver'
 export const AUTHTYPE_SERIES = 'series'
 export const AUTHTYPE_ADMIN  = 'admin'
+const BLANK = ['BLANK']
 
 export class AuthError extends Error {
     authtype: string
@@ -136,7 +137,7 @@ export function checkAuth(req: Request): any {
     const series   = param.series
 
     if (req.method === 'GET') {
-        param.items = param.items ? param.items.split(',') : ['BLANK']
+        param.items = param.items ? param.items.split(',') : BLANK
         // only special unauth items, skip by auth checks
         if (param.items.filter((v: string) => !UNAUTHSPECIAL.includes(v)).length === 0) {
             return param
@@ -146,15 +147,15 @@ export function checkAuth(req: Request): any {
     switch (authtype) {
         case AUTHTYPE_DRIVER:
             if (!req.auth.hasDriverAuth()) throw new AuthError('not authenticated', AUTHTYPE_DRIVER)
-            if (param.items === ['BLANK']) param.items = DRIVERDEFAULT
+            if (_.isEqual(param.items, BLANK)) param.items = DRIVERDEFAULT
             break
         case AUTHTYPE_SERIES:
             if (!req.auth.hasSeriesAuth(series)) throw new AuthError('not authenticated', AUTHTYPE_SERIES)
-            if (param.items === ['BLANK']) param.items = SERIESDEFAULT
+            if (_.isEqual(param.items, BLANK)) param.items = SERIESDEFAULT
             break
         case AUTHTYPE_ADMIN:
             if (!req.auth.hasAdminAuth()) throw new AuthError('not authenticated', AUTHTYPE_ADMIN)
-            if (param.items === ['BLANK']) param.items = SERIESDEFAULT
+            if (_.isEqual(param.items, BLANK)) param.items = SERIESDEFAULT
             break
         default:
             throw new AuthError('unknown authtype', authtype)

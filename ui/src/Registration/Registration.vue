@@ -44,7 +44,7 @@
             </v-list>
         </v-navigation-drawer>
 
-        <v-app-bar app dense dark color='primary' v-if="!isEmailResult">
+        <v-app-bar app dense dark color='primary' v-if="!isOutside">
             <v-app-bar-nav-icon @click.stop="drawer = !drawer" :disabled="!driverAuthenticated" />
             <v-toolbar-title>{{displayName}}</v-toolbar-title>
             <v-spacer></v-spacer>
@@ -53,12 +53,13 @@
 
         <v-main>
             <div v-if="loadDelay && !$route.name" class='pushdown main-page-warning'>Unknown Page</div>
-            <router-view v-else-if="driverAuthenticated || isEmailResult" />
+            <router-view v-else-if="driverAuthenticated || isOutside" />
             <Login v-else-if="driverAuthenticated===false"></Login>
         </v-main>
 
         <v-snackbar :value="snackbar" :timeout=-1>
-            <div v-for="error in errors" :key="error">
+            {{filteredErrors}}
+            <div v-for="error in filteredErrors" :key="error">
                 {{ error }}
             </div>
             <v-btn color="pink" text @click="errorclose">Close</v-btn>
@@ -95,17 +96,20 @@ export default {
     },
     computed: {
         ...mapState(['currentSeries', 'serieslist', 'driverAuthenticated', 'errors', 'gettingData']),
-        snackbar() { return this.errors.length > 0 },
-        isEmailResult() { return this.$route.name === 'emailresult' },
+        snackbar()  { return this.filteredErrors.length > 0 },
+        isOutside() { return this.$route.meta.outside === 1 },
+        filteredErrors() { return this.errors.filter(s => s !== 'not authenticated') },
+
         displayName() {
             if (!this.driverAuthenticated) { return 'Registration' }
             return `Registration${this.$route.path}`.replace(/\//g, ' / ')
         },
+
         selectedSeries: {
             get() { return this.currentSeries },
             set(value) {
                 this.$store.commit('changeSeries', value)
-                this.$router.push({ name: this.$route.name, params: { series: value } }).catch(error => {
+                this.$router.push({ name: this.$route.name, params: { series: value }}).catch(error => {
                     // If we change series while on a non-series link, don't throw any errors
                     if (error.name !== 'NavigationDuplicated') {
                         throw error

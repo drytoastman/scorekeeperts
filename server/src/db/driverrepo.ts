@@ -1,5 +1,7 @@
 import bcrypt from 'bcryptjs'
 import { IDatabase, ColumnSet, IMain } from 'pg-promise'
+import { v1 as uuidv1 } from 'uuid'
+
 import { UUID } from '@common/util'
 import { Driver } from '@common/driver'
 import { cleanAttr } from './helper'
@@ -13,7 +15,8 @@ export class DriverRepository {
         if (drivercols === undefined) {
             drivercols = new pgp.helpers.ColumnSet([
                 { name: 'driverid', cnd: true, cast: 'uuid' },
-                'firstname', 'lastname', 'email', 'username', 'barcode',
+                'firstname', 'lastname', 'email', 'username',
+                { name: 'barcode', def: '' },
                 { name: 'optoutmail', def: false },
                 { name: 'attr',     cast: 'json', init: (col: any): any => { return cleanAttr(col.value) } },
                 { name: 'modified', cast: 'timestamp', mod: ':raw', init: (): any => { return 'now()' } },
@@ -55,8 +58,8 @@ export class DriverRepository {
         ]))
     }
 
-    async getDriverByUsername(username: string): Promise<Driver[]> {
-        return this.filterDrivers(await this.db.any('SELECT * FROM drivers WHERE username=$1', [username.trim()]))
+    async getDriverByUsername(username: string): Promise<Driver|null> {
+        return this.db.oneOrNone('SELECT * FROM drivers WHERE username=$1', [username.trim()])
     }
 
     async getUnsubscribeByDriverId(driverid: UUID): Promise<string[]> {
@@ -88,6 +91,11 @@ export class DriverRepository {
 
         const hash = await bcrypt.hash(newpassword, 12) // , function(err, hash) { })
         await this.db.none('UPDATE drivers SET password=$1,modified=now() WHERE driverid=$2', [hash, driverid])
+    }
+
+    async createDriver(data: any): Promise<string> {
+        data.driverid = uuidv1()
+        return (await this.db.one(this.pgp.helpers.insert([data], drivercols) + ' RETURNING driverid')).driverid
     }
 
     async updateDriver(type: string, drivers: Driver[], verifyid: UUID): Promise<Driver[]> {

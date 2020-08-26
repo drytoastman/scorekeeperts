@@ -11,6 +11,7 @@ export const EMPTY = ''
 export const API2 = {
     ROOT:  '/api2',
     LOGIN: '/api2/login',
+    TOKEN: '/api2/token',
     LIVE:  '/api2/live',
     LOGOUT: '/api2/logout',
     REGISTER: '/api2/register',

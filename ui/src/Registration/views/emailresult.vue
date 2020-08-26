@@ -8,7 +8,7 @@
 
         <div class='grid'>
             <span>From:</span>
-            <span class='email'>Admin via Scorekeeper&lt;{{emailresult.sender}}&gt;</span>
+            <span class='email'>Admin via Scorekeeper &lt;{{emailresult.from}}&gt;</span>
             <span>Reply-To:</span>
             <span class='email'>Scorekeeper Admin &lt;{{emailresult.replyto}}&gt;</span>
             <span>To:</span>

@@ -10,6 +10,9 @@ export async function driverget(task: ScorekeeperProtocol, driverid: UUID, param
     }
 
     await task.series.setSeries(ret.series)
+    // if no series, remove driver only items that won't work
+    if (!ret.series) param.items = param.items.filter((v:string) => !['cars', 'payments', 'registered', 'usednumbers'].includes(v))
+
     for (const item of param.items) {
         if (await unauthget(task, item, ret)) continue
 

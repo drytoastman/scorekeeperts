@@ -10,6 +10,10 @@ import { Driver } from '../common/driver'
 
 export const registerActions = {
 
+    async token(context: ActionContext<Api2State, any>, p: any) {
+        return getDataWrap(context, axios.post(API2.TOKEN, p, { withCredentials: true }))
+    },
+
     async login(context: ActionContext<Api2State, any>, p: any) {
         if (await getDataWrap(context, axios.post(API2.LOGIN, p, { withCredentials: true }))) {
             context.commit('driverAuthenticated', true)

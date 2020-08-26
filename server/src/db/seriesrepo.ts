@@ -28,7 +28,9 @@ export class SeriesRepository {
     }
 
     async setSeries(series: string): Promise<null> {
-        return this.db.none(`set search_path= '${series}', 'public'`)
+        const schema = ['public']
+        if (series) schema.unshift(series)
+        return this.db.none('set search_path=$1:csv', [schema])
     }
 
     async checkSeriesLogin(series: string, password: string): Promise<void> {

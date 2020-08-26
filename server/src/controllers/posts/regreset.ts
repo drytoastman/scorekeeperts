@@ -6,16 +6,15 @@ import KeyGrip from 'keygrip'
 import { RegisterValidator, ResetValidator } from '@common/driver'
 import { validateObj } from '@common/util'
 import { db } from '@/db'
-import { wrapObj } from '@/util/statelessdata'
+import { wrapObj, unwrapObj } from '@/util/statelessdata'
 import { controllog } from '@/util/logging'
 import { IS_MAIN_SERVER, MAIL_SEND_REPLYTO, MAIL_SEND_FROM } from '@/db/generalrepo'
-import { verifyCaptcha } from './captcha'
+import { verifyCaptcha } from '../captcha'
 
 async function emailresult(request: any): Promise<any> {
     const [from, replyto] = await db.task(async t => {
         return [await t.general.getLocalSetting(MAIL_SEND_FROM), await t.general.getLocalSetting(MAIL_SEND_REPLYTO)]
     })
-
     return {
         emailresult: {
             firstname: request.firstname,
@@ -27,19 +26,55 @@ async function emailresult(request: any): Promise<any> {
     }
 }
 
+
+function tokenURL(req: Request, data: any): string {
+    const proto = req.headers['x-forwarded-proto'] || 'https'
+    const host  = req.headers['x-forwarded-host']
+    const base  = req.headers.registerbase || '/register'
+    if (!host) throw Error('No host field to build return URL')
+
+    const [token, sig] = wrapObj(req.sessionOptions.keys as KeyGrip, data)
+    return `${proto}://${host}${base}/token?t=${token}&s=${sig}`
+}
+
+
+export async function token(req: Request, res: Response) {
+    try {
+        const request = unwrapObj(req.sessionOptions.keys as KeyGrip, req.body.token, req.body.signature)
+        let driver
+        console.log(request)
+        switch (request.type) {
+            case 'register':
+                driver = await db.drivers.getDriverByUsername(request.username)
+                if (driver) {
+                    req.auth.driverAuthenticated(driver.driverid)
+                    return res.json({ tokenresult: 'usernameexists' })
+                }
+                req.auth.driverAuthenticated(await db.drivers.createDriver(request))
+                return res.json({ tokenresult: 'toprofileeditor' })
+            case 'reset':
+                req.auth.driverAuthenticated(request.driverid)
+                return res.json({ tokenresult: 'changepassword' })
+            default:
+                throw Error(`unknown token type: ${request.type}`)
+        }
+    } catch (error) {
+        return res.json({ tokenerror: error.toString() })
+    }
+}
+
 export async function register(req: Request, res: Response) {
     try {
         validateObj(req.body, RegisterValidator)
-
         const request = {
-            request:   'register',
+            type:      'register',
             firstname: req.body.firstname.trim(),
             lastname:  req.body.lastname.trim(),
             email:     req.body.email.trim(),
             username:  req.body.username.trim(),
             password:  req.body.password
         }
-        const token = wrapObj(req.sessionOptions.keys as KeyGrip, request)
+
         // Do most db lookup in one task
         let ismain: boolean, filter: boolean|null
         try {
@@ -47,7 +82,7 @@ export async function register(req: Request, res: Response) {
                 if ((await t.drivers.getDriverByNameEmail(req.body.firstname, req.body.lastname, req.body.email)).length) {
                     throw Error('That combination of name/email already exists, please use the reset tab instead')
                 }
-                if ((await t.drivers.getDriverByUsername(req.body.username)).length) {
+                if (await t.drivers.getDriverByUsername(req.body.username)) {
                     throw Error('That username is already taken')
                 }
                 const ismain = await db.general.getLocalSetting(IS_MAIN_SERVER) === '1'
@@ -74,10 +109,10 @@ export async function register(req: Request, res: Response) {
                 throw Error('Email matched filter drop')
             }
 
-            const url  = `https://${req.hostname}/register2/finish?token=${token}`
-            const body = `  <h3>Scorekeeper Profile Creation</h3>
-                                <p>Use the following link to complete the registration process</p>
-                                <a href='${url}'>${url}</a>`
+            const url  = tokenURL(req, request)
+            const body = `<h3>Scorekeeper Profile Creation</h3>
+                          <p>Use the following link to complete the registration process</p>
+                          <a href='${url}'>${url}</a>`
 
             await db.general.queueEmail({
                 subject: 'Scorekeeper Profile Request',
@@ -101,24 +136,27 @@ export async function register(req: Request, res: Response) {
 export async function reset(req: Request, res: Response) {
     try {
         validateObj(req.body, ResetValidator)
-        const request = {
-            request: 'reset',
+        const rcpt = {
             firstname: req.body.firstname.trim(),
             lastname:  req.body.lastname.trim(),
             email:     req.body.email.trim()
         }
-
-        const token = wrapObj(req.sessionOptions.keys as KeyGrip, request)
+        const request = {
+            type: 'reset',
+            driverid:  ''
+        }
 
         // Do most db lookup in one task
         try {
             await db.task(async t => {
-                if ((await t.drivers.getDriverByNameEmail(request.firstname, request.lastname, request.email)).length === 0) {
-                    throw Error('No user could be found with those parameters')
-                }
                 if (await db.general.getLocalSetting(IS_MAIN_SERVER) !== '1') {
                     throw Error('Reset only works from main server')
                 }
+                const d = await t.drivers.getDriverByNameEmail(rcpt.firstname, rcpt.lastname, rcpt.email)
+                if (d.length === 0) {
+                    throw Error('No user could be found with those parameters')
+                }
+                request.driverid = d[0].driverid
             })
         } catch (error) {
             controllog.error(error)
@@ -127,23 +165,23 @@ export async function reset(req: Request, res: Response) {
 
         try {
             await verifyCaptcha(req)
-            const url  = `https://${req.hostname}/register2/reset?token=${token}`
+            const url  = tokenURL(req, request)
             const body = `<h3>Scorekeeper Username and Password Reset</h3>
-                            <p>Use the following link to continue the reset process.</p>
-                            <a href='${url}'>${url}</a>`
+                          <p>Use the following link to continue the reset process.</p>
+                          <a href='${url}'>${url}</a>`
 
             await db.general.queueEmail({
                 subject: 'Scorekeeper Reset Request',
-                recipient: request,
+                recipient: rcpt,
                 body: body
             })
         } catch (error) {
             const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress
-            controllog.warn(`Ignore reset ${request.email} ${ip}: ${error}`)
+            controllog.warn(`Ignore reset ${rcpt.email} ${ip}: ${error}`)
             return res.status(400).json({ error: 'Request filtered due to suspicious parameters' })
         }
 
-        return res.status(200).json(await emailresult(request))
+        return res.status(200).json(await emailresult(rcpt))
 
     } catch (error) {
         res.status(500).json({ error: error.toString() })
