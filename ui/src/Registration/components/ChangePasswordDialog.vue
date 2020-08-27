@@ -1,65 +1,61 @@
 <template>
-    <v-dialog v-model="opened" persistent max-width="420px">
-        <template v-slot:activator="{ on }">
-            <v-btn v-on="on" dark color=secondary>Change Password</v-btn>
-        </template>
-
-        <v-card>
-            <v-card-title>
-                <span class="headline">Change Password</span>
-            </v-card-title>
-            <v-card-text>
-                <v-form ref="form" lazy-validation>
-                    <v-text-field v-model="currentpass" label="Current Password" :rules="vrules.password" required
-                        :type="pType" @click:append="showp=!showp" :append-icon="pIcon">
-                    >
-                    </v-text-field>
-                    <v-text-field v-model="newpass" label="New Password"     :rules="vrules.password" required
-                        :type="pType" @click:append="showp=!showp" :append-icon="pIcon">
-                    </v-text-field>
-                </v-form>
-            </v-card-text>
-            <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn color="blue darken-1" text @click="opened=false">Cancel</v-btn>
-                <v-btn color="blue darken-1" text @click="save()">Change</v-btn>
-            </v-card-actions>
-        </v-card>
-    </v-dialog>
-
-
+    <BaseDialog width="400px" :settitle="title" :setaction="action" :value="value" @input="$emit('input')" @update="update" ref='dialog'>
+        <v-text-field v-if='!isReset' v-model="currentpass" label="Current Password" :rules="vrules.password" required
+            :type="pType" @click:append="showp=!showp" :append-icon="pIcon">
+        </v-text-field>
+        <v-text-field v-model="newpass" label="New Password" :rules="vrules.password" required
+            :type="pType" @click:append="showp=!showp" :append-icon="pIcon">
+        </v-text-field>
+    </BaseDialog>
 </template>
 
 <script>
 import { DriverValidator } from '@/common/driver'
-import { PasswordEyeMixin } from '../../components/PasswordEyeMixin.js'
+import { PasswordEyeMixin } from '@/components/PasswordEyeMixin.js'
+import BaseDialog from '@/components/BaseDialog'
 
 export default {
-    name: 'LoginForm',
+    name: 'ChangePasswordDialog',
     mixins: [PasswordEyeMixin],
+    components: {
+        BaseDialog
+    },
+    props: {
+        value: Boolean,
+        resetToken: Object
+    },
     data() {
         return {
-            opened: false,
             vrules: DriverValidator,
             currentpass: '',
             newpass: ''
         }
     },
+    computed: {
+        isReset() { return this.resetToken && this.resetToken.t && this.resetToken.s },
+        title()   { return this.isReset ? 'Reset Password' : 'Change Password' },
+        action()  { return this.isReset ? 'Reset' : 'Update' }
+    },
     methods: {
-        save() {
-            if (this.$refs.form.validate()) {
+        update() {
+            if (this.$refs.dialog.validate()) {
                 this.$store.dispatch('changePassword', {
                     currentpassword: this.currentpass,
-                    newpassword: this.newpass
+                    newpassword: this.newpass,
+                    resetToken: this.resetToken
+                }).then(data => {
+                    if (data) this.$emit('complete')
                 })
-                this.opened = false
+
+                this.$emit('save')
+                this.$emit('input')
             }
         }
     },
     watch: {
-        opened: function(newv) {
+        value: function(newv) {
             if (newv) { // dialog open
-                if ('form' in this.$refs) { this.$refs.form.resetValidation() } // reset validations if present
+                this.$refs.dialog.resetValidation() // reset validations if present
                 this.currentpass = ''
                 this.newpass = ''
             }

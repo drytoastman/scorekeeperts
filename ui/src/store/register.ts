@@ -19,18 +19,21 @@ export const registerActions = {
             context.commit('driverAuthenticated', true)
             console.log('authenticated getdata')
             context.dispatch('getdata')
+            return true
         }
     },
 
     async changePassword(context: ActionContext<Api2State, any>, p: any) {
         if (await getDataWrap(context, axios.post(API2.CHANGEPASSWORD, p, { withCredentials: true }))) {
             context.commit('setErrors', ['Password change successful'])
+            return true
         }
     },
 
     async logout(context: ActionContext<Api2State, any>) {
         await getDataWrap(context, axios.get(API2.LOGOUT, { withCredentials: true }))
         context.commit('driverAuthenticated', false)
+        return true
     }
 
 }  as ActionTree<Api2State, any>

@@ -92,15 +92,6 @@ export async function adminlogout(req: Request, res: Response) {
     res.status(200).json({ result: 'logged out' })
 }
 
-export async function changepassword(req: Request, res: Response) {
-    try {
-        await db.drivers.changePassword(req.auth.driverId(), req.body.currentpassword, req.body.newpassword)
-        res.status(200).json({ result: 'Password change successful' })
-    } catch (error) {
-        res.status(500).json({ error: error.toString() })
-    }
-}
-
 const UNAUTHSPECIAL = ['recaptchasitekey', 'serieslist']
 const COMMONDEFAULT = ['classes', 'counts', 'events', 'indexes', 'listids', 'paymentaccounts', 'paymentitems', 'serieslist']
 const SERIESDEFAULT = [...COMMONDEFAULT, 'allclassindex', 'attendance', 'driverbrief', 'editorids', 'localsettings', 'rotatekeygrip', 'settings', 'squareapplicationid']

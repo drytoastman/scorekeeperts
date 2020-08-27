@@ -1,17 +1,19 @@
 <template>
     <v-dialog :value="value" @input="$emit('input')" :persistent="persistent" :max-width="width">
         <v-card>
-            <v-card-title>
-                <span class="headline primary--text">{{title}}</span>
-            </v-card-title>
-            <v-card-text :class='{disabledform: disableAll}'>
-                <slot></slot>
-            </v-card-text>
-            <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn color="primary" text @click="$emit('input')">Cancel</v-btn>
-                <v-btn color="primary" text @click="$emit('update')">{{actionName}}</v-btn>
-            </v-card-actions>
+            <v-form ref="form" lazy-validation @submit.prevent="" :id=title>
+                <v-card-title>
+                    <span class="headline primary--text">{{title}}</span>
+                </v-card-title>
+                <v-card-text :class='{disabledform: disableAll}'>
+                    <slot></slot>
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn color="primary" text @click="$emit('input')">Cancel</v-btn>
+                    <v-btn color="primary" text @click="$emit('update')" type='submit'>{{actionName}}</v-btn>
+                </v-card-actions>
+            </v-form>
         </v-card>
     </v-dialog>
 </template>
@@ -55,6 +57,14 @@ export default {
             }
         },
         disableAll: function() { return this.actionName === 'Delete' }
+    },
+    methods: {
+        validate() {
+            return this.$refs.form.validate()
+        },
+        resetValidation() {
+            if ('form' in this.$refs) return this.$refs.form.resetValidation()
+        }
     }
 }
 </script>

@@ -23,7 +23,7 @@ export async function driverget(task: ScorekeeperProtocol, driverid: UUID, param
             case 'registered':  ret.registered        = await task.register.getRegistrationbyDriverId(driverid); break
             case 'unsubscribe': ret.driverunsubscribe = await task.drivers.getUnsubscribeByDriverId(driverid);   break
             case 'usednumbers':
-                ret.usednumbers = await task.register.usedNumbers(param.driverid, param.classcode, await task.series.superUniqueNumbers())
+                ret.usednumbers = await task.register.usedNumbers(driverid, param.classcode, await task.series.superUniqueNumbers())
                 break
             case 'summary':
                 ret.summary = await allSeriesSummary(task, driverid)

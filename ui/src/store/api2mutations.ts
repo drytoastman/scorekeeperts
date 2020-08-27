@@ -50,6 +50,10 @@ export const api2Mutations = {
         state.seriesAuthenticated = {}
     },
 
+    clearTokenResult(state: Api2State) {
+        state.tokenresult = ''
+    },
+
     clearSeriesData(state: Api2State) {
         clearApi2SeriesData(state)
     },
@@ -109,7 +113,7 @@ export const api2Mutations = {
         }
 
         for (const key of ['listids', 'unsubscribe', 'summary', 'counts', 'attendance',
-            'emailresult', 'settings', 'squareapplicationid', 'squareoauthresp']) {
+            'emailresult', 'settings', 'squareapplicationid', 'squareoauthresp', 'tokenresult']) {
             // easy straight assignments/replacements
             if (key in data) {
                 state[key] = data[key]

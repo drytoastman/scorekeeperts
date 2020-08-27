@@ -44,8 +44,8 @@
             </v-list>
         </v-navigation-drawer>
 
-        <v-app-bar app dense dark color='primary' v-if="!isOutside">
-            <v-app-bar-nav-icon @click.stop="drawer = !drawer" :disabled="!driverAuthenticated" />
+        <v-app-bar app dense dark color='primary'>
+            <v-app-bar-nav-icon @click.stop="drawer = !drawer" :disabled="!driverAuthenticated || isOutside" />
             <v-toolbar-title>{{displayName}}</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-progress-linear :active="!!gettingData" indeterminate absolute bottom color="green accent-4"></v-progress-linear>
@@ -58,7 +58,6 @@
         </v-main>
 
         <v-snackbar :value="snackbar" :timeout=-1>
-            {{filteredErrors}}
             <div v-for="error in filteredErrors" :key="error">
                 {{ error }}
             </div>

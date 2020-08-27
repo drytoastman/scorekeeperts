@@ -2,6 +2,7 @@ import _ from 'lodash'
 import dns from 'dns'
 import { Request, Response } from 'express'
 import KeyGrip from 'keygrip'
+import isUUID from 'validator/es/lib/isUUID'
 
 import { RegisterValidator, ResetValidator } from '@common/driver'
 import { validateObj } from '@common/util'
@@ -40,25 +41,31 @@ function tokenURL(req: Request, data: any): string {
 
 export async function token(req: Request, res: Response) {
     try {
-        const request = unwrapObj(req.sessionOptions.keys as KeyGrip, req.body.token, req.body.signature)
         let driver
-        console.log(request)
+        const request = unwrapObj(req.sessionOptions.keys as KeyGrip, req.body.token, req.body.signature)
+
         switch (request.type) {
             case 'register':
+                validateObj(request, RegisterValidator)
                 driver = await db.drivers.getDriverByUsername(request.username)
                 if (driver) {
                     req.auth.driverAuthenticated(driver.driverid)
                     return res.json({ tokenresult: 'usernameexists' })
                 }
+
                 req.auth.driverAuthenticated(await db.drivers.createDriver(request))
                 return res.json({ tokenresult: 'toprofileeditor' })
+
             case 'reset':
+                if (!isUUID(request.driverid)) throw Error('invalid driverid')
                 req.auth.driverAuthenticated(request.driverid)
                 return res.json({ tokenresult: 'changepassword' })
+
             default:
                 throw Error(`unknown token type: ${request.type}`)
         }
     } catch (error) {
+        controllog.warn(error)
         return res.json({ tokenerror: error.toString() })
     }
 }
@@ -79,15 +86,13 @@ export async function register(req: Request, res: Response) {
         let ismain: boolean, filter: boolean|null
         try {
             [ismain, filter] = await db.task(async t => {
-                if ((await t.drivers.getDriverByNameEmail(req.body.firstname, req.body.lastname, req.body.email)).length) {
+                if (await t.drivers.getDriverByNameEmail(req.body.firstname, req.body.lastname, req.body.email)) {
                     throw Error('That combination of name/email already exists, please use the reset tab instead')
                 }
                 if (await t.drivers.getDriverByUsername(req.body.username)) {
                     throw Error('That username is already taken')
                 }
-                const ismain = await db.general.getLocalSetting(IS_MAIN_SERVER) === '1'
-                const filter = await db.general.getEmailFilterMatch(request.email)
-                return [ismain, filter]
+                return [await t.general.getLocalSetting(IS_MAIN_SERVER) === '1', await t.general.getEmailFilterMatch(request.email)]
             })
         } catch (error) {
             controllog.error(error)
@@ -96,9 +101,8 @@ export async function register(req: Request, res: Response) {
 
         if (!ismain) {
             // Off main server (onsite), we let them register without the email verification, jump directly there
-            // request.args = dict(token=token)
-            // return finish()
-            throw Error('on site not implemented yet')
+            req.auth.driverAuthenticated(await db.drivers.createDriver(request))
+            return res.json({ tokenresult: 'toprofileeditor' })
         }
 
         try {
@@ -128,6 +132,7 @@ export async function register(req: Request, res: Response) {
         return res.status(200).json(await emailresult(request))
 
     } catch (error) {
+        controllog.error(error)
         res.status(500).json({ error: error.toString() })
     }
 }
@@ -146,18 +151,15 @@ export async function reset(req: Request, res: Response) {
             driverid:  ''
         }
 
-        // Do most db lookup in one task
         try {
-            await db.task(async t => {
-                if (await db.general.getLocalSetting(IS_MAIN_SERVER) !== '1') {
-                    throw Error('Reset only works from main server')
-                }
-                const d = await t.drivers.getDriverByNameEmail(rcpt.firstname, rcpt.lastname, rcpt.email)
-                if (d.length === 0) {
-                    throw Error('No user could be found with those parameters')
-                }
-                request.driverid = d[0].driverid
-            })
+            if (await db.general.getLocalSetting(IS_MAIN_SERVER) !== '1') {
+                throw Error('Reset only works from main server')
+            }
+            const d = await db.drivers.getDriverByNameEmail(rcpt.firstname, rcpt.lastname, rcpt.email)
+            if (!d) {
+                throw Error('No user could be found with those parameters')
+            }
+            request.driverid = d.driverid
         } catch (error) {
             controllog.error(error)
             return res.status(400).json({ error: error.toString() })
@@ -184,6 +186,23 @@ export async function reset(req: Request, res: Response) {
         return res.status(200).json(await emailresult(rcpt))
 
     } catch (error) {
+        controllog.error(error)
+        res.status(500).json({ error: error.toString() })
+    }
+}
+
+export async function changepassword(req: Request, res: Response) {
+    try {
+        let reset = false
+        if (req.body.resetToken) {
+            const o = unwrapObj(req.sessionOptions.keys as KeyGrip, req.body.resetToken.t, req.body.resetToken.s)
+            if (o.driverid !== req.auth.driverId()) throw Error('token driverid and authorization driverid do not match')
+            reset = true
+        }
+        await db.drivers.changePassword(req.auth.driverId(), req.body.currentpassword, req.body.newpassword, reset)
+        res.status(200).json({ result: 'Password change successful' })
+    } catch (error) {
+        controllog.error(error)
         res.status(500).json({ error: error.toString() })
     }
 }

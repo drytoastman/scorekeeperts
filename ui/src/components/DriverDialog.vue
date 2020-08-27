@@ -1,25 +1,23 @@
 <template>
-    <BaseDialog :value="value" :apiType="apiType" dataType="Driver" width="420px" @input="$emit('input')" @update="update">
-        <v-form ref="form" lazy-validation>
-            <div class='formgrid'>
-                <v-text-field v-model="driverm.firstname"     class='firstn'   label="Firstname"         :rules="vrules.firstname"></v-text-field>
-                <v-text-field v-model="driverm.lastname"      class='lastn'    label="Firstname"         :rules="vrules.lastname"></v-text-field>
-                <v-text-field v-model="driverm.email"         class='email'    label="Email"             :rules="vrules.email"></v-text-field>
-                <v-checkbox   v-model="driverm.optoutmail"    class='dnc'      label="Do Not Contact"></v-checkbox>
-                <v-text-field v-model="driverm.barcode"       class='barcode'  label="Barcode"           :rules="vrules.barcode"></v-text-field>
-                <v-text-field v-model="driverm.attr.scca"     class='scca'     label="SCCA #"            :rules="vrules.scca"></v-text-field>
-                <v-divider class='divider'></v-divider>
-                <v-text-field v-model="driverm.attr.address"  class='address'  label="Address"           :rules="vrules.address"></v-text-field>
-                <v-text-field v-model="driverm.attr.city"     class='city'     label="City"              :rules="vrules.city"></v-text-field>
-                <v-text-field v-model="driverm.attr.state"    class='state'    label="State"             :rules="vrules.state"></v-text-field>
-                <v-text-field v-model="driverm.attr.zip"      class='zip'      label="Zip"               :rules="vrules.zip"></v-text-field>
-                <v-text-field v-model="driverm.attr.phone"    class='phone'    label="Phone"             :rules="vrules.phone"></v-text-field>
-                <v-text-field v-model="driverm.attr.brag"     class='brag'     label="Brag"              :rules="vrules.brag"></v-text-field>
-                <v-text-field v-model="driverm.attr.sponsor"  class='sponsor'  label="Sponsor"           :rules="vrules.sponsor"></v-text-field>
-                <v-text-field v-model="driverm.attr.econtact" class='econtact' label="Emergency Contact" :rules="vrules.econtact"></v-text-field>
-                <v-text-field v-model="driverm.attr.ephone"   class='ephone'   label="Emergency Phone"   :rules="vrules.ephone"></v-text-field>
-            </div>
-        </v-form>
+    <BaseDialog :value="value" :apiType="apiType" dataType="Driver" width="420px" @input="$emit('input')" @update="update" ref="dialog">
+        <div class='formgrid'>
+            <v-text-field v-model="driverm.firstname"     class='firstn'   label="Firstname"         :rules="vrules.firstname"></v-text-field>
+            <v-text-field v-model="driverm.lastname"      class='lastn'    label="Firstname"         :rules="vrules.lastname"></v-text-field>
+            <v-text-field v-model="driverm.email"         class='email'    label="Email"             :rules="vrules.email"></v-text-field>
+            <v-checkbox   v-model="driverm.optoutmail"    class='dnc'      label="Do Not Contact"></v-checkbox>
+            <v-text-field v-model="driverm.barcode"       class='barcode'  label="Barcode"           :rules="vrules.barcode"></v-text-field>
+            <v-text-field v-model="driverm.attr.scca"     class='scca'     label="SCCA #"            :rules="vrules.scca"></v-text-field>
+            <v-divider class='divider'></v-divider>
+            <v-text-field v-model="driverm.attr.address"  class='address'  label="Address"           :rules="vrules.address"></v-text-field>
+            <v-text-field v-model="driverm.attr.city"     class='city'     label="City"              :rules="vrules.city"></v-text-field>
+            <v-text-field v-model="driverm.attr.state"    class='state'    label="State"             :rules="vrules.state"></v-text-field>
+            <v-text-field v-model="driverm.attr.zip"      class='zip'      label="Zip"               :rules="vrules.zip"></v-text-field>
+            <v-text-field v-model="driverm.attr.phone"    class='phone'    label="Phone"             :rules="vrules.phone"></v-text-field>
+            <v-text-field v-model="driverm.attr.brag"     class='brag'     label="Brag"              :rules="vrules.brag"></v-text-field>
+            <v-text-field v-model="driverm.attr.sponsor"  class='sponsor'  label="Sponsor"           :rules="vrules.sponsor"></v-text-field>
+            <v-text-field v-model="driverm.attr.econtact" class='econtact' label="Emergency Contact" :rules="vrules.econtact"></v-text-field>
+            <v-text-field v-model="driverm.attr.ephone"   class='ephone'   label="Emergency Phone"   :rules="vrules.ephone"></v-text-field>
+        </div>
     </BaseDialog>
 </template>
 
@@ -39,13 +37,12 @@ export default {
     data() {
         return {
             vrules: DriverValidator,
-            opened: false,
             driverm: { attr: {}}
         }
     },
     methods: {
         update() {
-            if (this.apiType === 'delete' || this.$refs.form.validate()) {
+            if (this.apiType === 'delete' || this.$refs.dialog.validate()) {
                 this.$store.dispatch('setdata', {
                     type: this.apiType,
                     items: { drivers: [this.driverm] },
@@ -61,7 +58,7 @@ export default {
     watch: {
         value: function(newv) {
             if (newv) { // dialog open
-                if ('form' in this.$refs) { this.$refs.form.resetValidation() } // reset validations if present
+                this.$refs.dialog.resetValidation() // reset validations if present
                 this.driverm = JSON.parse(JSON.stringify(this.driver || { attr: {}}))
             }
         }

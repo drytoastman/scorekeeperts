@@ -1,32 +1,28 @@
 <template>
-    <BaseDialog :value="value" :apiType="apiType" dataType="Car" width="400px" @input="$emit('input')" @update="update">
-        <v-container>
-            <v-form ref="form" lazy-validation>
-                <v-select v-model="carm.classcode" label="Class" :rules="classrules" :items="classlist" @change="loadNumbers" item-text='classcode'>
-                    <template v-slot:item="d">
-                        <span class='classcode'>{{ d.item.classcode }}</span><span class='descrip'>{{ d.item.descrip }}</span>
-                    </template>
-                </v-select>
+    <BaseDialog :value="value" :apiType="apiType" dataType="Car" width="400px" @input="$emit('input')" @update="update" ref='dialog'>
+        <v-select v-model="carm.classcode" label="Class" :rules="classrules" :items="classlist" @change="loadNumbers" item-text='classcode'>
+            <template v-slot:item="d">
+                <span class='classcode'>{{ d.item.classcode }}</span><span class='descrip'>{{ d.item.descrip }}</span>
+            </template>
+        </v-select>
 
-                <v-select v-model="carm.indexcode" :rules="indexrules" :items="indexlist" item-value='indexcode' item-text='indexcode'
-                            :label='needindex?"Index":"No index required"' :disabled="!needindex">
-                    <template v-slot:item="d">
-                        <span class='indexcode'>{{ d.item.indexcode }}</span><span class='descrip'>{{ d.item.descrip }}</span>
-                    </template>
-                </v-select>
+        <v-select v-model="carm.indexcode" :rules="indexrules" :items="indexlist" item-value='indexcode' item-text='indexcode'
+                    :label='needindex?"Index":"No index required"' :disabled="!needindex">
+            <template v-slot:item="d">
+                <span class='indexcode'>{{ d.item.indexcode }}</span><span class='descrip'>{{ d.item.descrip }}</span>
+            </template>
+        </v-select>
 
-                <v-text-field v-model="carm.number"     label="Number" :rules="numberrules" :disabled="!carm.classcode">
-                    <template v-slot:append-outer>
-                        <NumberPicker :classcode="carm.classcode" :usednumbers="usednumbers" @selected="numselected"></NumberPicker>
-                    </template>
-                </v-text-field>
+        <v-text-field v-model="carm.number"     label="Number" :rules="numberrules" :disabled="!carm.classcode">
+            <template v-slot:append-outer>
+                <NumberPicker :classcode="carm.classcode" :usednumbers="usednumbers" @selected="numselected"></NumberPicker>
+            </template>
+        </v-text-field>
 
-                <v-text-field v-model="carm.attr.year"  label="Year"   :rules="vrules.year"></v-text-field>
-                <v-text-field v-model="carm.attr.make"  label="Make"   :rules="vrules.make"></v-text-field>
-                <v-text-field v-model="carm.attr.model" label="Model"  :rules="vrules.model"></v-text-field>
-                <v-text-field v-model="carm.attr.color" label="Color"  :rules="vrules.color"></v-text-field>
-            </v-form>
-        </v-container>
+        <v-text-field v-model="carm.attr.year"  label="Year"   :rules="vrules.year"></v-text-field>
+        <v-text-field v-model="carm.attr.make"  label="Make"   :rules="vrules.make"></v-text-field>
+        <v-text-field v-model="carm.attr.model" label="Model"  :rules="vrules.model"></v-text-field>
+        <v-text-field v-model="carm.attr.color" label="Color"  :rules="vrules.color"></v-text-field>
     </BaseDialog>
 </template>
 
@@ -103,9 +99,10 @@ export default {
 
         numselected(num) {
             Vue.set(this.carm, 'number', num) // use Vue.set to catch it even if we started blank
+            this.$refs.dialog.resetValidation()
         },
         update() {
-            if (this.apiType === 'delete' || this.$refs.form.validate()) {
+            if (this.apiType === 'delete' || this.$refs.dialog.validate()) {
                 if (!this.carm.carid) {
                     this.carm.carid = 'placeholder'
                 }
@@ -131,7 +128,7 @@ export default {
     watch: {
         value: function(newv) {
             if (newv) { // dialog open
-                if ('form' in this.$refs) { this.$refs.form.resetValidation() } // reset validations if present
+                this.$refs.dialog.resetValidation() // reset validations if present
                 this.carm = JSON.parse(JSON.stringify(this.car || { attr: {}}))
                 this.loadNumbers()
             }
