@@ -152,7 +152,7 @@ export async function reset(req: Request, res: Response) {
         }
 
         try {
-            if (await db.general.isMainServer()) {
+            if (!await db.general.isMainServer()) {
                 throw Error('Reset only works from main server')
             }
             const d = await db.drivers.getDriverByNameEmail(rcpt.firstname, rcpt.lastname, rcpt.email)
