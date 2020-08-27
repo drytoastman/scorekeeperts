@@ -4,8 +4,7 @@
         <v-text-field v-model="password" label="Password" :rules="vrules.password" required
                       :type="pType" @click:append="showp=!showp" :append-icon="pIcon">
         </v-text-field>
-        <v-btn v-if=ready :dark=dark :color=color type="submit">Login</v-btn>
-        <div v-else>Waiting for Captcha</div>
+        <v-btn :dark=dark :color=color type="submit">Login</v-btn>
     </v-form>
 </template>
 
@@ -33,14 +32,9 @@ export default {
     methods: {
         login() {
             if (!this.$refs.form.validate()) { return }
-            this.$emit('doCaptcha', this.captchaComplete)
-        },
-        captchaComplete(token) {
-            if (!token || !this.$refs.form.validate()) { return }
             this.$store.dispatch('login', {
                 username: this.username,
-                password: this.password,
-                recaptcha: token
+                password: this.password
             })
         }
     }

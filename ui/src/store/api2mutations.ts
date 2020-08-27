@@ -54,6 +54,12 @@ export const api2Mutations = {
         state.tokenresult = ''
     },
 
+    clearDriverData(state: Api2State) {
+        state.driverid = ''
+        state.drivers = {}
+        clearApi2SeriesData(state)
+    },
+
     clearSeriesData(state: Api2State) {
         clearApi2SeriesData(state)
     },

@@ -1,7 +1,7 @@
 <template>
     <v-dialog :value="value" @input="$emit('input')" :persistent="persistent" :max-width="width">
         <v-card>
-            <v-form ref="form" lazy-validation @submit.prevent="" :id=title>
+            <v-form ref="form" lazy-validation @submit.prevent="$emit('update')" :id=title>
                 <v-card-title>
                     <span class="headline primary--text">{{title}}</span>
                 </v-card-title>
@@ -11,7 +11,7 @@
                 <v-card-actions>
                     <v-spacer></v-spacer>
                     <v-btn color="primary" text @click="$emit('input')">Cancel</v-btn>
-                    <v-btn color="primary" text @click="$emit('update')" type='submit'>{{actionName}}</v-btn>
+                    <v-btn color="primary" text type='submit'>{{actionName}}</v-btn>
                 </v-card-actions>
             </v-form>
         </v-card>

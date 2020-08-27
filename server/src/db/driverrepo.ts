@@ -77,10 +77,10 @@ export class DriverRepository {
         if (!d) {
             throw Error('Unknown username')
         }
-        if (await bcrypt.compare(password, d.password)) {
-            return d.driverid
+        if (!await bcrypt.compare(password, d.password)) {
+            throw new Error('Authentication Failed')
         }
-        throw new Error('Authentication Failed')
+        return d.driverid
     }
 
     async changePassword(driverid: UUID, currentpassword: string, newpassword: string, reset?: boolean): Promise<void> {

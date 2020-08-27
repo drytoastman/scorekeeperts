@@ -33,6 +33,7 @@ export const registerActions = {
     async logout(context: ActionContext<Api2State, any>) {
         await getDataWrap(context, axios.get(API2.LOGOUT, { withCredentials: true }))
         context.commit('driverAuthenticated', false)
+        context.commit('clearDriverData')
         return true
     }
 

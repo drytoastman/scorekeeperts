@@ -9,7 +9,13 @@ export async function unauthget(db: ScorekeeperProtocol, item: any, ret: any): P
         case 'listids':             ret.listids             = await db.series.emailListIds(); break
         case 'serieslist':          ret.serieslist          = await db.series.seriesList();   break
         case 'squareapplicationid': ret.squareapplicationid = await db.general.getLocalSetting(SQ_APPLICATION_ID); break
-        case 'recaptchasitekey':    ret.recaptchasitekey    = await db.general.getLocalSetting(RECAPTCHA_SITEKEY); break
+        case 'recaptchasitekey':
+            if (await db.general.isMainServer()) {
+                ret.recaptchasitekey = await db.general.getLocalSetting(RECAPTCHA_SITEKEY)
+            } else {
+                ret.recaptchasitekey = 'norecaptcha'
+            }
+            break
         default: res = false
     }
 

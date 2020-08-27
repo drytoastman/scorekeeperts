@@ -9,7 +9,7 @@ import { validateObj } from '@common/util'
 import { db } from '@/db'
 import { wrapObj, unwrapObj } from '@/util/statelessdata'
 import { controllog } from '@/util/logging'
-import { IS_MAIN_SERVER, MAIL_SEND_REPLYTO, MAIL_SEND_FROM } from '@/db/generalrepo'
+import { MAIL_SEND_REPLYTO, MAIL_SEND_FROM } from '@/db/generalrepo'
 import { verifyCaptcha } from '../captcha'
 
 async function emailresult(request: any): Promise<any> {
@@ -92,7 +92,7 @@ export async function register(req: Request, res: Response) {
                 if (await t.drivers.getDriverByUsername(req.body.username)) {
                     throw Error('That username is already taken')
                 }
-                return [await t.general.getLocalSetting(IS_MAIN_SERVER) === '1', await t.general.getEmailFilterMatch(request.email)]
+                return [await t.general.isMainServer(), await t.general.getEmailFilterMatch(request.email)]
             })
         } catch (error) {
             controllog.error(error)
@@ -152,7 +152,7 @@ export async function reset(req: Request, res: Response) {
         }
 
         try {
-            if (await db.general.getLocalSetting(IS_MAIN_SERVER) !== '1') {
+            if (await db.general.isMainServer()) {
                 throw Error('Reset only works from main server')
             }
             const d = await db.drivers.getDriverByNameEmail(rcpt.firstname, rcpt.lastname, rcpt.email)

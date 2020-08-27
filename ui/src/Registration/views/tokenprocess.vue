@@ -25,6 +25,8 @@ export default {
             this.status = 'submitting new password'
         },
         complete() {
+            this.$store.commit('clearDriverData')
+            this.$store.commit('driverAuthenticated', true)
             this.$store.dispatch('getdata')
             this.$router.replace({ name: 'profile' })
         }
@@ -36,7 +38,6 @@ export default {
                 return
             }
 
-            this.$store.commit('driverAuthenticated', true)
             this.status = 'token accepted'
             if (data.tokenresult === 'changepassword') {
                 this.resetToken = this.$route.query

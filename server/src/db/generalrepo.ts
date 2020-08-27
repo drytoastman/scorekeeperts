@@ -43,6 +43,10 @@ export class GeneralRepository {
         this.setLocalSetting(ADMIN_PASSWORD, hash)
     }
 
+    async isMainServer(): Promise<boolean> {
+        return ((await this.getLocalSetting(IS_MAIN_SERVER)) === '1')
+    }
+
     async getLocalSetting(key: string): Promise<string> {
         const row = await this.db.one('SELECT value FROM localsettings WHERE key=$1', [key])
         return row.value

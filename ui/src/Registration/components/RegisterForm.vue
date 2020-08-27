@@ -47,10 +47,26 @@ export default {
                 lastname: this.lastname,
                 email: this.email,
                 username: this.username,
-                password: this.lastname,
+                password: this.password,
                 recaptcha: token
             }).then(data => {
-                if (data) this.$router.push({ name: 'emailresult' })
+                if (!data) return
+
+                if (data.tokenresult) { // onsite direct registration
+                    this.$store.commit('clearDriverData')
+                    this.$store.commit('driverAuthenticated', true)
+                    this.$store.dispatch('getdata')
+                    this.$router.replace({ name: 'profile' })
+                    return
+                }
+
+                if (data.emailresult) { // email was sent, let them know
+                    this.$router.push({ name: 'emailresult' })
+                    return
+                }
+
+                console.log(data)
+                this.$store.commit('setErrors', ['unknown registration result'])
             })
         }
     }

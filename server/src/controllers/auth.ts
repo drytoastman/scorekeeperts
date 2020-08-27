@@ -50,7 +50,7 @@ export class AuthData {
 
 export async function login(req: Request, res: Response) {
     try {
-        await verifyCaptcha(req)
+        // await verifyCaptcha(req)
         req.auth.driverAuthenticated(await db.drivers.checkLogin(req.body.username, req.body.password))
         res.status(200).json({ result: 'authenticated' })
     } catch (error) {

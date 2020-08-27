@@ -12,44 +12,51 @@ export const ReCaptchaMixin = {
         }
     },
     methods: {
+        doCaptcha(componentCallback) {
+            // we redirect the callback to use a single captcha div and avoid mess of events and props
+            if (this.skipCaptcha) {
+                componentCallback('skippingskippingskippingskippingskippingskippingskippingskipping')
+            } else {
+                this.componentCallback = componentCallback
+                grecaptcha.execute()
+            }
+        },
+        loadCaptcha() {
+            if ((window.captchaLoadedEvent) && (window.captchaLoadedEvent !== this.captchaLoaded)) {
+                console.warn('captchaLoadedEvent will be overwritten')
+            }
+            // allow script to use a generic function pointer to call our stuff
+            window.captchaLoadedEvent = this.captchaLoaded
+            Vue.loadScript(RECAPTCHAURL)
+        },
         captchaLoaded() {
             this.loaded = true
+            grecaptcha.render('captchadiv', {
+                sitekey: this.sitekey,
+                callback: (token) => { this.componentCallback(token); grecaptcha.reset() },
+                size: 'invisible'
+            })
         },
-        doCaptcha(callback) {
-            // we redirect the callback to use a single captcha div and avoid mess of events and props
-            this.componentCallback = callback
-            grecaptcha.execute()
+        unloadCaptcha() {
+            this.captchaSiteKey = ''
+            this.captchaLoaded = false
+            delete window.captchaLoadedEvent
+            if (this.loaded) Vue.unloadScript(RECAPTCHAURL)
         }
     },
     computed: {
-        ready() { return this.loaded && this.sitekey.length > 10 }
-    },
-    watch: {
-        ready(newv) {
-            if (newv) {
-                grecaptcha.render('captchadiv', {
-                    sitekey: this.sitekey,
-                    callback: (token) => { this.componentCallback(token); grecaptcha.reset() },
-                    size: 'invisible'
-                })
-            }
-        }
+        skipCaptcha()  { return this.sitekey === 'norecaptcha' },
+        ready() { return this.skipCaptcha || (this.loaded && this.sitekey.length > 10) }
     },
     mounted() {
         this.$store.dispatch('getdata', { items: 'recaptchasitekey' }).then(data => {
-            if (data) this.sitekey = data.recaptchasitekey
+            if (data) {
+                this.sitekey = data.recaptchasitekey
+                if (!this.skipCaptcha) this.loadCaptcha()
+            }
         })
-        if ((window.captchaLoadedEvent) && (window.captchaLoadedEvent !== this.captchaLoaded)) {
-            console.warn('captchaLoadedEvent will be overwritten')
-        }
-        // allow script to use a generic function pointer to call our stuff
-        window.captchaLoadedEvent = this.captchaLoaded
-        Vue.loadScript(RECAPTCHAURL)
     },
     destroyed() {
-        this.captchaSiteKey = ''
-        this.captchaLoaded = false
-        delete window.captchaLoadedEvent
-        Vue.unloadScript(RECAPTCHAURL)
+        if (!this.skipCaptcha) this.unloadCaptcha()
     }
 }

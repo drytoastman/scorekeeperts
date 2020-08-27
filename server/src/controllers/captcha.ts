@@ -6,6 +6,8 @@ import { RECAPTCHA_SECRET } from '@/db/generalrepo'
 import { controllog } from '@/util/logging'
 
 export async function verifyCaptcha(req: Request): Promise<void> {
+    if (!await db.general.isMainServer()) return
+
     const secret = await db.general.getLocalSetting(RECAPTCHA_SECRET)
     if (req.body.admin && req.auth.hasAnySeriesAuth()) {
         return
