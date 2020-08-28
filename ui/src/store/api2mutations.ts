@@ -118,7 +118,7 @@ export const api2Mutations = {
             state.serieslist = data.serieslist.sort()
         }
 
-        for (const key of ['listids', 'unsubscribe', 'summary', 'counts', 'attendance',
+        for (const key of ['listids', 'unsubscribe', 'summary', 'counts', 'attendance', 'classorder',
             'emailresult', 'settings', 'squareapplicationid', 'squareoauthresp', 'tokenresult']) {
             // easy straight assignments/replacements
             if (key in data) {

@@ -1,4 +1,4 @@
-import { DataValidationRules, MaxLength, Length, isDecimal3, Min, isPrintable, isInteger } from './util'
+import { DataValidationRules, MaxLength, Length, isDecimal3, Min, isPrintable, isInteger, UUID } from './util'
 
 export interface SeriesIndex
 {
@@ -41,4 +41,11 @@ export const ClassValidator: DataValidationRules =
     usecarflag:      [],
     caridxrestrict:  [MaxLength(128)],
     countedruns:     [isInteger, Min(0)]
+}
+
+export interface ClassOrder
+{
+    eventid: UUID;
+    rungroup: number;
+    classes: string[];
 }

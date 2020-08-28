@@ -5,7 +5,7 @@
         </template>
         <v-list>
             <template v-for="item in items">
-                <v-divider v-if="!item.title" :key="item.title+'d'"></v-divider>
+                <v-divider v-if="!item.title" :key="item.title"></v-divider>
                 <v-list-item v-else :key="item.title" :to="item.link">
                     <v-list-item-title>{{ item.title }}</v-list-item-title>
                 </v-list-item>

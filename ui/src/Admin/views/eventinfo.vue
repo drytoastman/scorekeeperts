@@ -2,19 +2,12 @@
     <div class='outer' v-if="event">
         <h2>{{event.name}} {{fmtdate}}</h2>
         <v-tabs center-active color="secondary">
-            <v-tab>Entry Admin</v-tab>
-            <v-tab>Event Settings</v-tab>
-            <v-tab>Grid Order</v-tab>
             <v-tab>Cards</v-tab>
+            <v-tab>Event Settings</v-tab>
+            <v-tab>Entry Admin</v-tab>
+            <v-tab>Grid Order</v-tab>
 
-            <v-tab-item>
-                <EntrantTable :eventid=eventid></EntrantTable>
-            </v-tab-item>
-            <v-tab-item>
-                <EventSettings :seriesevent="event"></EventSettings>
-            </v-tab-item>
-            <v-tab-item>
-            </v-tab-item>
+
             <v-tab-item>
                 <div class='cardswrap'>
                     <v-select v-model="cardtype" label="Download Type" :items="['pdf', 'template', 'csv']"></v-select>
@@ -22,6 +15,16 @@
                     <v-btn @click='carddownload' color='secondary' style='grid-column: 1/span 2'>Generate Cards</v-btn>
                 </div>
             </v-tab-item>
+            <v-tab-item>
+                <EventSettings :seriesevent="event"></EventSettings>
+            </v-tab-item>
+            <v-tab-item>
+                <EntrantTable :eventid=eventid></EntrantTable>
+            </v-tab-item>
+            <v-tab-item>
+                <GridOrder :eventid=eventid></GridOrder>
+            </v-tab-item>
+
         </v-tabs>
     </div>
 </template>
@@ -31,12 +34,14 @@ import { format } from 'date-fns'
 import { mapState } from 'vuex'
 import EventSettings from '../components/EventSettings.vue'
 import EntrantTable from '../components/EntrantTable.vue'
+import GridOrder from '../components/GridOrder.vue'
 
 export default {
     name: 'EventInfo',
     components: {
         EventSettings,
-        EntrantTable
+        EntrantTable,
+        GridOrder
     },
     props: {
         eventid: String

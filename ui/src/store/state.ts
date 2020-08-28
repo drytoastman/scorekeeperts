@@ -55,6 +55,7 @@ export class Api2State {
     payments: {[key: string]: Payment[]} = {}
     attendance: {[key: string]: UUID[]} = {}
     counts: {[key: string]: any} = {}
+    classorder: {[key: string]: any} = {}
 
     // square oauth
     squareapplicationid = ''

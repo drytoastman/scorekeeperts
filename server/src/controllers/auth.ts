@@ -2,7 +2,6 @@ import _ from 'lodash'
 import { Request, Response } from 'express'
 import { db } from '@/db'
 import { UUID } from '@common/util'
-import { verifyCaptcha } from './captcha'
 
 declare global {
     module Express {
@@ -50,7 +49,6 @@ export class AuthData {
 
 export async function login(req: Request, res: Response) {
     try {
-        // await verifyCaptcha(req)
         req.auth.driverAuthenticated(await db.drivers.checkLogin(req.body.username, req.body.password))
         res.status(200).json({ result: 'authenticated' })
     } catch (error) {
@@ -92,9 +90,11 @@ export async function adminlogout(req: Request, res: Response) {
     res.status(200).json({ result: 'logged out' })
 }
 
+// 'allclassindex', 'attendance', 'driverbrief', 'editorids', 'rotatekeygrip',
+
 const UNAUTHSPECIAL = ['recaptchasitekey', 'serieslist']
 const COMMONDEFAULT = ['classes', 'counts', 'events', 'indexes', 'listids', 'paymentaccounts', 'paymentitems', 'serieslist']
-const SERIESDEFAULT = [...COMMONDEFAULT, 'allclassindex', 'attendance', 'driverbrief', 'editorids', 'localsettings', 'rotatekeygrip', 'settings', 'squareapplicationid']
+const SERIESDEFAULT = [...COMMONDEFAULT, 'classorder', 'localsettings',  'settings', 'squareapplicationid']
 const DRIVERDEFAULT = [...COMMONDEFAULT, 'cars', 'drivers', 'payments', 'registered', 'summary', 'unsubscribe']
 
 export const AUTHTYPE_DRIVER = 'driver'

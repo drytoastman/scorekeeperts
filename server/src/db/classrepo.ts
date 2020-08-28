@@ -1,5 +1,5 @@
 import { IDatabase, ColumnSet, IMain } from 'pg-promise'
-import { SeriesClass, ClassValidator, SeriesIndex, IndexValidator } from '@common/classindex'
+import { SeriesClass, ClassValidator, SeriesIndex, IndexValidator, ClassOrder } from '@common/classindex'
 import { validateObj } from '@common/util'
 
 let classcols: ColumnSet|undefined
@@ -52,5 +52,9 @@ export class ClassRepository {
         if (type === 'update') return this.db.any(this.pgp.helpers.update(indexes, indexcols) + ' WHERE v.indexcode = t.indexcode RETURNING *')
         if (type === 'delete') return this.db.any('DELETE from indexlist WHERE indexcode in ($1:csv) RETURNING indexcode', indexes.map(i => i.indexcode))
         throw Error(`Unknown operation type ${JSON.stringify(type)}`)
+    }
+
+    async classOrder(): Promise<ClassOrder[]> {
+        return this.db.any('SELECT * FROM classorder')
     }
 }

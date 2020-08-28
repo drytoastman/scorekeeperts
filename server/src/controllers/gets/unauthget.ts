@@ -29,6 +29,7 @@ export async function unauthget(db: ScorekeeperProtocol, item: any, ret: any): P
             case 'indexes':         ret.indexes         = await db.clsidx.indexList();              break
             case 'paymentitems':    ret.paymentitems    = await db.payments.getPaymentItems();      break
             case 'paymentaccounts': ret.paymentaccounts = await db.payments.getPaymentAccounts();   break
+            case 'classorder':      ret.classorder      = await db.clsidx.classOrder();             break
             default: res = false
         }
     }
