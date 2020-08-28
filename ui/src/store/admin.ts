@@ -1,5 +1,7 @@
 import orderBy from 'lodash/orderBy'
 import isEmpty from 'lodash/isEmpty'
+import flatten from 'lodash/flatten'
+import uniq from 'lodash/uniq'
 import axios from 'axios'
 import { Api2State, API2 } from './state'
 import { ActionContext, ActionTree, Store, GetterTree } from 'vuex'
@@ -84,9 +86,24 @@ export const adminActions = {
         return await getDataWrap(context, axios.post(API2.ROOT, p, { withCredentials: true }))
     },
 
-    async ensureCarDriverInfo(context: ActionContext<Api2State, any>, carids: UUID[]) {
-        const cids = carids.filter(cid => !(cid in this.state.cars))
-        const dids = carids.filter(cid => cid in this.state.cars).map(cid => this.state.cars[cid].driverid)
+    async ensureTablesAndCarDriverInfo(context: ActionContext<Api2State, any>, tables: string[]) {
+        const req = [] as string[]
+        for (const t of tables) {
+            if (isEmpty(context.state[t])) { req.push(t) }
+        }
+        if (req.length > 0) {
+            if (!await context.dispatch('getdata', { items: req.join(',') })) {
+                return
+            }
+        }
+
+        let carids = [] as UUID[]
+        for (const t of tables) {
+            carids = [...carids, ...flatten(Object.values(context.state[t])).map((obj:any) => obj.carid)]
+        }
+
+        const cids = uniq(carids.filter(cid => !(cid in this.state.cars)))
+        const dids = uniq(carids.filter(cid => cid in this.state.cars).map(cid => this.state.cars[cid].driverid))
         if (isEmpty(carids) && isEmpty(dids)) return
 
         const p = {

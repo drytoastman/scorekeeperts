@@ -60,7 +60,7 @@ export default {
     },
     data() {
         return {
-            dialogData: { attr:{} },
+            dialogData: { attr: {}},
             RefundDialog: false,
             icons: {
                 mdiCreditCardRefund,
@@ -163,15 +163,7 @@ export default {
         }
     },
     async mounted() {
-        const req = []
-        if (isEmpty(this.payments))   { req.push('payments')   }
-        if (isEmpty(this.registered)) { req.push('registered') }
-        await this.$store.dispatch('getdata', { items: req.join(',') })
-
-        const carids = [...new Set([
-            ...flatten(Object.values(this.payments)).map(p => p.carid),
-            ...flatten(Object.values(this.registered)).map(r => r.carid)])]
-        this.$store.dispatch('ensureCarDriverInfo', carids)
+        this.$store.dispatch('ensureTablesAndCarDriverInfo', ['payments', 'registered'])
     }
 }
 </script>

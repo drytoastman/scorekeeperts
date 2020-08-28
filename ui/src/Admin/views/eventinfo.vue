@@ -1,12 +1,11 @@
 <template>
     <div class='outer' v-if="event">
         <h2>{{event.name}} {{fmtdate}}</h2>
-        <v-tabs center-active color="secondary">
+        <v-tabs color="secondary" show-arrows grow>
             <v-tab>Cards</v-tab>
             <v-tab>Event Settings</v-tab>
             <v-tab>Entry Admin</v-tab>
             <v-tab>Grid Order</v-tab>
-
 
             <v-tab-item>
                 <div class='cardswrap'>
@@ -74,7 +73,7 @@ export default {
     margin: 1rem;
 }
 .cardswrap {
-    margin-top: 1rem;
+    margin: 1rem auto 0 auto;
     max-width: 40rem;
     display: grid;
     grid-template-columns: 1fr 1fr;

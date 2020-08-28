@@ -9,7 +9,8 @@ let rules = {
     'spaced-comment': 'off',
     indent: ['warn', 4, { SwitchCase: 1 }],
     'vue/no-unused-components': 'warn',
-    'object-curly-spacing': ['warn', 'always', { objectsInObjects: false }]
+    'object-curly-spacing': ['warn', 'always', { objectsInObjects: false }],
+    'array-bracket-spacing': 'warn'
 }
 
 if (process.env.NODE_ENV === 'production') {
