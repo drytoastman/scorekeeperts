@@ -34,7 +34,7 @@ export default {
     data() {
         return {
             dialogOpen: false,
-            dialogCar: { attr: {} },
+            dialogCar: { attr: {}},
             apiType: '',
             loadingCard: undefined
         }

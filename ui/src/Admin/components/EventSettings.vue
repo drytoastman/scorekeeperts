@@ -109,7 +109,7 @@ export default {
     },
     data() {
         return {
-            eventm: { attr: {} },
+            eventm: { attr: {}},
             eventitems: [],
             vrules: EventValidator,
             regtypes: [

@@ -26,8 +26,8 @@ export default {
     },
     data() {
         return {
-            account: { attr: {} },
-            secret: { attr: {} },
+            account: { attr: {}},
+            secret: { attr: {}},
             icons: { paypalIcon }
         }
     },
@@ -50,8 +50,8 @@ export default {
     watch: {
         value: function(newv) {
             if (newv) {
-                this.account = { type: 'paypal', attr: { mode: 'production', version: 2 } }
-                this.secret  = { attr: {} }
+                this.account = { type: 'paypal', attr: { mode: 'production', version: 2 }}
+                this.secret  = { attr: {}}
             }
         }
     }

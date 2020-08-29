@@ -25,7 +25,7 @@ export default {
             let total = 0
             const items = []
             this.purchase.forEach(pur => {
-                items.push({ name: `${pur.event.name} - ${pur.item.name}`, quantity: '1', unit_amount: { currency_code: 'USD', value: (pur.item.price / 100).toFixed(2) } })
+                items.push({ name: `${pur.event.name} - ${pur.item.name}`, quantity: '1', unit_amount: { currency_code: 'USD', value: (pur.item.price / 100).toFixed(2) }})
                 total += pur.item.price
             })
 

@@ -17,7 +17,7 @@ export default {
     props: {
         car: {
             type: Object,
-            default: () => ({ attr: {} })
+            default: () => ({ attr: {}})
         },
         fontsize: {
             type: String,

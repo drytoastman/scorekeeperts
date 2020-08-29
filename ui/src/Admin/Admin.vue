@@ -74,7 +74,7 @@ export default {
                 // const r = this.$router.matcher.match(name)
                 // if (!('series' in r.params)) return
 
-                this.$router.push({ name: name, params: { series: value } }).catch(error => {
+                this.$router.push({ name: name, params: { series: value }}).catch(error => {
                     console.log(error)
                 })
             }
@@ -98,28 +98,28 @@ export default {
         settings() {
             if (!this.currentSeries) { return [] }
             return [
-                { title: 'Settings', link: { name:'settings' } },
-                { title: 'Classes',  link: { name:'classes' } },
-                { title: 'Indexes',  link: { name:'indexes' } },
-                { title: 'Accounts', link: { name:'accounts' } }
+                { title: 'Settings', link: { name:'settings' }},
+                { title: 'Classes',  link: { name:'classes' }},
+                { title: 'Indexes',  link: { name:'indexes' }},
+                { title: 'Accounts', link: { name:'accounts' }}
             ].map(v => { v.link.params = { series: this.currentSeries }; return v })
         },
         reports() {
             if (!this.currentSeries) { return [] }
             return  [
-                { title: 'Series Attendance',    link: { name:'attendseries' } },
-                { title: 'Events Attendance',    link: { name:'attendevent' } },
-                { title: 'Unique Attendance',    link: { name:'attendunique' } },
-                { title: 'Used Car Number List', link: { name:'usednumbers' } },
-                { link: {} },
-                { title: 'Payments',             link: { name:'payments' } }
+                { title: 'Series Attendance',    link: { name:'attendseries' }},
+                { title: 'Events Attendance',    link: { name:'attendevent' }},
+                { title: 'Unique Attendance',    link: { name:'attendunique' }},
+                { title: 'Used Car Number List', link: { name:'usednumbers' }},
+                { link: {}},
+                { title: 'Payments',             link: { name:'payments' }}
             ].map(v => { v.link.params = { series: this.currentSeries }; return v })
         },
         admins() {
             return [
-                { title: 'Driver Editor', link: { name:'drivereditor' } },
-                { title: 'Host Settings', link: { name:'hostsettings' } },
-                { title: 'Server Logs',   link: { name:'serverlogs'   } }
+                { title: 'Driver Editor', link: { name:'drivereditor' }},
+                { title: 'Host Settings', link: { name:'hostsettings' }},
+                { title: 'Server Logs',   link: { name:'serverlogs'   }}
             ]
         }
     },
