@@ -1,16 +1,19 @@
 <template>
     <div class='outer' v-if="eventid">
         <div class='gridgrid'>
-            <div v-for="(grid,idx) in grids" :key="'grid'+idx">
+            <div v-for="(group,idx) in report.groups" :key="'grid'+idx">
                 <div class='labelgrid'>
                     <div>Grid {{idx}}</div>
                     <div class='small'>First</div>
                     <div class='small'>Dual</div>
                 </div>
-                <draggable :list="grid" group="gridgroup" class='draggable' revertOnSpill=true @change="update">
-                    <GridBlock v-for="obj in grid" :key="obj.classcode" :obj="obj" ></GridBlock>
+                <draggable :list="group" group="gridgroup" class='draggable' revertOnSpill=true @change="update">
+                    <GridBlock v-for="cw in group" :key="cw.classcode" :classwrapper="cw" ></GridBlock>
                 </draggable>
             </div>
+        </div>
+        <div v-if="report.groups">
+            <GridDisplay v-for="(group,idx) in report.groups" :key="idx" :classes=group :grid=idx></GridDisplay>
         </div>
     </div>
 </template>
@@ -18,71 +21,60 @@
 <script>
 import { mapState } from 'vuex'
 import draggable from 'vuedraggable'
-import GridBlock from './GridBlock'
+import { createGridReport } from '@/common/gridorder'
+import GridBlock from './GridBlock.vue'
+import GridDisplay from '@/components/GridDisplay.vue'
 
 export default {
     name: 'GridOrder',
     components: {
         draggable,
-        GridBlock
+        GridBlock,
+        GridDisplay
     },
     props: {
         eventid: String
     },
     data()  {
         return {
-            grids: []
+            report: {}
         }
     },
     computed: {
         ...mapState(['classes', 'classorder', 'cars', 'registered']),
-        multiwatch() { return [this.classes, this.classorder, this.cars, this.registered] }
+        newdata() { return [this.classes, this.classorder, this.cars, this.registered] }
     },
     methods: {
         update(evt) {
-            for (const attr of ['added', 'removed', 'moved']) {
-                if (evt[attr]) { evt[attr].element.changed = true }
-            }
-        },
-        buildGrids() {
-            const ret = [[], [], []]
-            const rem = new Set(Object.keys(this.classes).filter(k => k !== 'HOLD'))
-
-            for (const co of this.classorder.filter(co => co.eventid === this.eventid)) {
-                for (const code of co.classes) {
-                    ret[co.rungroup].push(this.buildBlock(code))
-                    rem.delete(code)
+            for (const attr of ['added', 'moved']) {
+                if (evt[attr]) {
+                    evt[attr].element.changed = true
+                    this.report.number()
                 }
             }
-            for (const code of rem) {
-                ret[0].push(this.buildBlock(code))
-            }
-            this.grids = ret
         },
-        buildBlock(code) {
-            let cars = []
-            if (this.eventid in this.registered) {
-                cars = this.registered[this.eventid].map(r => r ? this.cars[r.carid] : []).filter(c => c && c.classcode === code)
-            }
-            return {
-                classcode: code,
-                firsts: cars.filter(c => c.number < 100).length,
-                seconds: cars.filter(c => c.number >= 100).length,
-                changed: false
-            }
+        buildReport() {
+            this.report = createGridReport(
+                this.classorder.filter(co => co.eventid === this.eventid),
+                Object.keys(this.classes),
+                this.eventid in this.registered ? this.registered[this.eventid].map(r => this.cars[r.carid]).filter(c => c) : [])
         }
     },
     watch: {
-        multiwatch() { console.log('build'); this.buildGrids() }
+        newdata() { this.buildReport() }
     },
     mounted() {
-        this.buildGrids()
+        this.buildReport()
         this.$store.dispatch('ensureTablesAndCarDriverInfo', ['registered'])
     }
 }
 </script>
 
 <style scoped lang="scss">
+.outer {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
 .gridgrid {
     display: grid;
     grid-template-columns: 8rem 8rem 8rem;

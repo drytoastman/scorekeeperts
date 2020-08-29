@@ -1,8 +1,8 @@
 <template>
     <div :class='classtype'>
-        <span>{{obj.classcode}}</span>
-        <span>{{obj.firsts}}</span>
-        <span>{{obj.seconds}}</span>
+        <span>{{classwrapper.classcode}}</span>
+        <span>{{classwrapper.firsts.length}}</span>
+        <span>{{classwrapper.duals.length}}</span>
     </div>
 </template>
 
@@ -10,14 +10,14 @@
 export default {
     name: 'GridBlock',
     props: {
-        obj: Object
+        classwrapper: Object
     },
     data() {
         return {
         }
     },
     computed: {
-        classtype() { return `element ${this.obj.changed ? 'changed' : ''}` }
+        classtype() { return `element ${this.classwrapper.changed ? 'changed' : ''}` }
     }
 }
 </script>
