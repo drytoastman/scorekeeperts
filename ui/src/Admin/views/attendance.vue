@@ -19,6 +19,7 @@
 
 <script>
 import sortBy from 'lodash/sortBy'
+import isEmpty from 'lodash/isEmpty'
 import { mapState, mapGetters } from 'vuex'
 export default {
     name: 'Attendance',
@@ -78,7 +79,10 @@ export default {
         }
     },
     async mounted() {
-        this.$store.dispatch('ensureSeriesCarDriverInfo').then(() => {
+        const torun = [this.$store.dispatch('ensureSeriesCarDriverInfo')]
+        if (isEmpty(this.attendance)) { torun.push(this.$store.dispatch('getdata', { items: 'attendance' })) }
+
+        Promise.all(torun).then(() => {
             this.dataLoaded = true
         })
     }
