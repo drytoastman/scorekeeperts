@@ -13,7 +13,10 @@
             </div>
         </div>
         <div v-if="report.groups">
-            <GridDisplay v-for="(group,idx) in report.groups" :key="idx" :classes=group :grid=idx></GridDisplay>
+            <template v-for="(group,idx) in report.groups">
+                <GridDisplay :key="idx"     :table="report.table(idx, 'firsts')" :grid=idx></GridDisplay>
+                <GridDisplay :key="idx+100" :table="report.table(idx, 'duals')"  :grid=idx+100></GridDisplay>
+            </template>
         </div>
     </div>
 </template>
@@ -41,7 +44,7 @@ export default {
         }
     },
     computed: {
-        ...mapState(['classes', 'classorder', 'cars', 'registered']),
+        ...mapState(['classes', 'classorder', 'drivers', 'cars', 'registered']),
         newdata() { return [this.classes, this.classorder, this.cars, this.registered] }
     },
     methods: {
@@ -49,7 +52,6 @@ export default {
             for (const attr of ['added', 'moved']) {
                 if (evt[attr]) {
                     evt[attr].element.changed = true
-                    this.report.number()
                 }
             }
         },
@@ -57,7 +59,8 @@ export default {
             this.report = createGridReport(
                 this.classorder.filter(co => co.eventid === this.eventid),
                 Object.keys(this.classes),
-                this.eventid in this.registered ? this.registered[this.eventid].map(r => this.cars[r.carid]).filter(c => c) : [])
+                this.eventid in this.registered ? this.registered[this.eventid].map(r => this.cars[r.carid]).filter(c => c) : [],
+                this.drivers)
         }
     },
     watch: {

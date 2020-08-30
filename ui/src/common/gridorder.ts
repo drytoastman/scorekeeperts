@@ -1,59 +1,25 @@
 import orderBy from 'lodash/orderBy'
 import { ClassOrder } from './classindex'
 import { Car } from './car'
+import { Driver } from './driver'
 
 interface Entrant {
-    // classcode: string
-    number: number
-    grid: number
+    car: Car|undefined
+    driver: Driver|undefined
 }
 
 class ClassWrapper {
     /* List of entries for this particular run group position */
     classcode: string
-    numbers: Set<number>
-    firsts: Entrant[]
-    duals: Entrant[]
+    numbers: Set<number> = new Set()
+    firsts: Entrant[] = []
+    duals: Entrant[] = []
     changed = false
 
     constructor(classcode: string) {
         this.classcode = classcode
-        this.numbers = new Set()
-        this.firsts = []
-        this.duals = []
-    }
-
-    addBlank() {
-        // this.entries.push({number: -1, grid: -1} as Entrant)
     }
 }
-
-/*
-class GridGroup {
-    pad() {
-        /* If the class is a odd # of entries and next class is not single, add a space *
-        let rows = 0
-        // codes = list(self.keys())
-
-        for (let ii = 0; ii < this.classes.length-1; ii++) {
-            const ce     = this.classes[ii]
-            const cenext = this.classes[ii+1]
-
-            rows += ce.length()
-            if ((rows % 2) != 0 && cenext.length() > 1) {
-                ce.addBlank()
-                rows += 1
-            }
-        }
-    }
-
-    truelength() {
-        /* count of entrants in this rungroup *
-        return sumBy(this.classes, c => c.truelength())
-    }
-}
-*/
-
 
 class GridReport {
     /* The list of all rungroups for the event and the class groups in them */
@@ -73,30 +39,55 @@ class GridReport {
         this.groups[rungroup].push(this.groupmap[code])
     }
 
-    number() {
-        console.log('number')
-        for (const group of this.groups) {
-            let gridlow = 0
-            let gridhi = 100
-            for (const cw of group) {
-                cw.firsts = orderBy(cw.firsts, ['number'])
-                cw.duals  = orderBy(cw.duals,  ['number'])
-
-                for (const e of cw.firsts) {
-                    gridlow++
-                    e.grid = gridlow
-                }
-                for (const e of cw.duals) {
-                    gridhi++
-                    e.grid = gridhi
-                }
+    addEntrants(entrants: Entrant[]) {
+        for (const e of entrants) {
+            if (!e.car) continue
+            if (e.car.number < 100) {
+                this.groupmap[e.car.classcode].firsts.push(e)
+            } else {
+                this.groupmap[e.car.classcode].duals.push(e)
             }
         }
+        this.order('number')
+    }
+
+    order(key: string) {
+        console.log(`order ${key}`)
+        for (const group of this.groups) {
+            for (const cw of group) {
+                cw.firsts = orderBy(cw.firsts, key)
+                cw.duals  = orderBy(cw.duals,  key)
+            }
+        }
+    }
+
+    table(group: number, key: string): Entrant[][] {
+        const ret = [] as Entrant[][]
+        let row = [] as Entrant[]
+        const classes = this.groups[group]
+
+        for (let ii = 0; ii < classes.length; ii++) {
+            for (const e of classes[ii][key] as Entrant[]) {
+                row.push(e)
+                if (row.length >= 2) {
+                    ret.push(row)
+                    row = []
+                }
+            }
+            const nextisone = (ii + 1 < classes.length) ? classes[ii + 1][key].length === 1 : false
+            if ((row.length === 1) && !nextisone) {
+                row.push({ car: undefined, driver: undefined })
+                ret.push(row)
+                row = []
+            }
+        }
+
+        return ret
     }
 }
 
 
-export function createGridReport(classorders: ClassOrder[], classcodes: string[], cars: Car[]): GridReport {
+export function createGridReport(classorders: ClassOrder[], classcodes: string[], cars: Car[], drivermap: {[key: string]: Driver}): GridReport {
     console.log('create')
     const report = new GridReport()
     const rem = new Set(classcodes.filter(k => k !== 'HOLD'))
@@ -111,14 +102,6 @@ export function createGridReport(classorders: ClassOrder[], classcodes: string[]
         report.addClass(code, 0)
     }
 
-    for (const c of cars) {
-        if (c.number < 100) {
-            report.groupmap[c.classcode].firsts.push({ number: c.number, grid: -1 })
-        } else {
-            report.groupmap[c.classcode].duals.push({ number: c.number, grid: -1 })
-        }
-    }
-
-    report.number()
+    report.addEntrants(cars.map(c => ({ car: c, driver: drivermap[c.driverid] })))
     return report
 }

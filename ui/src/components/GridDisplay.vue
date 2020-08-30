@@ -1,14 +1,16 @@
 <template>
-    <div>
-        <h2>{{grid}}</h2>
+    <div v-if="table.length > 0">
+        <h2>Group {{grid}}</h2>
         <table>
-            <template v-for="ce of classes">
-                <template v-for="e of ce.firsts">
-                    <tr :key="e.grid+1000000">
-                        <td :key="e.grid">{{e.grid}}</td>
-                        <td :key="e.grid+1000">{{e.number}} ({{ce.classcode}})</td>
-                    </tr>
-                </template>
+            <template v-for="(row,rowidx) of table">
+                <tr :key="rowidx">
+                    <template v-for="(e,idx) of row">
+                        <th :key="idx">{{(rowidx*2)+idx+1}}</th>
+                        <td :key="idx+1000">{{e.car ? e.car.classcode : ''}}</td>
+                        <td :key="idx+2000">{{e.car ? e.car.number : ''}}</td>
+                        <td :key="idx+3000"><span v-if="e.driver">{{e.driver.firstname}} {{e.driver.lastname}}</span></td>
+                    </template>
+                </tr>
             </template>
         </table>
     </div>
@@ -18,7 +20,7 @@
 export default {
     name: 'GridDisplay',
     props: {
-        classes: Array,
+        table: Array,
         grid: Number
     },
     data() {
@@ -33,9 +35,14 @@ export default {
 <style scoped lang="scss">
 table {
     border-collapse: collapse;
+    width: 100%;
 }
-td {
-    border: 1px solid black;
-    padding: 0.5rem;
+th {
+    background: lightgray;
+}
+th, td {
+    border: 1px solid rgb(210,210,210);
+    padding: 0.2rem;
+    font-size: 90%;
 }
 </style>
