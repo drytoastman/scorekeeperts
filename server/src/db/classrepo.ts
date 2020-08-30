@@ -57,4 +57,15 @@ export class ClassRepository {
     async classOrder(): Promise<ClassOrder[]> {
         return this.db.any('SELECT * FROM classorder')
     }
+
+    async upsertClassOrder(type: string, classorder: ClassOrder[]): Promise<ClassOrder[]> {
+        if (type === 'upsert') {
+            for (const co of classorder) {
+                await this.db.any('INSERT INTO classorder (eventid,rungroup,classes) VALUES ($(eventid), $(rungroup), ARRAY[$(classes:csv)]) ' +
+                    'ON CONFLICT (eventid, rungroup) DO UPDATE SET classes=ARRAY[$(classes:csv)], modified=now()', co)
+            }
+            return this.classOrder()
+        }
+        throw Error(`Unknown operation type ${JSON.stringify(type)}`)
+    }
 }

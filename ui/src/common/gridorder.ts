@@ -2,6 +2,7 @@ import orderBy from 'lodash/orderBy'
 import { ClassOrder } from './classindex'
 import { Car } from './car'
 import { Driver } from './driver'
+import { UUID } from './util'
 
 interface Entrant {
     car: Car|undefined
@@ -11,7 +12,6 @@ interface Entrant {
 class ClassWrapper {
     /* List of entries for this particular run group position */
     classcode: string
-    numbers: Set<number> = new Set()
     firsts: Entrant[] = []
     duals: Entrant[] = []
     changed = false
@@ -82,6 +82,18 @@ class GridReport {
             }
         }
 
+        return ret
+    }
+
+    classorder(eventid: UUID): ClassOrder[] {
+        const ret = [] as ClassOrder[]
+        for (let ii = 1; ii < this.groups.length; ii++) { // skip 0
+            ret.push({
+                eventid: eventid,
+                rungroup: ii,
+                classes: this.groups[ii].map(cw => cw.classcode)
+            })
+        }
         return ret
     }
 }

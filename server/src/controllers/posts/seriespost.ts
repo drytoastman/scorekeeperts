@@ -116,6 +116,9 @@ export async function seriespost(tx: ScorekeeperProtocol, auth: AuthData, param:
             case 'merge':
                 Object.assign(ret, await allSeriesMerge(tx, param.items.merge.newid, param.items.merge.oldids))
                 break
+
+            case 'classorder':
+                ret.classorder = await tx.clsidx.upsertClassOrder(param.type, param.items.classorder)
         }
     }
 

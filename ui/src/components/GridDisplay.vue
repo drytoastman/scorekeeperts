@@ -1,6 +1,6 @@
 <template>
     <div v-if="table.length > 0">
-        <h2>Group {{grid}}</h2>
+        <div class='grouphead'>Group {{grid}}</div>
         <table>
             <template v-for="(row,rowidx) of table">
                 <tr :key="rowidx">
@@ -44,5 +44,10 @@ th, td {
     border: 1px solid rgb(210,210,210);
     padding: 0.2rem;
     font-size: 90%;
+}
+.grouphead {
+    font-size: 120%;
+    font-weight: bold;
+    text-align: center;
 }
 </style>

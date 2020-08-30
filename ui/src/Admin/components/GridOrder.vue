@@ -7,15 +7,23 @@
                     <div class='small'>First</div>
                     <div class='small'>Dual</div>
                 </div>
-                <draggable :list="group" group="gridgroup" class='draggable' revertOnSpill=true @change="update">
+                <draggable :list="group" group="gridgroup" class='draggable' revertOnSpill=true @change="dragchange">
                     <GridBlock v-for="cw in group" :key="cw.classcode" :classwrapper="cw" ></GridBlock>
                 </draggable>
             </div>
+            <v-btn color='secondary' dark class='updatebutton' @click='update'>Update</v-btn>
         </div>
         <div v-if="report.groups">
+            <div class='checks'>
+                <template v-for="(_,idx) in report.groups">
+                    <v-checkbox dense hide-details :key=idx v-model=checks[idx] :label="`Group ${idx}`"></v-checkbox>
+                </template>
+            </div>
             <template v-for="(group,idx) in report.groups">
-                <GridDisplay :key="idx"     :table="report.table(idx, 'firsts')" :grid=idx></GridDisplay>
-                <GridDisplay :key="idx+100" :table="report.table(idx, 'duals')"  :grid=idx+100></GridDisplay>
+                <div v-if="checks[idx] && groupActive(group)" :key="idx" class='gridview'>
+                    <GridDisplay :table="report.table(idx, 'firsts')" :grid=idx></GridDisplay>
+                    <GridDisplay :table="report.table(idx, 'duals')"  :grid=idx+100></GridDisplay>
+                </div>
             </template>
         </div>
     </div>
@@ -40,7 +48,8 @@ export default {
     },
     data()  {
         return {
-            report: {}
+            report: {},
+            checks: [true, true, true]
         }
     },
     computed: {
@@ -48,7 +57,13 @@ export default {
         newdata() { return [this.classes, this.classorder, this.cars, this.registered] }
     },
     methods: {
-        update(evt) {
+        groupActive(group) {
+            for (const cw of group) {
+                if (cw.firsts.length) return true
+            }
+            return false
+        },
+        dragchange(evt) {
             for (const attr of ['added', 'moved']) {
                 if (evt[attr]) {
                     evt[attr].element.changed = true
@@ -61,6 +76,12 @@ export default {
                 Object.keys(this.classes),
                 this.eventid in this.registered ? this.registered[this.eventid].map(r => this.cars[r.carid]).filter(c => c) : [],
                 this.drivers)
+        },
+        update() {
+            this.$store.dispatch('setdata', {
+                type: 'upsert',
+                items: { classorder: this.report.classorder(this.eventid) }
+            })
         }
     },
     watch: {
@@ -76,16 +97,38 @@ export default {
 <style scoped lang="scss">
 .outer {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: auto auto;
 }
 .gridgrid {
     display: grid;
-    grid-template-columns: 8rem 8rem 8rem;
+    grid-template-columns: 7rem 7rem 7rem;
     column-gap: 1rem;
+    row-gap: 1rem;
+    height: 50vh;
+}
+.checks {
+    display: flex;
+    width: 100%;
+    justify-content: space-around;
+    margin-bottom: 0.5rem;
+    ::v-deep .v-input {
+        margin-top: 0;
+        label {
+            font-size: 80% !important;
+        }
+    }
+}
+.updatebutton {
+    grid-column-start: 1;
+    grid-column-end: 4;
+}
+.gridview {
+    font-size: 80%;
+    margin-bottom: 2rem;
 }
 .draggable {
     width: 100%;
-    height: 100%;
+    height: calc(100% - 2rem);
     border: 1px solid lightgray;
     border-radius: 2px;
 }
