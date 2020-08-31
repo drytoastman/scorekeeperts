@@ -1,60 +1,24 @@
 <template>
     <v-app fluid>
-        <v-navigation-drawer v-model="drawer" app >
-            <v-list dense>
-                <v-list-item>
-                    <v-list-item-content>
-                    <v-list-item-title class="title" style="overflow:visible">
-                        Scorekeeper
-                    </v-list-item-title>
-                    <v-list-item-subtitle>
-                        Registration
-                    </v-list-item-subtitle>
-                    </v-list-item-content>
-                </v-list-item>
+        <v-app-bar v-if="driverAuthenticated" app height=45 extension-height=35 dark color="primary">
+            <span class='btitle'>Registration</span>
+            <v-select :items="serieslist" v-model="selectedSeries" solo light dense hide-details placeholder="Select A Series" ref="sselect"></v-select>
+            <span class='bdesc'>{{$route.meta.marker || $route.name}}</span>
 
-                <v-divider></v-divider>
-                <v-subheader class='ndsh'>General</v-subheader>
+            <template v-slot:extension>
+                <v-btn color=white text small exact :to="{name:'profile', params:{}}">Profile<span>All</span></v-btn>
+                <v-btn color=white text small exact :to="{name:'cars',    params:{series:currentSeries}}" :disabled="!currentSeries">Cars</v-btn>
+                <v-btn color=white text small exact :to="{name:'events',  params:{series:currentSeries}}" :disabled="!currentSeries">Events</v-btn>
+                <v-btn color=white text small @click='logout'>Logout</v-btn>
+                <v-progress-linear :active="!!gettingData" indeterminate absolute bottom color="green accent-4"></v-progress-linear>
+            </template>
 
-                <v-list-item v-if="currentSeries" :to="{name:'profile', params:{}}" link>
-                    <v-list-item-action><v-icon color=blue>{{profileicon}}</v-icon></v-list-item-action>
-                    <v-list-item-content><v-list-item-title>Profile</v-list-item-title></v-list-item-content>
-                </v-list-item>
-                <v-list-item link @click="logout">
-                    <v-list-item-action><v-icon>{{logouticon}}</v-icon></v-list-item-action>
-                    <v-list-item-content><v-list-item-title>Logout</v-list-item-title></v-list-item-content>
-                </v-list-item>
-
-                <v-divider></v-divider>
-                <v-subheader class='ndsh'>Series Specific</v-subheader>
-
-                <v-list-item>
-                    <v-list-item-content>
-                        <v-select :items="serieslist" v-model="selectedSeries" solo dense hide-details placeholder="Select A Series" ref="sselect"></v-select>
-                    </v-list-item-content>
-                </v-list-item>
-                <v-list-item v-if="currentSeries" :to="{name:'events', params:{series:currentSeries}}" link>
-                    <v-list-item-action><v-icon color=orange>{{eventsicon}}</v-icon></v-list-item-action>
-                    <v-list-item-content><v-list-item-title>Events</v-list-item-title></v-list-item-content>
-                </v-list-item>
-                <v-list-item v-if="currentSeries" :to="{name:'cars', params:{series:currentSeries}}" link>
-                    <v-list-item-action><v-icon color=black>{{carsicon}}</v-icon></v-list-item-action>
-                    <v-list-item-content><v-list-item-title>Cars</v-list-item-title></v-list-item-content>
-                </v-list-item>
-            </v-list>
-        </v-navigation-drawer>
-
-        <v-app-bar app dense dark color='primary'>
-            <v-app-bar-nav-icon @click.stop="drawer = !drawer" :disabled="!driverAuthenticated || isOutside" />
-            <v-toolbar-title>{{displayName}}</v-toolbar-title>
-            <v-spacer></v-spacer>
-            <v-progress-linear :active="!!gettingData" indeterminate absolute bottom color="green accent-4"></v-progress-linear>
         </v-app-bar>
 
         <v-main>
             <div v-if="loadDelay && !$route.name" class='pushdown main-page-warning'>Unknown Page</div>
             <router-view v-else-if="driverAuthenticated || isOutside" />
-            <Login v-else-if="driverAuthenticated===false"></Login>
+            <Login v-else-if="driverAuthenticated===false" class='pushdown'></Login>
         </v-main>
 
         <v-snackbar :value="snackbar" :timeout=-1>
@@ -99,11 +63,6 @@ export default {
         isOutside() { return this.$route.meta.outside === 1 },
         filteredErrors() { return this.errors.filter(s => s !== 'not authenticated') },
 
-        displayName() {
-            if (!this.driverAuthenticated) { return 'Registration' }
-            return `Registration${this.$route.path}`.replace(/\//g, ' / ')
-        },
-
         selectedSeries: {
             get() { return this.currentSeries },
             set(value) {
@@ -138,22 +97,18 @@ export default {
 </script>
 
 <style lang='scss'>
-.drawerheader {
-     text-align: center;
-     font-size: 120%;
-     margin-top: 1rem;
-     border-bottom: 1px solid gray;
-}
 .main-page-warning {
     font-size: 150%;
     text-align: center;
 }
-.v-list-item--active {
-    filter: grayscale(60%) opacity(40%);
-    pointer-events: none;
-}
 .pushdown {
     margin-top: calc(15vh);
+}
+.v-btn__content > span {
+    text-transform: initial;
+    font-size: 80%;
+    margin-left: 3px;
+    margin-bottom: 10px;
 }
 @import '@/styles/general.scss'
 </style>

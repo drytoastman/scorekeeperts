@@ -4,6 +4,14 @@
             <v-col v-for="car in orderedCars" :key="car.carid">
                 <CarDisplay :car="car" @editcar='editCar' @deletecar='deleteCar'></CarDisplay>
             </v-col>
+            <v-spacer class='carspacer'></v-spacer>
+            <v-spacer class='carspacer'></v-spacer>
+            <v-spacer class='carspacer'></v-spacer>
+            <v-spacer class='carspacer'></v-spacer>
+            <v-spacer class='carspacer'></v-spacer>
+            <v-spacer class='carspacer'></v-spacer>
+        </v-row>
+        <v-row dense>
             <v-col class='carspacer align-self-center text-center'>
                 <v-btn dark :class="usefixed ? 'fixedbutton' : 'flexbutton'" color="secondary" @click.stop=addCar>Add Car</v-btn>
             </v-col>
@@ -13,8 +21,6 @@
             <v-spacer class='carspacer'></v-spacer>
             <v-spacer class='carspacer'></v-spacer>
             <v-spacer class='carspacer'></v-spacer>
-            <v-col>
-            </v-col>
         </v-row>
         <CarDialog v-model=dialogOpen :car=dialogCar :apiType=apiType @save='dialogSave'></CarDialog>
     </v-container>
@@ -47,11 +53,12 @@ export default {
             return ret
         },
         usefixed() {
+            return false /*
             switch (this.$vuetify.breakpoint.name) {
                 case 'xs': return true
                 case 'sm': return true
                 default: return false
-            }
+            } */
         }
     },
     methods: {
@@ -100,5 +107,6 @@ export default {
     }
     .flexbutton {
         margin-top: 1rem;
+        width: 80%;
     }
 </style>

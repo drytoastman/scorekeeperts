@@ -7,7 +7,7 @@
                 </v-card-title>
                 <v-card-text>
                     <div class='carslink'>
-                        <router-link :to="{name:'cars'}">Create, Edit and Delete Cars Here</router-link>
+                        Create, Edit and Delete Cars <router-link :to="{name:'cars'}">On Cars Page</router-link>
                     </div>
                     <v-container>
                         <div class='nocars' v-if="nocars">
@@ -16,17 +16,15 @@
                         <v-form ref="form" lazy-validation>
                             <div class='cargrid'>
                                 <template v-for="car in cars">
-                                    <v-checkbox hide-details
-                                                v-model="checks[car.carid]"
-                                                :key="car.carid+'1'"
-                                                :disabled="!checks[car.carid] && limitReached"
-                                    ></v-checkbox>
-                                    <v-btn x-large
+                                    <v-btn x-large outlined
                                             :key="car.carid+'2'"
-                                            @click="clickCar(car.carid)"
                                             :disabled="!checks[car.carid] && limitReached"
                                             :class="checks[car.carid] ? 'selected' : 'unselected'"
-                                    ><CarLabel :car="car"></CarLabel></v-btn>
+                                            @click="clickCar(car.carid)"
+                                    >
+                                        <v-checkbox hide-details :value="checks[car.carid]"></v-checkbox>
+                                        <CarLabel :car="car"></CarLabel>
+                                    </v-btn>
                                 </template>
                             </div>
                             <div class='errortext'>
@@ -115,12 +113,15 @@ export default {
             if (newv) {
                 // dialog open
                 this.checks = {}
-                this.ereg.forEach(v => {
-                    Vue.set(this.checks, v.carid, true)
+                this.$nextTick(() => {
+                    // wait for checkboxes to be created before setting data
+                    this.ereg.forEach(v => {
+                        Vue.set(this.checks, v.carid, true)
+                    })
+                    if ('form' in this.$refs) {
+                        this.$refs.form.resetValidation()
+                    }
                 })
-                if ('form' in this.$refs) {
-                    this.$refs.form.resetValidation()
-                }
             }
         }
     }
@@ -130,7 +131,6 @@ export default {
 <style scoped>
 .cargrid {
     display: grid;
-    grid-template-columns: 30px 1fr;
     align-items: center;
     row-gap: 10px;
 }
@@ -139,12 +139,12 @@ export default {
     justify-content: left;
 }
 .cargrid .unselected {
-    border: none;
-    background-color: #FFF !important;
+    border: 1px solid rgb(200, 200, 200);
+    background-color: rgb(250, 250, 250, 220) !important;
 }
 .cargrid .selected {
-    border: 1px solid green;
-    background-color: #fbfff8 !important;
+    border: 1px solid var(--v-primary-base);
+    background-color: rgb(66,100,80,0.1) !important;
 }
 .cargrid .v-btn--disabled {
     opacity: 0.3;
@@ -157,6 +157,6 @@ export default {
 .errortext {
     margin-top: 10px;
     text-align: center;
-    color: red;
+    color: darkred;
 }
 </style>

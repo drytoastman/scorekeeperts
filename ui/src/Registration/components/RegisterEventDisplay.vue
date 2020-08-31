@@ -146,7 +146,7 @@ export default {
         font-weight: bold;
         flex-grow: 0.15;
         text-align: right;
-        margin-right: 0.5rem;
+        margin-right: 1rem;
     }
     .plain {
         font-weight: normal;

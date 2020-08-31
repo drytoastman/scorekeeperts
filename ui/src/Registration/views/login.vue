@@ -1,23 +1,22 @@
 <template>
-    <v-container fluid>
-        <v-row class="pushdown" justify="center">
-            <v-tabs id="logintabs" v-model="active" background-color="primary" dark centered grow>
-                <v-tab ripple>Login</v-tab>
-                <v-tab ripple v-if="!skipCaptcha">Reset</v-tab>
-                <v-tab ripple>Register</v-tab>
-                <v-tab-item padding="1rem" eager>
-                    <LoginForm    color="primary" dark :ready=ready></LoginForm>
-                </v-tab-item>
-                <v-tab-item padding="1rem" eager v-if="!skipCaptcha">
-                    <ResetForm    color="primary" dark :ready=ready @doCaptcha=doCaptcha ></ResetForm>
-                </v-tab-item>
-                <v-tab-item padding="1rem" eager>
-                    <RegisterForm color="primary" dark :ready=ready @doCaptcha=doCaptcha></RegisterForm>
-                </v-tab-item>
-            </v-tabs>
-        </v-row>
+    <div class='centerwrap'>
+        <v-tabs id="logintabs" v-model="active" background-color="primary" dark centered grow>
+            <v-tab ripple>Login</v-tab>
+            <v-tab ripple v-if="!skipCaptcha">Reset</v-tab>
+            <v-tab ripple>Register</v-tab>
+            <v-tab-item padding="1rem" eager>
+                <LoginForm    color="primary" dark :ready=ready></LoginForm>
+            </v-tab-item>
+            <v-tab-item padding="1rem" eager v-if="!skipCaptcha">
+                <ResetForm    color="primary" dark :ready=ready @doCaptcha=doCaptcha ></ResetForm>
+            </v-tab-item>
+            <v-tab-item padding="1rem" eager>
+                <RegisterForm color="primary" dark :ready=ready @doCaptcha=doCaptcha></RegisterForm>
+            </v-tab-item>
+        </v-tabs>
+
         <div id='captchadiv'></div>
-    </v-container>
+    </div>
 </template>
 
 <script>
@@ -43,6 +42,10 @@ export default {
 </script>
 
 <style>
+.centerwrap {
+    display: flex;
+    justify-content: center;
+}
 #logintabs {
     max-width: 25rem;
     border: 1px solid #eee;

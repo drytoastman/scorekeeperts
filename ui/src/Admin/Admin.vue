@@ -136,50 +136,5 @@ export default {
 </script>
 
 <style lang='scss'>
-html {
-    overflow-x: auto;
-}
-
-.v-main__wrap, .v-content__wrap {
-    max-width: initial;
-    margin: 1rem;
-}
-
-.v-navigation-drawer .v-subheader.labelheader {
-    font-size: 120%;
-}
-
-.v-toolbar__content {
-    justify-content: center;
-    .v-text-field {
-        max-width: 10rem;
-        margin-left: 1rem;
-        margin-right: 1rem;
-    }
-    .v-text-field.v-text-field--solo.v-input--dense > .v-input__control {
-        min-height: 30px;
-    }
-    .btitle, .bdesc {
-        font-weight: bold;
-        font-size: 130%;
-    }
-}
-
-.v-toolbar__extension {
-    justify-content: center;
-    @media (min-width: 700px) {
-        gap: 15px;
-    }
-}
-
-@media print {
-    .v-toolbar, .v-snack {
-        display: none;
-    }
-    .v-main {
-        padding-top: 0 !important;
-    }
-}
-
 @import '@/styles/general.scss'
 </style>

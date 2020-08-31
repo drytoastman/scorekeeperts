@@ -10,7 +10,7 @@
             </v-card-title>
             <v-card-text>
                 <div class='checkgrid'>
-                    <v-checkbox v-for="group in listids" :key="group" :label="group" v-model="checks[group]"></v-checkbox>
+                    <v-checkbox hide-details v-for="group in listids" :key="group" :label="group" v-model="checks[group]"></v-checkbox>
                 </div>
             </v-card-text>
             <v-card-actions>

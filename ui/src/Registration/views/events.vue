@@ -2,7 +2,7 @@
     <div class='outer'>
     <v-expansion-panels multiple focusable hover accordion tile v-model='panelstate'>
         <v-expansion-panel v-for="event in orderedEvents" :key="event.eventid">
-            <v-expansion-panel-header class='elevation-4' color='primary lighten-1 white--text'>
+            <v-expansion-panel-header class='elevation-4' xcolor='primary lighten-1 white--text'>
                 <v-container class="pa-0">
                     <v-row no-gutters align=center class='eventrow'>
                         <v-col class='datecol'>
@@ -90,9 +90,7 @@ export default {
     .eventdate, .eventname {
         font-size: 1.2rem;
         white-space: nowrap;
-    }
-    .eventdate {
-        font-weight: bold;
+        color: var(--v-primary-base);
     }
     .datecol {
         text-align: right;
@@ -100,8 +98,8 @@ export default {
         flex-basis: 10rem;
     }
     .namecol svg {
-        margin-left: 5px;
-        margin-right: 5px;
+        margin-left: 1rem;
+        margin-right: 1rem;
     }
 
     @media (max-width: 700px) {
