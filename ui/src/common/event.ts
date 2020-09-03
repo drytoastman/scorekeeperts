@@ -37,6 +37,7 @@ export function hasOpened(event: SeriesEvent): boolean { return new Date() > new
 export function hasClosed(event: SeriesEvent): boolean { return new Date() > new Date(event.regclosed) }
 export function hasFinished(event: SeriesEvent): boolean { return new Date() >= new Date(event.date) }
 export function isOpen(event: SeriesEvent):    boolean { return hasOpened(event) && !hasClosed(event) }
+export function hasSessions(event: SeriesEvent): boolean { return event.regtype > 0 }
 export function getSessions(event: SeriesEvent): string[] {
     switch (event.regtype) {
         case 2: return ['Day']

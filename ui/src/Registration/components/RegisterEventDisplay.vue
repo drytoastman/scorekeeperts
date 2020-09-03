@@ -2,35 +2,39 @@
     <v-container class='outer'>
         <v-row v-if="!hasOpened">
             <v-col class='tlabel'>Opens:</v-col>
-            <v-col>{{event.regopened | timedate}}</v-col>
+            <v-col class='tdata'>{{event.regopened | timedate}}</v-col>
         </v-row>
         <v-row>
             <v-col class='tlabel'>{{hasClosed ? 'Closed' : 'Closes'}}:</v-col>
-            <v-col style='whitespace:nowrap'>{{event.regclosed | timedate }}</v-col>
+            <v-col class='tdata' style='whitespace:nowrap'>{{event.regclosed | timedate }}</v-col>
         </v-row>
         <v-row v-if="event.location" >
             <v-col class='tlabel'>Location:</v-col>
-            <v-col>{{event.location}}</v-col>
+            <v-col class='tdata'>{{event.location}}</v-col>
         </v-row>
 
         <!-- any attr items OTHER than notes and paymentreq -->
         <v-row v-for="key in Object.keys(event.attr).filter(k => !['notes','paymentreq'].includes(k))" :key="key">
             <v-col class='tlabel'>{{key | capitalize}}:</v-col>
-            <v-col>{{event.attr[key]}}</v-col>
+            <v-col class='tdata'>{{event.attr[key]}}</v-col>
         </v-row>
 
         <v-row v-if="hasOpened && event.totlimit && event.sinlimit">
-            <v-col class='tlabel'>Singles:</v-col><v-col>{{ecounts.unique||0}}/{{event.sinlimit}}</v-col>
-            <v-col class='tlabel'>Count:</v-col>  <v-col>{{ecounts.all||0}}/{{event.totlimit}}</v-col>
+            <v-col class='tlabel'>Singles:</v-col>
+            <v-col class='tdata'>{{ecounts.unique||0}}/{{event.sinlimit}}</v-col>
+
+            <v-col class='tlabel'>Count:</v-col>
+            <v-col class='tdata'>{{ecounts.all||0}}/{{event.totlimit}}</v-col>
         </v-row>
 
         <v-row no-gutters v-else-if="hasOpened">
-            <v-col class='tlabel'>Count:</v-col><v-col>{{ecounts.all||0}}{{event.totlimit && `/${event.totlimit}` || ''}}</v-col>
+            <v-col class='tlabel'>Count:</v-col>
+            <v-col class='tdata'>{{ecounts.all||0}}{{event.totlimit && `/${event.totlimit}` || ''}}</v-col>
         </v-row>
 
         <v-row v-if="event.attr.notes && !hasClosed">
             <v-col class='tlabel'>Notes:</v-col>
-            <v-col v-html=event.attr.notes></v-col>
+            <v-col class='tdata' v-html=event.attr.notes></v-col>
         </v-row>
 
         <v-divider v-if="hasOpened"></v-divider>
@@ -40,13 +44,9 @@
                 Entries:
                 <span class='plain'>{{ereg.length||0}}/{{event.perlimit}}</span>
             </v-col>
-            <v-col>
+            <v-col class='tdata'>
                 <v-container class='inner'>
-                    <v-row dense v-if="ereg.length > 0">
-                        <v-col v-for="reg in ereg" :key="reg.session+reg.carid">
-                            <RegCard :reg="reg"></RegCard>
-                        </v-col>
-                    </v-row>
+                    <EventRegSelections :event=event></EventRegSelections>
                     <v-row v-if="isOpen" dense>
                         <v-col>
                             <v-btn color="secondary" @click="$emit('regrequest')" :loading="busyR" :disabled="busyP">Register</v-btn>
@@ -64,11 +64,11 @@
 <script>
 import { mapState, mapGetters } from 'vuex'
 import { isOpen, hasClosed, hasOpened } from '@/common/event'
-import RegCard from './RegCard'
+import EventRegSelections from './EventRegSelections'
 
 export default {
     components: {
-        RegCard
+        EventRegSelections
     },
     filters: {
         timedate: function(v) {
@@ -147,6 +147,9 @@ export default {
         flex-grow: 0.15;
         text-align: right;
         margin-right: 1rem;
+    }
+    .tdata {
+        font-size: 95%;
     }
     .plain {
         font-weight: normal;

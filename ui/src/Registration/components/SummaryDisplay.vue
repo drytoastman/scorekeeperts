@@ -11,7 +11,7 @@
                 <li v-for="r in s.reg" :key="r.carid+r.session">
                     <div v-if="r.session">
                         <div class='session'>Session: {{r.session}}</div>
-                        <SessionCarLabel :car="r"></SessionCarLabel>
+                        <CarLabel :car="r" session></CarLabel>
                     </div>
                     <CarLabel v-else :car="r" fontsize="110%"></CarLabel>
                 </li>
@@ -23,13 +23,11 @@
 <script>
 import { mapState } from 'vuex'
 import CarLabel from '../../components/CarLabel'
-import SessionCarLabel from '../../components/SessionCarLabel'
 
 export default {
     name: 'SummaryDisplay',
     components: {
-        CarLabel,
-        SessionCarLabel
+        CarLabel
     },
     computed: {
         ...mapState(['summary'])

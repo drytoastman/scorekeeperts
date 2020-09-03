@@ -16,8 +16,8 @@
                         <template v-for="session in sessions">
                             <span class='sessionlabel' :key="session+'y'">{{session}}</span>
                             <v-select :key="session+'z'" :items="carlist" item-value="carid" v-model="sessionselect[session]">
-                                <template v-slot:item="d"><SessionCarLabel :car=d.item></SessionCarLabel></template>
-                                <template v-slot:selection="d"><SessionCarLabel :car=d.item></SessionCarLabel></template>
+                                <template v-slot:item="d"><CarLabel :car=d.item session></CarLabel></template>
+                                <template v-slot:selection="d"><CarLabel :car=d.item session></CarLabel></template>
                             </v-select>
                         </template>
 
@@ -41,11 +41,11 @@ import filter from 'lodash/filter'
 import Vue from 'vue'
 import { mapState } from 'vuex'
 import { getSessions } from '@/common/event'
-import SessionCarLabel from '../../components/SessionCarLabel'
+import CarLabel from '../../components/CarLabel'
 
 export default {
     components: {
-        SessionCarLabel
+        CarLabel
     },
     props: {
         value: Boolean,

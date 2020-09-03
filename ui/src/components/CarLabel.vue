@@ -1,11 +1,15 @@
 <template>
-    <div class='carlabel' :style="{'font-size': this.fontsize}">
-        <div class='head'>
-            <span class='code'>{{car.classcode}}</span>
-            <span class='number'>#{{car.number}}</span>
-            <span class='index'>{{indexstr}}</span>
+    <div class='carlabel' :style="{'font-size': this.fontsize}" v-if="car.carid">
+        <div class='head' v-if="session">
+            <span class='primaryitem'>#{{car.number}}</span>
+            <span class='unusedinfo'>{{car.classcode}} {{indexstr}}</span>
         </div>
-        <div class='descrip'>
+        <div v-else>
+            <span class='primaryitem'>{{car.classcode}}</span>
+            <span class='secondaryitem'>#{{car.number}}</span>
+            <span class='normalitem'>{{indexstr}}</span>
+        </div>
+        <div class='normalitem'>
             {{car.attr.year}} {{car.attr.make}} {{car.attr.model}} {{car.attr.color}}
         </div>
         <slot></slot>
@@ -22,6 +26,10 @@ export default {
         fontsize: {
             type: String,
             default: '100%'
+        },
+        session: {
+            type: Boolean,
+            default: false
         }
     },
     computed: {
@@ -37,26 +45,29 @@ export default {
         text-align: left;
         white-space: nowrap;
     }
-    .code, .number, .index {
+    span {
         vertical-align: middle;
-        font-weight: 500;
     }
-    .code {
-        font-size: 120%;
-        color: var(--v-secondary-darken1);
-        margin-right: 4px;
-    }
-    .number {
+    .primaryitem {
         font-size: 100%;
         margin-right: 6px;
+        font-size: 120%;
+        color: var(--v-secondary-darken1);
+        font-weight: 500;
+        vertical-align: middle;
     }
-    .index {
+    .secondaryitem {
+        margin-right: 4px;
+    }
+    .normalitem {
+        color: var(--v-primary-lighten2);
         font-size: 85%;
-        color: grey;
-    }
-    .descrip {
-        color: gray;
-        font-size: 80%;
         line-height: 1.8;
+    }
+    .unusedinfo {
+        font-style: italic;
+        font-size: 85%;
+        color: rgb(0,0,0,0.35);
+        margin-left: 1rem;
     }
 </style>
