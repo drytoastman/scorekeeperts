@@ -34,7 +34,7 @@ async function dbWaitAndApiSetup() {
         try {
             return await db.general.getKeyGrip()
         } catch (error) {
-            mainlog.warn(error.message)
+            mainlog.warn(error)
             retry(error)
         }
     })

@@ -10,6 +10,7 @@ import { UUID } from '@common/util'
 import { gCache } from './cache'
 import { SQ_APPLICATION_ID, SQ_APPLICATION_SECRET } from '../db/generalrepo'
 import { paymentslog } from './logging'
+import { permittedCrossDomainPolicies } from 'helmet'
 
 function getAClient(mode: string, token?: string): ApiClient {
     const client = new SquareConnect.ApiClient()
@@ -52,8 +53,14 @@ export async function squareOrder(conn: ScorekeeperProtocol, square: any, paymen
         })
     }
 
-    const orders = new SquareConnect.OrdersApi(client)
-    const orderresponse = await orders.createOrder(account.accountid, body)
+    let orderresponse
+    try {
+        const orders = new SquareConnect.OrdersApi(client)
+        orderresponse = await orders.createOrder(account.accountid, body)
+    } catch (error) {
+        paymentslog.error('square setup issues: ' + error.message)
+        throw new Error('square setup issues, notify admin')
+    }
 
     if (orderresponse.errors) {
         paymentslog.error('square order response errors: ' + orderresponse.errors)

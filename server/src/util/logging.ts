@@ -4,10 +4,6 @@ import moment from 'moment'
 import winston, { format } from 'winston'
 import util from 'util'
 
-const line1 = format.printf(({ level, message, label, timestamp }) => {
-    return `${timestamp} [${label}/${level}]: ${message}`
-})
-
 const transports = [
     new winston.transports.Console({ level: (process.env.NODE_ENV === 'development') ? 'silly' : 'warn' }),
     new winston.transports.File({ level: 'verbose', filename: '/var/log/server.log' })
@@ -49,13 +45,20 @@ export async function rotateLogs() {
     rotate('scweb')
 }
 
+const singleline = format.printf(({ level, message, label, timestamp, stack }) => {
+    if (stack) {
+        return `${timestamp} [${label}/${level}]: ${message}\n${stack}`
+    }
+    return `${timestamp} [${label}/${level}]: ${message}`
+})
 
 const formats = [
     format.splat(),
+    format.errors({ stack: true }),
     format.timestamp({
         format: function() { return moment().format('YYYY-MM-DD HH:mm:ss') }
     }),
-    line1
+    singleline
 ]
 
 // primary logging

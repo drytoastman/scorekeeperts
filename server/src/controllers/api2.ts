@@ -47,6 +47,7 @@ export async function apiget(req: Request, res: Response) {
         if (error.authtype) {
             res.status(401).json({ error: error.message, authtype: error.authtype })
         } else {
+            controllog.error(error)
             res.status(500).json({ error: error.message })
         }
     }
@@ -69,7 +70,8 @@ export async function apipost(req: Request, res: Response) {
         if (error.authtype) {
             res.status(401).json({ error: error.message, types: error.types })
         } else {
-            res.status(500).send({ error: error.toString() })
+            controllog.error(error)
+            res.status(500).send({ error: error.message })
         }
     }
 }
