@@ -5,9 +5,7 @@
                 <span class="primary--text headline">Register for Session</span>
             </v-card-title>
             <v-card-text>
-                <div class='carslink'>
-                    <router-link :to="{name:'cars'}">Create, Edit and Delete Cars Here</router-link>
-                </div>
+                <LinkHoverToState :to="{name:'cars'}" variable="flashCars" class='carslink'>Create, Edit and Delete Cars Via the Cars Menu</LinkHoverToState>
                 <v-form ref="form" lazy-validation>
                     <v-container class='nocars' v-if="nocars">
                         You haven't created any cars for this series.  You can do so via the above link.
@@ -15,7 +13,7 @@
                     <v-container v-else class='formgrid'>
                         <template v-for="session in sessions">
                             <span class='sessionlabel' :key="session+'y'">{{session}}</span>
-                            <v-select :key="session+'z'" :items="carlist" item-value="carid" v-model="sessionselect[session]">
+                            <v-select :key="session+'z'" :items="carlist" item-value="carid" v-model="sessionselect[session]" hide-details>
                                 <template v-slot:item="d"><CarLabel :car=d.item session></CarLabel></template>
                                 <template v-slot:selection="d"><CarLabel :car=d.item session></CarLabel></template>
                             </v-select>
@@ -42,10 +40,12 @@ import Vue from 'vue'
 import { mapState } from 'vuex'
 import { getSessions } from '@/common/event'
 import CarLabel from '../../components/CarLabel'
+import LinkHoverToState from './LinkHoverToState'
 
 export default {
     components: {
-        CarLabel
+        CarLabel,
+        LinkHoverToState
     },
     props: {
         value: Boolean,
@@ -99,7 +99,11 @@ export default {
     display: grid;
     grid-template-columns: 1fr 7fr;
     column-gap: 0.3rem;
+    row-gap: 1rem;
     align-items: center;
+}
+.v-text-field {
+    padding-top: 0;
 }
 .sessionlabel {
     font-weight: bold;

@@ -6,9 +6,9 @@
             <span class='bdesc'>{{$route.meta.marker || $route.name}}</span>
 
             <template v-slot:extension>
-                <v-btn color=white text small exact :to="{name:'profile', params:{}}">Profile<span>All</span></v-btn>
-                <v-btn color=white text small exact :to="{name:'cars',    params:{series:currentSeries}}" :disabled="!currentSeries">Cars</v-btn>
-                <v-btn color=white text small exact :to="{name:'events',  params:{series:currentSeries}}" :disabled="!currentSeries">Events</v-btn>
+                <v-btn color=white text small exact :class="mProfileClass" :to="{name:'profile', params:{}}">Profile<span>All</span></v-btn>
+                <v-btn color=white text small exact :class="mCarsClass"    :to="{name:'cars',    params:{series:currentSeries}}" :disabled="!currentSeries">Cars</v-btn>
+                <v-btn color=white text small exact :class="mEventsClass"  :to="{name:'events',  params:{series:currentSeries}}" :disabled="!currentSeries">Events</v-btn>
                 <v-btn color=white text small @click='logout'>Logout</v-btn>
                 <v-progress-linear :active="!!gettingData" indeterminate absolute bottom color="green accent-4"></v-progress-linear>
             </template>
@@ -58,10 +58,13 @@ export default {
         }
     },
     computed: {
-        ...mapState(['currentSeries', 'serieslist', 'driverAuthenticated', 'errors', 'gettingData']),
+        ...mapState(['currentSeries', 'serieslist', 'driverAuthenticated', 'errors', 'gettingData', 'flashProfile', 'flashCars', 'flashEvents']),
         snackbar()  { return this.filteredErrors.length > 0 },
         isOutside() { return this.$route.meta.outside === 1 },
         filteredErrors() { return this.errors.filter(s => s !== 'not authenticated') },
+        mProfileClass() { return this.flashProfile ? 'flashit' : '' },
+        mCarsClass()    { return this.flashCars ?    'flashit' : '' },
+        mEventsClass()  { return this.flashEvents ?  'flashit' : '' },
 
         selectedSeries: {
             get() { return this.currentSeries },

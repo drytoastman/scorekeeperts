@@ -41,8 +41,6 @@
 
         <v-row :class="ereg.length==0 ? 'centerrow' : ''" v-if="hasOpened">
             <v-col class='tlabel'>
-                Entries:
-                <span class='plain'>{{ereg.length||0}}/{{event.perlimit}}</span>
             </v-col>
             <v-col class='tdata'>
                 <v-container class='inner'>
@@ -119,7 +117,6 @@ export default {
     }
     .inner {
         padding: 0;
-        margin-left: -5px;
     }
     .inner .row {
         align-items: stretch;

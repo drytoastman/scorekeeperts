@@ -82,4 +82,7 @@ export class Api2State {
 
     // opaque things that we don't track
     panelstate = [] // we set/get at will, saves state across page movement
+    flashProfile = false
+    flashCars = false
+    flashEvents = false
 }

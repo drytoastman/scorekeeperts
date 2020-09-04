@@ -6,9 +6,7 @@
                     <span class="primary--text headline">Register</span>
                 </v-card-title>
                 <v-card-text>
-                    <div class='carslink'>
-                        Create, Edit and Delete Cars <router-link :to="{name:'cars'}">On Cars Page</router-link>
-                    </div>
+                    <LinkHoverToState :to="{name:'cars'}" variable="flashCars" class='carslink'>Create, Edit and Delete Cars Via the Cars Menu</LinkHoverToState>
                     <v-container>
                         <div class='nocars' v-if="nocars">
                             You haven't created any cars for this series.  You can do so via the above link.
@@ -50,10 +48,12 @@ import pickBy from 'lodash/pickBy'
 import Vue from 'vue'
 import { mapState } from 'vuex'
 import CarLabel from '@/components/CarLabel'
+import LinkHoverToState from './LinkHoverToState'
 
 export default {
     components: {
-        CarLabel
+        CarLabel,
+        LinkHoverToState
     },
     props: {
         value: Boolean,

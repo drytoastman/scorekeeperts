@@ -60,9 +60,8 @@ export default {
         margin-right: 4px;
     }
     .normalitem {
-        color: var(--v-primary-lighten2);
-        font-size: 85%;
-        line-height: 1.8;
+        color: var(--v-primary-base);
+        font-size: 90%;
     }
     .unusedinfo {
         font-style: italic;

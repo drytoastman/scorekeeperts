@@ -1,12 +1,12 @@
 <template>
     <div class='formgrid'>
-        <template v-for="session in sessions">
-            <span class='sessionlabel' :key="session+'y'">{{session}}</span>
-            <CarLabel :car="cars[sessionselect[session].carid]" session :key="session"></CarLabel>
-            <PaymentInfo :reg="sessionselect[session]" :key="session+'z'"></PaymentInfo>
+        <template v-for="reg in sessions">
+            <span class='sessionlabel' :key="reg.session+'x'">{{reg.session}}</span>
+            <CarLabel :car="cars[reg.carid]" session :key="reg.session+'y'"></CarLabel>
+            <PaymentInfo :reg="reg" :key="reg.session+'z'"></PaymentInfo>
         </template>
         <template v-for="(reg,ii) in nonsession">
-            <span class='sessionlabel' :key="reg.carid">Entry {{ii+1}}</span>
+            <span class='sessionlabel' :key="reg.carid">{{ii+1}}</span>
             <CarLabel :car="cars[reg.carid]" :key="reg.carid+'x'"></CarLabel>
             <PaymentInfo :reg="reg" :key="reg.carid+'y'"></PaymentInfo>
         </template>
@@ -14,7 +14,6 @@
 </template>
 
 <script>
-import keyBy from 'lodash/keyBy'
 import { mapState } from 'vuex'
 import { getSessions } from '@/common/event'
 import CarLabel from '../../components/CarLabel'
@@ -30,18 +29,19 @@ export default {
         event: Object
     },
     computed: {
-        ...mapState(['cars', 'registered', 'payments']),
-        nocars()   { return Object.values(this.cars).length <= 0 },
+        ...mapState(['cars', 'registered']),
         ereg()     { return this.registered[this.event.eventid] || [] },
-        sessions() { return getSessions(this.event) },
-        sessionselect() { return keyBy(this.ereg, r => r.session) },
+        sessions() {
+            // registrations with a session ordered by session order
+            const ret = []
+            for (const s of getSessions(this.event)) {
+                for (const r of this.ereg) {
+                    if (r.session === s) ret.push(r)
+                }
+            }
+            return ret
+        },
         nonsession() { return this.ereg.filter(r => r.session === '') }
-    },
-    methods: {
-        paymentsForReg(reg) {
-            try { return this.payments[reg.eventid].filter(p => p.carid === reg.carid && p.session === reg.session && !p.refunded) || [] } catch {}
-            return []
-        }
     }
 }
 </script>
@@ -51,7 +51,11 @@ export default {
     display: grid;
     grid-template-columns: auto auto 1fr;
     column-gap: 1rem;
+    row-gap: 0.3rem;
     align-items: center;
     margin-bottom: 1rem;
+}
+.spacer {
+    min-height: 3rem;
 }
 </style>
