@@ -1,7 +1,9 @@
-DROP TABLE tempcache;
-DROP SEQUENCE ordercounter;
+DROP TABLE IF EXISTS tempcache;
+DROP SEQUENCE IF EXISTS ordercounter;
 
-ALTER TABLE paymentitems DROP CONSTRAINT paymentitems_accountid_fkey;
+ALTER TABLE paymentitems DROP CONSTRAINT IF EXISTS paymentitems_accountid_fkey;
+-- ALTEER TABLE paymentitems DROP COLUMN accountid;
+ALTER TABLE paymentitems ADD COLUMN itemtype INTEGER NOT NULL DEFAULT 0;
 
 ALTER TABLE paymentsecrets ADD COLUMN attr JSONB NOT NULL DEFAULT '{}';
 
@@ -10,11 +12,12 @@ ALTER TABLE payments DROP COLUMN amount;
 
 ALTER TABLE payments ADD COLUMN accountid TEXT NOT NULL DEFAULT '';
 ALTER TABLE payments ADD COLUMN refunded BOOLEAN NOT NULL DEFAULT FALSE;
-ALTER TABLE payments ADD COLUMN amount INTEGER NOT NULL;
+ALTER TABLE payments ADD COLUMN amount INTEGER NOT NULL DEFAULT 0.0;
 
 CREATE TABLE itemeventmap (
     eventid   UUID        NOT NULL REFERENCES events,
     itemid    TEXT        NOT NULL REFERENCES paymentitems,
+    maxcount  INTEGER     NOT NULL DEFAULT 0,
     modified  TIMESTAMP   NOT NULL DEFAULT now(),
     PRIMARY KEY (eventid, itemid)
 );
