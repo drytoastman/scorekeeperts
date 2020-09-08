@@ -8,6 +8,7 @@ import { cleanAttr } from './helper'
 import { dblog } from '@/util/logging'
 
 let eventcols: ColumnSet|undefined
+let itemmapcols: ColumnSet|undefined
 
 export class SeriesRepository {
     constructor(private db: IDatabase<any>, private pgp: IMain) {
@@ -17,14 +18,30 @@ export class SeriesRepository {
                 { name: 'date', cast: 'date' },
                 { name: 'regopened', cast: 'timestamp' },
                 { name: 'regclosed', cast: 'timestamp' },
-                { name: 'perlimit', cast: 'int' },
                 'name', 'champrequire', 'useastiebreak', 'isexternal', 'ispro', 'ispractice',
-                'regtype', 'courses', 'runs', 'countedruns', 'segments', 'totlimit', 'sinlimit',
+                { name: 'regtype', cast: 'int' },
+                { name: 'courses', cast: 'int' },
+                { name: 'runs', cast: 'int' },
+                { name: 'countedruns', cast: 'int' },
+                { name: 'segments', cast: 'int' },
+                { name: 'perlimit', cast: 'int' },
+                { name: 'totlimit', cast: 'int' },
+                { name: 'sinlimit', cast: 'int' },
                 'conepen', 'gatepen', 'accountid',
                 { name: 'attr',     cast: 'json', init: (col: any): any => { return cleanAttr(col.value) } },
                 { name: 'modified', cast: 'timestamp', mod: ':raw', init: (): any => { return 'now()' } },
                 { name: 'created',  cast: 'timestamp', init: (col: any): any => { return col.exists ? col.value : 'now()' } }
             ], { table: 'events' })
+        }
+
+        if (itemmapcols === undefined) {
+            itemmapcols = new pgp.helpers.ColumnSet([
+                { name: 'eventid', cnd: true, cast: 'uuid' },
+                { name: 'itemid',  cnd: true, cast: 'uuid' },
+                { name: 'maxcount', cast: 'int' },
+                { name: 'required', cast: 'bool' },
+                { name: 'modified', cast: 'timestamp', mod: ':raw', init: (): any => { return 'now()' } },
+            ])
         }
     }
 
@@ -116,7 +133,7 @@ export class SeriesRepository {
     private async loadItemMap(tx: ScorekeeperProtocol, events: SeriesEvent[]) {
         try {
             for (const event of events) {
-                event.items = (await tx.any('SELECT itemid FROM itemeventmap WHERE eventid=$1', [event.eventid])).map(r => r.itemid)
+                event.items = await tx.any('SELECT * FROM itemeventmap WHERE eventid=$1', [event.eventid])
             }
         } catch (error) {
             if (!process.env.OLD_DATABASE) throw error
@@ -128,8 +145,10 @@ export class SeriesRepository {
         try {
             for (const event of events) {
                 await tx.none('DELETE FROM itemeventmap WHERE eventid=$1 AND itemid NOT IN ($1:csv)', [event.eventid, event.items])
-                for (const itemid of event.items) {
-                    await tx.any('INSERT INTO itemeventmap (eventid, itemid) VALUES ($1, $2) ON CONFLICT (eventid, itemid) DO NOTHING', [event.eventid, itemid])
+                for (const itemmap of event.items) {
+                    await tx.any('INSERT INTO itemeventmap (eventid, itemid, maxcount, required) ' +
+                                 'VALUES ($(eventid), $(itemid), $(maxcount), $(required)) ' +
+                                 'ON CONFLICT (eventid, itemid) DO NOTHING', itemmap)
                 }
             }
         } catch (error) {

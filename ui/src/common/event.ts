@@ -23,7 +23,7 @@ export interface SeriesEvent
     ispro: boolean;
     ispractice: boolean;
     accountid: string;
-    items: UUID[];
+    items: ItemMap[];
     attr: {
         chair: string;
         location: string;
@@ -31,6 +31,13 @@ export interface SeriesEvent
     }
     modified: DateString;
     created: DateString;
+}
+
+export interface ItemMap {
+    itemid: string;
+    maxcount: number;
+    required: boolean;
+    modified: DateString;
 }
 
 export function hasOpened(event: SeriesEvent): boolean { return new Date() > new Date(event.regopened) }

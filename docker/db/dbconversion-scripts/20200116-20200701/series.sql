@@ -18,6 +18,7 @@ CREATE TABLE itemeventmap (
     eventid   UUID        NOT NULL REFERENCES events,
     itemid    TEXT        NOT NULL REFERENCES paymentitems,
     maxcount  INTEGER     NOT NULL DEFAULT 0,
+    required  BOOLEAN     NOT NULL DEFAULT FALSE,
     modified  TIMESTAMP   NOT NULL DEFAULT now(),
     PRIMARY KEY (eventid, itemid)
 );

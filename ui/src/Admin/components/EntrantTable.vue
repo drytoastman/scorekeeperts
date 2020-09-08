@@ -55,8 +55,7 @@ export default {
         PaymentLabel
     },
     props: {
-        eventid: String,
-        showPayments: Boolean
+        eventid: String
     },
     data() {
         return {

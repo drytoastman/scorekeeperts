@@ -4,8 +4,9 @@
         <v-tabs color="secondary" show-arrows grow>
             <v-tab>Cards</v-tab>
             <v-tab>Event Settings</v-tab>
+            <v-tab>Payment Setup</v-tab>
             <v-tab>Entry Admin</v-tab>
-            <v-tab>Grid Order</v-tab>
+            <v-tab v-if="event.ispro">Grid Order</v-tab>
 
             <v-tab-item>
                 <div class='cardswrap'>
@@ -18,9 +19,12 @@
                 <EventSettings :seriesevent="event"></EventSettings>
             </v-tab-item>
             <v-tab-item>
-                <EntrantTable :eventid=eventid></EntrantTable>
+                <PaymentSetup :seriesevent="event"></PaymentSetup>
             </v-tab-item>
             <v-tab-item>
+                <EntrantTable :eventid=eventid></EntrantTable>
+            </v-tab-item>
+            <v-tab-item  v-if="event.ispro">
                 <GridOrder :eventid=eventid></GridOrder>
             </v-tab-item>
 
@@ -34,13 +38,15 @@ import { mapState } from 'vuex'
 import EventSettings from '../components/EventSettings.vue'
 import EntrantTable from '../components/EntrantTable.vue'
 import GridOrder from '../components/GridOrder.vue'
+import PaymentSetup from '../components/EventPaymentSettings.vue'
 
 export default {
     name: 'EventInfo',
     components: {
         EventSettings,
         EntrantTable,
-        GridOrder
+        GridOrder,
+        PaymentSetup
     },
     props: {
         eventid: String
@@ -70,10 +76,10 @@ export default {
 
 <style scoped>
 .outer {
-    margin: 1rem;
+    margin: 0.5rem;
 }
 .cardswrap {
-    margin: 1rem auto 0 auto;
+    margin: 1rem 0;
     max-width: 40rem;
     display: grid;
     grid-template-columns: 1fr 1fr;

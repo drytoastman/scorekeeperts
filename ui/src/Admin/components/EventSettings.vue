@@ -1,8 +1,8 @@
 <template>
     <v-expansion-panels multiple focusable hover accordion class='epanels'>
         <div class='buttons'>
-            <v-btn style='grid-area: reset' color="secondary" :disabled="unchanged" @click="reset">Reset</v-btn>
-            <v-btn style='grid-area: save'  color="secondary" :disabled="unchanged" @click="saveSettings">Save</v-btn>
+            <v-btn color="secondary" :disabled="unchanged" @click="reset">Reset</v-btn>
+            <v-btn color="secondary" :disabled="unchanged" @click="saveSettings">Save</v-btn>
         </div>
         <v-expansion-panel>
             <v-expansion-panel-header>Name/Times/Notes</v-expansion-panel-header>
@@ -45,23 +45,6 @@
         </v-expansion-panel>
 
         <v-expansion-panel>
-            <v-expansion-panel-header>Payments</v-expansion-panel-header>
-            <v-expansion-panel-content>
-                <div class='payments'>
-                    <v-select   v-model="eventm.accountid" style="grid-area: acct"  label="Payment Account" :items="acctlist" item-value="accountid" item-text="name"></v-select>
-                    <v-checkbox v-model="eventm.attr.paymentreq" style="grid-area: preq" label="Payment Required"></v-checkbox>
-
-                    <v-combobox v-model="eventitems" style="grid-area: pitem" :items="itemlist"
-                                item-value="itemid" item-text="name" label="Payment Items" multiple chips deletable-chips outlined>
-                        <template v-slot:item="{ item }">
-                            {{item.name}} - {{item.price|cents2dollars}}
-                        </template>
-                    </v-combobox>
-                </div>
-            </v-expansion-panel-content>
-        </v-expansion-panel>
-
-        <v-expansion-panel>
             <v-expansion-panel-header>Other</v-expansion-panel-header>
             <v-expansion-panel-content>
                 <div class='other'>
@@ -80,21 +63,14 @@
                 </div>
             </v-expansion-panel-content>
         </v-expansion-panel>
-
-        <div class='buttons'>
-            <v-btn style='grid-area: reset' color="secondary" :disabled="unchanged" @click="reset">Reset</v-btn>
-            <v-btn style='grid-area: save'  color="secondary" :disabled="unchanged" @click="saveSettings">Save</v-btn>
-        </div>
     </v-expansion-panels>
 </template>
 
 <script>
 import cloneDeep from 'lodash/cloneDeep'
 import isEqual from 'lodash/isEqual'
-import orderBy from 'lodash/orderBy'
 import { PrismEditor } from 'vue-prism-editor'
 import { prismlangs } from '@/util/prismwrapper'
-import { mapState } from 'vuex'
 import { EventValidator } from '@/common/event'
 import DateTimePicker from '@/components/DateTimePicker'
 
@@ -110,7 +86,6 @@ export default {
     data() {
         return {
             eventm: { attr: {}},
-            eventitems: [],
             vrules: EventValidator,
             regtypes: [
                 { text: 'Standard Event with Classes', value: 0 },
@@ -120,25 +95,19 @@ export default {
         }
     },
     computed: {
-        ...mapState(['paymentaccounts', 'paymentitems']),
         unchanged() { return isEqual(this.seriesevent, this.eventm) },
-        acctlist() { return Object.values(this.paymentaccounts) },
-        itemlist() { return orderBy(Object.values(this.paymentitems), 'name') },
         noclassesevent() { return this.eventm.regtype !== 0 }
     },
     methods: {
         ...prismlangs,
         saveSettings() {
-            this.$store.commit('gettingData', true)
             this.$store.dispatch('setdata', {
                 type: 'update',
                 items: { events: [this.eventm] }
-            }).then(() => this.$store.commit('gettingData', false))
+            })
         },
         reset() {
             this.eventm = cloneDeep(this.seriesevent)
-            // v-combobox only sets/returns object so create object list here
-            this.eventitems = this.seriesevent.items.map(itemid => this.paymentitems[itemid])
         }
     },
     watch: {
@@ -151,10 +120,6 @@ export default {
                 this.eventm.isexternal = false
                 this.eventm.ispro = false
             }
-        },
-        eventitems() {
-            // v-combobox only sets/returns object so copy back to item list here
-            this.eventm.items = this.eventitems.map(ei => ei.itemid)
         }
     },
     mounted() { this.reset() }
@@ -207,16 +172,6 @@ export default {
     ;
 }
 
-.payments {
-    display: grid;
-    column-gap: 2rem;
-    grid-template-columns: repeat(6, 1fr);
-    grid-template-areas:
-        "acct acct acct acct preq preq "
-        "pitem pitem pitem pitem pitem pitem "
-    ;
-}
-
 .other {
     display: grid;
     column-gap: 2rem;
@@ -241,11 +196,10 @@ export default {
 }
 
 .buttons {
-    margin: 1rem;
     display: grid;
+    grid-template-columns: 10rem 10rem;
     column-gap: 1rem;
-    grid-template-columns: 1fr 1fr;
-    grid-template-areas: "save reset";
+    margin: 0 1rem;
     width: 100%;
 }
 

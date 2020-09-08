@@ -55,6 +55,7 @@ export class PaymentsRepository {
                 { name: 'itemid', cnd: true },
                 { name: 'accountid', init: (): any => { return '' } },
                 { name: 'name' },
+                { name: 'itemtype' },
                 { name: 'price' },
                 { name: 'currency' },
                 { name: 'modified', cast: 'timestamp', mod: ':raw', init: (): any => { return 'now()' } }

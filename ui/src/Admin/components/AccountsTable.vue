@@ -30,12 +30,6 @@
                 <template v-slot:item.itemcount="{ item }">
                     {{oldItems(item.accountid).length}}
                 </template>
-
-                <template v-slot:expanded-item="{ headers, item }">
-                    <td :colspan="headers.length">
-                        <ItemsTable :accountid="item.accountid" @edititem="edititem" @deleteitem="deleteitem"></ItemsTable>
-                    </td>
-                </template>
             </v-data-table>
         </div>
 
@@ -59,7 +53,7 @@ import { v1 as uuidv1 } from 'uuid'
 import { mdiPencil, mdiDelete, mdiBug } from '@mdi/js'
 import squareIcon from '../../images/square.svg'
 import paypalIcon from '../../images/paypal.svg'
-import ItemsTable from './ItemsTable'
+import ItemsTable from './ItemsTable.vue'
 import ItemDialog from './ItemDialog'
 import AccountDialog from './AccountDialog'
 import AddPaypalDialog from './AddPaypalDialog'

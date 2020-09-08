@@ -4,6 +4,8 @@
             <v-container>
                 <v-text-field v-model="itemm.name"     label="Name"></v-text-field>
                 <v-text-field v-model="priceInDollars" label="Price" prefix="$" :rules="dollar"></v-text-field>
+                <v-select     v-model="itemm.itemtype" label="Item Type" :items="itemtypes"></v-select>
+
                 <div class='attrgrid'>
                     <span class='key'>currency:</span> <span class='val'>{{itemm.currency}}</span>
                     <span class='key'>itemid:</span>   <span class='val'>{{itemm.itemid}}</span>
@@ -16,6 +18,7 @@
 <script>
 import { isDollar } from '@/common/util'
 import BaseDialog from '../../components/BaseDialog'
+import { ITEMTYPES } from '../../common/payments'
 
 export default {
     components: {
@@ -30,7 +33,8 @@ export default {
         return {
             itemm: { }, // we get a copy when the dialog arg changes, data initializer won't catch that
             priceInDollars: 0,
-            dollar: [isDollar]
+            dollar: [isDollar],
+            itemtypes: ITEMTYPES
         }
     },
     methods: {

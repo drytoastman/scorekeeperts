@@ -20,12 +20,11 @@
 
 <script>
 import squaresvg from '../../images/square.svg'
-import { PaymentAccount } from '@/common/payments'
 
 export default {
     props: {
         opened: Boolean,
-        account: PaymentAccount, // doesn't do anything without lang=ts but that has issues now as well
+        account: Object, // PaymentAccount doesn't do anything without lang=ts but that has issues now as well
         payments: Array,
         total: Number
     },

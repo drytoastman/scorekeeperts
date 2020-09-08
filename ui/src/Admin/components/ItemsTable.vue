@@ -1,12 +1,16 @@
 <template>
-  <v-data-table :items="itemsList" :headers="headers" item-key="name" class='itemstable'
+  <v-data-table :items="itemsList" :headers="headers" item-key="itemid" class='itemstable'
                  disable-pagination hide-default-footer dense
   >
-    <template v-slot:item.price="{ item }">
+    <template v-slot:[`item.price`]="{ item }">
         {{item.price|cents2dollars}}
     </template>
 
-    <template v-slot:item.actions="{ item }">
+    <template v-slot:[`item.itemtype`]="{ item }">
+        {{itemtypes[item.itemtype].text}}
+    </template>
+
+    <template v-slot:[`item.actions`]="{ item }">
         <v-icon small @click="$emit('edititem', item)">{{icons.mdiPencil}}</v-icon>
         <v-icon small @click="$emit('deleteitem', item)">{{icons.mdiDelete}}</v-icon>
     </template>
@@ -18,9 +22,10 @@
 import orderBy from 'lodash/orderBy'
 import { mapState } from 'vuex'
 import { mdiPencil, mdiDelete, mdiPlus } from '@mdi/js'
+import { ITEMTYPES } from '../../common/payments'
 
 export default {
-    name: 'Accounts',
+    name: 'ItemsTable',
     props: {
     },
     data() {
@@ -30,16 +35,18 @@ export default {
                 mdiDelete,
                 mdiPlus
             },
+            itemtypes: ITEMTYPES,
             headers: [
                 { text: 'Name', value: 'name' },
                 { text: 'Price', value: 'price' },
+                { text: 'Type',  value: 'itemtype' },
                 { text: 'Actions', value: 'actions', sortable: false }
             ]
         }
     },
     computed: {
         ...mapState(['paymentitems']),
-        itemsList() { return  orderBy(this.paymentitems, 'name') }
+        itemsList() { return  orderBy(this.paymentitems, ['itemtype', 'name']) }
     }
 }
 </script>
