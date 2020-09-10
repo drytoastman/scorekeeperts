@@ -1,6 +1,6 @@
 <template>
     <v-expansion-panels multiple focusable hover accordion class='epanels'>
-        <div class='buttons'>
+        <div class='adminbuttons'>
             <v-btn color="secondary" :disabled="unchanged" @click="reset">Reset</v-btn>
             <v-btn color="secondary" :disabled="unchanged" @click="saveSettings">Save</v-btn>
         </div>
@@ -193,14 +193,6 @@ export default {
 }
 .checks .v-input--is-disabled >>> * {
     color: rgba(0,0,0,0.15);
-}
-
-.buttons {
-    display: grid;
-    grid-template-columns: 10rem 10rem;
-    column-gap: 1rem;
-    margin: 0 1rem;
-    width: 100%;
 }
 
 .noteslabel {

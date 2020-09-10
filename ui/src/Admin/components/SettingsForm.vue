@@ -1,4 +1,10 @@
 <template>
+    <div class='outer'>
+    <div class='adminbuttons'>
+        <v-btn color="secondary" :disabled="unchanged" @click="reset">Reset</v-btn>
+        <v-btn color="secondary" :disabled="unchanged" @click="saveSettings">Save</v-btn>
+    </div>
+
     <v-form class='settingsform'>
         <v-text-field v-model="settingsm.seriesname"       style="grid-area: name"   :rules="vrules.seriesname" label="Series Name"></v-text-field>
 
@@ -34,10 +40,8 @@
                 <v-expansion-panel-content><PrismEditor :highlight="html" v-model="settingsm.cardtemplate"></PrismEditor></v-expansion-panel-content>
             </v-expansion-panel>
         </v-expansion-panels>
-
-        <v-btn style='grid-area: reset' color="secondary" :disabled="unchanged" @click="reset">Reset</v-btn>
-        <v-btn style='grid-area: save'  color="secondary" :disabled="unchanged" @click="saveSettings">Save</v-btn>
     </v-form>
+    </div>
 </template>
 
 <script>
@@ -98,7 +102,6 @@ export default {
         "ppoints ppoints ppoints ppoints ppoints ppoints "
         "indexa indexa superu superu . . "
         "temp temp temp temp temp temp "
-        ". reset reset save save . "
     ;
 }
 

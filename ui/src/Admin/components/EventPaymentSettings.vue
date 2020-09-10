@@ -1,6 +1,6 @@
 <template>
     <div class='outer'>
-        <div class='buttons'>
+        <div class='adminbuttons'>
             <v-btn color="secondary" :disabled="unchanged" @click="reset">Reset</v-btn>
             <v-btn color="secondary" :disabled="unchanged" @click="savePayments">Save</v-btn>
         </div>
@@ -128,11 +128,6 @@ export default {
 </script>
 
 <style scoped>
-.buttons {
-    display: grid;
-    grid-template-columns: 10rem 10rem;
-    column-gap: 1rem;
-}
 .accountbox {
     display: flex;
     column-gap: 1rem;

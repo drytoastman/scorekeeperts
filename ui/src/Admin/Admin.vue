@@ -6,9 +6,9 @@
             <span class='bdesc'>{{$route.meta.marker || $route.name}}</span>
 
             <template v-slot:extension>
-                <AdminMenu :items="eventMenu" text="event"    :disabled="!currentSeries"></AdminMenu>
-                <AdminMenu :items="settings"  text="settings" :disabled="!currentSeries"></AdminMenu>
-                <AdminMenu :items="reports"   text="reports"  :disabled="!currentSeries"></AdminMenu>
+                <AdminMenu :items="eventMenu" text="events"  :disabled="!currentSeries"></AdminMenu>
+                <AdminMenu :items="settings"  text="series"  :disabled="!currentSeries"></AdminMenu>
+                <AdminMenu :items="reports"   text="reports" :disabled="!currentSeries"></AdminMenu>
                 <AdminMenu :items="admins"    text="admin"></AdminMenu>
                 <v-btn color=white text small @click='logout'>Logout</v-btn>
                 <v-progress-linear :active="!!gettingData" indeterminate absolute bottom color="green accent-4"></v-progress-linear>

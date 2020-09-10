@@ -1,41 +1,45 @@
 <template>
     <div class='accountstable'>
-        <v-btn color="secondary" :href="squareOAuthUrl" :disabled="!squareapplicationid || !devMode">
-            (Re)Authorize <img class='squareicon' :src="icons.squareIcon"/>
-            <span v-if="squareapplicationid.includes('sandbox')" class='sandbox'>Sandbox</span>
-        </v-btn>
+        <div class='baseadminbuttons' :style=buttongridtemplate>
+            <v-btn color="secondary" :href="squareOAuthUrl" :disabled="!squareapplicationid || !devMode">
+                (Re)Authorize <img class='squareicon' :src="icons.squareIcon"/>
+                <span v-if="squareapplicationid.includes('sandbox')" class='sandbox'>Sandbox</span>
+            </v-btn>
 
-        <v-btn color="secondary" @click.stop="newpaypal" :disabled="!devMode">
-            Add <img class='paypalicon' :src="icons.paypalIcon"/>
-        </v-btn>
+            <v-btn color="secondary" @click.stop="newpaypal" :disabled="!devMode">
+                Add <img class='paypalicon' :src="icons.paypalIcon"/>
+            </v-btn>
+        </div>
 
         <div class='tableborder'>
             <v-data-table :items="accountsList" :headers="headers" :expanded.sync="expanded"
                 disable-pagination hide-default-footer item-key="name" class="accountstable">
-                <template v-slot:item.actions="{ item }">
+                <template v-slot:[`item.actions`]="{ item }">
                     <v-icon small @click="editaccount(item)">{{icons.mdiPencil}}</v-icon>
                     <v-icon small @click="deleteaccount(item)">{{icons.mdiDelete}}</v-icon>
                 </template>
 
-                <template v-slot:item.type="{ item }">
+                <template v-slot:[`item.type`]="{ item }">
                     <img v-if="item.type === 'square'" :src="icons.squareIcon" />
                     <img v-else :src="icons.paypalIcon" />
                     <v-icon v-if="item.attr.mode==='sandbox'" color=red>{{icons.mdiBug}}</v-icon>
                 </template>
 
-                <template v-slot:item.version="{ item }">
+                <template v-slot:[`item.version`]="{ item }">
                     {{item.attr.version || 1}}
                 </template>
 
-                <template v-slot:item.itemcount="{ item }">
+                <template v-slot:[`item.itemcount`]="{ item }">
                     {{oldItems(item.accountid).length}}
                 </template>
             </v-data-table>
         </div>
 
-        <v-btn color="secondary" @click.stop="newitem">
-            Add Item
-        </v-btn>
+        <div class='adminbuttons1'>
+            <v-btn color="secondary" @click.stop="newitem">
+                Add Item
+            </v-btn>
+        </div>
 
         <div class='tableborder'>
             <ItemsTable accountid="" @edititem="edititem" @deleteitem="deleteitem"></ItemsTable>
@@ -101,6 +105,9 @@ export default {
             }
             const scope = 'MERCHANT_PROFILE_READ,PAYMENTS_WRITE,PAYMENTS_READ,ORDERS_WRITE'
             return `${host}/oauth2/authorize?client_id=${this.squareapplicationid}&scope=${scope}&state=${this.currentSeries}`
+        },
+        buttongridtemplate() {
+            return `grid-template-columns: ${this.squareapplicationid.includes('sandbox') ? 20 : 15}rem 10rem`
         }
     },
     methods: {

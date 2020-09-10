@@ -1,6 +1,8 @@
 <template>
     <div class='classlisttable'>
-        <v-btn color=secondary @click.stop="newclass">Add Class</v-btn>
+        <div class='adminbuttons'>
+            <v-btn color=secondary @click.stop="newclass">Add Class</v-btn>
+        </div>
 
         <v-data-table :items="classlist" :headers="headers" item-key="classcode" disable-pagination hide-default-footer>
 
@@ -13,7 +15,7 @@
                 <div v-if="busyClass[item.classcode]" class='busy'>
                     busy
                 </div>
-                <div v-else class='buttongrid'>
+                <div v-else class='actionbuttons'>
                     <v-icon small @click="editclass(item)">{{icons.mdiPencil}}</v-icon>
                     <v-icon small @click.stop="deleteclass(item)">{{icons.mdiDelete}}</v-icon>
                 </div>
@@ -106,13 +108,6 @@ export default {
 </style>
 
 <style scoped>
-.buttongrid {
-    display: grid;
-    grid-template-columns: auto auto;
-}
-.classlisttable {
-    margin: 1rem;
-}
 .busy {
     color: #F44;
 }

@@ -1,25 +1,28 @@
 <template>
     <div class='indexlisttable'>
-        <v-btn color=secondary @click.stop="newindex">Add Index</v-btn>
-        <v-menu>
-            <template v-slot:activator="{ on, attrs }">
-                <v-btn color="secondary" v-bind="attrs" v-on="on" :disabled="true">
-                Reset To Predefined List &#9660;
-                </v-btn>
-            </template>
-            <v-list>
-                <v-list-item v-for="list in lists" :key="list">
-                    {{list}}
-                </v-list-item>
-            </v-list>
-        </v-menu>
+        <div class='baseadminbuttons' style='grid-template-columns: 10rem 18rem'>
+            <v-btn color=secondary @click.stop="newindex">Add Index</v-btn>
+            <v-menu>
+                <template v-slot:activator="{ on, attrs }">
+                    <v-btn color="secondary" v-bind="attrs" v-on="on" :disabled="true">
+                    Reset To Predefined List &#9660;
+                    </v-btn>
+                </template>
+                <v-list>
+                    <v-list-item v-for="list in lists" :key="list">
+                        {{list}}
+                    </v-list-item>
+                </v-list>
+            </v-menu>
+        </div>
+
 
         <v-data-table :items="indexlist" :headers="headers" item-key="indexcode" disable-pagination hide-default-footer>
-            <template v-slot:item.actions="{ item }">
+            <template v-slot:[`item.actions`]="{ item }">
                 <div v-if="busyIndex[item.indexcode]" class='busy'>
                     busy
                 </div>
-                <div v-else class='buttongrid'>
+                <div v-else class='actionbuttons'>
                     <v-icon small @click="editindex(item)">{{icons.mdiPencil}}</v-icon>
                     <v-icon small @click.stop="deleteindex(item)">{{icons.mdiDelete}}</v-icon>
                 </div>
@@ -97,16 +100,6 @@ export default {
 </style>
 
 <style scoped>
-.buttongrid {
-    display: grid;
-    grid-template-columns: 25px 25px;
-}
-.indexlisttable {
-    margin: 1rem;
-}
-.v-btn {
-    margin-right: 1rem;
-}
 .busy {
     color: #F44;
 }

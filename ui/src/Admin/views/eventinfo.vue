@@ -1,7 +1,7 @@
 <template>
     <div class='outer' v-if="event">
         <h2>{{event.name}} {{fmtdate}}</h2>
-        <v-tabs color="secondary" show-arrows grow>
+        <v-tabs color="secondary" show-arrows>
             <v-tab>Cards</v-tab>
             <v-tab>Event Settings</v-tab>
             <v-tab>Payment Setup</v-tab>
@@ -9,10 +9,13 @@
             <v-tab v-if="event.ispro">Grid Order</v-tab>
 
             <v-tab-item>
+                <div class='adminbuttons'>
+                    <v-btn @click='carddownload' color='secondary'>Generate Cards</v-btn>
+                </div>
                 <div class='cardswrap'>
+
                     <v-select v-model="cardtype" label="Download Type" :items="['pdf', 'template', 'csv']"></v-select>
                     <v-select v-model="order" label="Order" :items="['lastname', 'classnumber', 'blank']"></v-select>
-                    <v-btn @click='carddownload' color='secondary' style='grid-column: 1/span 2'>Generate Cards</v-btn>
                 </div>
             </v-tab-item>
             <v-tab-item>
