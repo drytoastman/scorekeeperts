@@ -36,6 +36,7 @@ export class Api2State {
     summary: any[] = []
     emailresult: any = {}
     tokenresult = ''
+    carts: {[key: string]: {[key: string]: []}} = {}
 
     // auth pieces, we always assume we are and then fallback if our API requests fail
     driverAuthenticated = true

@@ -1,6 +1,8 @@
+import get from 'lodash/get'
 import axios from 'axios'
+import Vue from 'vue'
 import { Api2State, API2 } from './state'
-import { ActionContext, ActionTree, Store, GetterTree } from 'vuex'
+import { ActionContext, ActionTree, Store, GetterTree, MutationTree } from 'vuex'
 import VueRouter, { Route } from 'vue-router'
 import { api2Mutations } from './api2mutations'
 import { api2Actions, getDataWrap } from './api2actions'
@@ -40,6 +42,28 @@ export const registerActions = {
 }  as ActionTree<Api2State, any>
 
 
+function deepset(nested: any, path: string[], value: any) {
+    for (let ii = 0; ii < path.length; ii++) {
+        const key = path[ii]
+        if (ii === path.length - 1) {
+            Vue.set(nested, key, value)
+            break
+        }
+        if (!nested[key]) {
+            Vue.set(nested, key, {})
+        }
+        nested = nested[key]
+    }
+}
+
+export const cartMutations = {
+
+    cartSet(state: Api2State, data: any) {
+        return deepset(state.carts, [data.series, data.accountid, data.eventid, data.lastid], data.value)
+    }
+
+} as MutationTree<Api2State>
+
 
 const getters = {
     hasPayments: (state) => (eventid: UUID, carid: UUID) => {
@@ -53,6 +77,10 @@ const getters = {
 
     driver: (state) => {
         return state.driverid ? state.drivers[state.driverid] : {}
+    },
+
+    cartGet: (state) => (series: string, accountid: string, eventid: UUID, lastid: string) => {
+        return get(state.carts, [series, accountid, eventid, lastid])
     }
 
 } as GetterTree<Api2State, Api2State>
@@ -62,7 +90,7 @@ const getters = {
 export function createRegisterStore(router: VueRouter): Store<Api2State> {
     const store = new Store({
         state: new Api2State(),
-        mutations: api2Mutations,
+        mutations: { ...api2Mutations, ...cartMutations },
         actions:   { ...api2Actions,   ...registerActions },
         getters:   getters
     })

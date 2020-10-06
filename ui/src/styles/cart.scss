@@ -1,0 +1,9 @@
+
+.cart {
+    .eventgrid {
+        display: grid;
+        align-items: center;
+        grid-template-columns: 3fr 4fr;
+        grid-template-rows: 50px;
+    }
+}

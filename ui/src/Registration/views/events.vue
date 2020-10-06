@@ -18,13 +18,13 @@
                 </v-container>
             </v-expansion-panel-header>
             <v-expansion-panel-content>
-                <RegisterEventDisplay :event="event" @regrequest="regrequest(event)" @payrequest="payrequest(event.accountid)"></RegisterEventDisplay>
+                <RegisterEventDisplay :event="event" @regrequest="regrequest(event)" @payrequest="payrequest(event)"></RegisterEventDisplay>
             </v-expansion-panel-content>
         </v-expansion-panel>
     </v-expansion-panels>
     <ClassRegDialog   v-model=classDialogOpen   :event=dialogEvent></ClassRegDialog>
     <SessionRegDialog v-model=sessionDialogOpen :event=dialogEvent></SessionRegDialog>
-    <PaymentDialog    v-model=paymentOpen       :accountid=dialogAccountId></PaymentDialog>
+    <EventCartAddDialog v-model=paymentOpen     :event=dialogEvent></EventCartAddDialog>
     </div>
 </template>
 
@@ -33,24 +33,23 @@ import orderBy from 'lodash/orderBy'
 import filter from 'lodash/filter'
 import { mapState } from 'vuex'
 import { isOpen, hasClosed } from '@/common/event'
-import ClassRegDialog from '../components/ClassRegDialog'
-import SessionRegDialog from '../components/SessionRegDialog'
-import PaymentDialog from '../components/PaymentDialog'
+import ClassRegDialog from '../components/ClassRegDialog.vue'
+import SessionRegDialog from '../components/SessionRegDialog.vue'
+import EventCartAddDialog from '../components/cart/EventCartAddDialog.vue'
 import RegisterEventDisplay from '../components/RegisterEventDisplay.vue'
 
 export default {
     components: {
         RegisterEventDisplay,
         ClassRegDialog,
-        PaymentDialog,
+        EventCartAddDialog,
         SessionRegDialog
     },
     data: () => ({
         classDialogOpen: false,
         sessionDialogOpen: false,
         paymentOpen: false,
-        dialogEvent: null,
-        dialogAccountId: null
+        dialogEvent: null
     }),
     computed: {
         ...mapState(['events', 'counts', 'registered', 'panelstate']),
@@ -70,8 +69,8 @@ export default {
                 this.classDialogOpen = true
             }
         },
-        payrequest: function(accountid) {
-            this.dialogAccountId = accountid
+        payrequest: function(event) {
+            this.dialogEvent = event
             this.paymentOpen = true
         },
         opencolor: function(event) {
