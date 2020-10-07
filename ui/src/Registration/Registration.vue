@@ -6,12 +6,14 @@
             <span class='bdesc'>{{$route.meta.marker || $route.name}}</span>
 
             <template v-slot:extension>
-                <v-btn color=white text small exact :class="mProfileClass" :to="{name:'profile', params:{}}">Profile<span>All</span></v-btn>
+                <v-btn color=white text small exact :class="mProfileClass" :to="{name:'profile', params:{}}">Profile<span class='super'>All</span></v-btn>
                 <v-btn color=white text small exact :class="mCarsClass"    :to="{name:'cars',    params:{series:currentSeries}}" :disabled="!currentSeries">Cars</v-btn>
                 <v-btn color=white text small exact :class="mEventsClass"  :to="{name:'events',  params:{series:currentSeries}}" :disabled="!currentSeries">Events</v-btn>
                 <v-btn color=white text small @click='logout'>Logout</v-btn>
                 <v-progress-linear :active="!!gettingData" indeterminate absolute bottom color="green accent-4"></v-progress-linear>
             </template>
+
+            <CartFAB></CartFAB>
 
         </v-app-bar>
 
@@ -34,10 +36,12 @@
 import { mapState } from 'vuex'
 import { mdiAccount, mdiCar, mdiTrafficCone, mdiLogout } from '@mdi/js'
 import Login from './views/login'
+import CartFAB from './components/cart/CartFAB.vue'
 
 export default {
     name: 'App',
     components: {
+        CartFAB,
         Login
     },
     data: () => ({
@@ -99,7 +103,7 @@ export default {
 }
 </script>
 
-<style lang='scss'>
+<style scoped>
 .main-page-warning {
     font-size: 150%;
     text-align: center;
@@ -107,11 +111,14 @@ export default {
 .pushdown {
     margin-top: calc(15vh);
 }
-.v-btn__content > span {
+span.super {
     text-transform: initial;
     font-size: 80%;
     margin-left: 3px;
     margin-bottom: 10px;
 }
+</style>
+
+<style lang='scss'>
 @import '@/styles/general.scss'
 </style>

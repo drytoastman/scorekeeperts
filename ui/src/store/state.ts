@@ -1,6 +1,6 @@
 import ReconnectingWebSocket from 'reconnecting-websocket'
 import { Driver } from '@/common/driver'
-import { PaymentAccount } from '@/common/payments'
+import { PaymentAccount, PaymentItem } from '@/common/payments'
 import { SeriesClass, SeriesIndex } from '@/common/classindex'
 import { SeriesEvent } from '@/common/event'
 import { Car } from '@/common/car'
@@ -36,7 +36,7 @@ export class Api2State {
     summary: any[] = []
     emailresult: any = {}
     tokenresult = ''
-    carts: {[key: string]: {[key: string]: []}} = {}
+    carts: {[key: string]: {[key: string]: {[key: string]: any }}} = {}
 
     // auth pieces, we always assume we are and then fallback if our API requests fail
     driverAuthenticated = true

@@ -58,8 +58,12 @@ function deepset(nested: any, path: string[], value: any) {
 
 export const cartMutations = {
 
-    cartSet(state: Api2State, data: any) {
-        return deepset(state.carts, [data.series, data.accountid, data.eventid, data.lastid], data.value)
+    cartSetCar(state: Api2State, data: any) {
+        return deepset(state.carts, [data.series, data.accountid, data.eventid, 'cars', data.carid], data.value)
+    },
+
+    cartSetOther(state: Api2State, data: any) {
+        return deepset(state.carts, [data.series, data.accountid, data.eventid, 'other', data.itemid], data.value)
     }
 
 } as MutationTree<Api2State>
@@ -79,8 +83,50 @@ const getters = {
         return state.driverid ? state.drivers[state.driverid] : {}
     },
 
-    cartGet: (state) => (series: string, accountid: string, eventid: UUID, lastid: string) => {
-        return get(state.carts, [series, accountid, eventid, lastid])
+    cartGetCar: (state) => (series: string, accountid: string, eventid: UUID, carid: string) => {
+        return get(state.carts, [series, accountid, eventid, 'cars', carid])
+    },
+
+    cartGetOther: (state) => (series: string, accountid: string, eventid: UUID, itemid: string) => {
+        return get(state.carts, [series, accountid, eventid, 'other', itemid])
+    },
+
+    cartSum: (state) => (series: string, accountid: string) => {
+        const ret = {
+            total: 0,
+            count: 0
+        }
+        const seriescart:any = get(state.carts, [series, accountid])
+        if (!seriescart) return ret
+
+        for (const eventid in seriescart) {
+            for (const carid in seriescart[eventid].cars) {
+                const item = state.paymentitems[seriescart[eventid].cars[carid]]
+                if (item) {
+                    ret.total += item.price
+                    ret.count += 1
+                }
+            }
+            for (const itemid in seriescart[eventid].other) {
+                const item = state.paymentitems[itemid]
+                if (item) {
+                    ret.total += item.price * (seriescart[eventid].other[itemid] + 0)
+                    ret.count += 1
+                }
+            }
+        }
+        return ret
+    },
+
+    allCartSums: (state, getters) => {
+        const ret = {}
+        for (const series in state.carts) {
+            for (const accountid in state.carts[series]) {
+                const sum = getters.cartSum(series, accountid)
+                if (sum.total > 0) ret[accountid] = sum
+            }
+        }
+        return ret
     }
 
 } as GetterTree<Api2State, Api2State>

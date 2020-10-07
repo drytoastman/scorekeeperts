@@ -28,7 +28,7 @@ export default {
     },
     computed: {
         ...mapState(['carts', 'currentSeries', 'paymentitems']),
-        ...mapGetters(['cartGet']),
+        ...mapGetters(['cartGetCar']),
         items() {
             const itemids = this.event.items.map(m => m.itemid)
             return Object.values(this.paymentitems).filter(i => itemids.includes(i.itemid))
@@ -39,15 +39,15 @@ export default {
         },
         selection: {
             get() {
-                return this.cartGet(this.currentSeries, this.event.accountid, this.event.eventid, this.car.carid)
+                return this.cartGetCar(this.currentSeries, this.event.accountid, this.event.eventid, this.car.carid)
             },
-            set(newValue) {
-                this.$store.commit('cartSet', {
+            set(item) {
+                this.$store.commit('cartSetCar', {
                     series: this.currentSeries,
                     accountid: this.event.accountid,
                     eventid: this.event.eventid,
-                    lastid: this.car.carid,
-                    value: newValue
+                    carid: this.car.carid,
+                    value: item.itemid
                 })
             }
         }

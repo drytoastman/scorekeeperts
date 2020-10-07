@@ -21,14 +21,14 @@ export default {
     computed: {
         selection: {
             get() {
-                return this.$store.getters.cartGet(this.currentSeries, this.event.accountid, this.event.eventid, this.item.itemid)
+                return this.$store.getters.cartGetOther(this.currentSeries, this.event.accountid, this.event.eventid, this.item.itemid)
             },
             set(newValue) {
-                this.$store.commit('cartSet', {
+                this.$store.commit('cartSetOther', {
                     series: this.$store.state.currentSeries,
                     accountid: this.event.accountid,
                     eventid: this.event.eventid,
-                    lastid: this.item.itemid,
+                    itemid: this.item.itemid,
                     value: newValue
                 })
             }
