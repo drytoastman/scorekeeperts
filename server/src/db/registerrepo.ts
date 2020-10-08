@@ -108,7 +108,7 @@ export class RegisterRepository {
     }
 
     private async eventPay(driverid: UUID, eventid: UUID): Promise<Payment[]> {
-        return this.db.any('SELECT p.* FROM payments AS p JOIN cars c ON p.carid=c.carid WHERE c.driverid=$1 and p.eventid=$2', [driverid, eventid])
+        return this.db.any('SELECT * FROM payments WHERE driverid=$1 and eventid=$2', [driverid, eventid])
     }
 
     async updateRegistration(type: string, reg: Registration[], eventid: UUID, driverid: UUID): Promise<Object> {

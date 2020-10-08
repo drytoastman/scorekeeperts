@@ -121,7 +121,6 @@ export default {
     text-align: right;
 }
 .total {
-    margin-top: 2rem;
     padding-top: 0.5rem;
     border-top: 1px solid lightgray;
     font-size: 150%;

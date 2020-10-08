@@ -4,7 +4,7 @@
             <v-card>
                 <v-card-title>
                     Add to Cart ({{account.name}})
-                    <!-- <v-btn class='close' icon @click="$emit('input')"><v-icon>{{closeIcon}}</v-icon></v-btn> -->
+                    <v-btn class='close' icon @click="$emit('input')"><v-icon>{{closeIcon}}</v-icon></v-btn>
                 </v-card-title>
 
                 <v-card-text class='cart'>

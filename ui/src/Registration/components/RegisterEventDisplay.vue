@@ -39,22 +39,14 @@
 
         <v-divider v-if="hasOpened"></v-divider>
 
-        <v-row :class="ereg.length==0 ? 'centerrow' : ''" v-if="hasOpened">
-            <v-col class='tlabel'>
-            </v-col>
-            <v-col class='tdata'>
-                <v-container class='inner'>
-                    <EventRegSelections :event=event></EventRegSelections>
-                    <v-row v-if="isOpen" dense>
-                        <v-col>
-                            <v-btn color="secondary" @click="$emit('regrequest')" :loading="busyR" :disabled="busyP">Register</v-btn>
-                        </v-col>
-                        <v-col v-if="showPayButton">
-                            <v-btn color="secondary" @click="$emit('payrequest')" :loading="busyP" :disabled="busyR">Event Payments</v-btn>
-                        </v-col>
-                    </v-row>
-                </v-container>
-            </v-col>
+        <v-row v-if="hasOpened">
+            <div class='registrations'>
+                <EventRegSelections :event=event class='selections'></EventRegSelections>
+                <div v-if="isOpen" class='buttons'>
+                    <v-btn color="secondary" @click="$emit('regrequest')" :loading="busyR" :disabled="busyP">Register</v-btn>
+                    <v-btn v-if="showPayButton" color="secondary" @click="$emit('payrequest')" :loading="busyP" :disabled="busyR">Event Cart</v-btn>
+                </div>
+            </div>
         </v-row>
     </v-container>
 </template>
@@ -62,7 +54,7 @@
 <script>
 import { mapState } from 'vuex'
 import { isOpen, hasClosed, hasOpened } from '@/common/event'
-import EventRegSelections from './EventRegSelections'
+import EventRegSelections from './EventRegSelections.vue'
 
 export default {
     components: {
@@ -113,50 +105,25 @@ export default {
 }
 </script>
 
-<style scoped>
-    .v-divider {
-        margin: 1rem;
-    }
-    .row {
-        align-items: baseline;
-        margin: 0;
-        padding: 0;
-    }
-    .row.centerrow {
-        align-items: center;
-    }
-    .outer > .row > .col {
+<style scoped lang='scss'>
+.v-divider {
+    margin: 1rem;
+}
+
+.row {
+    align-items: baseline;
+    margin: 0;
+    padding: 0;
+
+    > .col {
         padding: 0;
         flex-grow:0;
         min-width: 5rem;
-    }
-    .outer > .row > .col + .col {
-        flex-grow: 1;
-    }
-    .inner {
-        padding: 0;
-    }
-    .inner .row {
-        align-items: stretch;
-    }
-    .inner .col {
-        flex-grow: 0;
-    }
-    .inner .col .v-btn {
-        min-width: 10rem;
-    }
-    @media (max-width: 700px) {
-        .inner .col {
+        + .col {
             flex-grow: 1;
+        }
+    }
 
-        }
-        .inner .col * {
-            width: 100%;
-        }
-    }
-    .regcard {
-        width: 14rem;
-    }
     .tlabel {
         font-weight: bold;
         flex-grow: 0.15;
@@ -166,8 +133,21 @@ export default {
     .tdata {
         font-size: 95%;
     }
-    .plain {
-        font-weight: normal;
-        color:gray;
+}
+
+.registrations {
+    display: inline-grid;
+    margin: 0 auto;
+    @media (max-width: 600px) {
+        width: 100%;
     }
+    .buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        column-gap: 1rem;
+        @media (min-width: 600px) {
+            min-width: 25rem;
+        }
+    }
+}
 </style>

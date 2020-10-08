@@ -5,7 +5,7 @@
             <div class='paygrid'>
                 {{item.price|cents2dollars}}
                 <v-checkbox v-if="map.maxcount < 2" :disabled="map.required" v-model="selection"></v-checkbox>
-                <v-select v-else :items="[0,1,2]" hide-details solo dense :disabled="map.required" v-model="selection"></v-select>
+                <v-select v-else :items="countlist" hide-details solo dense :disabled="map.required" v-model="selection"></v-select>
             </div>
         </div>
     </div>
@@ -20,6 +20,7 @@ export default {
     },
     computed: {
         payments() { return (this.$store.state.payments[this.event.eventid] || []).filter(p => p.itemname === this.item.name) },
+        countlist() { return [...Array(this.map.maxcount + 1 - this.payments.length).keys()] },
         selection: {
             get() {
                 return this.$store.getters.cartGetOther(this.event.accountid, this.event.eventid, this.item.itemid)
