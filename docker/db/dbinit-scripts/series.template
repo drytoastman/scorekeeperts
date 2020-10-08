@@ -271,8 +271,9 @@ COMMENT ON TABLE registered IS 'The list of cars registered for events';
 CREATE TABLE payments (
     payid      UUID      PRIMARY KEY,
     eventid    UUID      NOT NULL REFERENCES events,
-    carid      UUID      NOT NULL REFERENCES cars,
-    session    TEXT      NOT NULL DEFAULT '',
+    driverid   UUID      NOT NULL REFERENCES public.drivers,
+    carid      UUID      REFERENCES cars,
+    session    TEXT      DEFAULT '',
     refid      TEXT,
     txtype     TEXT,
     txid       TEXT,

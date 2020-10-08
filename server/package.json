@@ -6,7 +6,7 @@
     "build": "webpack",
     "watch": "cross-env NODE_ENV=development webpack",
     "node": "cd build && cross-env NODE_ENV=development nodemon --trace-deprecation index.js",
-    "serve": "concurrently \"npm:watch\" \"npm:node\"",
+    "dev": "concurrently npm:watch npm:node",
     "lint": "eslint . --ext .ts"
   },
   "dependencies": {
