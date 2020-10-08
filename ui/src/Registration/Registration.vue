@@ -13,8 +13,6 @@
                 <v-progress-linear :active="!!gettingData" indeterminate absolute bottom color="green accent-4"></v-progress-linear>
             </template>
 
-            <CartFAB></CartFAB>
-
         </v-app-bar>
 
         <v-main>
@@ -36,12 +34,10 @@
 import { mapState } from 'vuex'
 import { mdiAccount, mdiCar, mdiTrafficCone, mdiLogout } from '@mdi/js'
 import Login from './views/login'
-import CartFAB from './components/cart/CartFAB.vue'
 
 export default {
     name: 'App',
     components: {
-        CartFAB,
         Login
     },
     data: () => ({

@@ -5,6 +5,7 @@
 
 <script>
 import Vue from 'vue'
+import { mapState } from 'vuex'
 const INTG_DATE = '2020-05-12'
 
 export default {
@@ -16,6 +17,7 @@ export default {
         total: Number
     },
     computed: {
+        ...mapState(['events', 'cars', 'paymentitems']),
         paypalURL() {
             return `https://www.paypal.com/sdk/js?client-id=${this.account.accountid}&integration-date=${INTG_DATE}&disable-funding=credit`
         }
@@ -25,8 +27,10 @@ export default {
             let total = 0
             const items = []
             this.purchase.forEach(pur => {
-                items.push({ name: `${pur.event.name} - ${pur.item.name}`, quantity: '1', unit_amount: { currency_code: 'USD', value: (pur.item.price / 100).toFixed(2) }})
-                total += pur.item.price
+                const event = this.events[pur.eventid]
+                const item  = this.paymentitems[pur.itemid]
+                items.push({ name: `${event.name} - ${item.name}`, quantity: '1', unit_amount: { currency_code: 'USD', value: (item.price / 100).toFixed(2) }})
+                total += item.price
             })
 
             const fixedtotal = (total / 100).toFixed(2)

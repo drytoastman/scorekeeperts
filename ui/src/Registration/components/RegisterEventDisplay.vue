@@ -50,7 +50,7 @@
                             <v-btn color="secondary" @click="$emit('regrequest')" :loading="busyR" :disabled="busyP">Register</v-btn>
                         </v-col>
                         <v-col v-if="showPayButton">
-                            <v-btn color="secondary" @click="$emit('payrequest')" :loading="busyP" :disabled="busyR">Pay Now ({{account.type}})</v-btn>
+                            <v-btn color="secondary" @click="$emit('payrequest')" :loading="busyP" :disabled="busyR">Event Payments</v-btn>
                         </v-col>
                     </v-row>
                 </v-container>
@@ -60,7 +60,7 @@
 </template>
 
 <script>
-import { mapState, mapGetters } from 'vuex'
+import { mapState } from 'vuex'
 import { isOpen, hasClosed, hasOpened } from '@/common/event'
 import EventRegSelections from './EventRegSelections'
 
@@ -78,17 +78,35 @@ export default {
         event: Object
     },
     computed: {
-        ...mapState(['registered', 'paymentaccounts', 'counts', 'busyReg', 'busyPay']),
-        ...mapGetters(['unpaidReg']),
+        ...mapState(['registered', 'paymentaccounts', 'paymentitems', 'payments', 'counts', 'busyReg', 'busyPay']),
         account() { return this.paymentaccounts[this.event.accountid] || null },
         ecounts() { return this.counts[this.event.eventid] || {} },
-        ereg()    { return this.registered[this.event.eventid] || {} },
+        ereg()    { return this.registered[this.event.eventid] || [] },
+        epayments() { return (this.payments[this.event.eventid] || []).filter(p => !p.refunded) },
         isOpen()    { return isOpen(this.event) },
         hasOpened() { return hasOpened(this.event) },
         hasClosed() { return hasClosed(this.event) },
         busyR()   { return this.busyReg[this.event.eventid] === true },
         busyP()   { return this.busyPay[this.event.eventid] === true },
-        showPayButton() { return this.ereg.length > 0 && (this.unpaidReg(this.ereg).length > 0) && this.account != null }
+        showPayButton() {
+            if (!this.event.accountid) return false
+
+            // still non-car things to purchse
+            for (const fee of this.$store.getters.eventotherfees(this.event.eventid)) {
+                if (this.epayments.filter(p => p.itemname === fee.item.name).length < fee.map.maxcount) {
+                    return true
+                }
+            }
+
+            // registered car without payment
+            for (const reg of this.ereg) {
+                if (this.epayments.filter(p => p.carid === reg.carid).length === 0) {
+                    return true
+                }
+            }
+
+            return false
+        }
     },
     watch: {
     }

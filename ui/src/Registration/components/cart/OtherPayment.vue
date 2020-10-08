@@ -1,5 +1,5 @@
 <template>
-    <div class='eventgrid'>
+    <div class='eventgrid' v-if="payments.length < map.maxcount">
         <div>{{ item.name }}</div>
         <div>
             <div class='paygrid'>
@@ -19,13 +19,13 @@ export default {
         map: Object
     },
     computed: {
+        payments() { return (this.$store.state.payments[this.event.eventid] || []).filter(p => p.itemname === this.item.name) },
         selection: {
             get() {
-                return this.$store.getters.cartGetOther(this.currentSeries, this.event.accountid, this.event.eventid, this.item.itemid)
+                return this.$store.getters.cartGetOther(this.event.accountid, this.event.eventid, this.item.itemid)
             },
             set(newValue) {
                 this.$store.commit('cartSetOther', {
-                    series: this.$store.state.currentSeries,
                     accountid: this.event.accountid,
                     eventid: this.event.eventid,
                     itemid: this.item.itemid,

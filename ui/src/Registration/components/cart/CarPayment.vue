@@ -1,6 +1,10 @@
 <template>
-    <div class='eventgrid'>
-        <CarLabel :car=car fontsize="110%"></CarLabel>
+    <div class='eventgrid' v-if="!payments.length">
+        <div>
+            {{session}}
+            <CarLabel style='display:inline-block' :car=car :session="!!session" fontsize="110%"></CarLabel>
+        </div>
+
         <v-select :items="entryfees" return-object hide-details solo dense item-value="itemid" v-model="selection">
             <template v-slot:selection="d">
                 <span class='name'>{{ d.item.name }}</span> <span class='price'>{{ d.item.price|cents2dollars }}</span>
@@ -13,10 +17,7 @@
 </template>
 
 <script>
-import orderBy from 'lodash/orderBy'
-import { mapState, mapGetters } from 'vuex'
 import CarLabel from '@/components/CarLabel.vue'
-import { ITEM_TYPE_ENTRY_FEE } from '@/common/payments.ts'
 
 export default {
     components: {
@@ -24,29 +25,22 @@ export default {
     },
     props: {
         event: Object,
-        car: Object
+        car: Object,
+        session: String
     },
     computed: {
-        ...mapState(['carts', 'currentSeries', 'paymentitems']),
-        ...mapGetters(['cartGetCar']),
-        items() {
-            const itemids = this.event.items.map(m => m.itemid)
-            return Object.values(this.paymentitems).filter(i => itemids.includes(i.itemid))
-        },
-        entryfees() {
-            const arr = orderBy(this.items.filter(i => i.itemtype === ITEM_TYPE_ENTRY_FEE), 'name')
-            return [{ itemid: null, name: '' }, ...arr]
-        },
+        entryfees() { return [{ itemid: null, name: '' }, ...this.$store.getters.evententryfees(this.event.eventid)] },
+        payments()  { return (this.$store.state.payments[this.event.eventid] || []).filter(p => p.carid === this.car.carid && p.session === this.session) },
         selection: {
             get() {
-                return this.cartGetCar(this.currentSeries, this.event.accountid, this.event.eventid, this.car.carid)
+                return this.$store.getters.cartGetCar(this.event.accountid, this.event.eventid, this.car.carid, this.session)
             },
             set(item) {
                 this.$store.commit('cartSetCar', {
-                    series: this.currentSeries,
                     accountid: this.event.accountid,
                     eventid: this.event.eventid,
                     carid: this.car.carid,
+                    session: this.session,
                     value: item.itemid
                 })
             }

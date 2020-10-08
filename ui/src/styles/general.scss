@@ -50,6 +50,9 @@ html {
         padding-bottom: 2px !important;
         border-bottom: 1px solid #63637969;
         background: #eee;
+        .v-btn.close {
+            margin-right: -1rem;
+        }
     }
     .v-card__text {
         padding-top: 1rem !important;
@@ -57,8 +60,9 @@ html {
     .v-card__actions {
         background: #eee;
         border-top: 1px solid #63637969;
-        padding-top: 2px !important;
-        padding-bottom: 2px !important;
+        .v-btn--flat {
+            height: initial;
+        }
     }
 }
 

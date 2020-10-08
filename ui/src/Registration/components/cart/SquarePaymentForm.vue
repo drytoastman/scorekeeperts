@@ -19,7 +19,7 @@
 </template>
 
 <script>
-import squaresvg from '../../images/square.svg'
+import squaresvg from '@/images/square.svg'
 
 export default {
     props: {
@@ -91,32 +91,35 @@ export default {
 
         async loadSquare() {
             if (this.account.attr.applicationid) {
-                await this.$loadScript(this.squareURL)
-                this.squareform = this.createSquareForm()
-                this.squareform.build()
+                try {
+                    await this.$loadScript(this.squareURL)
+                    this.squareform = this.createSquareForm()
+                    this.squareform.build()
+                } catch (error) {
+                    console.log('square form load failure:')
+                    console.log(error)
+                }
             }
         },
 
         async unloadSquare() {
-            this.errors = []
-            if (this.account.attr.applicationid) {
+            if (this.squareform) {
                 this.squareform.destroy()
-                await this.$unloadScript(this.squareURL)
             }
+            this.errors = []
+            await this.$unloadScript(this.squareURL)
         }
     },
     watch: {
-        opened: async function(newv) {
-            if (newv) {
-                this.loadSquare()
-            } else {
-                this.unloadSquare()
-            }
+        opened(newv) {
+            if (newv) this.loadSquare() // second and further open
+            else this.unloadSquare() // any close
         }
     },
     mounted() {
-        this.loadSquare()
+        this.loadSquare() // first open
     }
+
 }
 </script>
 

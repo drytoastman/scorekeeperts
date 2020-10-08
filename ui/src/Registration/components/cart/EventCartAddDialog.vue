@@ -4,32 +4,34 @@
             <v-card>
                 <v-card-title>
                     Add to Cart ({{account.name}})
-                    <v-btn class='close' icon @click="$emit('input')"><v-icon>{{closeIcon}}</v-icon></v-btn>
+                    <!-- <v-btn class='close' icon @click="$emit('input')"><v-icon>{{closeIcon}}</v-icon></v-btn> -->
                 </v-card-title>
 
                 <v-card-text class='cart'>
-                    <div>
+                    <div v-if="event">
                         <div v-for="r in registered[event.eventid]" :key="r.eventid+r.carid+r.session">
-                            <CarPayment :event=event :car=cars[r.carid]></CarPayment>
+                            <CarPayment :event=event :car=cars[r.carid] :session="r.session"></CarPayment>
                         </div>
                         <div v-for="other in otherfees" :key="other.item.itemid">
                             <OtherPayment :event=event :item="other.item" :map="other.map"></OtherPayment>
                         </div>
                     </div>
                 </v-card-text>
+
+                <v-card-actions>
+                    <v-btn text @click="$emit('input')">Return To Events</v-btn>
+                    <!-- <v-btn text>Go To Cart</v-btn> -->
+                </v-card-actions>
             </v-card>
         </v-dialog>
     </v-row>
 </template>
 
 <script>
-import orderBy from 'lodash/orderBy'
 import { mdiCloseBox } from '@mdi/js'
 import { mapState } from 'vuex'
-
 import CarPayment from './CarPayment.vue'
 import OtherPayment from './OtherPayment.vue'
-import { ITEM_TYPE_GENERAL_FEE } from '@/common/payments.ts'
 
 export default {
     components: {
@@ -47,17 +49,11 @@ export default {
         }
     },
     computed: {
-        ...mapState(['registered', 'cars', 'payments', 'paymentitems', 'paymentaccounts']),
-        account() { return this.$store.state.paymentaccounts[this.event.accountid] || {} },
-        items() {
-            const itemids = this.event.items.map(m => m.itemid)
-            return Object.values(this.paymentitems).filter(i => itemids.includes(i.itemid))
-        },
-        otherfees() {
-            return this.items.filter(i => i.itemtype === ITEM_TYPE_GENERAL_FEE).map(i => ({
-                item: i,
-                map: this.event.items.filter(m => m.itemid === i.itemid)[0]
-            }))
+        ...mapState(['registered', 'cars', 'paymentaccounts']),
+        otherfees() { return this.$store.getters.eventotherfees(this.event.eventid) },
+        account() {
+            if (!this.event) return {}
+            return this.$store.state.paymentaccounts[this.event.accountid] || {}
         }
     }
 }
