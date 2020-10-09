@@ -1,6 +1,5 @@
 <template>
     <div class='outer'>
-    <CartFAB></CartFAB>
     <v-expansion-panels multiple focusable hover accordion tile v-model='panelstate'>
         <v-expansion-panel v-for="event in orderedEvents" :key="event.eventid">
             <v-expansion-panel-header class='elevation-4' xcolor='primary lighten-1 white--text'>
@@ -36,14 +35,12 @@ import { mapState } from 'vuex'
 import { isOpen, hasClosed } from '@/common/event'
 import ClassRegDialog from '../components/ClassRegDialog.vue'
 import SessionRegDialog from '../components/SessionRegDialog.vue'
-import CartFAB from '../components/cart/CartFAB.vue'
 import EventCartAddDialog from '../components/cart/EventCartAddDialog.vue'
 import RegisterEventDisplay from '../components/RegisterEventDisplay.vue'
 
 export default {
     components: {
         RegisterEventDisplay,
-        CartFAB,
         ClassRegDialog,
         EventCartAddDialog,
         SessionRegDialog

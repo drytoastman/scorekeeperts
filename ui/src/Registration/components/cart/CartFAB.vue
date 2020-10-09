@@ -1,8 +1,8 @@
 <template>
     <div>
-        <v-speed-dial class='ztop' top right fixed direction="bottom" transition="scale" v-model="fab" v-if="positiveCount > 1">
+        <v-speed-dial class='righthang' direction="bottom" transition="scale" v-model="fab" v-if="positiveCount > 1">
             <template v-slot:activator>
-            <v-btn v-model="fab" color="secondary" dark rounded>
+            <v-btn v-model="fab" color="secondary" dark>
                 <v-icon v-if="fab">{{icons.mdiClose}}</v-icon>
                 <template v-else><v-icon>{{icons.mdiCart}}</v-icon><v-icon>{{icons.mdiMultiplication}}</v-icon></template>
             </v-btn>
@@ -12,7 +12,7 @@
             </v-btn>
         </v-speed-dial>
 
-        <v-btn color="secondary" class='ztop' dark rounded top right fixed v-else-if="positiveCount > 0" @click="cartopen(firstAccountId)">
+        <v-btn class='righthang' color="secondary" dark v-else-if="positiveCount > 0" @click="cartopen(firstAccountId)">
             <v-icon>{{icons.mdiCart}}</v-icon><span class='total'>{{firstCart.total|cents2dollars}}</span>
         </v-btn>
 
@@ -82,7 +82,9 @@ export default {
     width: 4.0rem;
     text-align: right;
 }
-.ztop {
-    z-index: 100;
+.righthang {
+    position: absolute;
+    top: calc(100% - 1px);
+    right: 0;
 }
 </style>

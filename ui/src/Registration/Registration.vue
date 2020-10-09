@@ -11,6 +11,7 @@
                 <v-btn color=white text small exact :class="mEventsClass"  :to="{name:'events',  params:{series:currentSeries}}" :disabled="!currentSeries">Events</v-btn>
                 <v-btn color=white text small @click='logout'>Logout</v-btn>
                 <v-progress-linear :active="!!gettingData" indeterminate absolute bottom color="green accent-4"></v-progress-linear>
+                <CartFAB></CartFAB>
             </template>
 
         </v-app-bar>
@@ -33,12 +34,14 @@
 <script>
 import { mapState } from 'vuex'
 import { mdiAccount, mdiCar, mdiTrafficCone, mdiLogout } from '@mdi/js'
-import Login from './views/login'
+import Login from './views/login.vue'
+import CartFAB from './components/cart/CartFAB.vue'
 
 export default {
     name: 'App',
     components: {
-        Login
+        Login,
+        CartFAB
     },
     data: () => ({
         drawer: null,
