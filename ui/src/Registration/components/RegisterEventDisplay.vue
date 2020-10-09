@@ -41,7 +41,10 @@
 
         <v-row v-if="hasOpened">
             <div class='registrations'>
-                <EventRegSelections :event=event class='selections'></EventRegSelections>
+                <div class='reginfo'>
+                    <EventRegSelections :event=event class='lightborder'></EventRegSelections>
+                    <EventPaymentList :paypurchases="payments[event.eventid]" class='lightborder'></EventPaymentList>
+                </div>
                 <div v-if="isOpen" class='buttons'>
                     <v-btn color="secondary" @click="$emit('regrequest')" :loading="busyR" :disabled="busyP">Register</v-btn>
                     <v-btn v-if="showPayButton" color="secondary" @click="$emit('payrequest')" :loading="busyP" :disabled="busyR">Event Cart</v-btn>
@@ -55,10 +58,12 @@
 import { mapState } from 'vuex'
 import { isOpen, hasClosed, hasOpened } from '@/common/event'
 import EventRegSelections from './EventRegSelections.vue'
+import EventPaymentList from './EventPaymentList.vue'
 
 export default {
     components: {
-        EventRegSelections
+        EventRegSelections,
+        EventPaymentList
     },
     filters: {
         timedate: function(v) {
@@ -136,10 +141,15 @@ export default {
 }
 
 .registrations {
-    display: inline-grid;
-    margin: 0 auto;
-    @media (max-width: 600px) {
-        width: 100%;
+    width: 100%;
+    .reginfo {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        column-gap: 1rem;
+        > div {
+            flex: 1
+        }
     }
     .buttons {
         display: grid;
@@ -148,6 +158,11 @@ export default {
         @media (min-width: 600px) {
             min-width: 25rem;
         }
+    }
+    .lightborder {
+        border: 1px solid #ddd;
+        border-radius: 3px;
+        padding: 5px;
     }
 }
 </style>

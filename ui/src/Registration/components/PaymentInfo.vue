@@ -1,7 +1,7 @@
 <template>
     <div>
-        <div v-for="p in paymentsForReg" :key="p.payid" class='paymentinfo'>
-            <span class='paid'>Paid</span> - {{p.itemname}}
+        <div v-for="p in paymentsForReg" :key="p.payid" class='paid'>
+            Paid
         </div>
         <div v-if="isOpen && event.attr.paymentreq && !paymentsForReg.length" class='paymentreq'>
             Payment Required
@@ -33,15 +33,16 @@ export default {
 
 <style scoped>
 .paymentreq {
-    font-size: 90%;
     color: red;
+    font-size: 80%;
+    white-space: nowrap;
+}
+.paid {
+    color: green;
+    font-size: 90%;
 }
 .paymentinfo {
     font-size: 90%;
     color: var(--v-primary-base);
-}
-.paid {
-    color: green;
-    font-weight: bold;
 }
 </style>

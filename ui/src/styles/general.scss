@@ -4,7 +4,10 @@ html {
 
 .v-main__wrap, .v-content__wrap {
     max-width: initial;
-    margin: 1rem;
+    margin: 0;
+    @media (min-width: 800px) {
+        margin: 1rem;
+    }
 }
 
 .v-toolbar__content {

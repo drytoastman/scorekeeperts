@@ -1,41 +1,34 @@
 <template>
-    <v-row justify="center">
-        <v-dialog :value="value" @input="$emit('input')" persistent max-width="450px">
-            <v-card>
-                <v-card-title>{{account.name}} <v-btn class='close' icon @click="$emit('input')"><v-icon>{{close}}</v-icon></v-btn></v-card-title>
+    <v-dialog :value="value" @input="$emit('input')" persistent max-width="450px">
+        <v-card>
+            <v-card-title>{{account.name}} <v-btn class='close' icon @click="$emit('input')"><v-icon>{{close}}</v-icon></v-btn></v-card-title>
 
-                <v-card-text class='itemgrixxxd'>
-                    <div v-for="eventdata in eventpurchases" :key="eventdata.name">
-                        <span class='eventname'>{{eventdata.name}}</span>
-                        <div v-for="(p, ii) in eventdata.payments" :key="p.itemid+ii" class='itemgrid'>
-                            <span v-if="p.carid">{{p.session || cars[p.carid].classcode}}</span>
-                            <span v-else></span>
-                            <span>{{paymentitems[p.itemid].name}}</span>
-                            <span class='sum'>{{p.sum|cents2dollars}}</span>
-                        </div>
-                    </div>
-                </v-card-text>
+            <v-card-text>
+                <div v-for="edata in eventpurchases" :key="edata.name">
+                    <span class='eventname'>{{edata.event.name}}</span>
+                    <EventPaymentList :paypurchases=edata.purchases></EventPaymentList>
+                </div>
+            </v-card-text>
 
-                <v-card-text>
-                    <div class='total'>
-                        {{cart.total|cents2dollars}}
-                    </div>
-                </v-card-text>
+            <v-card-text>
+                <div class='total'>
+                    {{cart.total|cents2dollars}}
+                </div>
+            </v-card-text>
 
-                <v-card-actions>
-                    <div v-if="!devMode">
-                        Version 2 payments disabled for now
-                    </div>
-                    <PayPalButton v-else-if="account.type=='paypal'"
-                            :opened=value :account=account :payments=payments :total=cart.total @complete=complete :purchase=cart.purchases>
-                    </PayPalButton>
-                    <SquarePaymentForm v-else
-                            :opened=value :account=account :payments=payments :total=cart.total @complete=complete>
-                    </SquarePaymentForm>
-                </v-card-actions>
-            </v-card>
-        </v-dialog>
-    </v-row>
+            <v-card-actions>
+                <div v-if="!devMode">
+                    Version 2 payments disabled for now
+                </div>
+                <PayPalButton v-else-if="account.type=='paypal'"
+                        :opened=value :account=account :payments=payments :total=cart.total @complete=complete :purchase=cart.purchases>
+                </PayPalButton>
+                <SquarePaymentForm v-else
+                        :opened=value :account=account :payments=payments :total=cart.total @complete=complete>
+                </SquarePaymentForm>
+            </v-card-actions>
+        </v-card>
+    </v-dialog>
 </template>
 
 <script>
@@ -43,11 +36,13 @@ import { mapState } from 'vuex'
 import { mdiCloseBox } from '@mdi/js'
 import SquarePaymentForm from './SquarePaymentForm.vue'
 import PayPalButton from './PayPalButton.vue'
+import EventPaymentList from '../EventPaymentList.vue'
 
 export default {
     components: {
         SquarePaymentForm,
-        PayPalButton
+        PayPalButton,
+        EventPaymentList
     },
     props: {
         value: Boolean,
@@ -71,8 +66,8 @@ export default {
             const ret = []
             for (const eventid in idmap) {
                 ret.push({
-                    name: this.events[eventid].name,
-                    payments: idmap[eventid]
+                    event: this.events[eventid],
+                    purchases: idmap[eventid]
                 })
             }
             return ret
