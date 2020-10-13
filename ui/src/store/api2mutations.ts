@@ -149,36 +149,33 @@ export const api2Mutations = {
             }
         }
 
-        // data.type in ('get', 'insert', 'update', 'delete', 'eventupdate')
-        for (const key of ['registered', 'payments']) {
-            if (key in data) {
-                if (data.type === 'eventupdate') {
-                    Vue.set(state[key], data.eventid, data[key])
-                } else {
-                    // get, insert, delete
-                    if (data.type === 'get') { state[key] = {} }
-                    if (key === 'payments') {
-                        data[key].forEach((p: Payment) => {
-                            if (!(p.eventid in state[key])) { Vue.set(state[key], p.eventid, []) }
-                            const i = findIndex(state[key][p.eventid], { payid: p.payid })
-                            if (i > 0) state[key][p.eventid].splice(i, 1)
-                            if (data.type !== 'delete') {
-                                state[key][p.eventid].push(p)
-                            }
-                        })
-                    }
-                    if (key === 'registered') {
-                        data[key].forEach((r: Registration) => {
-                            if (!(r.eventid in state[key])) { Vue.set(state[key], r.eventid, []) }
-                            const i = findIndex(state[key][r.eventid], { eventid: r.eventid, carid: r.carid, session: r.session })
-                            if (i > 0) state[key][r.eventid].splice(i, 1)
-                            if (data.type !== 'delete') {
-                                state[key][r.eventid].push(r)
-                            }
-                        })
-                    }
+        // special keying of eventid and special subkey
+        if ('registered' in data) {
+            // get, insert, delete
+            if (data.type === 'get') { state.registered = {} }
+            if (data.type === 'eventupdate') { Vue.delete(state.registered, data.eventid) }
+            data.registered.forEach((r: Registration) => {
+                const subkey = r.session || r.rorder
+                if (!(r.eventid in state.registered)) { Vue.set(state.registered, r.eventid, {}) }
+                if (data.type === 'delete') {
+                    Vue.delete(state.registered[r.eventid], subkey)
+                } else { // get, insert, update
+                    Vue.set(state.registered[r.eventid], subkey, r)
                 }
-            }
+            })
+        }
+
+        // special of eventid to array of values
+        if ('payments' in data) {
+            if (data.type === 'get') { state.payments = {} }
+            data.payments.forEach((p: Payment) => {
+                if (!(p.eventid in state.payments)) { Vue.set(state.payments, p.eventid, []) }
+                const i = findIndex(state.payments[p.eventid], { payid: p.payid }) // find in our original data
+                if (i >= 0) state.payments[p.eventid].splice(i, 1) // if found, remove old
+                if (data.type !== 'delete') {
+                    state.payments[p.eventid].push(p)
+                }
+            })
         }
     }
 

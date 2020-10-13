@@ -13,7 +13,8 @@ export class RegisterRepository {
             regcols = new pgp.helpers.ColumnSet([
                 { name: 'eventid', cnd: true, cast: 'uuid' },
                 { name: 'carid',   cnd: true, cast: 'uuid' },
-                'session',
+                { name: 'session', cnd: true, def: '' },
+                { name: 'rorder',  def: 0 },
                 { name: 'modified', cast: 'timestamp', mod: ':raw', init: (): any => { return 'now()' } }
             ], { table: 'registered' })
         }
@@ -114,7 +115,7 @@ export class RegisterRepository {
     async updateRegistration(type: string, reg: Registration[], eventid: UUID, driverid: UUID): Promise<Object> {
         await verifyDriverRelationship(this.db, reg.map(r => r.carid), driverid)
 
-        function keys(v:any) {  return v.carid + v.session }
+        function keys(v:any) {  return `${v.carid},${v.session},${v.rorder}` }
 
         if (type === 'delete') {
             for (const r of reg)   {
@@ -122,6 +123,11 @@ export class RegisterRepository {
             }
             return { registered: reg }
         } else if (type === 'eventupdate') {
+            reg = _.orderBy(reg, 'rorder')
+            reg.forEach((r, ii) => {  // reset rorder to lowest levels
+                r.rorder = ii
+            })
+
             const curreg  = await this.eventReg(driverid, eventid)
             const curpay  = await this.eventPay(driverid, eventid)
             const toadd   = _.differenceBy(reg, curreg, keys)

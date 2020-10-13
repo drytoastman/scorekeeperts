@@ -19,10 +19,11 @@ export default {
     },
     computed: {
         ...mapState(['events', 'cars', 'payments']),
-        event()  { return this.events[this.reg.eventid] },
-        isOpen() { return isOpen(this.event) },
+        event()  { return this.events[this.reg?.eventid] },
+        isOpen() { return this.event ? isOpen(this.event) : false },
         paymentsForReg() {
             try {
+                if (!this.event) { return [] }
                 return this.payments[this.reg.eventid].filter(p => p.carid === this.reg.carid && p.session === this.reg.session && !p.refunded) || []
             } catch {}
             return []

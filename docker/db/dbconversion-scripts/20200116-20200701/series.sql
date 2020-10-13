@@ -1,8 +1,10 @@
 DROP TABLE IF EXISTS tempcache;
 DROP SEQUENCE IF EXISTS ordercounter;
 
+ALTER TABLE registered ADD COLUMN rorder INTEGER NOT NULL DEFAULT 0;
+
 ALTER TABLE paymentitems DROP CONSTRAINT IF EXISTS paymentitems_accountid_fkey;
--- ALTEER TABLE paymentitems DROP COLUMN accountid;
+ALTER TABLE paymentitems DROP COLUMN accountid;
 ALTER TABLE paymentitems ADD COLUMN itemtype INTEGER NOT NULL DEFAULT 0;
 
 ALTER TABLE paymentsecrets ADD COLUMN attr JSONB NOT NULL DEFAULT '{}';

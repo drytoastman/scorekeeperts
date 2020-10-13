@@ -5,6 +5,7 @@ export interface Registration {
     eventid: UUID;
     carid: UUID;
     session: string;
+    rorder: number;
     modified: DateString;
 }
 

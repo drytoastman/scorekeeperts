@@ -40,15 +40,19 @@
         <v-divider v-if="hasOpened"></v-divider>
 
         <v-row v-if="hasOpened">
+            <LinkHoverToState :to="{name:'cars'}" variable="flashCars" class='carslink'>Create, Edit and Delete Cars Via the Cars Menu</LinkHoverToState>
+
             <div class='registrations'>
                 <div class='reginfo'>
                     <EventRegSelections :event=event class='lightborder'></EventRegSelections>
                     <EventPaymentList :paypurchases="payments[event.eventid]" class='lightborder'></EventPaymentList>
                 </div>
+                <!--
                 <div v-if="isOpen" class='buttons'>
                     <v-btn color="secondary" @click="$emit('regrequest')" :loading="busyR" :disabled="busyP">Register</v-btn>
                     <v-btn v-if="showPayButton" color="secondary" @click="$emit('payrequest')" :loading="busyP" :disabled="busyR">Event Cart</v-btn>
                 </div>
+                -->
             </div>
         </v-row>
     </v-container>
@@ -59,11 +63,13 @@ import { mapState } from 'vuex'
 import { isOpen, hasClosed, hasOpened } from '@/common/event'
 import EventRegSelections from './EventRegSelections.vue'
 import EventPaymentList from './EventPaymentList.vue'
+import LinkHoverToState from './LinkHoverToState.vue'
 
 export default {
     components: {
         EventRegSelections,
-        EventPaymentList
+        EventPaymentList,
+        LinkHoverToState
     },
     filters: {
         timedate: function(v) {

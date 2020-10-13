@@ -1,42 +1,46 @@
 <template>
     <div class='reggrid'>
-        <template v-for="reg in sessions">
-            <span class='sessionlabel' :key="reg.session+'x'">{{reg.session}}</span>
-            <CarLabel :car="cars[reg.carid]" session :key="reg.session+'y'"></CarLabel>
-            <PaymentInfo :reg="reg" :key="reg.session+'z'"></PaymentInfo>
-        </template>
-        <template v-for="(reg,ii) in nonsession">
-            <span class='sessionlabel' :key="reg.carid">{{ii+1}}</span>
-            <CarLabel :car="cars[reg.carid]" :key="reg.carid+'x'"></CarLabel>
-            <PaymentInfo :reg="reg" :key="reg.carid+'y'"></PaymentInfo>
+        <template v-for="grp in groups">
+            <span class='sessionlabel' :key="grp.key+20">{{grp.key}}</span>
+            <CarSelect :key="grp.key+30" :session=grp.session :index=grp.index :event=event></CarSelect>
+            <PaymentInfo :key="grp.key+40"></PaymentInfo>
         </template>
     </div>
 </template>
 
 <script>
+import findIndex from 'lodash/findIndex'
 import { mapState } from 'vuex'
-import { getSessions } from '@/common/event'
-import CarLabel from '../../components/CarLabel.vue'
+import { SeriesEvent, getSessions } from '@/common/event.ts'
+import CarSelect from './CarSelect.vue'
 import PaymentInfo from './PaymentInfo.vue'
 
 export default {
     components: {
-        CarLabel,
-        PaymentInfo
+        PaymentInfo,
+        CarSelect
     },
     props: {
-        event: Object
+        event: SeriesEvent
     },
     computed: {
-        ...mapState(['cars', 'registered']),
-        ereg()     { return this.registered[this.event.eventid] || [] },
-        nonsession() { return this.ereg.filter(r => r.session === '') },
-        sessions() {
-            // registrations with a session ordered by session order
-            const ret = []
-            for (const s of getSessions(this.event)) {
-                for (const r of this.ereg) {
-                    if (r.session === s) ret.push(r)
+        ...mapState(['registered']),
+        ereg()     { return this.registered[this.event.eventid] || {} },
+        groups()   {
+            let ret = getSessions(this.event).map(s => ({ session: s, key: s }))
+            if (!ret.length) {
+                ret = [...new Array(this.event.perlimit).keys()].map(i => ({ index: i, key: i + 1 }))
+            }
+            for (const key of Object.keys(this.ereg)) {
+                const reg = this.ereg[key]
+                if (reg.session) {
+                    if (findIndex(ret, { session: reg.session }) < 0) {
+                        ret.push({ session: reg.session, key: reg.session })
+                    }
+                } else {
+                    if (findIndex(ret, { index: reg.rorder }) < 0) {
+                        ret.push({ index: reg.rorder, key: reg.rorder + 1 })
+                    }
                 }
             }
             return ret

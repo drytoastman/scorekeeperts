@@ -1,5 +1,5 @@
 <template>
-    <div class='paygrid'>
+    <div class='paygrid' v-if="payments.length">
         <template v-for="p in payments">
             <span :key="p.key+1" class='prefix'>{{p.prefix}}</span>
             <span :key="p.key+2" class='name'>{{p.name}}</span>
@@ -18,6 +18,7 @@ export default {
     computed: {
         ...mapState(['cars', 'paymentitems']),
         payments() {
+            if (!this.paypurchases) return []
             const mod = this.paypurchases.map((p, ii) => Object.assign(p, {
                 key:    p.payid    || p.itemid + ii,
                 prefix: p.session  || this.cars[p.carid]?.classcode || '',

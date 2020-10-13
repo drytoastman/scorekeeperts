@@ -258,8 +258,10 @@ CREATE TABLE registered (
     eventid    UUID      NOT NULL REFERENCES events,
     carid      UUID      NOT NULL REFERENCES cars,
     session    TEXT      NOT NULL DEFAULT '',
+	rorder     INTEGER   NOT NULL DEFAULT 0,
     modified   TIMESTAMP NOT NULL DEFAULT now(),
-    PRIMARY KEY (eventid, carid, session)
+    PRIMARY KEY (eventid, carid, session),
+    UNIQUE(eventid, carid, rorder)
 );
 REVOKE ALL ON registered FROM public;
 GRANT  ALL ON registered TO <seriesname>;
