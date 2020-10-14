@@ -113,6 +113,10 @@ html {
     column-gap: 0.5rem;
 }
 
+.v-input--is-disabled {
+    opacity: 0.4;
+}
+
 .v-list-item.v-list-item--link::before {
     background: #fff;
 }
@@ -138,4 +142,9 @@ html {
     animation-name: flashred;
     animation-duration: 1s;
     animation-iteration-count: infinite;
+}
+
+.paidinfo {
+    color: green;
+    font-size: 80%;
 }

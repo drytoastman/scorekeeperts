@@ -40,19 +40,9 @@
         <v-divider v-if="hasOpened"></v-divider>
 
         <v-row v-if="hasOpened">
-            <LinkHoverToState :to="{name:'cars'}" variable="flashCars" class='carslink'>Create, Edit and Delete Cars Via the Cars Menu</LinkHoverToState>
-
+            <!-- <LinkHoverToState :to="{name:'cars'}" variable="flashCars" class='carslink'>Create, Edit and Delete Cars Via the Cars Menu</LinkHoverToState> -->
             <div class='registrations'>
-                <div class='reginfo'>
-                    <EventRegSelections :event=event class='lightborder'></EventRegSelections>
-                    <EventPaymentList :paypurchases="payments[event.eventid]" class='lightborder'></EventPaymentList>
-                </div>
-                <!--
-                <div v-if="isOpen" class='buttons'>
-                    <v-btn color="secondary" @click="$emit('regrequest')" :loading="busyR" :disabled="busyP">Register</v-btn>
-                    <v-btn v-if="showPayButton" color="secondary" @click="$emit('payrequest')" :loading="busyP" :disabled="busyR">Event Cart</v-btn>
-                </div>
-                -->
+                <EventRegSelections :event=event class='lightborder'></EventRegSelections>
             </div>
         </v-row>
     </v-container>
@@ -62,14 +52,10 @@
 import { mapState } from 'vuex'
 import { isOpen, hasClosed, hasOpened } from '@/common/event'
 import EventRegSelections from './EventRegSelections.vue'
-import EventPaymentList from './EventPaymentList.vue'
-import LinkHoverToState from './LinkHoverToState.vue'
 
 export default {
     components: {
-        EventRegSelections,
-        EventPaymentList,
-        LinkHoverToState
+        EventRegSelections
     },
     filters: {
         timedate: function(v) {
@@ -81,37 +67,11 @@ export default {
         event: Object
     },
     computed: {
-        ...mapState(['registered', 'paymentaccounts', 'paymentitems', 'payments', 'counts', 'busyReg', 'busyPay']),
-        account() { return this.paymentaccounts[this.event.accountid] || null },
+        ...mapState(['counts']),
         ecounts() { return this.counts[this.event.eventid] || {} },
-        ereg()    { return this.registered[this.event.eventid] || [] },
-        epayments() { return (this.payments[this.event.eventid] || []).filter(p => !p.refunded) },
         isOpen()    { return isOpen(this.event) },
         hasOpened() { return hasOpened(this.event) },
-        hasClosed() { return hasClosed(this.event) },
-        busyR()   { return this.busyReg[this.event.eventid] === true },
-        busyP()   { return this.busyPay[this.event.eventid] === true },
-        showPayButton() {
-            if (!this.event.accountid) return false
-
-            // still non-car things to purchse
-            for (const fee of this.$store.getters.eventotherfees(this.event.eventid)) {
-                if (this.epayments.filter(p => p.itemname === fee.item.name).length < fee.map.maxcount) {
-                    return true
-                }
-            }
-
-            // registered car without payment
-            for (const reg of this.ereg) {
-                if (this.epayments.filter(p => p.carid === reg.carid).length === 0) {
-                    return true
-                }
-            }
-
-            return false
-        }
-    },
-    watch: {
+        hasClosed() { return hasClosed(this.event) }
     }
 }
 </script>
@@ -143,32 +103,6 @@ export default {
     }
     .tdata {
         font-size: 95%;
-    }
-}
-
-.registrations {
-    width: 100%;
-    .reginfo {
-        display: flex;
-        justify-content: center;
-        flex-wrap: wrap;
-        column-gap: 1rem;
-        > div {
-            flex: 1
-        }
-    }
-    .buttons {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        column-gap: 1rem;
-        @media (min-width: 600px) {
-            min-width: 25rem;
-        }
-    }
-    .lightborder {
-        border: 1px solid #ddd;
-        border-radius: 3px;
-        padding: 5px;
     }
 }
 </style>

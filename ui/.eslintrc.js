@@ -10,7 +10,8 @@ let rules = {
     indent: ['warn', 4, { SwitchCase: 1 }],
     'vue/no-unused-components': 'warn',
     'object-curly-spacing': ['warn', 'always', { objectsInObjects: false }],
-    'array-bracket-spacing': 'warn'
+    'array-bracket-spacing': 'warn',
+    'comma-dangle': 'warn'
 }
 
 if (process.env.NODE_ENV === 'production') {

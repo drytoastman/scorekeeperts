@@ -1,45 +1,51 @@
 <template>
-    <div class='eventgrid' v-if="!payments.length">
-        <div>
-            {{session}}
-            <CarLabel style='display:inline-block' :car=car :session="!!session" fontsize="110%"></CarLabel>
+    <div class='paymentwrap'>
+        <div v-if="payments.length" class='paidinfo'>
+            <div v-for="p in payments" :key="p.payid">{{p.itemname}} {{p.amount|cents2dollars}}</div>
         </div>
-
-        <v-select :items="entryfees" return-object hide-details solo dense item-value="itemid" v-model="selection">
+        <v-select v-else-if="mycarid" :disabled="busy" :items="entryfees" return-object hide-details solo dense item-value="itemid" v-model="selection">
             <template v-slot:selection="d">
-                <span class='name'>{{ d.item.name }}</span> <span class='price'>{{ d.item.price|cents2dollars }}</span>
+                <div v-if="d.item.itemid">
+                    <span class='name' v-if="d.item.itemid">{{ d.item.name }}</span>
+                    <span class='price'>{{ d.item.price|cents2dollars }}</span>
+                </div>
+                <div class='paymentreq' v-else-if="mycarid && event.attr.paymentreq && !payments.length">Payment Required</div>
             </template>
             <template v-slot:item="d">
                 <span class='name'>{{ d.item.name }}</span> <span class='price'>{{ d.item.price|cents2dollars }}</span>
             </template>
         </v-select>
+        <div v-else>
+        </div>
     </div>
 </template>
 
 <script>
-import CarLabel from '@/components/CarLabel.vue'
+import { SessionIndexMixin } from '@/components/SessionIndexMixin.js'
 
 export default {
+    mixins: [SessionIndexMixin],
     components: {
-        CarLabel
     },
     props: {
         event: Object,
-        car: Object,
-        session: String
+        session: String,
+        index: Number
     },
     computed: {
-        entryfees() { return [{ itemid: null, name: '' }, ...this.$store.getters.evententryfees(this.event.eventid)] },
-        payments()  { return (this.$store.state.payments[this.event.eventid] || []).filter(p => p.carid === this.car.carid && p.session === this.session) },
+        entryfees() {
+            return [{ itemid: null }, ...this.$store.getters.evententryfees(this.event.eventid)]
+        },
+        payments()  { return (this.$store.state.payments[this.event.eventid] || []).filter(p => p.carid === this.mycarid && p.session === this.session) },
         selection: {
             get() {
-                return this.$store.getters.cartGetCar(this.event.accountid, this.event.eventid, this.car.carid, this.session)
+                return this.$store.getters.cartGetCar(this.event.accountid, this.event.eventid, this.mycarid, this.session) || null // not undefined
             },
             set(item) {
                 this.$store.commit('cartSetCar', {
                     accountid: this.event.accountid,
                     eventid: this.event.eventid,
-                    carid: this.car.carid,
+                    carid: this.mycarid,
                     session: this.session,
                     value: item.itemid
                 })
@@ -53,5 +59,15 @@ export default {
 .name {
     margin-right: 1rem;
     font-size: 90%;
+}
+.v-select {
+    display: inline-block;
+}
+.paymentwrap {
+    display: flex;
+}
+.paymentreq {
+    color: red;
+    font-size: 80%;
 }
 </style>

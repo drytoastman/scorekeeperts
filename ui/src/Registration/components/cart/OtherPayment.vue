@@ -1,17 +1,17 @@
 <template>
-    <div class='eventgrid' v-if="payments.length < map.maxcount">
-        <div>{{ item.name }}</div>
-        <div>
-            <div class='paygrid'>
-                {{item.price|cents2dollars}}
-                <v-checkbox v-if="map.maxcount < 2" :disabled="map.required" v-model="selection"></v-checkbox>
-                <v-select v-else :items="countlist" hide-details solo dense :disabled="map.required" v-model="selection"></v-select>
-            </div>
+    <div>
+        <div v-if="payments.length < map.maxcount">
+            <v-checkbox v-if="map.maxcount < 2" :disabled="map.required || busy" v-model="selection" hide-details></v-checkbox>
+            <v-select v-else :items="countlist" hide-details solo dense :disabled="map.required || busy" v-model="selection"></v-select>
+        </div>
+        <div v-if="payments.length" class='paidinfo'>
+            <div v-for="p in payments" :key="p.payid">{{p.itemname}} {{p.amount|cents2dollars}}</div>
         </div>
     </div>
 </template>
 
 <script>
+import { mapState } from 'vuex'
 export default {
     props: {
         event: Object,
@@ -19,8 +19,10 @@ export default {
         map: Object
     },
     computed: {
+        ...mapState(['busyReg']),
         payments() { return (this.$store.state.payments[this.event.eventid] || []).filter(p => p.itemname === this.item.name) },
         countlist() { return [...Array(this.map.maxcount + 1 - this.payments.length).keys()] },
+        busy()    { return this.busyReg[this.event.eventid] === true },
         selection: {
             get() {
                 return this.$store.getters.cartGetOther(this.event.accountid, this.event.eventid, this.item.itemid)
@@ -39,9 +41,7 @@ export default {
 </script>
 
 <style scoped>
-.paygrid {
-    display: grid;
-    align-items: center;
-    grid-template-columns: 2fr 3fr;
+.v-input--checkbox {
+    margin-top: 0;
 }
 </style>

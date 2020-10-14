@@ -36,7 +36,7 @@ import { mapState } from 'vuex'
 import { mdiCloseBox } from '@mdi/js'
 import SquarePaymentForm from './SquarePaymentForm.vue'
 import PayPalButton from './PayPalButton.vue'
-import EventPaymentList from '../EventPaymentList.vue'
+import EventPaymentList from './EventPaymentList.vue'
 
 export default {
     components: {

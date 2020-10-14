@@ -1,16 +1,21 @@
 <template>
-    <v-select :items="carlist" :disabled="busy" item-value="carid" v-model="selectedcarid" hide-details ref='select'>
-        <template v-slot:item="d"><CarLabel :car=d.item :session="!!session"></CarLabel></template>
-        <template v-slot:selection="d"><CarLabel :car=d.item :session="!!session"></CarLabel></template>
-    </v-select>
+    <div>
+        <v-select :items="carlist" :disabled="busy" item-value="carid" v-model="selectedcarid" hide-details ref='select'>
+            <template v-slot:item="d"><CarLabel :car=d.item :session="!!session"></CarLabel></template>
+            <template v-slot:selection="d"><CarLabel :car=d.item :session="!!session"></CarLabel></template>
+        </v-select>
+
+    </div>
 </template>
 
 <script>
 import cloneDeep from 'lodash/cloneDeep'
 import { mapState } from 'vuex'
-import CarLabel from '../../components/CarLabel.vue'
+import CarLabel from '@/components/CarLabel.vue'
+import { SessionIndexMixin } from '@/components/SessionIndexMixin.js'
 
 export default {
+    mixins: [SessionIndexMixin],
     components: {
         CarLabel
     },
@@ -20,8 +25,7 @@ export default {
         index: Number
     },
     computed: {
-        ...mapState(['cars', 'registered', 'busyReg']),
-        ereg()    { return this.registered[this.event.eventid] || [] },
+        ...mapState(['cars']),
         carlist() {
             let all = [{ carid: '' }, ...Object.values(this.cars)]
             if (!this.session) {
@@ -30,9 +34,6 @@ export default {
             }
             return all
         },
-        busy()    { return this.busyReg[this.event.eventid] === true },
-        key()     { return this.session || this.index },
-        mycarid() { return this.ereg[this.key]?.carid },
         selectedcarid: {
             get() {
                 return this.mycarid
@@ -61,12 +62,6 @@ export default {
                 })
             }
         }
-    },
-    watch: {
-        busy(newv) {
-            // on return from server set, force a refresh of ths selected value in case of errors, etc
-            // if (!newv) this.$refs.select.setValue(this.selectedcarid)
-        }
     }
 }
 </script>
@@ -75,17 +70,23 @@ export default {
 .v-text-field {
     padding-top: 0;
 }
+
 ::v-deep {
     .v-list-item--active {
-        background: #ddd;
-        opacity: 0.4;
-    }
-    .v-input--is-disabled {
         opacity: 0.4;
     }
 }
 .sessionlabel {
     font-weight: bold;
     font-size: 120%;
+}
+.paymentreq {
+    color: red;
+    font-size: 80%;
+    white-space: nowrap;
+}
+.paid {
+    color: green;
+    font-size: 90%;
 }
 </style>
