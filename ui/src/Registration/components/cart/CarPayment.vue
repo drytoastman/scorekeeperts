@@ -3,13 +3,16 @@
         <div v-if="payments.length" class='paidinfo'>
             <div v-for="p in payments" :key="p.payid">{{p.itemname}} {{p.amount|cents2dollars}}</div>
         </div>
-        <v-select v-else-if="mycarid" :disabled="busy" :items="entryfees" return-object hide-details solo dense item-value="itemid" v-model="selection">
+        <v-select v-else-if="mycarid" :disabled="busy" :items="entryfees" return-object hide-details solo item-value="itemid" v-model="selection">
             <template v-slot:selection="d">
                 <div v-if="d.item.itemid">
                     <span class='name' v-if="d.item.itemid">{{ d.item.name }}</span>
                     <span class='price'>{{ d.item.price|cents2dollars }}</span>
                 </div>
-                <div class='paymentreq' v-else-if="mycarid && event.attr.paymentreq && !payments.length">Payment Required</div>
+                <template v-else>
+                    <div class='paymentreq selectblanknote' v-if="mycarid && event.attr.paymentreq && !payments.length">Payment Required</div>
+                    <div class='selectblanknote' v-else>Pay Here</div>
+                </template>
             </template>
             <template v-slot:item="d">
                 <span class='name'>{{ d.item.name }}</span> <span class='price'>{{ d.item.price|cents2dollars }}</span>
@@ -68,6 +71,5 @@ export default {
 }
 .paymentreq {
     color: red;
-    font-size: 80%;
 }
 </style>

@@ -40,10 +40,7 @@
         <v-divider v-if="hasOpened"></v-divider>
 
         <v-row v-if="hasOpened">
-            <!-- <LinkHoverToState :to="{name:'cars'}" variable="flashCars" class='carslink'>Create, Edit and Delete Cars Via the Cars Menu</LinkHoverToState> -->
-            <div class='registrations'>
-                <EventRegSelections :event=event class='lightborder'></EventRegSelections>
-            </div>
+            <EventRegSelections :event=event></EventRegSelections>
         </v-row>
     </v-container>
 </template>

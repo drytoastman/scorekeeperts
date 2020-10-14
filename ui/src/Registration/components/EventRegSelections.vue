@@ -1,5 +1,8 @@
 <template>
-    <div>
+    <div class='outer'>
+        <!--
+        <LinkHoverToState :to="{name:'cars'}" variable="flashCars" class='carslink'>Create, Edit and Delete Cars Via the Cars Menu</LinkHoverToState>
+        -->
         <div v-for="grp in groups" :key="grp.key" class='regrow'>
             <span class='sessionlabel'>{{grp.key}}</span>
             <CarSelect  :session=grp.session :index=grp.index :event=event class='select'></CarSelect>
@@ -14,10 +17,12 @@
 </template>
 
 <script>
+import range from 'lodash/range'
 import findIndex from 'lodash/findIndex'
 import { mapState } from 'vuex'
 import { SeriesEvent, getSessions } from '@/common/event.ts'
 import CarSelect from './CarSelect.vue'
+import LinkHoverToState from './LinkHoverToState.vue'
 import CarPayment from './cart/CarPayment.vue'
 import OtherPayment from './cart/OtherPayment.vue'
 
@@ -25,7 +30,8 @@ export default {
     components: {
         CarSelect,
         CarPayment,
-        OtherPayment
+        OtherPayment,
+        LinkHoverToState
     },
     props: {
         event: SeriesEvent
@@ -33,12 +39,17 @@ export default {
     computed: {
         ...mapState(['cars', 'registered']),
         groups() {
-            let ret = getSessions(this.event).map(s => ({ session: s, key: s }))
+            const ereg = this.registered[this.event.eventid] || {}
+            const ret = getSessions(this.event).map(s => ({ session: s, key: s }))
+
             if (!ret.length) {
-                ret = [...new Array(this.event.perlimit).keys()].map(i => ({ index: i, session: '', key: i + 1 }))
+                // no session
+                for (const ii of range(this.event.perlimit)) {
+                    ret.push({ index: ii, session: '', key: ii + 1 })
+                    if (!ereg[ii]) break // only one blank allowed
+                }
             }
 
-            const ereg = this.registered[this.event.eventid] || {}
             for (const key of Object.keys(ereg)) {
                 const reg = ereg[key]
                 if (reg.session) {
@@ -70,12 +81,15 @@ export default {
 </script>
 
 <style scoped lang="scss">
+.outer {
+    width: 100%;
+}
 .regrow {
     display: flex;
     column-gap: 1rem;
+    margin-bottom: 0.5rem;
     align-items: center;
     flex-wrap: wrap;
-    height: 3.0rem;
 
     .sessionlabel {
         font-weight: bold;
@@ -92,14 +106,15 @@ export default {
         flex-basis: 16rem;
         flex-grow: 0.0;
         font-size: 90%;
-        color: gray;
+        font-weight: bold;
+        color: #333;
         text-align: right;
     }
     .price {
         flex-basis: 3rem;
         flex-grow: 0;
         font-size: 90%;
-        color: gray;
+        color: #333;
     }
 
     .payment {
@@ -107,5 +122,4 @@ export default {
         flex-grow: 0;
     }
 }
-
 </style>

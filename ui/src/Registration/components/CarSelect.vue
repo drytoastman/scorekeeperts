@@ -1,10 +1,12 @@
 <template>
     <div>
-        <v-select :items="carlist" :disabled="busy" item-value="carid" v-model="selectedcarid" hide-details ref='select'>
+        <v-select :items="carlist" :disabled="busy" item-value="carid" v-model="selectedcarid" hide-details solo ref='select'>
             <template v-slot:item="d"><CarLabel :car=d.item :session="!!session"></CarLabel></template>
-            <template v-slot:selection="d"><CarLabel :car=d.item :session="!!session"></CarLabel></template>
+            <template v-slot:selection="d">
+                <div v-if="!d.item.carid" class='selectblanknote'>Register Here</div>
+                <CarLabel v-else :car=d.item :session="!!session"></CarLabel>
+            </template>
         </v-select>
-
     </div>
 </template>
 
@@ -27,7 +29,7 @@ export default {
     computed: {
         ...mapState(['cars']),
         carlist() {
-            let all = [{ carid: '' }, ...Object.values(this.cars)]
+            let all = [{ carid: null }, ...Object.values(this.cars)]
             if (!this.session) {
                 const used = Object.values(this.ereg).map(c => c.carid).filter(id => id !== this.mycarid)
                 all = all.filter(c => !used.includes(c.carid))
@@ -36,7 +38,7 @@ export default {
         },
         selectedcarid: {
             get() {
-                return this.mycarid
+                return this.mycarid || null // not undefined
             },
             set(newcarid) {
                 if (!this.selectedcarid && !newcarid) return
@@ -70,23 +72,9 @@ export default {
 .v-text-field {
     padding-top: 0;
 }
-
 ::v-deep {
     .v-list-item--active {
         opacity: 0.4;
     }
-}
-.sessionlabel {
-    font-weight: bold;
-    font-size: 120%;
-}
-.paymentreq {
-    color: red;
-    font-size: 80%;
-    white-space: nowrap;
-}
-.paid {
-    color: green;
-    font-size: 90%;
 }
 </style>
