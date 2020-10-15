@@ -12,6 +12,7 @@
 
 <script>
 import cloneDeep from 'lodash/cloneDeep'
+import orderBy from 'lodash/orderBy'
 import { mapState } from 'vuex'
 import CarLabel from '@/components/CarLabel.vue'
 import { SessionIndexMixin } from '@/components/SessionIndexMixin.js'
@@ -29,12 +30,15 @@ export default {
     computed: {
         ...mapState(['cars']),
         carlist() {
-            let all = [{ carid: null }, ...Object.values(this.cars)]
+            let all = Object.values(this.cars)
             if (!this.session) {
                 const used = Object.values(this.ereg).map(c => c.carid).filter(id => id !== this.mycarid)
                 all = all.filter(c => !used.includes(c.carid))
+                all = orderBy(all, ['classcode', 'number'])
+            } else {
+                all = orderBy(all, ['number'])
             }
-            return all
+            return [{ carid: null }, ...all]
         },
         selectedcarid: {
             get() {
@@ -59,8 +63,7 @@ export default {
                     busy: { key: 'busyReg', id: this.event.eventid }
                 }).then(() => {
                     // on return from server set, force a refresh of ths selected value in case of errors, etc
-                    console.log('refresh ' + this.selectedcarid)
-                    this.$refs.select.setValue(this.selectedcarid)
+                    if (this.$refs.select) this.$refs.select.setValue(this.selectedcarid)
                 })
             }
         }
