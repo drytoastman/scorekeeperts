@@ -72,7 +72,7 @@ export default {
         }
     },
     computed: {
-        ...mapState(['drivers', 'cars', 'events', 'payments', 'registered', 'busyPayment']),
+        ...mapState(['currentSeries', 'drivers', 'cars', 'events', 'payments', 'registered', 'busyPayment']),
         event() {
             return this.eventid in this.events ? this.events[this.eventid] : {}
         },
@@ -93,14 +93,14 @@ export default {
                         eventname: '',
                         session: r.session,
                         car: c,
-                        payment: this.payments[this.eventid].find(p => p.carid === r.carid) || null,
+                        payment: this.payments[this.eventid].find(p => p.carid === r.carid && p.session === r.session && !p.refunded) || null,
                         busy: false
                     }
                 })
             } else { // use payments
                 return flatten(Object.values(this.payments)).map(p => {
                     const c = this.cars[p.carid]
-                    const d = this.drivers[c?.driverid]
+                    const d = this.drivers[p.driverid]
                     const e = this.events[p.eventid]
                     return {
                         firstname: d?.firstname,
@@ -159,10 +159,18 @@ export default {
                 r.test(item.firstname) || r.test(item.lastname) || r.test(item.eventname) || r.test(item.session) ||
                 carMatch(item.car, r) || (item.payment && (item.payment.refunded ? r.test('Refunded') : r.test(item.payment.itemname)))
             )
+        },
+        loadRequired() {
+            this.$store.dispatch('ensureTablesAndCarDriverInfo', ['payments', 'registered'])
+        }
+    },
+    watch: {
+        currentSeries() {
+            this.loadRequired()
         }
     },
     async mounted() {
-        this.$store.dispatch('ensureTablesAndCarDriverInfo', ['payments', 'registered'])
+        this.loadRequired()
     }
 }
 </script>
