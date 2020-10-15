@@ -49,6 +49,7 @@ export default {
                 if (this.selectedcarid === newcarid) return
 
                 const ereg = cloneDeep(this.ereg)
+                const saveprevid = this.selectedcarid
                 ereg[this.key] = newcarid ? {
                     eventid: this.event.eventid,
                     session: this.session,
@@ -64,6 +65,14 @@ export default {
                 }).then(() => {
                     // on return from server set, force a refresh of ths selected value in case of errors, etc
                     if (this.$refs.select) this.$refs.select.setValue(this.selectedcarid)
+                    // clear previous selection
+                    this.$store.commit('cartSetCar', {
+                        accountid: this.event.accountid,
+                        eventid: this.event.eventid,
+                        carid: saveprevid,
+                        session: this.session,
+                        value: undefined
+                    })
                 })
             }
         }
