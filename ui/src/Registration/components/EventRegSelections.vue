@@ -6,7 +6,7 @@
         <div v-for="grp in groups" :key="grp.key" class='regrow'>
             <span class='sessionlabel'>{{grp.key}}</span>
             <CarSelect  :session=grp.session :index=grp.index :event=event class='select'></CarSelect>
-            <CarPayment :session=grp.session :index=grp.index :event=event class='payment'></CarPayment>
+            <CarPayment :session=grp.session :index=grp.index :event=event class='payment' v-if='event.accountid'></CarPayment>
         </div>
         <div v-for="other in $store.getters.eventotherfees(event.eventid)" :key="other.item.itemid" class='regrow'>
             <div class='name'>{{ other.item.name }}</div>

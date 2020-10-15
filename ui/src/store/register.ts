@@ -81,6 +81,7 @@ const getters = {
     },
 
     eventitems: (state) => (eventid: UUID) => {
+        if (!state.events[eventid].accountid) return []
         const itemids = state.events[eventid].items.map(m => m.itemid)
         return Object.values(state.paymentitems).filter(i => itemids.includes(i.itemid))
     },

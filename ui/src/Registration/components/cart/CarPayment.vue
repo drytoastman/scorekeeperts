@@ -39,7 +39,7 @@ export default {
         entryfees() {
             return [{ itemid: null }, ...this.$store.getters.evententryfees(this.event.eventid)]
         },
-        payments()  { return (this.$store.state.payments[this.event.eventid] || []).filter(p => p.carid === this.mycarid && p.session === this.session) },
+        payments()  { return (this.$store.state.payments[this.event.eventid] || []).filter(p => p.carid === this.mycarid && p.session === this.session && !p.refunded) },
         selection: {
             get() {
                 return this.$store.getters.cartGetCar(this.event.accountid, this.event.eventid, this.mycarid, this.session) || null // not undefined

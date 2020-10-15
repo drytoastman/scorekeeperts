@@ -109,7 +109,7 @@ export class RegisterRepository {
     }
 
     private async eventPay(driverid: UUID, eventid: UUID): Promise<Payment[]> {
-        return this.db.any('SELECT * FROM payments WHERE driverid=$1 and eventid=$2', [driverid, eventid])
+        return this.db.any('SELECT * FROM payments WHERE driverid=$1 and eventid=$2 and refunded=false', [driverid, eventid])
     }
 
     async updateRegistration(type: string, reg: Registration[], eventid: UUID, driverid: UUID): Promise<Object> {
@@ -148,6 +148,9 @@ export class RegisterRepository {
                 })
             }
 
+            for (const u of reg.filter(r => !todel.includes(r) && !toadd.includes(r))) {  // set all rorders for non changing items, may be ignored if not changed
+                await this.db.none('UPDATE registered SET rorder=$(rorder),modified=now() WHERE eventid=$(eventid) AND carid=$(carid) AND session=$(session)', u)
+            }
             for (const d of todel)   { await this.db.none('DELETE FROM registered WHERE eventid=$(eventid) AND carid=$(carid) AND session=$(session)', d) }
             for (const i of toadd)   { await this.db.none(this.pgp.helpers.insert(i, regcols)) }
             for (const p of deadpay) { await this.db.none('UPDATE payments SET carid=$(newcarid), session=$(newsession), modified=now() WHERE payid=$(payid)', p) }

@@ -7,12 +7,12 @@
 
         <div class='payments'>
             <div class='accountbox'>
-                <v-select   v-model="eventmap.accountid" style="grid-area: acct"  label="Payment Account" :items="acctlist"
+                <v-select   v-model="eventdata.accountid" style="grid-area: acct"  label="Payment Account" :items="acctlist"
                             item-value="accountid" item-text="name" class="accountselect" hide-details solo></v-select>
-                <v-checkbox v-model="eventmap.required" style="grid-area: preq" label="Payment Required"></v-checkbox>
+                <v-checkbox v-model="eventdata.required" style="grid-area: preq" label="Payment Required"></v-checkbox>
             </div>
 
-            <v-data-table :items="eventmap.items" :headers="headers" item-key="item.itemid" class='itemstable'
+            <v-data-table :items="eventdata.items" :headers="headers" item-key="item.itemid" class='itemstable'
                   disable-pagination hide-default-footer dense>
 
                 <template v-slot:[`item.checked`]="{ item }">
@@ -56,20 +56,20 @@ export default {
             generaltype: ITEM_TYPE_GENERAL_FEE,
             headers: [
                 { text: 'Use',       value: 'checked' },
-                { text: 'Automatic', value: 'map.required' },
+                // { text: 'Automatic', value: 'map.required' },
                 { text: 'Max Count', value: 'map.maxcount' },
                 { text: 'Name',      value: 'item.name' },
                 { text: 'Price',     value: 'item.price' },
                 { text: 'Type',      value: 'item.itemtype' }
             ],
-            eventmap: {},
-            saveeventmap: {}
+            eventdata: {},
+            saveeventdata: {}
         }
     },
     computed: {
         ...mapState(['paymentaccounts', 'paymentitems']),
-        acctlist()  { return Object.values(this.paymentaccounts) },
-        unchanged() { return isEqual(this.saveeventmap, this.eventmap) }
+        acctlist()  { return [{ accountid: null, name: '' }, ...Object.values(this.paymentaccounts)] },
+        unchanged() { return isEqual(this.saveeventdata, this.eventdata) }
     },
     methods: {
         change() {
@@ -77,9 +77,9 @@ export default {
         },
         savePayments() {
             const emod = cloneDeep(this.seriesevent)
-            emod.accountid       = this.eventmap.accountid
-            emod.attr.paymentreq = this.eventmap.required
-            emod.items           = this.eventmap.items.filter(m => m.checked).map(m => m.map)
+            emod.accountid       = this.eventdata.accountid
+            emod.attr.paymentreq = this.eventdata.required
+            emod.items           = this.eventdata.items.filter(m => m.checked).map(m => m.map)
 
             this.$store.dispatch('setdata', {
                 type: 'update',
@@ -115,8 +115,8 @@ export default {
             }
 
             ret.items = orderBy(Object.values(items), ['itemtype', 'name'])
-            this.saveeventmap = ret
-            this.eventmap = cloneDeep(this.saveeventmap)
+            this.saveeventdata = ret
+            this.eventdata = cloneDeep(this.saveeventdata)
         }
     },
     watch: {

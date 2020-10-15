@@ -70,13 +70,20 @@ export default {
         flex-wrap: wrap;
         .carcard {
             flex: 1 0;
+            max-width: max(30rem, 50%);
         }
     }
     .flexbutton {
         display: block;
         width: 15rem;
         margin: 1rem auto 0 auto;
-        @media (max-width: 800px) {
+    }
+
+    @media (max-width: 800px) {
+        .outer {
+            margin: 1rem; // don't double with mainwrap
+        }
+        .flexbutton {
             width: 100%;
         }
     }
@@ -84,6 +91,6 @@ export default {
 
 <style>
     .v-main__wrap {
-        margin: 1rem; /* don't collapse on small screens */
+        xmargin: 1rem; /* don't collapse on small screens */
     }
 </style>
