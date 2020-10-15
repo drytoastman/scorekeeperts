@@ -36,13 +36,26 @@ module.exports = {
         '@vue/typescript/recommended'
     ],
     rules: rules,
-    overrides: [{
-        files: ['*.vue', '*.js'],
-        rules: {
-            // most vue files are not typescript, and .js definitely isn't
-            '@typescript-eslint/explicit-module-boundary-types': 'off'
+    overrides: [
+        {
+            files: [
+                '*.vue',
+                '*.js'
+            ],
+            rules: {
+                '@typescript-eslint/explicit-module-boundary-types': 'off'
+            }
+        },
+        {
+            files: [
+                '**/__tests__/*.{j,t}s?(x)',
+                '**/tests/unit/**/*.spec.{j,t}s?(x)'
+            ],
+            env: {
+                jest: true
+            }
         }
-    }],
+    ],
     globals: {
         grecaptcha: true,
         paypal: true,

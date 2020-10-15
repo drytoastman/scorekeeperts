@@ -143,7 +143,7 @@ const getters = {
 export function createAdminStore(router: VueRouter): Store<Api2State> {
     const store = new Store({
         state: new Api2State(),
-        mutations: api2Mutations,
+        mutations: api2Mutations(false),
         actions:   { ...api2Actions,   ...adminActions },
         getters: getters
     })

@@ -5,7 +5,7 @@ import Vue from 'vue'
 import { Api2State, API2 } from './state'
 import { ActionContext, ActionTree, Store, GetterTree, MutationTree } from 'vuex'
 import VueRouter, { Route } from 'vue-router'
-import { api2Mutations } from './api2mutations'
+import { api2Mutations, deepset } from './api2mutations'
 import { api2Actions, getDataWrap } from './api2actions'
 
 import { ITEM_TYPE_GENERAL_FEE, ITEM_TYPE_ENTRY_FEE } from '@/common/payments.ts'
@@ -43,20 +43,6 @@ export const registerActions = {
 
 }  as ActionTree<Api2State, any>
 
-
-function deepset(nested: any, path: string[], value: any) {
-    for (let ii = 0; ii < path.length; ii++) {
-        const key = path[ii]
-        if (ii === path.length - 1) {
-            Vue.set(nested, key, value)
-            break
-        }
-        if (!nested[key]) {
-            Vue.set(nested, key, {})
-        }
-        nested = nested[key]
-    }
-}
 
 export const cartMutations = {
 
@@ -164,7 +150,7 @@ const getters = {
 export function createRegisterStore(router: VueRouter): Store<Api2State> {
     const store = new Store({
         state: new Api2State(),
-        mutations: { ...api2Mutations, ...cartMutations },
+        mutations: { ...api2Mutations(true), ...cartMutations },
         actions:   { ...api2Actions,   ...registerActions },
         getters:   getters
     })
