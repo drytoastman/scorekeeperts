@@ -1,19 +1,20 @@
 <template>
     <BaseDialog :value="value" :apiType="apiType" dataType="Car" width="400px" @input="$emit('input')" @update="update" ref='dialog'>
-        <v-select v-model="carm.classcode" label="Class" :rules="classrules" :items="classlist" @change="loadNumbers" item-text='classcode'>
+
+        <v-select v-model="carm.classcode" label="Class" :rules="classrules" :items="classlist" :disabled="descOnly" @change="loadNumbers" item-text='classcode'>
             <template v-slot:item="d">
                 <span class='classcode'>{{ d.item.classcode }}</span><span class='descrip'>{{ d.item.descrip }}</span>
             </template>
         </v-select>
 
         <v-select v-model="carm.indexcode" :rules="indexrules" :items="indexlist" item-value='indexcode' item-text='indexcode'
-                    :label='needindex?"Index":"No index required"' :disabled="!needindex">
+                    :label='needindex?"Index":"No index required"' :disabled="!needindex || descOnly">
             <template v-slot:item="d">
                 <span class='indexcode'>{{ d.item.indexcode }}</span><span class='descrip'>{{ d.item.descrip }}</span>
             </template>
         </v-select>
 
-        <v-text-field v-model="carm.number"     label="Number" :rules="numberrules" :disabled="!carm.classcode">
+        <v-text-field v-model="carm.number"     label="Number" :rules="numberrules" :disabled="!carm.classcode || descOnly">
             <template v-slot:append-outer>
                 <NumberPicker :classcode="carm.classcode" :usednumbers="usednumbers" @selected="numselected"></NumberPicker>
             </template>
@@ -31,8 +32,8 @@ import isEmpty from 'lodash/isEmpty'
 import Vue from 'vue'
 import { CarValidator } from '@/common/car'
 import { restrictedRegistrationIndexes } from '@/common/classdata'
-import NumberPicker from './NumberPicker'
-import BaseDialog from './BaseDialog'
+import NumberPicker from './NumberPicker.vue'
+import BaseDialog from './BaseDialog.vue'
 
 export default {
     components: {
@@ -43,6 +44,7 @@ export default {
         value: Boolean,
         car: Object,
         apiType: String,
+        descOnly: Boolean,
         eClasses: Object,
         eIndexes: Object,
         eSeries: String,

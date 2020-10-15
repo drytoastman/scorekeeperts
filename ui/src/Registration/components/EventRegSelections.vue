@@ -1,8 +1,5 @@
 <template>
     <div class='outer'>
-        <!--
-        <LinkHoverToState :to="{name:'cars'}" variable="flashCars" class='carslink'>Create, Edit and Delete Cars Via the Cars Menu</LinkHoverToState>
-        -->
         <div v-for="grp in groups" :key="grp.key" class='regrow'>
             <span class='sessionlabel'>{{grp.key}}</span>
             <CarSelect  :session=grp.session :index=grp.index :event=event class='select'></CarSelect>
@@ -22,7 +19,6 @@ import findIndex from 'lodash/findIndex'
 import { mapState } from 'vuex'
 import { SeriesEvent, getSessions } from '@/common/event.ts'
 import CarSelect from './CarSelect.vue'
-import LinkHoverToState from './LinkHoverToState.vue'
 import CarPayment from './cart/CarPayment.vue'
 import OtherPayment from './cart/OtherPayment.vue'
 
@@ -30,8 +26,7 @@ export default {
     components: {
         CarSelect,
         CarPayment,
-        OtherPayment,
-        LinkHoverToState
+        OtherPayment
     },
     props: {
         event: SeriesEvent

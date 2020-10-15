@@ -25,7 +25,7 @@ declare module 'vue/types/vue' {
 const base = {
     primary: '#465146',
     secondary: '#478841',
-    accent: colors.cyan.base,
+    accent: '#799d8e',
     error: colors.red.base,
     warning: colors.orange.base,
     info: colors.blueGrey.base,
