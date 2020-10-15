@@ -1,5 +1,8 @@
 <template>
     <div class='outer'>
+        <div v-if=eventLimitReached class='limiterror'>
+            Event Registration Limit Reached
+        </div>
         <div v-for="grp in groups" :key="grp.key" class='regrow'>
             <span class='sessionlabel'>{{grp.key}}</span>
             <CarSelect  :session=grp.session :index=grp.index :event=event class='select'></CarSelect>
@@ -32,7 +35,7 @@ export default {
         event: SeriesEvent
     },
     computed: {
-        ...mapState(['cars', 'registered']),
+        ...mapState(['cars', 'registered', 'counts']),
         groups() {
             const ereg = this.registered[this.event.eventid] || {}
             const ret = getSessions(this.event).map(s => ({ session: s, key: s }))
@@ -40,8 +43,9 @@ export default {
             if (!ret.length) {
                 // no session
                 for (const ii of range(this.event.perlimit)) {
+                    if (this.eventLimitReached && !ereg[ii]) break // no blank if limit hit
                     ret.push({ index: ii, session: '', key: ii + 1 })
-                    if (!ereg[ii]) break // only one blank allowed
+                    if (!ereg[ii]) break // only one blank allowed max
                 }
             }
 
@@ -59,17 +63,11 @@ export default {
             }
             return ret
         },
-        limitReached() { return this.limitTypeReached !== null },
-        limitTypeReached() {
-            if (!this.event) { return null }
-            if (this.checkedCount >= this.event.perlimit) {
-                return `Personal limit of ${this.event.perlimit} met`
-            } else if (this.event.totlimit) {
-                if (this.ecounts.all - this.ereg.length + this.checkedCount >= this.event.totlimit) {
-                    return `Event limit of ${this.event.totlimit} met`
-                }
+        eventLimitReached() {
+            if (this.event && this.event.totlimit) {
+                return (this.counts[this.event.eventid].all >= this.event.totlimit)
             }
-            return null
+            return false
         }
     }
 }
@@ -79,42 +77,48 @@ export default {
 .outer {
     width: 100%;
 }
+.limiterror {
+    text-align: center;
+    color: red;
+    margin-bottom: 1rem;
+}
 .regrow {
-    display: flex;
+    display: grid;
+    grid-template-columns: 3rem 14rem 3rem 16rem;
     column-gap: 1rem;
-    margin-bottom: 0.5rem;
     align-items: center;
-    flex-wrap: wrap;
 
+    * {
+        margin-bottom: 0.5rem;
+    }
     .sessionlabel {
         font-weight: bold;
-        flex-basis: 3rem;
-        flex-grow: 0;
         text-align: center;
     }
     .select {
-        flex-basis: 16rem;
-        flex-grow: 0.0;
+        grid-column: 2 / span 2;
     }
-
     .name {
-        flex-basis: 16rem;
-        flex-grow: 0.0;
         font-size: 90%;
         font-weight: bold;
         color: #333;
         text-align: right;
+        grid-column: 1 / span 2;
     }
     .price {
-        flex-basis: 3rem;
-        flex-grow: 0;
         font-size: 90%;
         color: #333;
     }
 
-    .payment {
-        flex-basis: 16rem;
-        flex-grow: 0;
+    @media (max-width: 700px) {
+        grid-template-columns: 3rem 14rem 3rem;
+        .payment {
+            grid-column: 2 / span 2;
+            margin-bottom: 1.5rem;
+        }
+        .name {
+            text-align: left;
+        }
     }
 }
 </style>
