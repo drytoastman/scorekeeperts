@@ -50,13 +50,16 @@ export class CarRepository {
         return this.db.any('SELECT * FROM cars')
     }
 
-    async updateCars(type: string, cars: Car[], driverid: UUID): Promise<Car[]> {
+    async updateCars(type: string, cars: Car[], verifyid: UUID|null = null): Promise<Car[]> {
         if (type === 'insert') {
-            cars.forEach(c => { c.carid = uuidv1(); c.driverid = driverid })
+            cars.forEach(c => {
+                c.carid = uuidv1()
+                if (verifyid) c.driverid = verifyid
+            })
             return this.db.any(this.pgp.helpers.insert(cars, carcols) + ' RETURNING *')
         }
 
-        await verifyDriverRelationship(this.db, cars.map(c => c.carid), driverid)
+        if (verifyid) await verifyDriverRelationship(this.db, cars.map(c => c.carid), verifyid)
 
         if (type === 'update') return this.db.any(this.pgp.helpers.update(cars, carcols) + ' WHERE v.carid = t.carid RETURNING *')
         if (type === 'delete') return this.db.any('DELETE from cars WHERE carid in ($1:csv) RETURNING carid', cars.map(c => c.carid))

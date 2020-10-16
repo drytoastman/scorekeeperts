@@ -3,7 +3,10 @@
         <span v-if="!payment">
         </span>
         <span v-else-if="payment.refunded">
-            <div class='refund'>Refunded</div>
+            <div class='refund'>Refunded
+                <span class='head'>{{payment.amount | cents2dollars}}</span>
+            </div>
+            <div class='extra'>{{payment.itemname}}</div>
         </span>
         <span v-else>
             <div class='head'>{{payment.amount | cents2dollars}}</div>

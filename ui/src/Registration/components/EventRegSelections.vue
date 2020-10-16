@@ -20,7 +20,7 @@
 import range from 'lodash/range'
 import findIndex from 'lodash/findIndex'
 import { mapState } from 'vuex'
-import { SeriesEvent, getSessions } from '@/common/event.ts'
+import { getSessions } from '@/common/event.ts'
 import CarSelect from './CarSelect.vue'
 import CarPayment from './cart/CarPayment.vue'
 import OtherPayment from './cart/OtherPayment.vue'
@@ -32,7 +32,7 @@ export default {
         OtherPayment
     },
     props: {
-        event: SeriesEvent
+        event: Object
     },
     computed: {
         ...mapState(['cars', 'registered', 'counts']),

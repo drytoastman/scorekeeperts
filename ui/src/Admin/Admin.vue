@@ -70,9 +70,13 @@ export default {
             },
             set(value) {
                 this.$store.commit('changeSeries', value)
-                const name = this.$route.name === 'noseries' ? 'summary' : this.$route.name
-                // const r = this.$router.matcher.match(name)
-                // if (!('series' in r.params)) return
+                let name = this.$route.name
+                switch (name) {
+                    case 'noseries':  // push to summary
+                    case 'event':     // same event on different series is nonsensical
+                        name = 'summary'
+                        break
+                }
 
                 this.$router.push({ name: name, params: { series: value }}).catch(error => {
                     console.log(error)

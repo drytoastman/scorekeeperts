@@ -47,7 +47,7 @@ export function deepset(nested: {[key: string]: any}, path: string[], value: unk
     }
 }
 
-export function api2Mutations(registerSubKey: boolean):  MutationTree<Api2State> {
+export function api2Mutations(adminOptions: boolean):  MutationTree<Api2State> {
     return {
         driverAuthenticated(state: Api2State, ok: boolean) {
             state.driverAuthenticated = ok
@@ -86,13 +86,13 @@ export function api2Mutations(registerSubKey: boolean):  MutationTree<Api2State>
             clearApi2SeriesData(state)
         },
 
-        clearSeriesData(state: Api2State) {
-            clearApi2SeriesData(state)
-        },
-
         changeSeries(state: Api2State, newseries: string) {
             state.currentSeries = newseries
             clearApi2SeriesData(state)
+            if (adminOptions) {
+                state.drivers = {}
+                state.attendance = {}
+            }
         },
 
         setDriverId(state: Api2State, driverid: UUID) {
@@ -180,7 +180,7 @@ export function api2Mutations(registerSubKey: boolean):  MutationTree<Api2State>
                 if (data.type === 'get') { state.registered = {} }
                 if (data.type === 'eventupdate') { Vue.delete(state.registered, data.eventid) }
                 data.registered.forEach((r: Registration) => {
-                    if (registerSubKey) {
+                    if (!adminOptions) {
                         // special keying of eventid and special subkey
                         const subkey = r.session || r.rorder
                         ensure(state.registered, r.eventid, {})

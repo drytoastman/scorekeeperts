@@ -43,9 +43,9 @@ import { mapState } from 'vuex'
 import { mdiCreditCardRefund, mdiDelete, mdiMagnify, mdiAccountRemove, mdiCarSettings } from '@mdi/js'
 import { hasFinished } from '@/common/event'
 import { carMatch } from '@/common/car'
-import RefundDialog from './RefundDialog'
-import CarLabel from '../../components/CarLabel'
-import PaymentLabel from './PaymentLabel'
+import RefundDialog from './RefundDialog.vue'
+import CarLabel from '../../components/CarLabel.vue'
+import PaymentLabel from './PaymentLabel.vue'
 
 export default {
     name: 'entranttable',

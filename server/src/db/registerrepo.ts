@@ -112,8 +112,8 @@ export class RegisterRepository {
         return this.db.any('SELECT * FROM payments WHERE driverid=$1 and eventid=$2 and refunded=false', [driverid, eventid])
     }
 
-    async updateRegistration(type: string, reg: Registration[], eventid: UUID, driverid: UUID): Promise<Object> {
-        await verifyDriverRelationship(this.db, reg.map(r => r.carid), driverid)
+    async updateRegistration(type: string, reg: Registration[], eventid: UUID, verifyid: UUID|null = null): Promise<Object> {
+        if (verifyid) await verifyDriverRelationship(this.db, reg.map(r => r.carid), verifyid)
 
         function keys(v:any) {  return `${v.carid},${v.session}` }
 
@@ -122,14 +122,14 @@ export class RegisterRepository {
                 await this.db.none('DELETE FROM registered WHERE eventid=$(eventid) AND carid=$(carid) AND session=$(session)', r)
             }
             return { registered: reg }
-        } else if (type === 'eventupdate') {
+        } else if (type === 'eventupdate' && verifyid) {
             reg = _.orderBy(reg, 'rorder')
             reg.forEach((r, ii) => {  // reset rorder to lowest levels
                 r.rorder = ii
             })
 
-            const curreg  = await this.eventReg(driverid, eventid)
-            const curpay  = await this.eventPay(driverid, eventid)
+            const curreg  = await this.eventReg(verifyid, eventid)
+            const curpay  = await this.eventPay(verifyid, eventid)
             const toadd   = _.differenceBy(reg, curreg, keys)
             const todel   = _.differenceBy(curreg, reg, keys)
             const deadpay = _.intersectionBy(curpay, todel, keys) as any[] // lets me append a few things for later update
@@ -156,8 +156,8 @@ export class RegisterRepository {
             for (const p of deadpay) { await this.db.none('UPDATE payments SET carid=$(newcarid), session=$(newsession), modified=now() WHERE payid=$(payid)', p) }
 
             return {
-                registered: await this.eventReg(driverid, eventid),
-                payments: await this.eventPay(driverid, eventid),
+                registered: await this.eventReg(verifyid, eventid),
+                payments: await this.eventPay(verifyid, eventid),
                 eventid: eventid
             }
         }

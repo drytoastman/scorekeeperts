@@ -32,7 +32,7 @@ export default {
         }
     },
     computed: {
-        ...mapState(['drivers', 'attendance']),
+        ...mapState(['currentSeries', 'drivers', 'attendance']),
         ...mapGetters(['orderedEvents']),
         lists() {
             if (!this.dataLoaded) return []
@@ -76,15 +76,24 @@ export default {
                 }
             }
             return sortBy(ret, [d => d.lastname.toLowerCase(), d => d.firstname.toLowerCase()])
+        },
+        async loadData() {
+            this.dataLoaded = false
+            const torun = [this.$store.dispatch('ensureSeriesCarDriverInfo')]
+            if (isEmpty(this.attendance)) { torun.push(this.$store.dispatch('getdata', { items: 'attendance' })) }
+
+            Promise.all(torun).then(() => {
+                this.dataLoaded = true
+            })
         }
     },
     async mounted() {
-        const torun = [this.$store.dispatch('ensureSeriesCarDriverInfo')]
-        if (isEmpty(this.attendance)) { torun.push(this.$store.dispatch('getdata', { items: 'attendance' })) }
-
-        Promise.all(torun).then(() => {
-            this.dataLoaded = true
-        })
+        this.loadData()
+    },
+    watch: {
+        currentSeries() {
+            this.loadData()
+        }
     }
 }
 </script>

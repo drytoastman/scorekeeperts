@@ -33,7 +33,7 @@ export class DriverRepository {
 
     private filterDrivers(drivers: Driver[]): Driver[] {
         for (const d of drivers) {
-            delete d.password
+            d.password = ''
         }
         return drivers
     }
@@ -102,7 +102,7 @@ export class DriverRepository {
         return data.driverid
     }
 
-    async updateDriver(type: string, drivers: Driver[], verifyid: UUID): Promise<Driver[]> {
+    async updateDriver(type: string, drivers: Driver[], verifyid: UUID|null = null): Promise<Driver[]> {
         if (verifyid && drivers[0].driverid !== verifyid) {
             throw Error(`Trying to modify a driver that you shouldn't ${JSON.stringify(drivers[0].driverid)} ${verifyid}`)
         }

@@ -23,11 +23,11 @@ export async function seriespost(tx: ScorekeeperProtocol, auth: AuthData, param:
                     await allSeriesDeleteDriverLinks(tx, param.items.drivers.map(d => d.driverid))
                     await tx.series.setSeries(param.series)
                 }
-                ret.drivers = await tx.drivers.updateDriver(param.type, param.items.drivers, '')
+                ret.drivers = await tx.drivers.updateDriver(param.type, param.items.drivers)
                 break
 
             case 'cars':
-                ret.cars = await tx.cars.updateCars(param.type, param.items.cars, param.driverid)
+                ret.cars = await tx.cars.updateCars(param.type, param.items.cars)
                 for (const c of ret.cars) {
                     await tx.cars.getActivityForCar(c)
                     c.series = param.series
@@ -35,7 +35,7 @@ export async function seriespost(tx: ScorekeeperProtocol, auth: AuthData, param:
                 break
 
             case 'registered':
-                Object.assign(ret, await tx.register.updateRegistration(param.type, param.items.registered, param.eventid, param.driverid))
+                Object.assign(ret, await tx.register.updateRegistration(param.type, param.items.registered, param.eventid))
                 break
 
             case 'payments':

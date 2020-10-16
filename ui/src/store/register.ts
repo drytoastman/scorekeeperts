@@ -150,7 +150,7 @@ const getters = {
 export function createRegisterStore(router: VueRouter): Store<Api2State> {
     const store = new Store({
         state: new Api2State(),
-        mutations: { ...api2Mutations(true), ...cartMutations },
+        mutations: { ...api2Mutations(false), ...cartMutations },
         actions:   { ...api2Actions,   ...registerActions },
         getters:   getters
     })

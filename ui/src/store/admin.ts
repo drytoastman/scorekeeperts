@@ -135,7 +135,7 @@ export const adminActions = {
 }  as ActionTree<Api2State, any>
 
 
-const getters = {
+const adminGetters = {
     orderedEvents: (state) => { return orderBy(state.events, ['date']) }
 } as GetterTree<Api2State, Api2State>
 
@@ -143,9 +143,9 @@ const getters = {
 export function createAdminStore(router: VueRouter): Store<Api2State> {
     const store = new Store({
         state: new Api2State(),
-        mutations: api2Mutations(false),
+        mutations: api2Mutations(true),
         actions:   { ...api2Actions,   ...adminActions },
-        getters: getters
+        getters: adminGetters
     })
 
     /* Create our websocket handler and default get request */

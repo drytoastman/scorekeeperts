@@ -20,7 +20,7 @@ import { mapState } from 'vuex'
 export default {
     name: 'UsedNumbers',
     computed: {
-        ...mapState(['settings', 'drivers', 'cars']),
+        ...mapState(['currentSeries', 'settings', 'drivers', 'cars']),
         usedNumbers() {
             const ret = {}
             for (const car of Object.values(this.cars)) {
@@ -48,6 +48,11 @@ export default {
     },
     async mounted() {
         this.$store.dispatch('ensureSeriesCarDriverInfo')
+    },
+    watch: {
+        currentSeries() {
+            this.$store.dispatch('ensureSeriesCarDriverInfo')
+        }
     }
 }
 </script>

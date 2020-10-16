@@ -2,7 +2,7 @@
     <div class='outer'>
         <div v-if="sizeWarning" class='sizewarning'>The display width is less then the recommended minimum 950px for this tool</div>
         <div class='twocol'>
-            <DriverSearchSelect :driverbrief="driverbrief" @add="addid" @del="delid"></DriverSearchSelect>
+            <DriverSearchSelect :driverbrief="driverbrief" @add="addid" @del="delid" ref="search"></DriverSearchSelect>
             <div class='displaybox'>
                 <div v-for="driver in selectedDrivers" :key="driver.driverid" class='driverbox'>
                     <DriverEditorDisplay :driver=driver :selectedCount=selectedCount @buttons='buttons'></DriverEditorDisplay>
@@ -22,11 +22,11 @@ import findIndex from 'lodash/findIndex'
 import isEmpty from 'lodash/isEmpty'
 import { mapState } from 'vuex'
 import Vue from 'vue'
-import DriverSearchSelect from '../components/DriverSearchSelect'
-import DriverEditorDisplay from '../components/DriverEditorDisplay'
-import DriverDialog from '../../components/DriverDialog'
-import CarDialog from '../../components/CarDialog'
-import ConfirmDialog from '../../components/ConfirmDialog'
+import DriverSearchSelect from '../components/DriverSearchSelect.vue'
+import DriverEditorDisplay from '../components/DriverEditorDisplay.vue'
+import DriverDialog from '@/components/DriverDialog.vue'
+import CarDialog from '@/components/CarDialog.vue'
+import ConfirmDialog from '@/components/ConfirmDialog.vue'
 
 export default {
     name: 'DriverEditor',
@@ -39,7 +39,7 @@ export default {
     },
     data() {
         return {
-            selected: {},
+            displayids: {},
             driverbrief: undefined,
             allclassindex: undefined,
             dialogData: undefined,
@@ -55,12 +55,12 @@ export default {
         }
     },
     computed: {
-        ...mapState(['drivers', 'cars']),
+        ...mapState(['currentSeries', 'drivers', 'cars']),
         selectedCount() {
-            return Object.keys(this.selected).length
+            return Object.keys(this.displayids).length
         },
         selectedDrivers() {
-            return Object.keys(this.selected).map(did => this.drivers[did]).filter(v => v)
+            return Object.keys(this.displayids).map(did => this.drivers[did]).filter(v => v)
         },
         sizeWarning() {
             return this.$vuetify.breakpoint.width < 950
@@ -68,11 +68,11 @@ export default {
     },
     methods: {
         addid(driverid) {
-            Vue.set(this.selected, driverid, 1)
+            Vue.set(this.displayids, driverid, 1)
             this.$store.dispatch('ensureEditorInfo', [driverid])
         },
         delid(driverid) {
-            Vue.delete(this.selected, driverid)
+            Vue.delete(this.displayids, driverid)
         },
         removeFromBrief(driverid) {
             this.driverbrief.splice(findIndex(this.driverbrief, d => d.driverid === driverid), 1)
@@ -104,7 +104,7 @@ export default {
                     this.driverDialog = true
                     break
                 case 'merge':
-                    oldids = Object.keys(this.selected).filter(did => did !== driverid)
+                    oldids = Object.keys(this.displayids).filter(did => did !== driverid)
                     if (oldids.length > 0) {
                         this.$store.dispatch('setdata', {
                             type: 'update',
@@ -155,20 +155,28 @@ export default {
                 default:
                     console.log(name)
             }
+        },
+        updatedata() {
+            if (isEmpty(this.driverbrief) || isEmpty(this.allclassindex)) {
+                this.$store.dispatch('getdata', { items: 'driverbrief,allclassindex' }).then(data => {
+                    this.driverbrief = data.driverbrief
+                    const all = {}
+                    for (const [series, clsidx] of Object.entries(data.allclassindex)) {
+                        all[series] = { classes: {}, indexes: {}}
+                        for (const entry of clsidx.classes) all[series].classes[entry.classcode] = entry
+                        for (const entry of clsidx.indexes) all[series].indexes[entry.indexcode] = entry
+                    }
+                    this.allclassindex = all
+                })
+            }
         }
     },
     mounted() {
-        if (isEmpty(this.driverbrief)) {
-            this.$store.dispatch('getdata', { items: 'driverbrief,allclassindex' }).then(data => {
-                this.driverbrief = data.driverbrief
-                const all = {}
-                for (const [series, clsidx] of Object.entries(data.allclassindex)) {
-                    all[series] = { classes: {}, indexes: {}}
-                    for (const entry of clsidx.classes) all[series].classes[entry.classcode] = entry
-                    for (const entry of clsidx.indexes) all[series].indexes[entry.indexcode] = entry
-                }
-                this.allclassindex = all
-            })
+        this.updatedata()
+    },
+    watch: {
+        currentSeries() {
+            Object.keys(this.displayids).forEach(k => this.addid(k))
         }
     }
 }

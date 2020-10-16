@@ -28,7 +28,7 @@ export default {
     },
     computed: {
         ...mapState(['busyReg']),
-        payments() { return (this.$store.state.payments[this.event.eventid] || []).filter(p => p.itemname === this.item.name) },
+        payments() { return (this.$store.state.payments[this.event.eventid] || []).filter(p => p.itemname === this.item.name && !p.refunded) },
         countlist() { return [null, ...range(1, this.map.maxcount + 1 - this.payments.length)] },
         busy()    { return this.busyReg[this.event.eventid] === true },
         selection: {
