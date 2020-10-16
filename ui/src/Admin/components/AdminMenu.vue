@@ -6,7 +6,7 @@
         <v-list>
             <template v-for="item in items">
                 <v-divider v-if="!item.title" :key="item.title"></v-divider>
-                <v-list-item v-else :key="item.title" :to="item.link">
+                <v-list-item v-else :key="item.title" :to="item.link" class='menustyle'>
                     <v-list-item-title>{{ item.title }}</v-list-item-title>
                 </v-list-item>
             </template>
@@ -24,3 +24,11 @@ export default {
     }
 }
 </script>
+
+<style lang='scss' scoped>
+.menustyle {
+    .v-list-item__title {
+        font-size: 14px;
+    }
+}
+</style>

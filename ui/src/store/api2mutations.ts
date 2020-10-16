@@ -90,7 +90,6 @@ export function api2Mutations(adminOptions: boolean):  MutationTree<Api2State> {
             state.currentSeries = newseries
             clearApi2SeriesData(state)
             if (adminOptions) {
-                state.drivers = {}
                 state.attendance = {}
             }
         },

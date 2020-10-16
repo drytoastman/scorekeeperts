@@ -105,7 +105,10 @@ export default {
                 { title: 'Settings', link: { name:'settings' }},
                 { title: 'Classes',  link: { name:'classes' }},
                 { title: 'Indexes',  link: { name:'indexes' }},
-                { title: 'Accounts', link: { name:'accounts' }}
+                { title: 'Accounts', link: { name:'accounts' }},
+                { title: 'Membership', link: { name:'membersip' }},  // TODO
+                { link: {}},
+                { title: 'Password', link: { name:'password' }}  // TODO
             ].map(v => { v.link.params = { series: this.currentSeries }; return v })
         },
         reports() {
@@ -116,11 +119,18 @@ export default {
                 { title: 'Unique Attendance',    link: { name:'attendunique' }},
                 { title: 'Used Car Number List', link: { name:'usednumbers' }},
                 { link: {}},
-                { title: 'Payments',             link: { name:'payments' }}
+                { title: 'Payments',             link: { name:'payments' }},
+                { title: 'Contact List',         link: { name:'contacts' }}  // TODO
             ].map(v => { v.link.params = { series: this.currentSeries }; return v })
         },
         admins() {
             return [
+                { title: 'New Event', link: { name:'newevent' }},  // TODO
+                { title: 'New Events From Template', link: { name:'neweventtemplate' }},  // TODO
+                { title: 'New Series', link: { name:'newseries' }},  // TODO
+                { title: 'Archive Series', link: { name:'archive' }},  // TODO
+                { title: 'Purge Tool', link: { name:'purge' }},  // TODO
+                { link: {}},
                 { title: 'Driver Editor', link: { name:'drivereditor' }},
                 { title: 'Host Settings', link: { name:'hostsettings' }},
                 { title: 'Server Logs',   link: { name:'serverlogs'   }}

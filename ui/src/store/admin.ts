@@ -71,15 +71,14 @@ export const adminActions = {
     },
 
     async ensureEditorInfo(context: ActionContext<Api2State, any>, driverids: UUID[]) {
-        const dids = driverids.filter(did => !(did in this.state.drivers))
-        if (isEmpty(dids)) return
+        if (isEmpty(driverids)) return
 
         const p = {
             series: this.state.currentSeries,
             authtype: this.state.authtype,
             type: 'update', // we are not necessarily getting entire list
             items: {
-                editorids: dids
+                editorids: driverids
             }
         }
 
