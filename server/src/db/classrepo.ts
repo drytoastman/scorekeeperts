@@ -1,5 +1,5 @@
 import { IDatabase, ColumnSet, IMain } from 'pg-promise'
-import { SeriesClass, ClassValidator, SeriesIndex, IndexValidator, ClassOrder } from '@common/classindex'
+import { SeriesClass, ClassValidator, SeriesIndex, IndexValidator, ClassOrder, ClassData } from '@common/classindex'
 import { validateObj } from '@common/util'
 
 let classcols: ColumnSet|undefined
@@ -26,6 +26,10 @@ export class ClassRepository {
                 { name: 'modified', cast: 'timestamp', mod: ':raw', init: (col) => { return 'now()' } }
             ], { table: 'indexlist' })
         }
+    }
+
+    async getClassData(): Promise<ClassData> {
+        return new ClassData(await this.classList(), await this.indexList())
     }
 
     async classList(): Promise<SeriesClass[]> {

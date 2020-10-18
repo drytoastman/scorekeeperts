@@ -40,7 +40,7 @@ export class SeriesRepository {
                 { name: 'itemid',  cnd: true, cast: 'uuid' },
                 { name: 'maxcount', cast: 'int' },
                 { name: 'required', cast: 'bool' },
-                { name: 'modified', cast: 'timestamp', mod: ':raw', init: (): any => { return 'now()' } },
+                { name: 'modified', cast: 'timestamp', mod: ':raw', init: (): any => { return 'now()' } }
             ])
         }
     }
@@ -116,7 +116,7 @@ export class SeriesRepository {
 
     async eventList(): Promise<SeriesEvent[]> {
         return this.db.task(async task => {
-            const ret: SeriesEvent[] = await task.any('SELECT * FROM events')
+            const ret: SeriesEvent[] = await task.any('SELECT * FROM events ORDER BY date')
             await this.loadItemMap(task, ret)
             return ret
         })
