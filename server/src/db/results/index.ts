@@ -15,8 +15,8 @@ import { SeriesInfo } from '@common/series'
 import { loadResults, needEventUpdate, needUpdate } from './base'
 import { updateEventResults, updateSeriesInfo } from './calc'
 import { SeriesSettings } from '@common/settings'
-import { EventResults } from '@common/entrant'
 import { decorateClassResults } from './decorate'
+import { EventResults } from '@common/results'
 
 
 export async function cacheAll(): Promise<void> {
@@ -39,7 +39,7 @@ export async function getSeriesInfo(): Promise<SeriesInfo> {
 }
 
 
-export function getEventResults(eventid: UUID) {
+export async function getEventResults(eventid: UUID): Promise<EventResults> {
     if (needEventUpdate(eventid)) { updateEventResults(eventid) }
     return loadResults(eventid)
 }

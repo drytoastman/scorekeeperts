@@ -1,8 +1,46 @@
-import { BlankEntrant, Entrant, EventResults, getBestNetRun, getLastCourse, getLastRun } from '@common/entrant'
-import { PosPoints } from '@common/event'
+import { BlankEntrant, DecoratedRun, Entrant, EventResults, RunStatus } from '@common/results'
+import { PosPoints } from '@common/series'
 import { SeriesSettings } from '@common/settings'
 import { UUID } from '@common/util'
 import _ from 'lodash'
+
+const y2k = new Date('2000-01-01')
+
+export function getLastCourse(e: Entrant): number {
+    /* Find the last course information for an entrant based on mod tags of runs, unless is already specified */
+    if (e.lastcourse) return e.lastcourse
+
+    let lasttime = y2k
+    for (const c of e.runs) {
+        for (const r of c) {
+            if (r.modified > lasttime) {
+                lasttime = r.modified
+                e.lastcourse = r.course
+            }
+        }
+    }
+
+    return e.lastcourse
+}
+
+export function getBestNetRun(e: Entrant, course = 0, norder = 1): DecoratedRun|undefined {
+    /*
+        Get the best net run for last course run by an entrant
+        If course is specified, overrides default of last
+        If norder is specified, overrides default of 1
+    */
+    if (course === 0) {
+        course = getLastCourse(e)
+    }
+    return e.runs[course - 1].filter(r => r.norder === norder && r.status !== RunStatus.PLC)[0] || undefined
+}
+
+export function getLastRun(e: Entrant): DecoratedRun|undefined {
+    /* Get the last recorded run on any course */
+    const course = getLastCourse(e)
+    const runs: DecoratedRun[] = e.runs[course - 1].filter(r => r.status !== RunStatus.PLC)
+    return _.maxBy(runs, 'run')
+}
 
 export function decorateEntrant(e: Entrant) {
     /* Calculate things that apply to just the entrant in question (used by class and toptimes) */
@@ -54,7 +92,7 @@ export function decorateClassResults(settings: SeriesSettings, eventresults: Eve
     let entrantlist: Entrant[]|null = null
 
     // Find the class and entrants for the results
-    for (const [clscode, entrants] of eventresults.entries()) {
+    for (const [clscode, entrants] of Object.entries(eventresults)) {
         for (const e of entrants) {
             if (rungroup && e.rungroup !== rungroup) continue
             if (!carids.includes(e.carid)) continue

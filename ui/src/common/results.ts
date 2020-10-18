@@ -1,8 +1,5 @@
-import _ from 'lodash'
 import { Car } from './car'
 import { UUID } from './util'
-
-export const y2k = new Date('2000-01-01')
 
 export enum RunStatus {
     PLC = 'PLC',
@@ -80,6 +77,7 @@ export interface Entrant extends Car {
     lastcourse: number;
 }
 
+const y2k = new Date('2000-01-01')
 export class BlankEntrant implements Entrant {
     firstname = ''
     lastname = ''
@@ -128,45 +126,6 @@ export class BlankEntrant implements Entrant {
     }
 }
 
-
-export function getLastCourse(e: Entrant): number {
-    /* Find the last course information for an entrant based on mod tags of runs, unless is already specified */
-    if (e.lastcourse) return e.lastcourse
-
-    let lasttime = y2k
-    for (const c of e.runs) {
-        for (const r of c) {
-            if (r.modified > lasttime) {
-                lasttime = r.modified
-                e.lastcourse = r.course
-            }
-        }
-    }
-
-    return e.lastcourse
-}
-
-export function getBestNetRun(e: Entrant, course = 0, norder = 1): DecoratedRun|undefined {
-    /*
-        Get the best net run for last course run by an entrant
-        If course is specified, overrides default of last
-        If norder is specified, overrides default of 1
-    */
-    if (course === 0) {
-        course = getLastCourse(e)
-    }
-    return e.runs[course - 1].filter(r => r.norder === norder && r.status !== RunStatus.PLC)[0] || undefined
-}
-
-export function getLastRun(e: Entrant): DecoratedRun|undefined {
-    /* Get the last recorded run on any course */
-    const course = getLastCourse(e)
-    const runs: DecoratedRun[] = e.runs[course - 1].filter(r => r.status !== RunStatus.PLC)
-    return _.maxBy(runs, 'run')
-}
-
-export type EventResults = Map<string|number, Entrant[]>;
-
 export interface ExternalResult {
     position: number;
     pospoints: number;
@@ -175,3 +134,21 @@ export interface ExternalResult {
     net: number;
     classcode: string;
 }
+
+export interface ChampEntrant {
+    driverid: UUID
+    firstname: string
+    lastname: string
+    eventcount: number
+    position: number|null
+    points: number
+    events: [ { eventdate: string, drop: boolean, points: number } ]
+    missingrequired: string[]
+    tiebreakers: number[]
+
+    _pstorage: Event2Points
+}
+
+export type Event2Points = {[key: string]: number}
+export type EventResults = {[key: string]: Entrant[]} // classcode to entrant list
+export type ChampResults = {[key: string]: ChampEntrant[]} // classcode to champ entrant list
