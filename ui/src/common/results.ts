@@ -27,6 +27,7 @@ export interface DecoratedRun extends Run {
     net: number;
     norder: number;
     rorder: number;
+    anorder: number;
 
     ispotential?: boolean;
     oldbest?: boolean;
@@ -101,6 +102,26 @@ export interface PointsStorage {
     usingbest: number
 }
 
+export interface TopTimesTable {
+    titles: string[]
+    colcount: number[]
+    cols: string[][]
+    fields: string[][]
+    rows: TopTimeEntry[][]
+}
+
+export interface TopTimeEntry {
+    name: string
+    classcode: string
+    indexstr: string
+    indexval: number
+    time: number
+    current: boolean
+    pos: number|null
+    ispotential: boolean
+    isold: boolean
+}
+
 export interface ChampEntrant {
     driverid: UUID
     firstname: string
@@ -126,6 +147,25 @@ export interface ChampNotice {
 export interface PointStorage {
     total: number
     events: Event2Points
+}
+
+export class TopTimesKey {
+    indexed: boolean
+    counted: boolean
+    course:  number
+    title:   string   | null
+    cols:    string[] | null
+    fields:  string[] | null
+
+    constructor(options: {[key:string]: any}) {
+        this.indexed = false
+        this.counted = false
+        this.course = 0
+        this.title = null
+        this.cols = []
+        this.fields = []
+        Object.assign(this, options)
+    }
 }
 
 export type Event2Points = {[key: string]: number}

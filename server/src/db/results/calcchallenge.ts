@@ -22,7 +22,7 @@ export async function updateChallengeResults(challengeid) {
 
         for (const obj of res) {
             // We organize ChallengeRound in a topological structure so we do custom setting here
-            rounds[obj.round] = {
+            rounds[obj.round + ''] = { // need string key for JSON objects
                 challengeid: obj.challengeid,
                 round:       obj.round,
                 winner:      0,
@@ -56,7 +56,7 @@ export async function updateChallengeResults(challengeid) {
 
         const runs: ChallengeRun[] = await t.any(getruns, [challengeid])
         for (const run of runs) {
-            const rnd = rounds[run.round]
+            const rnd = rounds[run.round + '']
             const side = run.course === 1 ? 'left' : 'right'
 
             if (!isFinite(run.raw)) { run.raw = 999.999 }
@@ -136,6 +136,6 @@ export async function updateChallengeResults(challengeid) {
             }
         }
 
-        insertResults(challengeid, Object.values(rounds))
+        insertResults(challengeid, rounds)
     })
 }

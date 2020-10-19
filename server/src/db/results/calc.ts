@@ -11,11 +11,11 @@ import { insertResults } from './base'
 
 const y2k = new Date('2000-01-01')
 
-export async function updateSeriesInfo(name) {
+export async function updateSeriesInfo(name: string) {
     const data = await db.task(async t => {
         return {
             events:     t.series.eventList(),
-            // challenges: Challenge.getAll(), // FINISH
+            challenges: t.challenge.challengeList(),
             classes:    t.clsidx.classList(),
             indexes:    t.clsidx.indexList(),
             settings:   t.series.seriesSettings()
@@ -106,6 +106,7 @@ export async function updateEventResults(eventid: UUID) {
                         status: RunStatus.PLC,
                         norder: -1,
                         rorder: -1,
+                        anorder: -1,
                         modified: y2k
                     }
                 }

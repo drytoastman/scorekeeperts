@@ -15,21 +15,19 @@ import { SeriesInfo } from '@common/series'
 import { loadResults, needEventUpdate, needUpdate } from './base'
 import { updateEventResults, updateSeriesInfo } from './calc'
 import { SeriesSettings } from '@common/settings'
-import { decorateClassResults } from './decorate'
-import { EventResults } from '@common/results'
+import { decorateChampResults, decorateClassResults } from './decorate'
+import { ChampEntrant, ChampResults, Entrant, EventResults, TopTimesKey, TopTimesTable } from '@common/results'
+import { updateChallengeResults } from './calcchallenge'
+import { updateChampResults } from './calcchamp'
+import { ClassData } from '@common/classindex'
+import { loadTopTimesTable } from './calctoptimes'
 
 
 export async function cacheAll(): Promise<void> {
     const info = await getSeriesInfo()
-    for (const e of info.events) {
-        getEventResults(e.eventid)
-        /* FINISH
-        for (const c of info.getChallengesForEvent(e.eventid)) {
-            getChallengeResults(c.challengeid)
-        }
-        */
-        getChampResults()
-    }
+    for (const e of info.events) { getEventResults(e.eventid) }
+    for (const c of info.challenges) { getChallengeResults(c.challengeid) }
+    getChampResults()
 }
 
 export async function getSeriesInfo(): Promise<SeriesInfo> {
@@ -44,50 +42,41 @@ export async function getEventResults(eventid: UUID): Promise<EventResults> {
     return loadResults(eventid)
 }
 
-/*
-export function getChallengeResults(challengeid) {
-    if (needUpdate(true, ['challengerounds', 'challengeruns'], challengeid))
+
+export async function getChallengeResults(challengeid: UUID) {
+    if (needUpdate(true, ['challengerounds', 'challengeruns'], challengeid)) {
         updateChallengeResults(challengeid)
-    const ret = {} // note: JSON can't store using ints as keys
-    for (rnd of loadResults(challengeid)) {
-        ret[rnd.round] = rnd
     }
-    return ret
+    return loadResults(challengeid)
+}
+
+
+export async function getChampResults(): Promise<ChampResults> {
+    const name = 'champ'
+    if (await needUpdate(true, ['settings', 'classlist', 'indexlist', 'events', 'cars', 'runs', 'externalresults'], name)) {
+        updateChampResults(name)
+    }
+    return loadResults(name)
+}
+
+export async function getTopTimesTable(classdata: ClassData, results: EventResults, keys: TopTimesKey[], carid?: UUID): Promise<TopTimesTable> {
+    /* Get top times.  Pass in results from outside as in some cases, they are already loaded */
+    return loadTopTimesTable(classdata, results, keys, carid)
+}
+
+/* FINISH IF NEEDED
+export function getTopTimesLists() {
+    /* Get top times.  Pass in results from outside as in some cases, they are already loaded
+    // loadTopTimesTable(classdata, results, wrapInClass=TopTimesListsWrapper, props)
 }
 */
 
-
-export async function getChampResults() {
-    /* returns a ChampClass list object */
-    const name = 'champ'
-    if (await needUpdate(true, ['settings', 'classlist', 'indexlist', 'events', 'cars', 'runs', 'externalresults'], name)) {
-        console.log('FINISH')  // updateChampResults(name)
-    }
-    return loadResults(name)
-    /*
-    for (const [k, v] of Object.entries(res)) {
-        res[k] = ChampClass(v) // Rewrap the list with ChampClass for template function
-    }
-    return res
-    */
-}
-
-export function getTopTimesTable() {
-    /* Get top times.  Pass in results from outside as in some cases, they are already loaded */
-    // loadTopTimesTable(classdata, results, keys, props)
-}
-
-export function getTopTimesLists() {
-    /* Get top times.  Pass in results from outside as in some cases, they are already loaded */
-    // loadTopTimesTable(classdata, results, wrapInClass=TopTimesListsWrapper, props)
-}
-
-export function getDecoratedClassResults(settings: SeriesSettings, eventresults: EventResults, carids: UUID[], rungroup = 0) {
+export function getDecoratedClassResults(settings: SeriesSettings, eventresults: EventResults, carids: UUID[], rungroup = 0): [Entrant[], Entrant[]] {
     /* Decorate the objects with old and potential results for the announcer information */
-    decorateClassResults(settings, eventresults, carids, rungroup)
+    return decorateClassResults(settings, eventresults, carids, rungroup)
 }
 
-export function getDecoratedChampResults() {
-    /* Decorate the objects with old and potential results for the announcer information */
-    // decorateChampResults(champresults, markentrants)
+export function getDecoratedChampResults(champresults: ChampResults, markentrants: Entrant[]): ChampEntrant[] {
+    /* Decorate the objects with old and potential results for the announcer information, single class */
+    return decorateChampResults(champresults, markentrants)
 }
