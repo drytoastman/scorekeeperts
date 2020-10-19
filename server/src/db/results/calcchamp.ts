@@ -4,9 +4,7 @@ import { SeriesEvent } from '@common/event'
 import { ChampEntrant, ChampResults, Entrant, Event2Points } from '@common/results'
 import { UUID } from '@common/util'
 import { getDObj } from '@/util/data'
-import { db } from '..'
-import { getEventResults } from '.'
-import { insertResults } from './base'
+import { ScorekeeperProtocol } from '..'
 
 function calcPoints(event2points: Event2Points, bestof: number) {
     const drop    = [] as UUID[]
@@ -50,7 +48,7 @@ function champEntrantFinalize(centry: ChampEntrant, bestof: number, events: Seri
 }
 
 
-export async function updateChampResults(name: string) {
+export async function updatedChampResults(task: ScorekeeperProtocol): Promise<ChampResults> {
 /*
     Create the cached result for champ results.
     If justeventid is None, we load all event results and create the champ results.
@@ -58,57 +56,54 @@ export async function updateChampResults(name: string) {
         (saves loading/parsing all events again)
     Returns a dict of ChampClass objects
 */
-    await db.task(async t => {
+    const now       = new Date()
+    const settings  = await task.series.seriesSettings()
+    const classdata = await task.clsidx.getClassData()
+    const events    = await task.series.eventList()
+    let completed   = 0
 
-        const now       = new Date()
-        const settings  = await t.series.seriesSettings()
-        const classdata = await t.clsidx.getClassData()
-        const events    = await t.series.eventList()
-        let completed   = 0
+    // Interm storage while we distribute result data by driverid
+    const store = {} as {[classcode: string]: { [driverid: string]: ChampEntrant }}
 
-        // Interm storage while we distribute result data by driverid
-        const store = {} as {[classcode: string]: { [driverid: string]: ChampEntrant }}
-
-        for (const event of events) {
-            if (event.ispractice) continue
-            if (now >= new Date(event.date)) {
-                completed += 1
-            }
-
-            const eventresults = await getEventResults(event.eventid)
-            for (const classcode in eventresults) {
-                if (!classdata.classlist[classcode].champtrophy) { // class doesn't get champ trophies, ignore
-                    continue
-                }
-                const classmap = getDObj(store, classcode)
-                for (const entrant of eventresults[classcode]) {
-                    champAddEventResults(classmap[entrant.driverid], event, entrant)
-                }
-            }
+    for (const event of events) {
+        if (event.ispractice) continue
+        if (now >= new Date(event.date)) {
+            completed += 1
         }
 
-        const todrop = settings.dropevents
-        const bestof = Math.max(todrop, completed - todrop)
-
-        // Final storage where results are an ordered list rather than map
-        const ret = {} as ChampResults
-        for (const [classcode, classmap] of Object.entries(store)) {
-            for (const entrant of Object.values(classmap)) {
-                champEntrantFinalize(entrant, bestof, events)
-                ret[classcode].push(entrant)
+        const eventresults = await task.results.getEventResults(event.eventid)
+        for (const classcode in eventresults) {
+            if (!classdata.classlist[classcode].champtrophy) { // class doesn't get champ trophies, ignore
+                continue
             }
-            _.orderBy(ret[classcode], ['points', 'tiebreakers'], 'desc')
-            let ii = 1
-            for (const e of ret[classcode]) {
-                if (e.eventcount < settings.minevents || e.missingrequired.length > 0) {
-                    e.position = null
-                } else {
-                    e.position = ii
-                    ii += 1
-                }
+            const classmap = getDObj(store, classcode)
+            for (const entrant of eventresults[classcode]) {
+                champAddEventResults(classmap[entrant.driverid], event, entrant)
             }
         }
+    }
 
-        insertResults(name, ret)
-    })
+    const todrop = settings.dropevents
+    const bestof = Math.max(todrop, completed - todrop)
+
+    // Final storage where results are an ordered list rather than map
+    const ret = {} as ChampResults
+    for (const [classcode, classmap] of Object.entries(store)) {
+        for (const entrant of Object.values(classmap)) {
+            champEntrantFinalize(entrant, bestof, events)
+            ret[classcode].push(entrant)
+        }
+        _.orderBy(ret[classcode], ['points', 'tiebreakers'], 'desc')
+        let ii = 1
+        for (const e of ret[classcode]) {
+            if (e.eventcount < settings.minevents || e.missingrequired.length > 0) {
+                e.position = null
+            } else {
+                e.position = ii
+                ii += 1
+            }
+        }
+    }
+
+    return ret
 }

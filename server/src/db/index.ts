@@ -9,6 +9,8 @@ import { PaymentsRepository } from './paymentsrepo'
 import { GeneralRepository } from './generalrepo'
 import { RunsRepository } from './runsrepo'
 import { dblog } from '../util/logging'
+import { ChallengeRepository } from './challengerepo'
+import { ResultsRepository } from './results'
 
 export interface DBExtensions {
     series: SeriesRepository;
@@ -19,6 +21,8 @@ export interface DBExtensions {
     payments: PaymentsRepository;
     general: GeneralRepository;
     runs: RunsRepository;
+    challenge: ChallengeRepository;
+    results: ResultsRepository;
 }
 
 export type ScorekeeperProtocol = IBaseProtocol<DBExtensions> & DBExtensions;
@@ -35,6 +39,8 @@ const initOptions: IInitOptions<DBExtensions> = {
         obj.payments = new PaymentsRepository(obj, pgp)
         obj.general = new GeneralRepository(obj)
         obj.runs = new RunsRepository(obj, pgp)
+        obj.challenge = new ChallengeRepository(obj, pgp)
+        obj.results = new ResultsRepository(obj)
     }
 }
 

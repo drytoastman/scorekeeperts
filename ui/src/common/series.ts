@@ -6,7 +6,7 @@ import { SeriesSettings } from './settings'
 export interface SeriesInfo {
     classes: SeriesClass[]
     indexes: SeriesIndex[]
-    settins: SeriesSettings
+    settings: SeriesSettings
     events: SeriesEvent[]
     challenges: Challenge[]
 }
