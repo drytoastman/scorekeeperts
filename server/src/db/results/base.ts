@@ -1,14 +1,10 @@
-import { Entrant } from '@common/results'
 import { SeriesStatus } from '@common/series'
 import { UUID } from '@common/util'
 import { db } from '..'
 
-
 // Helpers for basic results operations
 const series = ''  // FINISH, move/remove
 const seriestype = 0
-
-// Map<string|number, Entrant[]>;
 
 export async function needEventUpdate(eventid: UUID): Promise<boolean> {
     // check if we can/need to update, look for specifc eventid in data to reduce unnecessary event churn when following a single event (live)

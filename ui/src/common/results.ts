@@ -77,53 +77,12 @@ export interface Entrant extends Car {
     lastcourse: number;
 }
 
-const y2k = new Date('2000-01-01')
-export class BlankEntrant implements Entrant {
-    firstname = ''
-    lastname = ''
-    scca = ''
-    rungroup = 0
-    indexval = 0
-    indexstr = ''
-    runs = []
-    net = 0
-    pen = 0
-    netall = 0
-    penall = 0
-    dialraw = 0
-    potnet = 0
-    oldnet = 0
-    current = false
-    ispotential = false
-    isold = false
-    oldpoints = 0
-    potpoints = 0
-    position = 0
-    trophy = false
-    pospoints = 0
-    diffpoints = 0
-    points = 0
-    diff1 = 0
-    diffn = 0
-    bonusdial = 0
-    prodiff = 0
-    prodial = 0
-    lastcourse = 0
-    carid = ''
-    driverid = ''
-    classcode = ''
-    indexcode = ''
-    number = 0
-    useclsmult= false
-    attr =  { year: '',  make: '', model: '', color: '' }
-    modified = y2k
-    created = y2k
-    eventsrun = 0
-    eventsreg = 0
-    series = ''
-    constructor(obj: unknown) {
-        Object.assign(this, obj)
-    }
+export interface EventNotice {
+    firstname: string
+    lastname: string
+    net: number
+    isold: boolean
+    ispotential: boolean
 }
 
 export interface ExternalResult {
@@ -135,18 +94,38 @@ export interface ExternalResult {
     classcode: string;
 }
 
+export interface PointsStorage {
+    drop: []
+    total: number
+    events: Event2Points
+    usingbest: number
+}
+
 export interface ChampEntrant {
     driverid: UUID
     firstname: string
     lastname: string
     eventcount: number
     position: number|null
-    points: number
     events: [ { eventdate: string, drop: boolean, points: number } ]
     missingrequired: string[]
     tiebreakers: number[]
+    points: PointsStorage
+    // decoration
+    current: boolean
+}
 
-    _pstorage: Event2Points
+export interface ChampNotice {
+    firstname: string
+    lastname: string
+    points: { total: number }
+    ispotential: boolean
+    isold: boolean
+}
+
+export interface PointStorage {
+    total: number
+    events: Event2Points
 }
 
 export type Event2Points = {[key: string]: number}

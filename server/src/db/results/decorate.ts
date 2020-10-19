@@ -1,8 +1,9 @@
-import { BlankEntrant, DecoratedRun, Entrant, EventResults, RunStatus } from '@common/results'
+import _ from 'lodash'
+
+import { ChampNotice, ChampResults, DecoratedRun, Entrant, EventNotice, EventResults, RunStatus } from '@common/results'
 import { PosPoints } from '@common/series'
 import { SeriesSettings } from '@common/settings'
 import { UUID } from '@common/util'
-import _ from 'lodash'
 
 const y2k = new Date('2000-01-01')
 
@@ -114,6 +115,7 @@ export function decorateClassResults(settings: SeriesSettings, eventresults: Eve
 
     // Return a copy so we can decorate in different ways during a single session (new websocket feed)
     const decoratedlist = _.cloneDeep(entrantlist)
+    const notelist = decoratedlist as unknown as EventNotice[]
     const markedlist: Entrant[] = []
 
     // Decorate our copied entrants with run change information
@@ -131,14 +133,14 @@ export function decorateClassResults(settings: SeriesSettings, eventresults: Eve
             const position = _.indexOf(sumlist, e.oldnet) + 1
             e.oldpoints = settings.usepospoints ? ppoints.get(position) : sumlist[0] * 100 / e.oldnet
             _.remove(sumlist, e.oldnet)
-            decoratedlist.push(new BlankEntrant({ firstname:e.firstname, lastname:e.lastname, net:e.oldnet, isold: true }))
+            notelist.push({ firstname:e.firstname, lastname:e.lastname, net:e.oldnet, isold: true, ispotential: false })
         }
         if (e.potnet) {
             sumlist.push(e.potnet)
             sumlist.sort()
             const position = _.indexOf(sumlist, e.potnet) + 1
             e.potpoints = settings.usepospoints ? ppoints.get(position) : sumlist[0] * 100 / e.potnet
-            decoratedlist.push(new BlankEntrant({ firstname:e.firstname, lastname:e.lastname, net:e.potnet, ispotential: true }))
+            notelist.push({ firstname:e.firstname, lastname:e.lastname, net:e.potnet, ispotential: true, isold: false })
         }
     }
 
@@ -157,4 +159,40 @@ export function decorateClassResults(settings: SeriesSettings, eventresults: Eve
     }
 
     return [decoratedlist, sortedmarks]
+}
+
+export function decorateChampResults(champresults: ChampResults, markentrants: Entrant[]) {
+    /* Calculate things for the announcer/info displays */
+    const champclass = champresults[markentrants[0].classcode]
+    if (!champclass) return []
+    const newlist = _.cloneDeep(champclass)
+    const notelist = newlist as unknown as ChampNotice[]
+
+    for (const champe of newlist) {
+        let entrant: Entrant|null = null
+        for (const me of markentrants) {
+            if (champe.driverid === me.driverid) {
+                entrant = me
+                break
+            }
+        }
+
+        if (!entrant) {
+            continue
+        }
+
+        champe.current = true
+        if (entrant.oldpoints && entrant.oldpoints < entrant.points) {
+            const total = champe.points.total - entrant.points + entrant.oldpoints
+            notelist.push({ firstname:champe.firstname, lastname:champe.lastname, points:{ total:total }, isold:true, ispotential: false })
+        }
+
+        if (entrant.potpoints && entrant.potpoints > entrant.points) {
+            const total = champe.points.total - entrant.points + entrant.potpoints
+            notelist.push({ firstname:champe.firstname, lastname:champe.lastname, points:{ total:total }, ispotential: true, isold: false })
+        }
+    }
+
+    _.orderBy(newlist, 'points.total', 'desc')
+    return newlist
 }
