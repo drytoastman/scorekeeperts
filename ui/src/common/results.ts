@@ -128,7 +128,7 @@ export interface ChampEntrant {
     lastname: string
     eventcount: number
     position: number|null
-    events: [ { eventdate: string, drop: boolean, points: number } ]
+    events: { eventdate: string, drop: boolean, points: number }[]
     missingrequired: string[]
     tiebreakers: number[]
     points: PointsStorage

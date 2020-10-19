@@ -1,10 +1,12 @@
 import _ from 'lodash'
+import moment from 'moment'
 
 import { SeriesEvent } from '@common/event'
 import { ChampEntrant, ChampResults, Entrant, Event2Points } from '@common/results'
 import { UUID } from '@common/util'
-import { getDObj } from '@/util/data'
+import { getD, getDList, getDObj } from '@/util/data'
 import { ScorekeeperProtocol } from '..'
+import { dblog } from '@/util/logging'
 
 function calcPoints(event2points: Event2Points, bestof: number) {
     const drop    = [] as UUID[]
@@ -21,19 +23,35 @@ function calcPoints(event2points: Event2Points, bestof: number) {
 }
 
 function champEventKey(event: SeriesEvent) {
-    return `d-${event.date}-id-${event.eventid}`
+    return `d-${moment(event.date).format('YYYY-MM-DD')}-id-${event.eventid}`
 }
 
-function champAddEventResults(centry: ChampEntrant, event: SeriesEvent, entry: Entrant) {
-    centry.firstname = entry.firstname
-    centry.lastname  = entry.lastname
-    centry.driverid  = entry.driverid
-    const idx = entry.position - 1
+function champAddEventResults(map: {[key:string]: ChampEntrant}, event: SeriesEvent, entrant: Entrant) {
+    const centry = getD(map, entrant.driverid, () => ({
+        driverid: entrant.driverid,
+        firstname: entrant.firstname,
+        lastname: entrant.lastname,
+        eventcount: 0,
+        position: null,
+        events: [],
+        missingrequired: [],
+        tiebreakers: [],
+        points: {
+            drop: [],
+            total: 0,
+            events: {},
+            usingbest: 0
+        },
+        current: false
+    } as ChampEntrant))
+
+    const idx = entrant.position - 1
     if (idx < centry.tiebreakers.length - 1) {
-        centry.tiebreakers[idx] += 1
+        const cur = centry.tiebreakers[idx] || 0
+        centry.tiebreakers[idx] = cur + 1
     }
     centry.eventcount += 1
-    centry.points.events[champEventKey(event)] = entry.points
+    centry.points.events[champEventKey(event)] = entrant.points
 }
 
 function champEntrantFinalize(centry: ChampEntrant, bestof: number, events: SeriesEvent[]) {
@@ -56,6 +74,8 @@ export async function updatedChampResults(task: ScorekeeperProtocol): Promise<Ch
         (saves loading/parsing all events again)
     Returns a dict of ChampClass objects
 */
+    dblog.debug('updatedChampResults')
+
     const now       = new Date()
     const settings  = await task.series.seriesSettings()
     const classdata = await task.clsidx.getClassData()
@@ -78,7 +98,7 @@ export async function updatedChampResults(task: ScorekeeperProtocol): Promise<Ch
             }
             const classmap = getDObj(store, classcode)
             for (const entrant of eventresults[classcode]) {
-                champAddEventResults(classmap[entrant.driverid], event, entrant)
+                champAddEventResults(classmap, event, entrant)
             }
         }
     }
@@ -89,13 +109,14 @@ export async function updatedChampResults(task: ScorekeeperProtocol): Promise<Ch
     // Final storage where results are an ordered list rather than map
     const ret = {} as ChampResults
     for (const [classcode, classmap] of Object.entries(store)) {
+        const clslist = getDList(ret, classcode)
         for (const entrant of Object.values(classmap)) {
             champEntrantFinalize(entrant, bestof, events)
-            ret[classcode].push(entrant)
+            clslist.push(entrant)
         }
-        _.orderBy(ret[classcode], ['points', 'tiebreakers'], 'desc')
+        _.orderBy(clslist, ['points', 'tiebreakers'], 'desc')
         let ii = 1
-        for (const e of ret[classcode]) {
+        for (const e of clslist) {
             if (e.eventcount < settings.minevents || e.missingrequired.length > 0) {
                 e.position = null
             } else {

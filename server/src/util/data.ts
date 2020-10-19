@@ -16,6 +16,15 @@ export function getD<V>(obj: {[k: string]: V}, key: string, def: () => V): V {
     return v
 }
 
+export function make2D<V>(d1: number): V[][] {
+    // need to at least init first dimension so dynamic of second dimension set works
+    const ret: V[][] = []
+    for (let ii = 0; ii < d1; ii++) {
+        ret[ii] = []
+    }
+    return ret
+}
+
 export class DefaultMap<K, V> extends Map<K, V> {
 
     default: () => V

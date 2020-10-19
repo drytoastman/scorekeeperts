@@ -5,12 +5,14 @@ import { DecoratedRun, Entrant, EventResults, ExternalResult, RunStatus } from '
 import { PosPoints, SeriesInfo } from '@common/series'
 import { SeriesSettings } from '@common/settings'
 import { UUID } from '@common/util'
-import { getDList } from '@/util/data'
+import { getDList, make2D } from '@/util/data'
 import { ScorekeeperProtocol } from '..'
+import { dblog } from '@/util/logging'
 
 const y2k = new Date('2000-01-01')
 
 export async function updatedSeriesInfo(task: ScorekeeperProtocol): Promise<SeriesInfo> {
+    dblog.debug('updatedSeriesInfo')
     return {
         events:     await task.series.eventList(),
         challenges: await task.challenge.challengeList(),
@@ -22,8 +24,9 @@ export async function updatedSeriesInfo(task: ScorekeeperProtocol): Promise<Seri
 
 async function updatedExternalEventResults(task: ScorekeeperProtocol, eventid: UUID, settings: SeriesSettings, ppoints: PosPoints): Promise<EventResults> {
     /* The external event version of updateEventResults, only do point calculation based off of net result */
-    const results = {} as {[key: string]: ExternalResult[]}
+    dblog.debug(`updatedExternalEventResults ${eventid}`)
 
+    const results = {} as {[key: string]: ExternalResult[]}
     const data: ExternalResult[] = await task.any('SELECT r.*,d.firstname,d.lastname FROM drivers d JOIN externalresults r ON r.driverid=d.driverid WHERE r.eventid=$1', [eventid])
     for (const r of data) {
         getDList(results, r.classcode).push(r)
@@ -51,8 +54,10 @@ export async function updatedEventResults(task: ScorekeeperProtocol, eventid: UU
         Each Entrant is a json object of attributes and a list of lists of Run objects ([course#][run#])
         Each Run object is regular run data with attributes like bestraw, bestnet assigned.
     */
+    dblog.debug(`updatedEventResults ${eventid}`)
+
     const results   = {} as EventResults
-    const cptrs     = new Map<[string, number], Entrant>()
+    const cptrs     = {} as {[key: string]: Entrant}
     const event     = await task.series.getEvent(eventid)
     const classdata = await task.clsidx.getClassData()
     const settings  = await task.series.seriesSettings()
@@ -63,12 +68,14 @@ export async function updatedEventResults(task: ScorekeeperProtocol, eventid: UU
         return updatedExternalEventResults(task, eventid, settings, ppoints)
     }
 
+    function ekey(e: {carid: string, rungroup: number}) { return e.carid + '?' + e.rungroup }
+
     // Fetch all of the entrants (driver/car combo), place in class lists, save pointers for quicker access
     const data: Entrant[] = await task.any("SELECT e.rungroup,c.carid,d.firstname,d.lastname,d.attr->>'scca' as scca,c.* FROM drivers d " +
                         'JOIN cars c ON c.driverid=d.driverid INNER JOIN (select distinct carid, rungroup FROM runs WHERE eventid=$1) e ON c.carid = e.carid', [eventid])
 
     for (const e of data) { // [Entrant(**x) for x in cur.fetchall()]:
-        if (e.carid in cptrs) continue // ignore duplicate carids from old series
+        if (ekey(e) in cptrs) continue // ignore duplicate carids from old series
 
         if (sessions) {
             getDList(results, e.rungroup + '').push(e)
@@ -82,7 +89,7 @@ export async function updatedEventResults(task: ScorekeeperProtocol, eventid: UU
             e.indexstr = index.str
         }
 
-        e.runs = [] as DecoratedRun[][]
+        e.runs = make2D(event.courses)
         for (const cc of _.range(event.courses)) {
             for (const rr of _.range(event.runs)) {
                 e.runs[cc][rr] = {
@@ -103,7 +110,8 @@ export async function updatedEventResults(task: ScorekeeperProtocol, eventid: UU
                 }
             }
         }
-        cptrs.set([e.carid, e.rungroup], e)
+
+        cptrs[ekey(e)] =  e
     }
 
     // Fetch all of the runs, calc net and assign to the correct entrant
@@ -111,9 +119,9 @@ export async function updatedEventResults(task: ScorekeeperProtocol, eventid: UU
     for (const r of runs) {
         if (r.raw <= 0) { continue } // ignore crap data that can't be correct
 
-        const match = cptrs.get([r.carid, r.rungroup])
+        const match = cptrs[ekey(r)]
         if (!match) {
-            // log.warning('missing match for carid/group')
+            dblog.warning('missing match for carid/group')
             continue
         }
 
@@ -137,7 +145,7 @@ export async function updatedEventResults(task: ScorekeeperProtocol, eventid: UU
     }
 
     // For every entrant, calculate their best runs (raw,net,allraw,allnet) and event sum(net)
-    for (const e of cptrs.values()) {
+    for (const e of Object.values(cptrs)) {
         e.net = 0      // Best counted net overall time
         e.pen = 0      // Best counted unindexed overall time (includes penalties)
         e.netall = 0   // Best net of all runs (same as net when counted not active)

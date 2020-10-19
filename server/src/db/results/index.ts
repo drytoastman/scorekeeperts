@@ -22,6 +22,7 @@ import { ClassData } from '@common/classindex'
 import { loadTopTimesTable } from './calctoptimes'
 import { ScorekeeperProtocol } from '..'
 import { ChallengeResults } from '@common/challenge'
+import { dblog } from '@/util/logging'
 
 
 export class ResultsRepository {
@@ -32,33 +33,34 @@ export class ResultsRepository {
         const series = await this.getCurrent()
         if (await this.getStatus(series) !== SeriesStatus.ACTIVE) return // can't cache non-active
 
+        dblog.info(`cacheAll ${series}`)
         const info = await this.getSeriesInfo()
-        for (const e of info.events) { this.getEventResults(e.eventid) }
-        for (const c of info.challenges) { this.getChallengeResults(c.challengeid) }
-        this.getChampResults()
+        for (const e of info.events) { await this.getEventResults(e.eventid) }
+        // for (const c of info.challenges) { this.getChallengeResults(c.challengeid) }
+        await this.getChampResults()
     }
 
 
     async getSeriesInfo(): Promise<SeriesInfo> {
         const name = 'info'
-        if (this.needUpdate(false, ['challenges', 'classlist', 'indexlist', 'events', 'settings'], name)) {
-            this.insertResults(name, updatedSeriesInfo(this.db))
+        if (await this.needUpdate(false, ['challenges', 'classlist', 'indexlist', 'events', 'settings'], name)) {
+            await this.insertResults(name, updatedSeriesInfo(this.db))
         }
         return this.loadResults(name)
     }
 
 
     async getEventResults(eventid: UUID): Promise<EventResults> {
-        if (this.needEventUpdate(eventid)) {
-            this.insertResults(eventid, updatedEventResults(this.db, eventid))
+        if (await this.needEventUpdate(eventid)) {
+            await this.insertResults(eventid, updatedEventResults(this.db, eventid))
         }
         return this.loadResults(eventid)
     }
 
 
     async getChallengeResults(challengeid: UUID): Promise<ChallengeResults> {
-        if (this.needUpdate(true, ['challengerounds', 'challengeruns'], challengeid)) {
-            this.insertResults(challengeid, updatedChallengeResults(this.db, challengeid))
+        if (await this.needUpdate(true, ['challengerounds', 'challengeruns'], challengeid)) {
+            await this.insertResults(challengeid, updatedChallengeResults(this.db, challengeid))
         }
         return this.loadResults(challengeid)
     }
@@ -67,35 +69,10 @@ export class ResultsRepository {
     async getChampResults(): Promise<ChampResults> {
         const name = 'champ'
         if (await this.needUpdate(true, ['settings', 'classlist', 'indexlist', 'events', 'cars', 'runs', 'externalresults'], name)) {
-            this.insertResults(name, updatedChampResults(this.db))
+            await this.insertResults(name, updatedChampResults(this.db))
         }
         return this.loadResults(name)
     }
-
-
-    getTopTimesTable(classdata: ClassData, results: EventResults, keys: TopTimesKey[], carid?: UUID): TopTimesTable {
-        /* Get top times.  Pass in results from outside as in some cases, they are already loaded */
-        return loadTopTimesTable(classdata, results, keys, carid)
-    }
-
-    /* FINISH IF NEEDED
-        getTopTimesLists() {
-            /* Get top times.  Pass in results from outside as in some cases, they are already loaded
-            loadTopTimesTable(classdata, results, wrapInClass=TopTimesListsWrapper, props)
-        }
-    */
-
-    getDecoratedClassResults(settings: SeriesSettings, eventresults: EventResults, carids: UUID[], rungroup = 0): [Entrant[], Entrant[]] {
-        /* Decorate the objects with old and potential results for the announcer information */
-        return decorateClassResults(settings, eventresults, carids, rungroup)
-    }
-
-    getDecoratedChampResults(champresults: ChampResults, markentrants: Entrant[]): ChampEntrant[] {
-        /* Decorate the objects with old and potential results for the announcer information, single class */
-        return decorateChampResults(champresults, markentrants)
-    }
-
-
 
 
     private async needEventUpdate(eventid: UUID): Promise<boolean> {
@@ -106,8 +83,11 @@ export class ResultsRepository {
         const dm = new Date((await this.db.one("SELECT max(ltime) FROM publiclog WHERE tablen='drivers'")).max)
         const sm = new Date((await this.db.one("SELECT max(ltime) FROM serieslog WHERE tablen IN ('settings', 'classlist', 'indexlist', 'cars')")).max)
         const em = new Date((await this.db.one("SELECT max(ltime) FROM serieslog WHERE tablen IN ('events', 'runs', 'externalresults') AND " +
-                                  "(olddata->>'eventid'=$1::text OR newdata->>'eventid'=$1::text)", [eventid])).max)
-        const rm = new Date((await this.db.one('SELECT modified   FROM results WHERE series=%s AND name=%s::text', [series, eventid])).max)
+                                  "(olddata->>'eventid'=$1::text OR newdata->>'eventid'=$1)", [eventid])).max)
+        const res = await this.db.oneOrNone('SELECT modified FROM results WHERE series=$1 AND name=$2', [series, eventid])
+        if (!res) return true
+
+        const rm = new Date(res.modified)
         return (rm.getTime() < Math.max(dm.getTime(), sm.getTime(), em.getTime()))
     }
 
@@ -117,20 +97,19 @@ export class ResultsRepository {
         const series = await this.getCurrent()
         if (await this.getStatus(series) !== SeriesStatus.ACTIVE) return false
 
-        let p
+        let p: Promise<any>
         if (usedrivers) {
             p = this.db.one('SELECT ' +
-                    '(SELECT MAX(times.max) FROM (SELECT max(ltime) FROM serieslog WHERE tablen IN $1:csv ' +
+                    '(SELECT MAX(times.max) FROM (SELECT max(ltime) FROM serieslog WHERE tablen IN ($1:csv) ' +
                     'UNION ALL SELECT max(ltime) FROM publiclog WHERE tablen=\'drivers\') AS times) >' +
                     '(SELECT modified FROM results WHERE series=$2 AND name=$3) AS result', [stables, series, name])
         } else {
             p = this.db.one('SELECT ' +
-                    '(SELECT max(ltime) FROM serieslog WHERE tablen IN $1:csv) >' +
+                    '(SELECT max(ltime) FROM serieslog WHERE tablen IN ($1:csv)) >' +
                     '(SELECT modified FROM results WHERE series=$2 AND name=$3) AS result', [stables, series, name])
         }
-        const r = await (p).result
+        const r = (await p).result
         return (r === null || r)
-
     }
 
 
@@ -146,24 +125,24 @@ export class ResultsRepository {
           Get access for modifying series rows, check if we need to insert a default first.
           Don't upsert as we have to specify LARGE json object twice.
         */
+        const resolved = await Promise.resolve(data)  // incase data is a promise
         const series = await this.getCurrent()
         return this.db.tx(async tx => {
             await tx.none('SET ROLE $1', [series])
             await tx.none("INSERT INTO results VALUES ($1, $2, '{}', now()) ON CONFLICT (series, name) DO NOTHING", [series, name])
-            await tx.none('UPDATE results SET data=$1::json, modified=now() where series=$2 and name=$3', [Promise.resolve(data), series, name])
+            await tx.none('UPDATE results SET data=$1::json, modified=now() where series=$2 and name=$3', [resolved, series, name])
             await tx.none('RESET ROLE')
         })
     }
 
 
     private async getCurrent(): Promise<string> {
-        const path = await this.db.one('SHOW search_path')
-        return path.split(',')[0]
+        const res = await this.db.one('SHOW search_path')
+        return res.search_path.split(',')[0]
     }
 
     private async getStatus(series: string): Promise<SeriesStatus> {
-        const res1 = await this.db.one('select schema_name from information_schema.schemata where schema_name=$1', [series])
-        if (res1.rowcount > 0) {
+        if (await this.db.oneOrNone('select schema_name from information_schema.schemata where schema_name=$1', [series])) {
             return SeriesStatus.ACTIVE
         } else {
             const res2 = await this.db.one('select count(1) from results where series=$1', [series])
