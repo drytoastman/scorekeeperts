@@ -27,7 +27,7 @@ export class PosPoints {
     get(position: number): number {
         const idx = position - 1
         if (idx >= this.ppoints.length) {
-            return this.ppoints[-1]
+            return this.ppoints[this.ppoints.length - 1]
         } else {
             return this.ppoints[idx]
         }

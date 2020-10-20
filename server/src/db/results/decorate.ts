@@ -145,7 +145,6 @@ export function decorateClassResults(settings: SeriesSettings, eventresults: Eve
     }
 
     // Mark this entrant as current, clear others if decorate is called multiple times ???
-    _.orderBy(decoratedlist, 'net')
 
     // Keep the marked list in the same order as passed in carids
     const sortedmarks: Entrant[] = []
@@ -158,7 +157,7 @@ export function decorateClassResults(settings: SeriesSettings, eventresults: Eve
         }
     }
 
-    return [decoratedlist, sortedmarks]
+    return [_.orderBy(decoratedlist, 'net'), sortedmarks]
 }
 
 export function decorateChampResults(champresults: ChampResults, markentrants: Entrant[]) {
@@ -193,6 +192,5 @@ export function decorateChampResults(champresults: ChampResults, markentrants: E
         }
     }
 
-    _.orderBy(newlist, 'points.total', 'desc')
-    return newlist
+    return _.orderBy(newlist, 'points.total', 'desc')
 }

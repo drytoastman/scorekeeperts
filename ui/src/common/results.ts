@@ -19,6 +19,9 @@ export interface Run {
     cones: number;
     gates: number;
     status: string;
+    reaction?: number;
+    sixty?: number;
+    attr?: {[key: string]: string};
     modified: Date;  // dateutil.parser.parse(r.get('modified', '2000-01-02')) # Catch JSON placeholders
 }
 
@@ -93,6 +96,7 @@ export interface ExternalResult {
     points: number;
     net: number;
     classcode: string;
+    runs: []; // empty array to keep old code happy
 }
 
 export interface PointsStorage {
@@ -127,7 +131,7 @@ export interface ChampEntrant {
     firstname: string
     lastname: string
     eventcount: number
-    position: number|null
+    position?: number
     events: { eventdate: string, drop: boolean, points: number }[]
     missingrequired: string[]
     tiebreakers: number[]

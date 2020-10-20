@@ -1,4 +1,5 @@
 import _ from 'lodash'
+import moment from 'moment'
 
 import { hasSessions } from '@common/event'
 import { DecoratedRun, Entrant, EventResults, ExternalResult, RunStatus } from '@common/results'
@@ -13,13 +14,19 @@ const y2k = new Date('2000-01-01')
 
 export async function updatedSeriesInfo(task: ScorekeeperProtocol): Promise<SeriesInfo> {
     dblog.debug('updatedSeriesInfo')
-    return {
+    const ret = {
         events:     await task.series.eventList(),
         challenges: await task.challenge.challengeList(),
         classes:    await task.clsidx.classList(),
         indexes:    await task.clsidx.indexList(),
         settings:   await task.series.seriesSettings()
     }
+    ret.events.forEach(e => {
+        Object.assign(e, e.attr)
+        delete e.attr
+        e.date = moment(e.date).format('YYYY-MM-DD')
+    })
+    return ret
 }
 
 async function updatedExternalEventResults(task: ScorekeeperProtocol, eventid: UUID, settings: SeriesSettings, ppoints: PosPoints): Promise<EventResults> {
@@ -33,13 +40,14 @@ async function updatedExternalEventResults(task: ScorekeeperProtocol, eventid: U
     }
 
     // Now for each class we can sort and update position, trophy, points(both types)
-    for (const [, res] of Object.entries(results)) {
-        _.orderBy(res, 'net')
-        _.forEach(res, (r, ii) => {
+    for (const key in results) {
+        const res = results[key] = _.orderBy(results[key], 'net')
+        res.forEach((r, ii) => {
             r.position   = ii + 1
             r.pospoints  = ppoints.get(r.position)
             r.diffpoints = res[0].net * 100 / r.net
             r.points     = settings.usepospoints ? r.pospoints : r.diffpoints
+            r.runs       = []
         })
     }
 
@@ -76,6 +84,8 @@ export async function updatedEventResults(task: ScorekeeperProtocol, eventid: UU
 
     for (const e of data) { // [Entrant(**x) for x in cur.fetchall()]:
         if (ekey(e) in cptrs) continue // ignore duplicate carids from old series
+        Object.assign(e, e.attr)
+        delete e.attr
 
         if (sessions) {
             getDList(results, e.rungroup + '').push(e)
@@ -117,6 +127,8 @@ export async function updatedEventResults(task: ScorekeeperProtocol, eventid: UU
     // Fetch all of the runs, calc net and assign to the correct entrant
     const runs: DecoratedRun[] = await task.any('SELECT * FROM runs WHERE eventid=$1 AND course<=$2 and run<=$3', [eventid, event.courses, event.runs])
     for (const r of runs) {
+        Object.assign(r, r.attr)
+        delete r.attr
         if (r.raw <= 0) { continue } // ignore crap data that can't be correct
 
         const match = cptrs[ekey(r)]
@@ -171,11 +183,10 @@ export async function updatedEventResults(task: ScorekeeperProtocol, eventid: UU
     }
 
     // Now for each class we can sort and update position, trophy, points(both types)
-    for (const [key, res] of Object.entries(results)) {
+    for (const key in results) {
+        const res = results[key] = _.orderBy(results[key], 'net')
         const trophydepth = Math.ceil(res.length / 3.0)
         const eventtrophy = sessions || classdata.classlist[key].eventtrophy
-
-        _.orderBy(res, 'net')
 
         res.forEach((e, ii) => {
             e.position   = ii + 1

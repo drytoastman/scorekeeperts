@@ -13,13 +13,9 @@ import _ from 'lodash'
 import { UUID } from '@common/util'
 import { SeriesInfo, SeriesStatus } from '@common/series'
 import { updatedSeriesInfo, updatedEventResults } from './calc'
-import { SeriesSettings } from '@common/settings'
-import { decorateChampResults, decorateClassResults } from './decorate'
-import { ChampEntrant, ChampResults, Entrant, EventResults, TopTimesKey, TopTimesTable } from '@common/results'
+import { ChampResults, EventResults } from '@common/results'
 import { updatedChallengeResults } from './calcchallenge'
 import { updatedChampResults } from './calcchamp'
-import { ClassData } from '@common/classindex'
-import { loadTopTimesTable } from './calctoptimes'
 import { ScorekeeperProtocol } from '..'
 import { ChallengeResults } from '@common/challenge'
 import { dblog } from '@/util/logging'
@@ -36,7 +32,7 @@ export class ResultsRepository {
         dblog.info(`cacheAll ${series}`)
         const info = await this.getSeriesInfo()
         for (const e of info.events) { await this.getEventResults(e.eventid) }
-        // for (const c of info.challenges) { this.getChallengeResults(c.challengeid) }
+        for (const c of info.challenges) { await this.getChallengeResults(c.challengeid) }
         await this.getChampResults()
     }
 
@@ -115,8 +111,9 @@ export class ResultsRepository {
 
     private async loadResults(name: string): Promise<any> {
         const series = await this.getCurrent()
-        const r = (await this.db.one('SELECT data FROM results WHERE series=$1 and name=$2', [series, name])).data
-        return r || {}
+        const r = await this.db.oneOrNone('SELECT data FROM results WHERE series=$1 and name=$2', [series, name])
+        if (!r) return {}
+        return r.data
     }
 
 

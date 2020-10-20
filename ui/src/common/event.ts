@@ -24,7 +24,7 @@ export interface SeriesEvent
     ispractice: boolean;
     accountid: string;
     items: ItemMap[];
-    attr: {
+    attr?: {
         chair: string;
         location: string;
         paymentreq: boolean;

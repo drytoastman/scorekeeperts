@@ -1,9 +1,12 @@
+import { dblog } from '@/util/logging'
 import { ChallengeResults, ChallengeRun } from '@common/challenge'
 import { RunStatus } from '@common/results'
 import { UUID } from '@common/util'
 import { ScorekeeperProtocol } from '..'
 
 export async function updatedChallengeResults(task: ScorekeeperProtocol, challengeid: UUID): Promise<ChallengeResults> {
+    dblog.debug(`updatedChallengeResults ${challengeid}`)
+
     const getrounds = 'SELECT x.*, ' +
                 'd1.firstname as e1fn, d1.lastname as e1ln, c1.classcode as e1cc, c1.indexcode as e1ic, ' +
                 'd2.firstname as e2fn, d2.lastname as e2ln, c2.classcode as e2cc, c2.indexcode as e2ic  ' +

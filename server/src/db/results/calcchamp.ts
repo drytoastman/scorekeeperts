@@ -32,10 +32,9 @@ function champAddEventResults(map: {[key:string]: ChampEntrant}, event: SeriesEv
         firstname: entrant.firstname,
         lastname: entrant.lastname,
         eventcount: 0,
-        position: null,
         events: [],
         missingrequired: [],
-        tiebreakers: [],
+        tiebreakers: _.fill(Array(11), 0),
         points: {
             drop: [],
             total: 0,
@@ -55,6 +54,7 @@ function champAddEventResults(map: {[key:string]: ChampEntrant}, event: SeriesEv
 }
 
 function champEntrantFinalize(centry: ChampEntrant, bestof: number, events: SeriesEvent[]) {
+    centry.points.usingbest = bestof
     centry.points.total = calcPoints(centry.points.events, bestof)
     centry.missingrequired = events.filter(e => e.champrequire && !(champEventKey(e) in centry.points.events)).map(e => champEventKey(e))
     for (const e of events) {
@@ -109,16 +109,17 @@ export async function updatedChampResults(task: ScorekeeperProtocol): Promise<Ch
     // Final storage where results are an ordered list rather than map
     const ret = {} as ChampResults
     for (const [classcode, classmap] of Object.entries(store)) {
-        const clslist = getDList(ret, classcode)
+        let clslist = getDList(ret, classcode)
         for (const entrant of Object.values(classmap)) {
             champEntrantFinalize(entrant, bestof, events)
             clslist.push(entrant)
         }
-        _.orderBy(clslist, ['points', 'tiebreakers'], 'desc')
+
+        clslist = ret[classcode] = _.orderBy(clslist, ['points.total', 'tiebreakers'], ['desc', 'desc'])
         let ii = 1
         for (const e of clslist) {
             if (e.eventcount < settings.minevents || e.missingrequired.length > 0) {
-                e.position = null
+                delete e.position
             } else {
                 e.position = ii
                 ii += 1

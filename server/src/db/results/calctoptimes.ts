@@ -54,7 +54,7 @@ export function loadTopTimesTable(classdata: ClassData, results: EventResults, k
             throw Error(`Top times columns and field arrays are not equal in size (${cols.length}, ${fields.length})`)
         }
 
-        const entries: TopTimeEntry[] = []
+        let entries: TopTimeEntry[] = []
         for (const classcode in results) {
             if (classdata.classlist[classcode].secondruns && key.counted) { continue }
 
@@ -110,7 +110,7 @@ export function loadTopTimesTable(classdata: ClassData, results: EventResults, k
         }
 
         // Sort and set 'pos' attribute, then add to the mass table
-        _.orderBy(entries, 'time')
+        entries = _.orderBy(entries, 'time')
         let pos = 1
         for (const entry of entries) {
             if (entry.classcode) {
