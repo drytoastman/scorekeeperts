@@ -1,7 +1,7 @@
 import findIndex from 'lodash/findIndex'
 import Vue from 'vue'
 import { MutationTree } from 'vuex'
-import { Api2State } from './state'
+import { Api2State, EMPTY } from './state'
 import { UUID } from '@/common/util'
 import { Payment, Registration } from '@/common/register'
 
@@ -92,6 +92,13 @@ export function api2Mutations(adminOptions: boolean):  MutationTree<Api2State> {
             if (adminOptions) {
                 state.attendance = {}
             }
+        },
+
+        seriesGone(state: Api2State, series: string) {
+            state.currentSeries = EMPTY
+            clearApi2SeriesData(state)
+            state.attendance = {}
+            state.serieslist = state.serieslist.filter(s => s !== series)
         },
 
         setDriverId(state: Api2State, driverid: UUID) {

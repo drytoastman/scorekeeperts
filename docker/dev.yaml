@@ -33,6 +33,8 @@ services:
             - socket:/var/run/postgresql
         environment:
             - IS_MAIN_SERVER=1
+            - DEBUG=1
+            - LOG_LEVEL=DEBUG
         ports:
             - '80:80'
 

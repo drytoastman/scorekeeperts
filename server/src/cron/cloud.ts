@@ -1,5 +1,5 @@
 /* eslint-disable quotes */
-import { Storage, StorageOptions } from '@google-cloud/storage'
+import { Storage } from '@google-cloud/storage'
 import _ from 'lodash'
 import child from 'child_process'
 import fs from 'fs'
@@ -9,7 +9,7 @@ import util from 'util'
 import zlib from 'zlib'
 import { cronlog } from '@/util/logging'
 
-let config: StorageOptions | undefined
+let config: any
 if (fs.existsSync('creds.json')) {
     config = { keyFilename: 'creds.json' }
 }

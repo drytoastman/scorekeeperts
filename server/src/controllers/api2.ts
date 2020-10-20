@@ -12,6 +12,7 @@ import { driverget } from './gets/driverget'
 import { seriesget } from './gets/seriesget'
 import { driverpost } from './posts/driverpost'
 import { seriespost } from './posts/seriespost'
+import { seriesadmin } from './posts/seriesadmin'
 
 export const api2 = Router()
 
@@ -94,3 +95,4 @@ api2.post('/', apipost)
 api2.get('/cards', cards)
 api2.get('/logs', logs)
 api2.post('/changepassword', changepassword)
+api2.post('/seriesadmin', seriesadmin)

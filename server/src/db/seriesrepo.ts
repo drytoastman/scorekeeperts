@@ -177,4 +177,11 @@ export class SeriesRepository {
             throw Error(`Unknown operation type ${JSON.stringify(type)}`)
         })
     }
+
+    async dropSeries(series: string) {
+        return await this.db.tx(async tx => {
+            await tx.none('DROP SCHEMA $1:name CASCADE', [series])
+            await tx.none('DROP USER $1:name', [series])
+        })
+    }
 }

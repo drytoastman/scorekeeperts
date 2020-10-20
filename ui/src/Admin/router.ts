@@ -15,6 +15,7 @@ const Attendance   = () => import(/* webpackChunkName: "adminviews" */  './views
 const SeriesLogs   = () => import(/* webpackChunkName: "adminviews" */  './views/serieslogs.vue')
 const HostSettings = () => import(/* webpackChunkName: "adminviews" */  './views/hostsettings.vue')
 const DriverEditor = () => import(/* webpackChunkName: "adminviews" */  './views/drivereditor.vue')
+const Archive      = () => import(/* webpackChunkName: "adminviews" */  './views/archive.vue')
 
 Vue.use(VueRouter)
 
@@ -47,6 +48,7 @@ const routes = [
     { path: '/:series/attendevent',    name: 'attendevent',  meta: { marker: 'attendance' }, component: Attendance, props: { type: 'event'  }},
     { path: '/:series/attendunique',   name: 'attendunique', meta: { marker: 'attendance' }, component: Attendance, props: { type: 'unique' }},
     { path: '/:series/usednumbers',    name: 'usednumbers',  component: UsedNumbers },
+    { path: '/:series/archive',        name: 'archive',      component: Archive },
     { path: '/:series/event/:eventid', name: 'event',        component: EventInfo, props: true },
     { path: '/:series/oauth/:code',    name: 'oauth',        component: OAuthHandler }
 ]

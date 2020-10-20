@@ -10,6 +10,7 @@ import { UUID } from '../common/util'
 export const EMPTY = ''
 export const API2 = {
     ROOT:  '/api2',
+    SERIESADMIN: '/api2/seriesadmin',
     LOGIN: '/api2/login',
     TOKEN: '/api2/token',
     LIVE:  '/api2/live',

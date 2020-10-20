@@ -4,9 +4,10 @@
   "private": true,
   "scripts": {
     "build": "webpack",
-    "watch": "cross-env NODE_ENV=development webpack",
+    "watch": "cross-env NODE_ENV=development webpack -w",
     "node": "cd build && cross-env NODE_ENV=development nodemon --trace-deprecation index.js",
     "dev": "concurrently npm:watch npm:node",
+    "dbuild": "cross-env NODE_ENV=development webpack",
     "lint": "eslint . --ext .ts"
   },
   "dependencies": {

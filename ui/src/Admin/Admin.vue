@@ -125,11 +125,10 @@ export default {
         },
         admins() {
             return [
-                { title: 'New Event', link: { name:'newevent' }},  // TODO
-                { title: 'New Events From Template', link: { name:'neweventtemplate' }},  // TODO
-                { title: 'New Series', link: { name:'newseries' }},  // TODO
+                { title: 'New Events',     link: { name:'newevents' }},  // TODO
+                { title: 'New Series',     link: { name:'newseries' }},  // TODO
                 { title: 'Archive Series', link: { name:'archive' }},  // TODO
-                { title: 'Purge Tool', link: { name:'purge' }},  // TODO
+                { title: 'Purge Tool',     link: { name:'purge' }},  // TODO
                 { link: {}},
                 { title: 'Driver Editor', link: { name:'drivereditor' }},
                 { title: 'Host Settings', link: { name:'hostsettings' }},
