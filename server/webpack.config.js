@@ -20,19 +20,16 @@ module.exports = {
         new CopyPlugin({
             patterns: [
                 {
-                    from: 'src/static/*.html',
-                    to: 'templates/[name].[ext]'
+                    from: 'src/templates/*',
+                    to: 'templates/'
                 },
                 {
-                    from: 'src/static/*.gz',
-                    to: 'public/[name]',
+                    from: 'src/public/*',
+                    to: 'public/',
                     transform: async function(content, absoluteFrom) {
-                        return await gunzip(content)
+                        if (absoluteFrom.endsWith('.gz')) return await gunzip(content)
+                        return content
                     }
-                },
-                {
-                    from: 'src/static/*.sh',
-                    to: 'testing/[name].[ext]'
                 }
             ]
         })
@@ -46,7 +43,7 @@ module.exports = {
         extensions: ['.ts', '.js'],
         alias: {
             '@': path.resolve(__dirname, 'src'),
-            '@common': path.resolve(__dirname, '../ui/src/common')
+            '@common': path.resolve(__dirname, 'src/common')
         }
     },
     module: {

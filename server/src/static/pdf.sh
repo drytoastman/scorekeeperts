@@ -1,2 +1,0 @@
-wget --post-data "series=nwr2020&password=$1" --save-cookies cookies.txt --keep-session-cookies --delete-after 127.0.0.1:4000/api2/serieslogin
-wget --load-cookies cookies.txt 'http://127.0.0.1:4000/api2/cardpdf?authtype=series&series=nwr2020&eventid=76e37fc2-5a09-11ea-8800-0242ac120005'

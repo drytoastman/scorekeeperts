@@ -2,8 +2,8 @@ import _ from 'lodash'
 import dns from 'dns'
 import { Request, Response } from 'express'
 import KeyGrip from 'keygrip'
-import isUUID from 'validator/es/lib/isUUID'
 
+import _V from '@common/validataorimport'
 import { RegisterValidator, ResetValidator } from '@common/driver'
 import { validateObj } from '@common/util'
 import { db } from '@/db'
@@ -57,7 +57,7 @@ export async function token(req: Request, res: Response) {
                 return res.json({ tokenresult: 'toprofileeditor' })
 
             case 'reset':
-                if (!isUUID(request.driverid)) throw Error('invalid driverid')
+                if (!_V.isUUID(request.driverid)) throw Error('invalid driverid')
                 req.auth.driverAuthenticated(request.driverid)
                 return res.json({ tokenresult: 'changepassword' })
 

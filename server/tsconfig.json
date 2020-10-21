@@ -1,18 +1,20 @@
 {
   "compilerOptions": {
     "target": "esnext",
-    "module": "esnext",
+    "module": "commonjs",
+    "outDir": "tsbuild",
     "baseUrl": ".",
     "paths": {
       "@/*": [
         "src/*"
       ],
       "@common/*": [
-        "../ui/src/common/*"
+        "src/common/*"
       ]
     },
     "lib": [
       "esnext",
+      "dom"
     ],
     "typeRoots": [
       "./node_modules/@types",
@@ -27,8 +29,6 @@
     "moduleResolution": "node",
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true
-    // ?? "importHelpers": true,
-    // ?? "allowSyntheticDefaultImports": true,
   },
   "include": [
     "src/**/*.ts"
