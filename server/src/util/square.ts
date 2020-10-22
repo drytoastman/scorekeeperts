@@ -41,7 +41,7 @@ export async function squareOrder(conn: ScorekeeperProtocol, square: any, paymen
     }
 
     for (const p of payments) {
-        const event = await conn.series.getEvent(p.eventid)
+        const event = await conn.events.getEvent(p.eventid)
         body.order.line_items.push({
             name: event.name,
             variation_name: p.itemname,
@@ -105,7 +105,7 @@ export async function squareRefund(conn: ScorekeeperProtocol, payments: Payment[
     let total = 0
     const reasons:string[] = []
     for (const p of payments) {
-        const event = await conn.series.getEvent(p.eventid)
+        const event = await conn.events.getEvent(p.eventid)
         total += p.amount
         reasons.push(`${event.name} ${p.itemname}`)
         if (p.txid !== payments[0].txid) {

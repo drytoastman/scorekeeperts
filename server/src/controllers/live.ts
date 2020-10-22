@@ -37,7 +37,7 @@ tableWatcher.on('events', async function change(series: any) {
     try {
         const res = await db.task('apiget', async t => {
             await t.series.setSeries(series)
-            return t.series.eventList()
+            return t.events.eventList()
         })
         const msg = JSON.stringify({
             type: 'get',

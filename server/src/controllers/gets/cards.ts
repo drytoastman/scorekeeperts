@@ -48,7 +48,7 @@ function loadRegData(series: string, eventid: UUID, loadEntrants: boolean): Prom
         await t.series.setSeries(series)
 
         const settings = await t.series.seriesSettings()
-        const event    = await t.series.getEvent(eventid)
+        const event    = await t.events.getEvent(eventid)
         event.date     = new Date(event.date).toDateString()
         let reg: any[] = [{}]
 

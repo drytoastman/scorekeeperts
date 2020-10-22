@@ -3,6 +3,8 @@ import _ from 'lodash'
 import { ScorekeeperProtocol } from '@/db'
 import { UUID } from '@common/util'
 import { Car } from '@common/car'
+import { SeriesEvent } from '@/common/event'
+import { Entrant } from '@/common/results'
 
 export async function allSeriesSummary(db: ScorekeeperProtocol, driverid: string): Promise<any[]> {
     const ret:any[] = []
@@ -57,4 +59,67 @@ export async function allClassesAndIndexes(db: ScorekeeperProtocol): Promise<obj
         }
     }
     return ret
+}
+
+
+const yearmatch = /\d{2,}$/
+function getYear(series: string): number {
+    const match = series.match(yearmatch)
+    return match ? parseInt(match[0]) : 0
+}
+
+async function archiveActivity(task: ScorekeeperProtocol, key: string, untilyear: number): Promise<Set<UUID>> {
+    const current = await task.series.seriesList()
+    const archivedseries = (await task.map('SELECT DISTINCT series FROM results', null, r => r.series)).filter(s => !current.includes(s))
+    const ids = new Set<UUID>()
+
+    if (!untilyear) throw Error('No year provided for archive limit')
+    for (const series of archivedseries) {
+        if (getYear(series) < untilyear) continue
+
+        const events: SeriesEvent[] = await task.one("select data->'events' as elist from results where name='info' and series=$1", [series], r => r.elist)
+        for (const e of events) {
+            try {
+                const results = await task.one('select data from results where name=$1', [e.eventid], r => r.data)
+                const edate = new Date(e.date)
+                for (const [code, entries] of Object.entries(results)) {
+                    for (const entrant of entries as Entrant[]) {
+                        ids.add(entrant[key])
+                    }
+                }
+            } catch (error) {
+                console.log(error)
+            }
+        }
+    }
+
+    return ids
+}
+
+
+export async function getInactiveCars(task: ScorekeeperProtocol, currentSeries: string, untilyear: number): Promise<UUID[]> {
+
+    const activity = (positive:boolean) => `SELECT carid FROM cars WHERE carid ${positive ? '' : 'NOT'} IN ` +
+        '(SELECT carid FROM runs UNION SELECT carid FROM registered UNION SELECT carid FROM payments UNION SELECT carid FROM challengeruns)'
+
+    // carids will be all the inactive ids in currentSeries
+    await task.series.setSeries(currentSeries)
+    const inactive: UUID[] = await task.map(activity(false), null, r => r.carid)
+    const other = new Set<UUID>()
+
+    // check other active series, remove things that have activity
+    for (const series of await task.series.seriesList()) {
+        if (series === currentSeries) continue
+        await task.series.setSeries(series)
+        const ids = await task.map(activity(true), null, r => r.carid)
+        for (const id of ids) other.add(id)
+    }
+
+    // Any archived series that are less than X years old (need to search JSON data)
+    const ids = await archiveActivity(task, 'carid', untilyear)
+    for (const id of ids) other.add(id)
+
+    // return the list filtered by things found in other locations
+    await task.series.setSeries(currentSeries)
+    return inactive.filter(cid => !other.has(cid))
 }

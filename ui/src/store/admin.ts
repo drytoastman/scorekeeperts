@@ -41,6 +41,19 @@ export const adminActions = {
         return await getDataWrap(context, axios.get(API2.LOGS, { params: p, withCredentials: true }))
     },
 
+    async seriesadmin(context: ActionContext<Api2State, any>, p: any) {
+        p.series = p.series || this.state.currentSeries
+        p.authtype = this.state.authtype
+        return await getDataWrap(context, axios.post(API2.SERIESADMIN, p, { withCredentials: true }))
+    },
+
+    async authTest(context: ActionContext<Api2State, any>) {
+        const data = await getDataWrap(context, axios.get(API2.AUTHTEST, { withCredentials: true }))
+        if (data && data.authtypes.admin) {
+            context.commit('adminAuthenticated', true)
+        }
+    },
+
     async carddownload(context: ActionContext<Api2State, any>, p: any) {
         try {
             p.series   = this.state.currentSeries

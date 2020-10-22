@@ -4,7 +4,7 @@ import delay from 'express-delay'
 import { db } from '@/db'
 import { controllog } from '@/util/logging'
 
-import { login, logout, AuthData, serieslogin, adminlogin, adminlogout, checkAuth, AUTHTYPE_DRIVER, AUTHTYPE_SERIES, AUTHTYPE_ADMIN } from './auth'
+import { login, logout, AuthData, serieslogin, adminlogin, adminlogout, checkAuth, AUTHTYPE_DRIVER, AUTHTYPE_SERIES, AUTHTYPE_ADMIN, authtest } from './auth'
 import { changepassword, register, reset, token } from './posts/regreset'
 import { cards } from './gets/cards'
 import { logs } from './gets/logs'
@@ -87,6 +87,7 @@ api2.post('/reset',    reset)
 api2.post('/serieslogin', serieslogin)
 api2.post('/adminlogin',  adminlogin)
 api2.get('/adminlogout',  adminlogout)
+api2.get('/authtest', authtest)
 
 // Authenticated items
 api2.get('/', apiget)

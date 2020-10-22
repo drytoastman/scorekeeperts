@@ -15,7 +15,7 @@ const y2k = new Date('2000-01-01')
 export async function updatedSeriesInfo(task: ScorekeeperProtocol): Promise<SeriesInfo> {
     dblog.debug('updatedSeriesInfo')
     const ret = {
-        events:     await task.series.eventList(),
+        events:     await task.events.eventList(),
         challenges: await task.challenge.challengeList(),
         classes:    await task.clsidx.classList(),
         indexes:    await task.clsidx.indexList(),
@@ -66,7 +66,7 @@ export async function updatedEventResults(task: ScorekeeperProtocol, eventid: UU
 
     const results   = {} as EventResults
     const cptrs     = {} as {[key: string]: Entrant}
-    const event     = await task.series.getEvent(eventid)
+    const event     = await task.events.getEvent(eventid)
     const classdata = await task.clsidx.getClassData()
     const settings  = await task.series.seriesSettings()
     const ppoints   = new PosPoints(settings.pospointlist)

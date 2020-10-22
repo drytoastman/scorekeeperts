@@ -2,6 +2,7 @@ import pgpromise, { IInitOptions, IDatabase, IBaseProtocol } from 'pg-promise'
 import { CarRepository } from './carrepo'
 import { SeriesRepository } from './seriesrepo'
 import { DriverRepository } from './driverrepo'
+import { EventsRepository } from './eventsrepo'
 import { ClassRepository } from './classrepo'
 import { RegisterRepository } from './registerrepo'
 import { TableWatcher } from './tablewatcher'
@@ -23,6 +24,7 @@ export interface DBExtensions {
     runs: RunsRepository;
     challenge: ChallengeRepository;
     results: ResultsRepository;
+    events: EventsRepository;
 }
 
 export type ScorekeeperProtocol = IBaseProtocol<DBExtensions> & DBExtensions;
@@ -33,6 +35,7 @@ const initOptions: IInitOptions<DBExtensions> = {
         // eslint-disable-next-line @typescript-eslint/no-use-before-define
         obj.series = new SeriesRepository(obj, pgp)
         obj.clsidx = new ClassRepository(obj, pgp)
+        obj.events = new EventsRepository(obj, pgp)
         obj.drivers = new DriverRepository(obj, pgp)
         obj.cars = new CarRepository(obj, pgp)
         obj.register = new RegisterRepository(obj, pgp)

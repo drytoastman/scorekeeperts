@@ -61,12 +61,6 @@ export const api2Actions = {
         return await getDataWrap(context, axios.post(API2.ROOT, p, { withCredentials: true }), busy)
     },
 
-    async seriesadmin(context: ActionContext<Api2State, any>, p: any) {
-        p.series = p.series || this.state.currentSeries
-        p.authtype = this.state.authtype
-        return await getDataWrap(context, axios.post(API2.SERIESADMIN, p, { withCredentials: true }))
-    },
-
     async register(context: ActionContext<Api2State, any>, p: any) {
         return await getDataWrap(context, axios.post(API2.REGISTER, p, { withCredentials: true }))
     },

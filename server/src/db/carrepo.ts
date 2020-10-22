@@ -46,6 +46,11 @@ export class CarRepository {
         return this.db.any('SELECT * FROM cars WHERE carid NOT IN ($1:csv)', [carids])
     }
 
+    async deleteById(carids: UUID[]): Promise<UUID[]> {
+        if (carids.length === 0) { return [] }
+        return this.db.any('DELETE FROM cars WHERE carid IN ($1:csv) RETURNING carid', [carids])
+    }
+
     async getAllCars(): Promise<Car[]> {
         return this.db.any('SELECT * FROM cars')
     }
@@ -79,5 +84,22 @@ export class CarRepository {
         car.eventsrun = (await this.db.one('SELECT COUNT(distinct eventid)::int FROM runs WHERE carid=$1', [car.carid])).count
         car.eventsreg = (await this.db.one('SELECT COUNT(distinct eventid)::int FROM registered WHERE carid=$1', [car.carid])).count
         return car
+    }
+
+    async searchByClass(classcodes: string[]): Promise<UUID[]> {
+        return this.workByClass(classcodes, true)
+    }
+
+    async deleteByClass(classcodes: string[]): Promise<UUID[]> {
+        return this.workByClass(classcodes, false)
+    }
+
+    private async workByClass(classcodes: string[], countonly: boolean): Promise<UUID[]> {
+        if (!classcodes.length) return []
+        const start = countonly ? 'SELECT carid ' : 'DELETE '
+        const end   = countonly ? '' : 'RETURNING carid'
+        return this.db.any(start + 'FROM cars WHERE classcode in ($1:csv) AND carid NOT IN ' +
+            '(SELECT carid FROM runs UNION SELECT carid FROM registered UNION SELECT carid FROM payments UNION SELECT carid FROM challengeruns) ' + end,
+            [classcodes])
     }
 }

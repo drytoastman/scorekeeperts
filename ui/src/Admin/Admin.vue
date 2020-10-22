@@ -34,8 +34,8 @@
 <script>
 import { mapState, mapGetters } from 'vuex'
 import { mdiCog, mdiFlagCheckered, mdiAccountHardHat, mdiAccountCowboyHat, mdiFileTable } from '@mdi/js'
-import LoginForm from './components/LoginForm'
-import AdminMenu from './components/AdminMenu'
+import LoginForm from './components/LoginForm.vue'
+import AdminMenu from './components/AdminMenu.vue'
 
 export default {
     name: 'Admin',
@@ -127,8 +127,8 @@ export default {
             return [
                 { title: 'New Events',     link: { name:'newevents' }},  // TODO
                 { title: 'New Series',     link: { name:'newseries' }},  // TODO
-                { title: 'Archive Series', link: { name:'archive' }},  // TODO
-                { title: 'Purge Tool',     link: { name:'purge' }},  // TODO
+                { title: 'Archive Series', link: { name:'archive' }},
+                { title: 'Purge Tool',     link: { name:'purge' }},
                 { link: {}},
                 { title: 'Driver Editor', link: { name:'drivereditor' }},
                 { title: 'Host Settings', link: { name:'hostsettings' }},

@@ -23,7 +23,7 @@ export async function unauthget(db: ScorekeeperProtocol, item: any, ret: any): P
         // try again with things that require a series if one is provided
         res = true
         switch (item) {
-            case 'events':          ret.events          = await db.series.eventList();              break
+            case 'events':          ret.events          = await db.events.eventList();              break
             case 'counts':          ret.counts          = await db.register.getRegistationCounts(); break
             case 'classes':         ret.classes         = await db.clsidx.classList();              break
             case 'indexes':         ret.indexes         = await db.clsidx.indexList();              break

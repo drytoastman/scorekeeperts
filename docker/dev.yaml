@@ -35,6 +35,7 @@ services:
             - IS_MAIN_SERVER=1
             - DEBUG=1
             - LOG_LEVEL=DEBUG
+            - SUPER_ADMIN_PASSWORD=aaaa
         ports:
             - '80:80'
 

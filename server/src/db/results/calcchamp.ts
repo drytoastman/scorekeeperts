@@ -79,7 +79,7 @@ export async function updatedChampResults(task: ScorekeeperProtocol): Promise<Ch
     const now       = new Date()
     const settings  = await task.series.seriesSettings()
     const classdata = await task.clsidx.getClassData()
-    const events    = await task.series.eventList()
+    const events    = await task.events.eventList()
     let completed   = 0
 
     // Interm storage while we distribute result data by driverid

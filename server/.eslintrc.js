@@ -8,7 +8,10 @@ let rules = {
     'no-unused-vars': 'off',  // doesn't appear to work with typescript
     'padded-blocks': 'off',
     'no-debugger': 'off',
-    indent: ['warn', 4, { SwitchCase: 1 }]
+    'object-curly-spacing': ['warn', 'always', { objectsInObjects: false }],
+    quotes: 'warn',
+    indent: ['warn', 4, { SwitchCase: 1, CallExpression: { arguments: 'off' }}]
+
 }
 
 if (process.env.NODE_ENV === 'production') {

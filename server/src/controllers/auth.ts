@@ -44,6 +44,14 @@ export class AuthData {
     hasAdminAuth()                      { return this.session.admin === true }
     clearAdmin()                        { this.session.admin = null }
     requireAdmin()                      { if (!this.hasAdminAuth()) { throw new Error('Admin auth required for this request') } }
+
+    adminTypes() {
+        return {
+            driver: this.session.driverid,
+            series: this.session.series,
+            admin: this.session.admin
+        }
+    }
 }
 
 
@@ -88,6 +96,10 @@ export async function adminlogout(req: Request, res: Response) {
     req.auth.clearAdmin()
     req.auth.clearAllSeries()
     res.status(200).json({ result: 'logged out' })
+}
+
+export async function authtest(req: Request, res: Response) {
+    res.status(200).json({ authtypes: req.auth.adminTypes() })
 }
 
 // 'allclassindex', 'attendance', 'driverbrief', 'editorids', 'rotatekeygrip',
