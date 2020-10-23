@@ -45,7 +45,7 @@
 </template>
 
 <script>
-import isEqual from 'lodash/isEqual'
+import isEqualWith from 'lodash/isEqualWith'
 import { mapState } from 'vuex'
 import { PrismEditor } from 'vue-prism-editor'
 import { prismlangs } from '@/util/prismwrapper'
@@ -65,7 +65,13 @@ export default {
     },
     computed: {
         ...mapState(['settings']),
-        unchanged() { return isEqual(this.settings, this.settingsm) }
+        unchanged() {
+            return isEqualWith(this.settings, this.settingsm, (objv, othv) => {
+                if (typeof objv === 'string') {
+                    if (objv.trim() === othv.trim()) { return true }
+                }
+            })
+        }
     },
     methods: {
         ...prismlangs,
