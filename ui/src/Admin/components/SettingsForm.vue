@@ -3,7 +3,8 @@
     <div class='adminbuttons3'>
         <v-btn color="secondary" :disabled="unchanged" @click="reset">Reset</v-btn>
         <v-btn color="secondary" :disabled="unchanged" @click="saveSettings">Save</v-btn>
-        <v-btn color="secondary" outlined @click="changePassword">Change Password</v-btn>
+        <v-btn color="secondary" outlined @click="changepassword=true">Change Password</v-btn>
+        <ChangeSeriesPassword v-model="changepassword"></ChangeSeriesPassword>
     </div>
 
     <v-form class='settingsform'>
@@ -55,18 +56,21 @@ import { mapState } from 'vuex'
 import { PrismEditor } from 'vue-prism-editor'
 import { prismlangs } from '@/util/prismwrapper'
 import { SettingsValidator } from '@/common/settings'
-import { ITEM_TYPE_SERIES_FEE } from '../../../../server/src/common/payments'
+import { ITEM_TYPE_SERIES_FEE } from '@/common/payments'
+import ChangeSeriesPassword from './ChangeSeriesPassword.vue'
 
 export default {
     name: 'SettingsForm',
     components: {
-        PrismEditor
+        PrismEditor,
+        ChangeSeriesPassword
     },
     data() {
         return {
             settingsm: {},
             vrules: SettingsValidator,
-            showedit1: false
+            showedit1: false,
+            changepassword: false
         }
     },
     computed: {
@@ -83,9 +87,6 @@ export default {
     },
     methods: {
         ...prismlangs,
-        changePassword() {
-            console.log('change')
-        },
         saveSettings() {
             this.$store.commit('gettingData', true)
             this.$store.dispatch('setdata', {

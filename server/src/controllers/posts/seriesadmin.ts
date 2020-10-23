@@ -9,15 +9,16 @@ import { AuthData, AUTHTYPE_ADMIN, AUTHTYPE_SERIES, checkAuth } from '../auth'
 export async function seriesadmin(req: Request, res: Response) {
     try {
         const param = checkAuth(req)
-        return res.json(await db.task('seriesadmin', async task => {
-            if (![AUTHTYPE_SERIES, AUTHTYPE_ADMIN].includes(param.authtype)) {
-                throw Error('Don\'t have the correct authtype')
-            }
-            switch (param.request) {
-                case 'archive': return seriesarchive(task, param)
-                case 'purge':   return seriespurge(task, param, req.auth)
-            }
+        if (![AUTHTYPE_SERIES, AUTHTYPE_ADMIN].includes(param.authtype)) {
+            throw Error('Don\'t have the correct authtype')
+        }
 
+        return res.json(await db.task('seriesadmin', async task => {
+            switch (param.request) {
+                case 'archive':  return seriesarchive(task, param)
+                case 'purge':    return seriespurge(task, param, req.auth)
+                case 'password': return changeseriespassword(param)
+            }
             throw Error(`unknown seriesadmin request: ${param.request}`)
         }))
     } catch (error) {
@@ -74,4 +75,8 @@ async function seriespurge(task: ScorekeeperProtocol, param: any, auth: AuthData
         }
         return ret
     }
+}
+
+async function changeseriespassword(param: any) {
+    return await pgdb.series.changePassword(param.series, param.currentpassword, param.newpassword)
 }

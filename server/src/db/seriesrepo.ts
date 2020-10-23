@@ -82,4 +82,10 @@ export class SeriesRepository {
             await tx.none('DROP USER $1:name', [series])
         })
     }
+
+    async changePassword(series: string, oldpassword: string, newpassword: string) {
+        const current = await this.db.one('select data from localcache where name=$1', [series], r => r.data)
+        if (current !== oldpassword) { throw Error('Old password does not match') }
+        return this.db.one('select verify_user($1, $2)', [series, newpassword])
+    }
 }
