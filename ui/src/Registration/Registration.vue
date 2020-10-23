@@ -22,49 +22,34 @@
             <Login v-else-if="driverAuthenticated===false" class='pushdown'></Login>
         </v-main>
 
-        <v-snackbar :value="snackbar" :timeout=-1>
-            <div v-for="error in filteredErrors" :key="error">
-                {{ error }}
-            </div>
-            <v-btn color="pink" text @click="errorclose">Close</v-btn>
-        </v-snackbar>
+        <SnackBar></SnackBar>
     </v-app>
 </template>
 
 <script>
 import { mapState } from 'vuex'
-import { mdiAccount, mdiCar, mdiTrafficCone, mdiLogout } from '@mdi/js'
 import Login from './views/login.vue'
 import CartFAB from './components/cart/CartFAB.vue'
+import SnackBar from '@/components/SnackBar.vue'
 
 export default {
     name: 'App',
     components: {
         Login,
-        CartFAB
+        CartFAB,
+        SnackBar
     },
     data: () => ({
-        drawer: null,
-        profileicon: mdiAccount,
-        eventsicon: mdiTrafficCone,
-        carsicon: mdiCar,
-        logouticon: mdiLogout,
         loadDelay: false
     }),
     methods: {
         logout: function() {
             this.$store.dispatch('logout')
-            this.drawer = false
-        },
-        errorclose: function() {
-            this.$store.commit('clearErrors')
         }
     },
     computed: {
-        ...mapState(['currentSeries', 'serieslist', 'driverAuthenticated', 'errors', 'gettingData', 'flashProfile', 'flashCars', 'flashEvents']),
-        snackbar()  { return this.filteredErrors.length > 0 },
+        ...mapState(['currentSeries', 'serieslist', 'driverAuthenticated', 'gettingData', 'flashProfile', 'flashCars', 'flashEvents']),
         isOutside() { return this.$route.meta.outside === 1 },
-        filteredErrors() { return this.errors.filter(s => s !== 'not authenticated') },
         mProfileClass() { return this.flashProfile ? 'flashit' : '' },
         mCarsClass()    { return this.flashCars ?    'flashit' : '' },
         mEventsClass()  { return this.flashEvents ?  'flashit' : '' },
@@ -83,11 +68,6 @@ export default {
         }
     },
     watch: {
-        drawer: function(newv) {
-            if ((newv) && (!this.currentSeries)) {
-                this.$refs.sselect.activateMenu() // show menu if nothing is selected
-            }
-        },
         serieslist: function() {
             if (this.currentSeries) {
                 this.$refs.sselect.blur() // clear after load if it doesn't need to be open
@@ -95,9 +75,7 @@ export default {
         }
     },
     mounted() {
-        console.log('mounted getdata')
-        this.$store.dispatch('getdata')
-        setTimeout(() => { this.loadDelay = true }, 3000)
+        this.$store.dispatch('getdata').then(() => { this.loadDelay = true })
     }
 }
 </script>
@@ -110,7 +88,7 @@ export default {
 .pushdown {
     margin-top: calc(15vh);
 }
-span.super {
+.super {
     text-transform: initial;
     font-size: 80%;
     margin-left: 3px;

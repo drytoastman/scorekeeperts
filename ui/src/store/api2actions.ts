@@ -91,16 +91,16 @@ export const api2Actions = {
                 if (error.response.data.constructor.name === 'Blob') {
                     data = JSON.parse(await error.response.data.text())
                 }
-                context.commit('setErrors', [data.result || data.error])
+                context.commit('addErrors', [data.result || data.error])
             } else {
                 const ct = error.response.headers['content-type']
                 if (ct && ct.includes('text/html')) {
                     const el = document.createElement('html')
                     el.innerHTML = error.response.data
                     const lines = el.getElementsByTagName('body')[0].innerText.split('\n').filter(i => i !== '')
-                    context.commit('setErrors', lines)
+                    context.commit('addErrors', lines)
                 } else {
-                    context.commit('setErrors', [error.response.data])
+                    context.commit('addErrors', [error.response.data])
                 }
             }
         } else {
@@ -108,7 +108,7 @@ export const api2Actions = {
             if (errorstring.startsWith('Error: ')) {
                 errorstring = errorstring.slice(7)
             }
-            context.commit('setErrors', [errorstring])
+            context.commit('addErrors', [errorstring])
         }
     }
 

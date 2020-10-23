@@ -24,10 +24,7 @@
             </v-container>
         </v-main>
 
-        <v-snackbar :value="snackbar" :timeout="-1">
-            <div v-for="error in errors" :key="error">{{ error }}</div>
-            <v-btn color="pink" text @click="errorclose">Close</v-btn>
-        </v-snackbar>
+        <SnackBar></SnackBar>
     </v-app>
 </template>
 
@@ -36,12 +33,14 @@ import { mapState, mapGetters } from 'vuex'
 import { mdiCog, mdiFlagCheckered, mdiAccountHardHat, mdiAccountCowboyHat, mdiFileTable } from '@mdi/js'
 import LoginForm from './components/LoginForm.vue'
 import AdminMenu from './components/AdminMenu.vue'
+import SnackBar from '@/components/SnackBar.vue'
 
 export default {
     name: 'Admin',
     components: {
         LoginForm,
-        AdminMenu
+        AdminMenu,
+        SnackBar
     },
     data: () => ({
         icons: {
@@ -53,17 +52,13 @@ export default {
         }
     }),
     methods: {
-        errorclose: function() {
-            this.$store.commit('clearErrors')
-        },
         logout: function() {
             this.$store.dispatch('logout')
         }
     },
     computed: {
-        ...mapState(['adminAuthenticated', 'seriesAuthenticated', 'currentSeries', 'serieslist', 'events', 'errors', 'gettingData']),
+        ...mapState(['adminAuthenticated', 'seriesAuthenticated', 'currentSeries', 'serieslist', 'events', 'gettingData']),
         ...mapGetters(['haveAuth', 'orderedEvents']),
-        snackbar() { return this.errors.length > 0 },
         selectedSeries: {
             get() {
                 return this.currentSeries
@@ -135,15 +130,6 @@ export default {
                 { title: 'Server Logs',   link: { name:'serverlogs'   }}
             ]
         }
-    },
-    watch: {
-        /*
-        serieslist: function() {
-            if (!this.currentSeries && this.$route.name === 'noseries') {
-                this.$refs.sselect.activateMenu()
-            }
-        }
-        */
     }
 }
 </script>

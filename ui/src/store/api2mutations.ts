@@ -105,12 +105,20 @@ export function api2Mutations(adminOptions: boolean):  MutationTree<Api2State> {
             state.driverid = driverid
         },
 
-        setErrors(state: Api2State, errors: string[]) {
-            state.errors = errors
+        addErrors(state: Api2State, errors: string[]) {
+            state.errors = [...state.errors, ...errors]
         },
 
         clearErrors(state: Api2State) {
             state.errors = []
+        },
+
+        addInfos(state: Api2State, infos: string[]) {
+            state.infos = [...state.infos, ...infos]
+        },
+
+        clearInfos(state: Api2State) {
+            state.infos = []
         },
 
         markBusy(state: Api2State, busy: any) {

@@ -43,11 +43,11 @@
             <LoginForm :admin=true class='loginform'></LoginForm>
         </div>
     </div>
-
 </div>
 </template>
 
 <script>
+import range from 'lodash/range'
 import Vue from 'vue'
 import { mapState } from 'vuex'
 import LoginForm from '../components/LoginForm.vue'
@@ -61,12 +61,13 @@ export default {
             yearpurge: '',
             driverpurge: '',
             estimateid: 0,
-            estimates: {}
+            estimates: {},
+            infos: []
         }
     },
     computed: {
-        ...mapState(['authtype', 'adminAuthenticated', 'classes']),
-        years() { return ['2020', '2019', '2018', '2017'] },
+        ...mapState(['authtype', 'adminAuthenticated', 'classes', 'errors']),
+        years() { return range(new Date().getFullYear(), 2018 - 1) },  // 2018 was the first year with UUID ids
         amAdmin() { return this.authtype === 'admin' && this.adminAuthenticated }
     },
     methods: {
@@ -82,7 +83,7 @@ export default {
                 this.estimateid += 1
                 param.estimateid = this.estimateid
             }
-            console.log(param)
+
             switch (type) {
                 case 'class':
                     param.arg = this.classpurge
@@ -100,6 +101,7 @@ export default {
                     this.yearpurge = ''
                     break
             }
+
             this.$store.dispatch('seriesadmin', param).then(data => {
                 if (!data) return
                 if (estimate) {
@@ -109,7 +111,8 @@ export default {
                     }
                     Vue.set(this.estimates, type, data.count)
                 } else {
-                    console.log(`deleted ${data.cars.length} cars`)
+                    if (type === 'driver' && data.drivers) this.$store.commit('addInfos', [`deleted ${data.drivers.length} drivers`])
+                    if (data.cars) this.$store.commit('addInfos', [`deleted ${data.cars.length} cars`])
                     this.estimates = {}
                 }
             })

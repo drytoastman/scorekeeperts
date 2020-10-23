@@ -28,6 +28,7 @@ export const API2 = {
 
 export class Api2State {
     errors: string[] = []
+    infos: string[] = []
     serieslist: string[] = []
     listids: string[] = []
 
