@@ -1,8 +1,9 @@
 <template>
     <div class='outer'>
-    <div class='adminbuttons'>
+    <div class='adminbuttons3'>
         <v-btn color="secondary" :disabled="unchanged" @click="reset">Reset</v-btn>
         <v-btn color="secondary" :disabled="unchanged" @click="saveSettings">Save</v-btn>
+        <v-btn color="secondary" outlined @click="changePassword">Change Password</v-btn>
     </div>
 
     <v-form class='settingsform'>

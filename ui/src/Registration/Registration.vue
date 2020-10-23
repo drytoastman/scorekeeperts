@@ -97,5 +97,30 @@ export default {
 </style>
 
 <style lang='scss'>
+.paidinfo {
+    color: green;
+    font-size: 80%;
+}
+
+.selectblanknote {
+    text-align: center;
+    width: 100%;
+    font-style: italic;
+    font-size: 80%;
+    opacity: 0.5;
+}
+
+@keyframes flashred {
+    0%   {background-color:red; }
+    50%  {background-color: initial; }
+    100% {background-color:red; left:0px; top:0px;}
+  }
+
+.flashit {
+    animation-name: flashred;
+    animation-duration: 1s;
+    animation-iteration-count: infinite;
+}
+
 @import '@/styles/general.scss'
 </style>

@@ -135,5 +135,40 @@ export default {
 </script>
 
 <style lang='scss'>
+.baseadminbuttons {
+    display: grid;
+    column-gap: 1rem;
+    margin: 1rem 0;
+    width: 100%;
+}
+
+.adminbuttons {
+    @extend .baseadminbuttons;
+    grid-template-columns: 10rem 10rem;
+}
+
+.adminbuttons1 {
+    @extend .baseadminbuttons;
+    grid-template-columns: 10rem;
+}
+
+.adminbuttons3 {
+    @extend .baseadminbuttons;
+    grid-template-columns: 10rem 10rem 10rem;
+}
+
+.actionbuttons {
+    display: grid;
+    grid-template-columns: 15px 15px;
+    column-gap: 0.5rem;
+}
+
+.prism-editor-wrapper {
+    border: 1px solid lightgray !important;
+    border-radius: 4px;
+    border-left: 4px solid rgb(116, 160, 149) !important;
+    padding: 0.3rem 0.5rem !important;
+}
+
 @import '@/styles/general.scss'
 </style>

@@ -80,7 +80,22 @@ export default {
 }
 </script>
 
-<style>
+<style lang='scss'>
+.profilebox {
+    border: 1px solid #AAA;
+    border-radius: 4px;
+    padding: 20px;
+    width: 24rem;
+
+    .title {
+        font-weight: bold;
+        font-size: 120%;
+        margin-left: -5px;
+        border-bottom: 1px solid #CCC;
+        margin-bottom: 8px;
+    }
+}
+
 .dialogs .v-btn--contained {
     margin-top: 15px;
     margin-left: 7px;
