@@ -139,7 +139,7 @@ async function cardpdf(regData: RegData, series: string, res: Response) {
         res.end()
         browser.close()
     } catch (error) {
-        console.log(error.message)
+        controllog.error(error)
         return res.status(500).json({ error: error.message })
     }
 }

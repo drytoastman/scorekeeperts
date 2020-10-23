@@ -51,6 +51,11 @@ export class DriverRepository {
         return this.filterDrivers(await this.db.any('SELECT * FROM drivers WHERE driverid IN ($1:csv)', [driverids]))
     }
 
+    async deleteById(driverids: UUID[]): Promise<Driver[]> {
+        if (driverids.length === 0) { return [] }
+        return this.db.any('DELETE FROM drivers WHERE driverid IN ($1:csv) RETURNING driverid', [driverids])
+    }
+
     async getDriverByNameEmail(firstname: string, lastname: string, email: string): Promise<Driver|null> {
         return this.db.oneOrNone(
             'SELECT * FROM drivers WHERE lower(firstname)=$1 AND lower(lastname)=$2 AND lower(email)=$3', [

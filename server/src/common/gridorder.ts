@@ -52,7 +52,6 @@ class GridReport {
     }
 
     order(key: string) {
-        console.log(`order ${key}`)
         for (const group of this.groups) {
             for (const cw of group) {
                 cw.firsts = orderBy(cw.firsts, key)
@@ -100,7 +99,6 @@ class GridReport {
 
 
 export function createGridReport(classorders: ClassOrder[], classcodes: string[], cars: Car[], drivermap: {[key: string]: Driver}): GridReport {
-    console.log('create')
     const report = new GridReport()
     const rem = new Set(classcodes.filter(k => k !== 'HOLD'))
 

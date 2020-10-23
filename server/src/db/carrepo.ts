@@ -26,8 +26,9 @@ export class CarRepository {
         return this.db.any('SELECT * FROM cars WHERE driverid=$1', [driverid])
     }
 
-    async deleteCarsbyDriverId(driverid: UUID): Promise<null> {
-        return this.db.none('DELETE FROM cars WHERE driverid=$1', [driverid])
+    async deleteCarsbyDriverId(driverids: UUID[]): Promise<Car[]> {
+        if (driverids.length === 0) return []
+        return this.db.any('DELETE FROM cars WHERE driverid IN ($1:csv) RETURNING carid', [driverids])
     }
 
     async getCarsActivityForDriverIds(driverids: UUID[]): Promise<Car[]> {
@@ -46,7 +47,7 @@ export class CarRepository {
         return this.db.any('SELECT * FROM cars WHERE carid NOT IN ($1:csv)', [carids])
     }
 
-    async deleteById(carids: UUID[]): Promise<UUID[]> {
+    async deleteById(carids: UUID[]): Promise<Car[]> {
         if (carids.length === 0) { return [] }
         return this.db.any('DELETE FROM cars WHERE carid IN ($1:csv) RETURNING carid', [carids])
     }
@@ -86,18 +87,18 @@ export class CarRepository {
         return car
     }
 
-    async searchByClass(classcodes: string[]): Promise<UUID[]> {
+    async searchByClass(classcodes: string[]): Promise<Car[]> {
         return this.workByClass(classcodes, true)
     }
 
-    async deleteByClass(classcodes: string[]): Promise<UUID[]> {
+    async deleteByClass(classcodes: string[]): Promise<Car[]> {
         return this.workByClass(classcodes, false)
     }
 
-    private async workByClass(classcodes: string[], countonly: boolean): Promise<UUID[]> {
+    private async workByClass(classcodes: string[], countonly: boolean): Promise<Car[]> {
         if (!classcodes.length) return []
         const start = countonly ? 'SELECT carid ' : 'DELETE '
-        const end   = countonly ? '' : 'RETURNING carid'
+        const end   = countonly ? ''              : 'RETURNING carid'
         return this.db.any(start + 'FROM cars WHERE classcode in ($1:csv) AND carid NOT IN ' +
             '(SELECT carid FROM runs UNION SELECT carid FROM registered UNION SELECT carid FROM payments UNION SELECT carid FROM challengeruns) ' + end,
             [classcodes])
