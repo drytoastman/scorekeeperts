@@ -14,16 +14,20 @@
         <v-text-field v-model="settingsm.minevents"        style="grid-area: mevent" :rules="vrules.minevents" label="Minimum Events For Championship"></v-text-field>
         <v-text-field v-model="settingsm.dropevents"       style="grid-area: devent" :rules="vrules.dropevents" label="Events Dropped For Championship"></v-text-field>
         <v-text-field v-model="settingsm.classinglink"     style="grid-area: linkc"  :rules="vrules.classinglink" label="Classing Help Link"></v-text-field>
+
+        <v-checkbox v-model="settingsm.requestrulesack"    style="grid-area: reqr"   :rules="vrules.requestrulesack" label="Request Rules Ack"></v-checkbox>
         <v-text-field v-model="settingsm.seriesruleslink"  style="grid-area: linkr"  :rules="vrules.seriesruleslink" label="Series Rules Link"></v-text-field>
 
-        <v-checkbox v-model="settingsm.requestrulesack"     style="grid-area: reqr"   :rules="vrules.requestrulesack" label="Request Rules Ack"></v-checkbox>
-        <v-checkbox v-model="settingsm.requestbarcodes"     style="grid-area: reqb"   :rules="vrules.requestbarcodes" label="Request Barcodes"></v-checkbox>
         <v-checkbox v-model="settingsm.usepospoints"        style="grid-area: usepos" :rules="vrules.usepospoints" label="Use Position Based Points"></v-checkbox>
-
-        <v-text-field v-if="settingsm.usepospoints"
+        <v-text-field :disabled="!settingsm.usepospoints"
             v-model="settingsm.pospointlist" style="grid-area: ppoints" :rules="vrules.pospointlist" label="Position Points List">
         </v-text-field>
 
+        <v-checkbox v-model="settingsm.requestmembership"   style="grid-area: reqmem" label="Request Membership"></v-checkbox>
+        <v-select v-model="settingsm.membershipitem"        style="grid-area: memitm" :items="memberitems"    item-value="itemid"    item-text="name"></v-select>
+        <v-select v-model="settingsm.membershipaccount"     style="grid-area: memact" :items="memberaccounts" item-value="accountid" item-text="name"></v-select>
+
+        <v-checkbox v-model="settingsm.requestbarcodes"     style="grid-area: reqb"   :rules="vrules.requestbarcodes" label="Request Barcodes"></v-checkbox>
         <v-checkbox v-model="settingsm.indexafterpenalties" style="grid-area: indexa" :rules="vrules.indexafterpenalties" label="Index After Penalties"></v-checkbox>
         <v-checkbox v-model="settingsm.superuniquenumbers"  style="grid-area: superu" :rules="vrules.superuniquenumbers" label="Series Wide Unique Numbers"></v-checkbox>
 
@@ -51,6 +55,7 @@ import { mapState } from 'vuex'
 import { PrismEditor } from 'vue-prism-editor'
 import { prismlangs } from '@/util/prismwrapper'
 import { SettingsValidator } from '@/common/settings'
+import { ITEM_TYPE_SERIES_FEE } from '../../../../server/src/common/payments'
 
 export default {
     name: 'SettingsForm',
@@ -65,10 +70,12 @@ export default {
         }
     },
     computed: {
-        ...mapState(['settings']),
+        ...mapState(['settings', 'paymentaccounts', 'paymentitems']),
+        memberitems()    { return Object.values(this.paymentitems).filter(i => i.itemtype === ITEM_TYPE_SERIES_FEE) },
+        memberaccounts() { return Object.values(this.paymentaccounts) },
         unchanged() {
             return isEqualWith(this.settings, this.settingsm, (objv, othv) => {
-                if (typeof objv === 'string') {
+                if ((typeof objv === 'string') && (typeof othv === 'string')) {
                     if (objv.trim() === othv.trim()) { return true }
                 }
             })
@@ -76,6 +83,9 @@ export default {
     },
     methods: {
         ...prismlangs,
+        changePassword() {
+            console.log('change')
+        },
         saveSettings() {
             this.$store.commit('gettingData', true)
             this.$store.dispatch('setdata', {
@@ -104,10 +114,10 @@ export default {
         "name name name name listid listid "
         "largen largen mevent mevent devent devent "
         "linkc linkc linkc linkc linkc linkc "
-        "linkr linkr linkr linkr linkr linkr "
-        "reqr reqr reqb reqb usepos usepos "
-        "ppoints ppoints ppoints ppoints ppoints ppoints "
-        "indexa indexa superu superu . . "
+        "reqmem reqmem memitm memitm memact memact "
+        "reqr reqr linkr linkr linkr linkr "
+        "usepos usepos ppoints ppoints ppoints ppoints "
+        "reqb reqb indexa indexa superu superu "
         "temp temp temp temp temp temp "
     ;
 }

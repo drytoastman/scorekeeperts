@@ -101,9 +101,6 @@ export default {
                 { title: 'Classes',  link: { name:'classes' }},
                 { title: 'Indexes',  link: { name:'indexes' }},
                 { title: 'Accounts', link: { name:'accounts' }},
-                { title: 'Membership', link: { name:'membersip' }},  // TODO
-                { link: {}},
-                { title: 'Password', link: { name:'password' }}  // TODO
             ].map(v => { v.link.params = { series: this.currentSeries }; return v })
         },
         reports() {
@@ -115,7 +112,8 @@ export default {
                 { title: 'Used Car Number List', link: { name:'usednumbers' }},
                 { link: {}},
                 { title: 'Payments',             link: { name:'payments' }},
-                { title: 'Contact List',         link: { name:'contacts' }}  // TODO
+                { title: 'Contact List',         link: { name:'contacts' }},  // TODO
+                { title: 'Membership',           link: { name:'membersip' }}  // TODO
             ].map(v => { v.link.params = { series: this.currentSeries }; return v })
         },
         admins() {

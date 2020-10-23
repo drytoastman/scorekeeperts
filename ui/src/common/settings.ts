@@ -22,6 +22,9 @@ export interface SeriesSettings
     resultscss: string;
     resultsheader: string;
     cardtemplate: string;
+    requestmembership: boolean;
+    membershipitem: string;
+    membershipaccount: string;
 }
 
 export class DefaultSettings implements SeriesSettings {
@@ -45,6 +48,9 @@ export class DefaultSettings implements SeriesSettings {
     resultscss = ''
     resultsheader = ''
     cardtemplate = ''
+    requestmembership = false
+    membershipitem = ''
+    membershipaccount = ''
 }
 
 export const isPosPoints: VuetifyValidationRule = v => { return /^([0-9, ]+|)$/.test(v) || 'Position points can only accept characters 0-9, comma and space' }

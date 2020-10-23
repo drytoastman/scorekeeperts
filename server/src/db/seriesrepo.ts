@@ -47,7 +47,7 @@ export class SeriesRepository {
         }
     }
 
-    _obj2db(def: DefaultSettings, key: string, val: any): string {
+    _obj2db(def: SeriesSettings, key: string, val: any): string {
         // Convert from local data type back into text columns
         if (!(key in def)) { return val.toString() } else if (typeof (def[key]) === 'boolean') { return val ? '1' : '0' }
         return val.toString()
@@ -70,7 +70,7 @@ export class SeriesRepository {
         await this.db.tx(async tx => {
             for (const key in settings) {
                 const val = this._obj2db(def, key, settings[key])
-                await this.db.none('UPDATE settings SET val=$1,modified=now() WHERE name=$2', [val, key])
+                await this.db.none('INSERT INTO settings (name,val) VALUES ($1,$2) ON CONFLICT (name) DO UPDATE SET val=$3,modified=now()', [key, val, val])
             }
         })
         return this.seriesSettings()
