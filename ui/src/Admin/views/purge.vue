@@ -1,5 +1,5 @@
 <template>
-<div class='container'>
+<div class='inset'>
     <h3>Purge Tool</h3>
     <div>This tool will remove entire groups of cars or drivers, either by class name or most recent activity.</div>
 

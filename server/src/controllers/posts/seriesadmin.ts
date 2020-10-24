@@ -1,5 +1,7 @@
 import { Car } from '@/common/car'
 import { Driver } from '@/common/driver'
+import { SeriesValidator } from '@/common/series'
+import { validateObj } from '@/common/util'
 import { db, pgdb, ScorekeeperProtocol } from '@/db'
 import { controllog } from '@/util/logging'
 import { Request, Response } from 'express'
@@ -18,6 +20,7 @@ export async function seriesadmin(req: Request, res: Response) {
                 case 'archive':  return seriesarchive(task, param)
                 case 'purge':    return seriespurge(task, param, req.auth)
                 case 'password': return changeseriespassword(param)
+                case 'createseries': return createseries(param, req.auth)
             }
             throw Error(`unknown seriesadmin request: ${param.request}`)
         }))
@@ -79,4 +82,11 @@ async function seriespurge(task: ScorekeeperProtocol, param: any, auth: AuthData
 
 async function changeseriespassword(param: any) {
     return await pgdb.series.changePassword(param.series, param.currentpassword, param.newpassword)
+}
+
+async function createseries(param: any, auth: AuthData): Promise<any> {
+    validateObj(param, SeriesValidator)
+    const ret = await pgdb.series.copySeries(param.series, param.name, param.password, param.options)
+    auth.seriesAuthenticated(param.name)
+    return ret
 }

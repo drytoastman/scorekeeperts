@@ -19,6 +19,7 @@ export const isISODate: VuetifyValidationRule  = v => { return _V.isISO8601(v) |
 export const isDomain: VuetifyValidationRule   = v => { return _V.isFQDN(v) || 'not a valid domain name' }
 export const isAlphaNum: VuetifyValidationRule = v => { return _V.isAlphanumeric(v) || 'must be alpha numeric' }
 export const isOneZero: VuetifyValidationRule  = v => { return ['0', '1'].includes(v) || 'must be 1 or 0' }
+export const isLower: VuetifyValidationRule    = v => { return _V.isLowercase(v) || 'must be lowercase' }
 
 
 export const isURLV: VuetifyValidationRule      = v => {

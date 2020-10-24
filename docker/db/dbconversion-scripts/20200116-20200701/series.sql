@@ -3,11 +3,36 @@ DROP SEQUENCE IF EXISTS ordercounter;
 
 ALTER TABLE registered ADD COLUMN rorder INTEGER NOT NULL DEFAULT 0;
 
-ALTER TABLE paymentitems DROP CONSTRAINT IF EXISTS paymentitems_accountid_fkey;
-ALTER TABLE paymentitems DROP COLUMN accountid;
-ALTER TABLE paymentitems ADD COLUMN itemtype INTEGER NOT NULL DEFAULT 0;
+-- Create new tables and copy so order is restored for series copy operations
+CREATE TABLE paymentitems_new (
+    itemid    TEXT      PRIMARY KEY,
+    name      TEXT      NOT NULL,
+    itemtype  INTEGER   NOT NULL DEFAULT 0,
+    price     INTEGER   NOT NULL,
+    currency  CHAR(3)   NOT NULL DEFAULT 'USD',
+    modified  TIMESTAMP NOT NULL DEFAULT now()
+);
+INSERT INTO paymentitems_new SELECT itemid, name, 0, price, currency, modified FROM paymentitems;
+REVOKE ALL ON paymentitems_new FROM public;
+GRANT  ALL ON paymentitems_new TO <seriesname>;
+CREATE TRIGGER payitmmod AFTER INSERT OR UPDATE OR DELETE ON paymentitems_new FOR EACH ROW EXECUTE PROCEDURE logmods('<seriesname>.serieslog');
+CREATE TRIGGER payitmuni BEFORE UPDATE ON paymentitems_new FOR EACH ROW EXECUTE PROCEDURE updatechecks('itemid');
+COMMENT ON TABLE paymentitems_new IS 'the list of configured items for an account, itemid is text as it can be a non-scorekeeper generated value';
+DROP TABLE paymentitems;
+ALTER TABLE paymentitems_new RENAME to paymentitems;
 
-ALTER TABLE paymentsecrets ADD COLUMN attr JSONB NOT NULL DEFAULT '{}';
+CREATE TABLE paymentsecrets_new (
+    accountid TEXT      PRIMARY KEY REFERENCES paymentaccounts,
+    secret    TEXT      NOT NULL DEFAULT '',
+    attr      JSONB     NOT NULL,
+    modified  TIMESTAMP NOT NULL DEFAULT now()
+);
+INSERT INTO paymentsecrets_new SELECT accountid, secret, '{}', modified FROM paymentsecrets;
+REVOKE ALL ON paymentsecrets_new FROM public;
+GRANT ALL  ON paymentsecrets_new TO localuser;
+COMMENT ON TABLE paymentsecrets_new IS 'Local only table for payment account details that only need to be on the main server, localuser required to access, no remotes';
+DROP TABLE paymentsecrets;
+ALTER TABLE paymentsecrets_new RENAME to paymentsecrets;
 
 ALTER TABLE payments ALTER COLUMN carid   DROP NOT NULL;
 ALTER TABLE payments ALTER COLUMN carid   SET DEFAULT NULL;

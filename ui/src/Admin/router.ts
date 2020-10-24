@@ -17,6 +17,7 @@ const HostSettings = () => import(/* webpackChunkName: "adminviews" */  './views
 const DriverEditor = () => import(/* webpackChunkName: "adminviews" */  './views/drivereditor.vue')
 const Archive      = () => import(/* webpackChunkName: "adminviews" */  './views/archive.vue')
 const Purge        = () => import(/* webpackChunkName: "adminviews" */  './views/purge.vue')
+const NewSeries    = () => import(/* webpackChunkName: "adminviews" */  './views/newseries.vue')
 
 Vue.use(VueRouter)
 
@@ -51,6 +52,7 @@ const routes = [
     { path: '/:series/usednumbers',    name: 'usednumbers',  component: UsedNumbers },
     { path: '/:series/archive',        name: 'archive',      component: Archive },
     { path: '/:series/purge',          name: 'purge',        component: Purge },
+    { path: '/:series/newseries',      name: 'newseries',    component: NewSeries },
     { path: '/:series/event/:eventid', name: 'event',        component: EventInfo, props: true },
     { path: '/:series/oauth/:code',    name: 'oauth',        component: OAuthHandler }
 ]

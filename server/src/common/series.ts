@@ -2,6 +2,7 @@ import { Challenge } from './challenge'
 import { SeriesClass, SeriesIndex } from './classindex'
 import { SeriesEvent } from './event'
 import { SeriesSettings } from './settings'
+import { DataValidationRules, isAlphaNum, isLower, Length } from './util'
 
 export interface SeriesInfo {
     classes: SeriesClass[]
@@ -9,6 +10,11 @@ export interface SeriesInfo {
     settings: SeriesSettings
     events: SeriesEvent[]
     challenges: Challenge[]
+}
+
+export const SeriesValidator: DataValidationRules = {
+    name:     [Length(6, 16), isLower, isAlphaNum],
+    password: [Length(6, 16)]
 }
 
 export enum SeriesStatus {

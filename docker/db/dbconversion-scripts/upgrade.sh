@@ -1,7 +1,7 @@
 #!/bin/bash
 
 set -e
-if [ $# -ne 1 ]; then 
+if [ $# -ne 1 ]; then
     echo "Usage is: upgrade.sh <converstion directory root>"
     exit
 fi
@@ -25,7 +25,9 @@ while true; do
                     series=`cat $ent/series.sql | tr "\n" "\r" | sed "s/'/''/g"`
                 fi
                 echo "Converting $inversion to $outversion"
-                psql -U postgres -d scorekeeper -c "SELECT upgrade('$series', '$public', '$outversion');"
+                psql -U postgres -d scorekeeper -c "SELECT upgrade('$series', '$public', '$outversion')"
+                psql -U postgres -d scorekeeper -c "DROP SCHEMA template CASCADE"
+                psql -U postgres -d scorekeeper -c "SELECT verify_series('template')"
                 if [ $? -ne 0 ]; then
                     exit
                 fi

@@ -10,4 +10,5 @@ import isDecimal from 'validator/es/lib/isDecimal'
 import isCurrency from 'validator/es/lib/isCurrency'
 import isFQDN from 'validator/es/lib/isFQDN'
 import isAlphanumeric from 'validator/es/lib/isAlphanumeric'
-export default { isNumeric, isEmail, isISO8601, isURL, isUUID, isInt, isDecimal, isCurrency, isFQDN, isAlphanumeric }
+import isLowercase from 'validator/es/lib/isLowercase'
+export default { isNumeric, isEmail, isISO8601, isURL, isUUID, isInt, isDecimal, isCurrency, isFQDN, isAlphanumeric, isLowercase }

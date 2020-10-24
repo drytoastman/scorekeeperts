@@ -26,8 +26,8 @@ export class ResultsRepository {
     constructor(private db: ScorekeeperProtocol) {}
 
     async cacheAll(): Promise<void> {
-        const series = await this.getCurrent()
-        if (await this.getStatus(series) !== SeriesStatus.ACTIVE) return // can't cache non-active
+        const series = await this.db.series.getCurrent()
+        if (await this.db.series.getStatus(series) !== SeriesStatus.ACTIVE) return // can't cache non-active
 
         dblog.info(`cacheAll ${series}`)
         const info = await this.getSeriesInfo()
@@ -73,8 +73,8 @@ export class ResultsRepository {
 
     private async needEventUpdate(eventid: UUID): Promise<boolean> {
         // check if we can/need to update, look for specifc eventid in data to reduce unnecessary event churn when following a single event (live)
-        const series = await this.getCurrent()
-        if (await this.getStatus(series) !== SeriesStatus.ACTIVE) return false
+        const series = await this.db.series.getCurrent()
+        if (await this.db.series.getStatus(series) !== SeriesStatus.ACTIVE) return false
 
         const dm = new Date((await this.db.one("SELECT max(ltime) FROM publiclog WHERE tablen='drivers'")).max)
         const sm = new Date((await this.db.one("SELECT max(ltime) FROM serieslog WHERE tablen IN ('settings', 'classlist', 'indexlist', 'cars')")).max)
@@ -90,8 +90,8 @@ export class ResultsRepository {
 
     private async needUpdate(usedrivers: boolean, stables: string[], name: string): Promise<boolean> {
         // check if we can/need to update based on table changes
-        const series = await this.getCurrent()
-        if (await this.getStatus(series) !== SeriesStatus.ACTIVE) return false
+        const series = await this.db.series.getCurrent()
+        if (await this.db.series.getStatus(series) !== SeriesStatus.ACTIVE) return false
 
         let p: Promise<any>
         if (usedrivers) {
@@ -110,7 +110,7 @@ export class ResultsRepository {
 
 
     private async loadResults(name: string): Promise<any> {
-        const series = await this.getCurrent()
+        const series = await this.db.series.getCurrent()
         const r = await this.db.oneOrNone('SELECT data FROM results WHERE series=$1 and name=$2', [series, name])
         if (!r) return {}
         return r.data
@@ -123,28 +123,12 @@ export class ResultsRepository {
           Don't upsert as we have to specify LARGE json object twice.
         */
         const resolved = await Promise.resolve(data)  // incase data is a promise
-        const series = await this.getCurrent()
+        const series = await this.db.series.getCurrent()
         return this.db.tx(async tx => {
             await tx.none('SET ROLE $1', [series])
             await tx.none("INSERT INTO results VALUES ($1, $2, '{}', now()) ON CONFLICT (series, name) DO NOTHING", [series, name])
             await tx.none('UPDATE results SET data=$1::json, modified=now() where series=$2 and name=$3', [resolved, series, name])
             await tx.none('RESET ROLE')
         })
-    }
-
-
-    private async getCurrent(): Promise<string> {
-        const res = await this.db.one('SHOW search_path')
-        return res.search_path.split(',')[0]
-    }
-
-    private async getStatus(series: string): Promise<SeriesStatus> {
-        if (await this.db.oneOrNone('select schema_name from information_schema.schemata where schema_name=$1', [series])) {
-            return SeriesStatus.ACTIVE
-        } else {
-            const res2 = await this.db.one('select count(1) from results where series=$1', [series])
-            if (res2.count >= 2) return SeriesStatus.ARCHIVED
-        }
-        return SeriesStatus.INVALID
     }
 }

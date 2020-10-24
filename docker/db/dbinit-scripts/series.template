@@ -122,7 +122,7 @@ COMMENT ON TABLE paymentitems IS 'the list of configured items for an account, i
 
 
 CREATE TABLE paymentsecrets (
-    accountid TEXT      PRIMARY KEY,
+    accountid TEXT      PRIMARY KEY REFERENCES paymentaccounts,
     secret    TEXT      NOT NULL DEFAULT '',
     attr      JSONB     NOT NULL,
     modified  TIMESTAMP NOT NULL DEFAULT now()

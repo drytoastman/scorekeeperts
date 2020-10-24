@@ -26,9 +26,11 @@ export default {
             this.$store.dispatch('seriesadmin', {
                 request: 'archive',
                 verifyseries: this.value
-            }).then(() => {
-                this.$store.commit('seriesGone', this.value)
-                this.$router.push('/')
+            }).then(data => {
+                if (data) {
+                    this.$store.commit('seriesGone', this.value)
+                    this.$router.push('/')
+                }
             })
         }
     }
