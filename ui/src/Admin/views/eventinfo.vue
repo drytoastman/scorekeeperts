@@ -38,10 +38,10 @@
 <script>
 import { format } from 'date-fns'
 import { mapState } from 'vuex'
-import EventSettings from '../components/EventSettings.vue'
+import EventSettings from '../components/event/EventSettings.vue'
 import EntrantTable from '../components/EntrantTable.vue'
-import GridOrder from '../components/GridOrder.vue'
-import PaymentSetup from '../components/EventPaymentSettings.vue'
+import GridOrder from '../components/event/GridOrder.vue'
+import PaymentSetup from '../components/event/EventPaymentSettings.vue'
 
 export default {
     name: 'EventInfo',

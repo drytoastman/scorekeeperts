@@ -118,14 +118,14 @@ export default {
         },
         admins() {
             return [
-                { title: 'New Events',     link: { name:'newevents' }},  // TODO
-                { title: 'New Series',     link: { name:'newseries' }},  // TODO
-                { title: 'Archive Series', link: { name:'archive' }},
-                { title: 'Purge Tool',     link: { name:'purge' }},
+                { title: 'New Events',        link: { name:'newevents' }},  // TODO
+                { title: 'Driver/Car Editor', link: { name:'drivereditor' }},
+                { title: 'Purge Tool',        link: { name:'purge' }},
                 { link: {}},
-                { title: 'Driver Editor', link: { name:'drivereditor' }},
-                { title: 'Host Settings', link: { name:'hostsettings' }},
-                { title: 'Server Logs',   link: { name:'serverlogs'   }}
+                { title: 'New Series',     link: { name:'newseries' }},
+                { title: 'Archive Series', link: { name:'archive' }},
+                { title: 'Host Settings',  link: { name:'hostsettings' }},
+                { title: 'Server Logs',    link: { name:'serverlogs'   }}
             ]
         }
     }

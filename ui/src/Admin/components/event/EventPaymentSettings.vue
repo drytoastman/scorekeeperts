@@ -43,7 +43,7 @@ import cloneDeep from 'lodash/cloneDeep'
 import isEqual from 'lodash/isEqual'
 import orderBy from 'lodash/orderBy'
 import { mapState } from 'vuex'
-import { ITEMTYPES, ITEM_TYPE_GENERAL_FEE, ITEM_TYPE_SERIES_FEE } from '../../common/payments'
+import { ITEMTYPES, ITEM_TYPE_GENERAL_FEE, ITEM_TYPE_SERIES_FEE } from '@/common/payments'
 
 export default {
     name: 'EventPaymentSettingsForm',

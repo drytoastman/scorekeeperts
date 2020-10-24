@@ -47,11 +47,15 @@ export function isOpen(event: SeriesEvent):    boolean { return hasOpened(event)
 export function hasSessions(event: SeriesEvent): boolean { return event.regtype > 0 }
 export function getSessions(event: SeriesEvent): string[] {
     switch (event.regtype) {
-        case 2: return ['Day']
-        case 1: return ['AM', 'PM']
+        case REGTYPE_DAY:  return ['Day']
+        case REGTYPE_AMPM: return ['AM', 'PM']
         default: return []
     }
 }
+
+export const REGTYPE_STANDARD = 0
+export const REGTYPE_AMPM = 1
+export const REGTYPE_DAY = 2
 
 export const isSession: VuetifyValidationRule = v => { return ['', 'AM', 'PM', 'Day'].includes(v) || 'Session can only be one of AM, PM or Day' }
 
