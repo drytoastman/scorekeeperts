@@ -158,7 +158,7 @@ export function api2Mutations(adminOptions: boolean):  MutationTree<Api2State> {
                 state.serieslist = data.serieslist.sort()
             }
 
-            for (const key of ['listids', 'unsubscribe', 'summary', 'attendance', 'classorder',
+            for (const key of ['listids', 'unsubscribe', 'summary', 'attendance', 'classorder', 'ismainserver',
                 'emailresult', 'settings', 'squareapplicationid', 'squareoauthresp', 'tokenresult']) {
             // easy straight assignments/replacements
                 if (key in data) {

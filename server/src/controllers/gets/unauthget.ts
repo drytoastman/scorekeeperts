@@ -1,5 +1,5 @@
 import { ScorekeeperProtocol } from '@/db'
-import { SQ_APPLICATION_ID, RECAPTCHA_SITEKEY } from '@/db/generalrepo'
+import { SQ_APPLICATION_ID, RECAPTCHA_SITEKEY, IS_MAIN_SERVER } from '@/db/generalrepo'
 
 export async function unauthget(db: ScorekeeperProtocol, item: any, ret: any): Promise<boolean> {
     let res = true
@@ -9,6 +9,7 @@ export async function unauthget(db: ScorekeeperProtocol, item: any, ret: any): P
         case 'listids':             ret.listids             = await db.series.emailListIds(); break
         case 'serieslist':          ret.serieslist          = await db.series.seriesList();   break
         case 'squareapplicationid': ret.squareapplicationid = await db.general.getLocalSetting(SQ_APPLICATION_ID); break
+        case 'ismainserver':        ret.ismainserver        = await db.general.getLocalSetting(IS_MAIN_SERVER) === '1'; break
         case 'recaptchasitekey':
             if (await db.general.isMainServer()) {
                 ret.recaptchasitekey = await db.general.getLocalSetting(RECAPTCHA_SITEKEY)

@@ -106,7 +106,7 @@ export async function authtest(req: Request, res: Response) {
 
 const UNAUTHSPECIAL = ['recaptchasitekey', 'serieslist']
 const COMMONDEFAULT = ['classes', 'counts', 'events', 'indexes', 'listids', 'paymentaccounts', 'paymentitems', 'serieslist']
-const SERIESDEFAULT = [...COMMONDEFAULT, 'classorder', 'localsettings',  'settings', 'squareapplicationid']
+const SERIESDEFAULT = [...COMMONDEFAULT, 'classorder', 'localsettings',  'settings', 'squareapplicationid', 'ismainserver']
 const DRIVERDEFAULT = [...COMMONDEFAULT, 'cars', 'drivers', 'payments', 'registered', 'summary', 'unsubscribe']
 
 export const AUTHTYPE_DRIVER = 'driver'

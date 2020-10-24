@@ -33,6 +33,7 @@ export class Api2State {
     listids: string[] = []
 
     // non series specific
+    ismainserver = false
     drivers: {[key: string]: Driver} = {}
     driverid = ''
     unsubscribe: string[] = []

@@ -1,20 +1,24 @@
 <template>
     <div class='inset'>
         <h3>Create New Series</h3>
-        <div class='desc'>
-            Create a new series, copying information from the current
-            <div class='small'>This is only intended for use on the main server</div>
+        <div v-if='ismain'>
+            <div class='desc'>
+                Create a new series, copying information from the current
+            </div>
+            <div class='controls'>
+                <v-form lazy-validation ref="form">
+                    <v-text-field v-model="name"     label="Series Name" :rules="rules.name" validate-on-blur></v-text-field>
+                    <v-text-field v-model="password" label="Password"    :rules="rules.password" validate-on-blur></v-text-field>
+                    <v-checkbox   v-model="options.settings" label="Copy Settings"></v-checkbox>
+                    <v-checkbox   v-model="options.classes"  label="Copy Classes/Indexes" @change="classeschange"></v-checkbox>
+                    <v-checkbox   v-model="options.accounts" label="Copy Payment Accounts"></v-checkbox>
+                    <v-checkbox   v-model="options.cars"     label="Copy Cars" @change="carschange"></v-checkbox>
+                    <v-btn color="secondary" @click="create">Create</v-btn>
+                </v-form>
+            </div>
         </div>
-        <div class='controls'>
-            <v-form lazy-validation ref="form">
-                <v-text-field v-model="name"     label="Series Name" :rules="rules.name" validate-on-blur></v-text-field>
-                <v-text-field v-model="password" label="Password"    :rules="rules.password" validate-on-blur></v-text-field>
-                <v-checkbox   v-model="options.settings" label="Copy Settings"></v-checkbox>
-                <v-checkbox   v-model="options.classes"  label="Copy Classes/Indexes" @change="classeschange"></v-checkbox>
-                <v-checkbox   v-model="options.accounts" label="Copy Payment Accounts"></v-checkbox>
-                <v-checkbox   v-model="options.cars"     label="Copy Cars" @change="carschange"></v-checkbox>
-                <v-btn color="secondary" @click="create">Create</v-btn>
-            </v-form>
+        <div v-else class='myerror'>
+            This is only intended for use on the main server
         </div>
     </div>
 </template>
@@ -40,6 +44,9 @@ export default {
                 cars: false
             }
         }
+    },
+    computed: {
+        ismain() { return this.$store.state.ismainserver }
     },
     methods: {
         carschange()    { if (this.cars)     { this.classes = true } },
@@ -68,10 +75,9 @@ export default {
 .desc {
     margin-left: 1rem;
 }
-.small {
-    font-size: 90%;
+.myerror {
     font-style: italic;
-    color: grey;
+    color: red;
 }
 .controls {
     margin-top: 1rem;
