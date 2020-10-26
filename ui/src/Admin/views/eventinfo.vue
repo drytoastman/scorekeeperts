@@ -22,7 +22,7 @@
                 <EventSettings :seriesevent="event"></EventSettings>
             </v-tab-item>
             <v-tab-item>
-                <PaymentSetup :seriesevent="event"></PaymentSetup>
+                <PaymentSettings :seriesevent="event"></PaymentSettings>
             </v-tab-item>
             <v-tab-item>
                 <EntrantTable :eventid=eventid></EntrantTable>
@@ -41,7 +41,7 @@ import { mapState } from 'vuex'
 import EventSettings from '../components/event/EventSettings.vue'
 import EntrantTable from '../components/EntrantTable.vue'
 import GridOrder from '../components/event/GridOrder.vue'
-import PaymentSetup from '../components/event/EventPaymentSettings.vue'
+import PaymentSettings from '../components/event/PaymentSettings.vue'
 
 export default {
     name: 'EventInfo',
@@ -49,7 +49,7 @@ export default {
         EventSettings,
         EntrantTable,
         GridOrder,
-        PaymentSetup
+        PaymentSettings
     },
     props: {
         eventid: String

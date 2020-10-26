@@ -1,12 +1,13 @@
 <template>
   <v-dialog v-model="display" :width="dialogWidth">
     <template v-slot:activator="{ on }">
-      <v-text-field :disabled="disabled" :label="label" :value="displayedDateTime" :style="fieldstyle" v-on="on" readonly></v-text-field>
+      <v-text-field :disabled="disabled" :label="label" :value="displayedDateTime" :style="fieldstyle" :class="fieldclass" v-on="on" readonly></v-text-field>
     </template>
 
     <v-card>
-      <v-card-text class="px-0 py-0">
-        <v-tabs fixed-tabs v-model="activeTab" v-if="!dateOnly" >
+      <v-card-text class="nosurround">
+        <!-- Date and time -->
+        <v-tabs fixed-tabs background-color="primary" dark v-model="activeTab" v-if="!dateOnly && !timeOnly" >
           <v-tab key="calendar">
               Date
           </v-tab>
@@ -20,9 +21,17 @@
             <v-time-picker ref="timer" v-model="time" full-width></v-time-picker>
           </v-tab-item>
         </v-tabs>
-        <div v-else>
-            <v-date-picker v-model="date" @input="showTimePicker" full-width></v-date-picker>
+
+        <!-- just date -->
+        <div v-else-if="dateOnly">
+            <v-date-picker v-model="date" full-width></v-date-picker>
         </div>
+
+        <!-- just time -->
+        <div v-else-if="timeOnly">
+            <v-time-picker ref="timer" v-model="time" full-width></v-time-picker>
+        </div>
+
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
@@ -63,11 +72,18 @@ export default {
             type: String,
             default: ''
         },
+        fieldclass: {
+            type: String,
+            default: ''
+        },
         dialogWidth: {
             type: Number,
             default: 340
         },
         dateOnly: {
+            type: Boolean
+        },
+        timeOnly: {
             type: Boolean
         }
     },
@@ -84,17 +100,22 @@ export default {
     },
     computed: {
         displayedDateTime() {
-            if (!this.date) { return '' }
-            return format(this.combinedDate, this.dateOnly ? 'EEE MMM dd Y' : 'EEE MMM dd Y hh:mm a')
+            try {
+                let fmt = 'EEE MMM dd Y hh:mm a'
+                if (this.dateOnly) fmt = 'EEE MMM dd Y'
+                if (this.timeOnly) fmt = 'hh:mm a'
+                return format(this.combinedDate, fmt)
+            } catch (error) {
+                return ''
+            }
         },
         combinedDate() {
             const def = new Date()
             def.setTime(0)
-            if (this.dateOnly) {
-                return parse(this.date, VDATE, def)
-            } else {
-                return parse(this.date + ' ' + this.time, VDATE + ' ' + VTIME, def)
-            }
+            if (this.dateOnly && this.date)      return parse(this.date, VDATE, def)
+            else if (this.timeOnly && this.time) return parse(this.time, VTIME, def)
+            else if (this.date && this.time)     return parse(this.date + ' ' + this.time, VDATE + ' ' + VTIME, def)
+            return null
         },
         dateNotSelected() {
             return !this.date
@@ -124,9 +145,7 @@ export default {
             }
         },
         showTimePicker() {
-            if (!this.dateOnly) {
-                this.activeTab = 1
-            }
+            this.activeTab = 1
         }
     },
     watch: {
@@ -137,8 +156,25 @@ export default {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .cancel, .ok {
     color: var(--v-secondary-base);
+}
+.v-dialog .v-card__text.nosurround {
+    padding: 0 !important;
+    margin: 0;
+}
+.v-card {
+    ::v-deep .v-tabs-bar {
+        height: 40px;
+    }
+
+    ::v-deep .v-picker__title {
+        border-radius: 0 !important;
+    }
+
+    ::v-deep .v-window__container {
+        min-height: 25rem;
+    }
 }
 </style>

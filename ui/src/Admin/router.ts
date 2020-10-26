@@ -18,6 +18,7 @@ const DriverEditor = () => import(/* webpackChunkName: "adminviews" */  './views
 const Archive      = () => import(/* webpackChunkName: "adminviews" */  './views/archive.vue')
 const Purge        = () => import(/* webpackChunkName: "adminviews" */  './views/purge.vue')
 const NewSeries    = () => import(/* webpackChunkName: "adminviews" */  './views/newseries.vue')
+const NewEvents    = () => import(/* webpackChunkName: "adminviews" */  './views/newevents.vue')
 
 Vue.use(VueRouter)
 
@@ -53,6 +54,7 @@ const routes = [
     { path: '/:series/archive',        name: 'archive',      component: Archive },
     { path: '/:series/purge',          name: 'purge',        component: Purge },
     { path: '/:series/newseries',      name: 'newseries',    component: NewSeries },
+    { path: '/:series/newevents',      name: 'newevents',    component: NewEvents },
     { path: '/:series/event/:eventid', name: 'event',        component: EventInfo, props: true },
     { path: '/:series/oauth/:code',    name: 'oauth',        component: OAuthHandler }
 ]
