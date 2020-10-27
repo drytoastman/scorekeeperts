@@ -24,9 +24,11 @@
             v-model="settingsm.pospointlist" style="grid-area: ppoints" :rules="vrules.pospointlist" label="Position Points List">
         </v-text-field>
 
-        <v-checkbox v-model="settingsm.requestmembership"   style="grid-area: reqmem" label="Request Membership"></v-checkbox>
-        <v-select v-model="settingsm.membershipitem"        style="grid-area: memitm" :items="memberitems"    item-value="itemid"    item-text="name"></v-select>
-        <v-select v-model="settingsm.membershipaccount"     style="grid-area: memact" :items="memberaccounts" item-value="accountid" item-text="name"></v-select>
+        <v-checkbox v-model="settingsm.requestmembership" style="grid-area: reqmem" label="Request Membership"></v-checkbox>
+        <v-select v-model="settingsm.membershipitem"      style="grid-area: memitm" :items="memberitems"    item-value="itemid"    item-text="name"
+                placeholder="Payment Item"></v-select>
+        <v-select v-model="settingsm.membershipaccount"   style="grid-area: memact" :items="memberaccounts" item-value="accountid" item-text="name"
+                placeholder="Payment Account"></v-select>
 
         <v-checkbox v-model="settingsm.requestbarcodes"     style="grid-area: reqb"   :rules="vrules.requestbarcodes" label="Request Barcodes"></v-checkbox>
         <v-checkbox v-model="settingsm.indexafterpenalties" style="grid-area: indexa" :rules="vrules.indexafterpenalties" label="Index After Penalties"></v-checkbox>

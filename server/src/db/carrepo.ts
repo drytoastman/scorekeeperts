@@ -2,8 +2,8 @@ import _ from 'lodash'
 import { IDatabase, IMain, ColumnSet } from 'pg-promise'
 import { v1 as uuidv1 } from 'uuid'
 import { verifyDriverRelationship, cleanAttr } from './helper'
-import { UUID } from '@common/util'
-import { Car } from '@common/car'
+import { UUID, validateObj } from '@common/util'
+import { Car, CarValidator } from '@common/car'
 
 let carcols: ColumnSet|undefined
 
@@ -57,6 +57,10 @@ export class CarRepository {
     }
 
     async updateCars(type: string, cars: Car[], verifyid: UUID|null = null): Promise<Car[]> {
+        if (type !== 'delete') {
+            cars.forEach(c => validateObj(c, CarValidator))
+        }
+
         if (type === 'insert') {
             cars.forEach(c => {
                 c.carid = uuidv1()

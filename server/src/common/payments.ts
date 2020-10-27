@@ -27,7 +27,7 @@ export interface PaymentItem {
     itemid: string;
     name: string;
     price: number;
-    type: number;
+    itemtype: number;
     currency: string;
     modified: DateString;
 }

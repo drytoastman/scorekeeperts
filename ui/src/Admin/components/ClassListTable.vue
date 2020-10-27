@@ -36,7 +36,7 @@
 import orderBy from 'lodash/orderBy'
 import { mapState } from 'vuex'
 import { mdiPencil, mdiDelete } from '@mdi/js'
-import ClassDialog from './ClassDialog'
+import ClassDialog from './ClassDialog.vue'
 
 export default {
     name: 'ClassList',
@@ -75,9 +75,14 @@ export default {
         newclass() {
             this.dialogData = {
                 usecarflag: false,
+                eventtrophy: true,
+                champtrophy: true,
+                carindexed: false,
+                secondruns: false,
                 classmultiplier: 1.0,
                 countedruns: 0,
-                indexcode: ''
+                indexcode: '',
+                caridxrestrict: ''
             }
             this.dialogApiType = 'insert'
             this.classDialog = true

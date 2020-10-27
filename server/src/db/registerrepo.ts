@@ -1,5 +1,5 @@
-import { Registration, Payment } from '@common/register'
-import { UUID } from '@common/util'
+import { Registration, Payment, RegValidator } from '@common/register'
+import { UUID, validateObj } from '@common/util'
 import { IDatabase, IMain, ColumnSet } from 'pg-promise'
 import _ from 'lodash'
 import { verifyDriverRelationship } from './helper'
@@ -123,6 +123,8 @@ export class RegisterRepository {
             }
             return { registered: reg }
         } else if (type === 'eventupdate' && verifyid) {
+            reg.forEach(r => validateObj(r, RegValidator))
+
             reg = _.orderBy(reg, 'rorder')
             reg.forEach((r, ii) => {  // reset rorder to lowest levels
                 r.rorder = ii

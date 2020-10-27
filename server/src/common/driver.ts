@@ -31,8 +31,6 @@ export const DriverValidator: DataValidationRules = {
     firstname:  [Length(2, 32)],
     lastname:   [Length(2, 32)],
     email:      [isEmailV],
-    username:   [Length(6, 32)],
-    password:   [Length(6, 32)],
     barcode:    [isBarcode],
     optoutmail: [],
     address:    [MaxLength(64)],

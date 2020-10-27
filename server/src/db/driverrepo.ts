@@ -2,8 +2,8 @@ import bcrypt from 'bcryptjs'
 import { IDatabase, ColumnSet, IMain } from 'pg-promise'
 import { v1 as uuidv1 } from 'uuid'
 
-import { UUID } from '@common/util'
-import { Driver } from '@common/driver'
+import { UUID, validateObj } from '@common/util'
+import { Driver, DriverValidator } from '@common/driver'
 import { cleanAttr } from './helper'
 
 let drivercols: ColumnSet|undefined
@@ -108,6 +108,10 @@ export class DriverRepository {
     }
 
     async updateDriver(type: string, drivers: Driver[], verifyid: UUID|null = null): Promise<Driver[]> {
+        if (type !== 'delete') {
+            drivers.forEach(d => validateObj(d, DriverValidator))
+        }
+
         if (verifyid && drivers[0].driverid !== verifyid) {
             throw Error(`Trying to modify a driver that you shouldn't ${JSON.stringify(drivers[0].driverid)} ${verifyid}`)
         }

@@ -7,7 +7,7 @@
             <v-card-text>
                 <div class='alert'>
                     This will change the local password for <b>{{currentSeries}}</b>.
-                    Anyone else wanting to sync with <b>{{currentSeries}}</b> at this server much also change their series password to match.
+                    Anyone else wanting to sync with <b>{{currentSeries}}</b> at this server must also change their series password to match.
                 </div>
 
                 <v-text-field v-model="currentpassword" label="Current Password" :type="pType" @click:append="showp=!showp" :append-icon="pIcon"></v-text-field>

@@ -105,19 +105,14 @@ export default {
         },
         update() {
             if (this.apiType === 'delete' || this.$refs.dialog.validate()) {
-                if (!this.carm.carid) {
-                    this.carm.carid = 'placeholder'
-                }
-                if (!this.needindex) {
-                    this.carm.indexcode = ''
-                }
+                if (!this.needindex) this.carm.indexcode = ''
+                if (this.eDriverId)  this.carm.driverid  = this.eDriverId
 
                 this.$store.dispatch('setdata', {
                     type: this.apiType,
                     series: this.eSeries,
-                    driverid: this.eDriverId,
                     items: { cars: [this.carm] },
-                    busy: { key: 'busyCars', id: this.carm.carid }
+                    busy: this.carm.carid ? { key: 'busyCars', id: this.carm.carid } : null
                 }).then(() => {
                     this.$emit('complete', this.apiType, this.carm)
                 })

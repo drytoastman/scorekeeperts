@@ -2,8 +2,8 @@ import { IDatabase, IMain, ColumnSet } from 'pg-promise'
 import { v1 as uuidv1 } from 'uuid'
 import { ScorekeeperProtocol } from '.'
 
-import { SeriesEvent } from '@common/event'
-import { UUID } from '@common/util'
+import { EventValidator, SeriesEvent } from '@common/event'
+import { UUID, validateObj } from '@common/util'
 import { cleanAttr } from './helper'
 import { dblog } from '@/util/logging'
 
@@ -71,7 +71,6 @@ export class EventsRepository {
         for (const event of events) {
             await tx.none(`DELETE FROM itemeventmap WHERE eventid=$1 ${event.items.length ? 'AND itemid NOT IN ($1:csv)' : ''}`, [event.eventid, event.items])
             for (const itemmap of event.items) {
-                console.log(itemmap)
                 await tx.any('INSERT INTO itemeventmap (eventid, itemid, maxcount, required) ' +
                                  'VALUES ($(eventid), $(itemid), $(maxcount), $(required)) ' +
                                  'ON CONFLICT (eventid, itemid) DO NOTHING', itemmap)
@@ -80,6 +79,10 @@ export class EventsRepository {
     }
 
     async updateEvents(type: string, events: SeriesEvent[]): Promise<SeriesEvent[]> {
+        if (type !== 'delete') {
+            events.forEach(e => validateObj(e, EventValidator))
+        }
+
         return await this.db.tx(async tx => {
             if (type === 'insert') {
                 const ret: SeriesEvent[] = await tx.any(this.pgp.helpers.insert(events, eventcols) + ' RETURNING *')

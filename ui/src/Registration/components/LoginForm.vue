@@ -9,7 +9,7 @@
 </template>
 
 <script>
-import { DriverValidator } from '@/common/driver'
+import { RegisterValidator } from '@/common/driver'
 import { PasswordEyeMixin } from '@/components/PasswordEyeMixin.js'
 
 export default {
@@ -26,7 +26,7 @@ export default {
             username: '',
             password: '',
             error: '',
-            vrules: DriverValidator
+            vrules: RegisterValidator
         }
     },
     methods: {

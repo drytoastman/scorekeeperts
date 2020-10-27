@@ -9,7 +9,7 @@
 </template>
 
 <script>
-import { DriverValidator } from '@/common/driver'
+import { ResetValidator } from '@/common/driver'
 
 export default {
     name: 'ResetForm',
@@ -24,7 +24,7 @@ export default {
             lastname: '',
             email: '',
             error: '',
-            vrules: DriverValidator
+            vrules: ResetValidator
         }
     },
     methods: {

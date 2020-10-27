@@ -10,7 +10,7 @@
 </template>
 
 <script>
-import { DriverValidator } from '@/common/driver'
+import { RegisterValidator } from '@/common/driver'
 import { PasswordEyeMixin } from '@/components/PasswordEyeMixin.js'
 import BaseDialog from '@/components/BaseDialog'
 
@@ -26,7 +26,7 @@ export default {
     },
     data() {
         return {
-            vrules: DriverValidator,
+            vrules: RegisterValidator,
             currentpass: '',
             newpass: ''
         }

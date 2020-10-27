@@ -3,8 +3,8 @@ import _ from 'lodash'
 
 import { verifyDriverRelationship, cleanAttr } from './helper'
 import { PaymentAccount, PaymentItem, PaymentAccountSecret } from '@common/payments'
-import { UUID } from '@common/util'
-import { Payment } from '@common/register'
+import { UUID, validateObj } from '@common/util'
+import { Payment, PaymentValidator } from '@common/register'
 
 let paymentcols: ColumnSet|undefined
 let secretcols: ColumnSet|undefined
@@ -74,7 +74,14 @@ export class PaymentsRepository {
     async updatePaymentItems(type: string, items: PaymentItem[]): Promise<PaymentItem[]> {
         if (type === 'insert') { return this.db.any(this.pgp.helpers.insert(items, itemcols) + ' RETURNING *') }
         if (type === 'update') { return this.db.any(this.pgp.helpers.update(items, itemcols) + ' WHERE v.itemid = t.itemid RETURNING *') }
-        if (type === 'delete') { return this.db.any('DELETE from paymentitems WHERE itemid in ($1:csv) RETURNING itemid', items.map(i => i.itemid)) }
+        if (type === 'delete') {
+            const rows = await this.db.any('SELECT DISTINCT e.name,e.date FROM itemeventmap m JOIN events e ON m.eventid=e.eventid ' +
+                                           'WHERE m.itemid IN ($1:csv) ORDER BY e.date', [items.map(i => i.itemid)])
+            if (rows.length > 0) {
+                throw Error(`Items(s) still in use for events (${rows.map(r => r.name).join(', ')})`)
+            }
+            return this.db.any('DELETE from paymentitems WHERE itemid in ($1:csv) RETURNING itemid', items.map(i => i.itemid))
+        }
         throw Error(`Unknown operation type ${JSON.stringify(type)}`)
     }
 
@@ -87,14 +94,13 @@ export class PaymentsRepository {
         if (type === 'update') { return this.db.any(this.pgp.helpers.update(accounts, accountcols) + ' WHERE v.accountid = t.accountid RETURNING *') }
         if (type === 'delete') {
             const ids = accounts.map(a => a.accountid)
-            const rows = await this.db.any('SELECT name FROM events WHERE accountid in ($1:csv) ORDER BY date', ids)
+            const rows = await this.db.any('SELECT name FROM events WHERE accountid in ($1:csv) ORDER BY date', [ids])
             if (rows.length > 0) {
                 throw Error(`Account(s) still in use for events (${rows.map(r => r.name).join(', ')})`)
             }
             return this.db.tx(t => {
-                t.any('DELETE from paymentsecrets WHERE accountid in ($1:csv)', ids)
-                t.any('DELETE from paymentitems WHERE accountid in ($1:csv)', ids)
-                return t.any('DELETE from paymentaccounts WHERE accountid in ($1:csv) RETURNING accountid', ids)
+                t.any('DELETE from paymentsecrets WHERE accountid in ($1:csv)', [ids])
+                return t.any('DELETE from paymentaccounts WHERE accountid in ($1:csv) RETURNING accountid', [ids])
             })
         }
         throw Error(`Unknown operation type ${JSON.stringify(type)}`)
@@ -138,6 +144,9 @@ export class PaymentsRepository {
     async updatePayments(type: string, payments: Payment[], driverid?: UUID): Promise<Payment[]> {
         if (driverid) {
             await verifyDriverRelationship(this.db, payments.map(p => p.carid).filter(v => v), driverid)
+        }
+        if (type !== 'delete') {
+            payments.forEach(p => validateObj(p, PaymentValidator))
         }
 
         if (type === 'insert') { return this.db.any(this.pgp.helpers.insert(payments, paymentcols) + ' RETURNING *') }

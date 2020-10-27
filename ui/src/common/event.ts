@@ -2,6 +2,14 @@ import orderBy from 'lodash/orderBy'
 import { ITEM_TYPE_SERIES_FEE, PaymentItem } from './payments'
 import { DataValidationRules, Length, isUUIDV, isDate, UUID, Range, Min, DateString, VuetifyValidationRule, MaxLength } from './util'
 
+export interface ItemMap {
+    eventid: UUID;
+    itemid: string;
+    maxcount: number;
+    required: boolean;
+    modified?: DateString;
+}
+
 export interface SeriesEvent
 {
     eventid: UUID;
@@ -33,14 +41,6 @@ export interface SeriesEvent
     }
     modified: DateString;
     created: DateString;
-}
-
-export interface ItemMap {
-    eventid: UUID;
-    itemid: string;
-    maxcount: number;
-    required: boolean;
-    modified?: DateString;
 }
 
 export interface UIItemMap {

@@ -1,7 +1,8 @@
 import { IMain } from 'pg-promise'
 import { ScorekeeperProtocol } from '.'
-import { SeriesSettings, DefaultSettings } from '@common/settings'
+import { SeriesSettings, DefaultSettings, SettingsValidator } from '@common/settings'
 import { SeriesStatus } from '@/common/series'
+import { validateObj } from '@/common/util'
 
 export class SeriesRepository {
     // eslint-disable-next-line no-useless-constructor
@@ -82,6 +83,8 @@ export class SeriesRepository {
     }
 
     async updateSettings(settings: SeriesSettings): Promise<SeriesSettings> {
+        validateObj(settings, SettingsValidator)
+
         const def: SeriesSettings = new DefaultSettings()
         await this.db.tx(async tx => {
             for (const key in settings) {
