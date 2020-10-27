@@ -9,6 +9,7 @@
 </template>
 
 <script>
+import Vue from 'vue'
 import { mapState } from 'vuex'
 import cloneDeep from 'lodash/cloneDeep'
 import isEqual from 'lodash/isEqual'
@@ -26,7 +27,7 @@ export default {
     data() {
         return {
             saveeventdata: {},
-            eventm: {}
+            eventm: { attr: {}}
         }
     },
     computed: {
@@ -37,7 +38,7 @@ export default {
         savePayments() {
             const emod = cloneDeep(this.seriesevent)
             emod.accountid       = this.eventm.accountid
-            emod.attr.paymentreq = this.eventm.required
+            emod.attr.paymentreq = this.eventm.attr.paymentreq
             emod.items           = this.eventm.items.filter(m => m.checked).map(m => m.map)
 
             this.$store.dispatch('setdata', {
@@ -47,6 +48,9 @@ export default {
         },
         reset() {
             this.saveeventdata = cloneDeep(this.seriesevent)
+            if (!this.saveeventdata.attr.paymentreq) {
+                Vue.set(this.saveeventdata.attr, 'paymentreq', false)
+            }
             this.saveeventdata.items = createEventItems(Object.values(this.paymentitems), this.seriesevent.items, this.seriesevent.eventid)
             this.eventm = cloneDeep(this.saveeventdata)
         }

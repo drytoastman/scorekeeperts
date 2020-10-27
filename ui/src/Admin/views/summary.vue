@@ -1,7 +1,10 @@
 <template>
-    <div class='outer'>
+    <div class='inset'>
         <div v-if="series">
-            Series {{series}}
+            <h2>{{series}}</h2>
+            <div v-for="e in Object.values(this.$store.state.events)" :key="e.eventid">
+                <span class='date'>{{format(e.date)}}</span> {{e.name}}
+            </div>
         </div>
         <div v-else>
             Select a series above...
@@ -10,17 +13,27 @@
 </template>
 
 <script>
+import { format } from 'date-fns'
+
 export default {
     name: 'Summary',
     props: {
         series: String
+    },
+    methods: {
+        format(date) {
+            return format(new Date(date), 'EEE MMM dd Y')
+        }
     }
 }
 </script>
 
 <style scoped>
-.outer {
-    margin: 3rem;
-    font-weight: bold;
+.date {
+    display: inline-block;
+    width: 8rem;
+    margin-left: 1rem;
+    margin-right: 1rem;
+    text-align: right;
 }
 </style>

@@ -59,7 +59,7 @@ export default {
                 { value: 4, text: 'Thu' },
                 { value: 5, text: 'Fri' },
                 { value: 6, text: 'Sat' },
-                { value: 7, text: 'Sun' }
+                { value: 0, text: 'Sun' }
             ],
             events: {
                 namedays: [

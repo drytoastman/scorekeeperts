@@ -101,10 +101,10 @@ export default {
     computed: {
         displayedDateTime() {
             try {
-                let fmt = 'EEE MMM dd Y hh:mm a'
+                let fmt = 'EEE MMM dd Y hh:mm a z'
                 if (this.dateOnly) fmt = 'EEE MMM dd Y'
-                if (this.timeOnly) fmt = 'hh:mm a'
-                return format(this.combinedDate, fmt)
+                if (this.timeOnly) fmt = 'hh:mm a z'
+                return format(this.combinedDate, fmt).replace(/GMT-8/, 'PST').replace(/GMT-7/, 'PDT')
             } catch (error) {
                 return ''
             }

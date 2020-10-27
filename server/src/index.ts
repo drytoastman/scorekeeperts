@@ -9,8 +9,6 @@ import { db, tableWatcher, pgp } from './db'
 import { startCronJobs } from './cron'
 import { accesslog, mainlog } from './util/logging'
 
-process.env.OLD_DATABASE = 'true'
-
 const app = express()
 app.use(helmet())
 app.use(morgan('combined', {

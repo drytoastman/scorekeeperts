@@ -12,7 +12,7 @@
         <v-expansion-panel>
             <v-expansion-panel-header>Basics</v-expansion-panel-header>
             <v-expansion-panel-content>
-                <BasicsTemplate :eventm="eventm" @count="count=$event"></BasicsTemplate>
+                <BasicsTemplate :eventm="eventm" @count="count=$event" ref='template'></BasicsTemplate>
             </v-expansion-panel-content>
         </v-expansion-panel>
 
@@ -50,7 +50,7 @@ import Limits from './Limits.vue'
 import Other from './Other.vue'
 import Payments from './Payments.vue'
 import { createEventItems } from '@/common/event'
-
+import cloneDeep from 'lodash/cloneDeep'
 
 export default {
     name: 'NewEvents',
@@ -74,8 +74,15 @@ export default {
                 conepen: 2.0,
                 gatepen: 10.0,
                 countedruns: 0,
+                accountid: null,
                 items: [],
-                attr: {}
+                attr: {},
+                ispro: false,
+                ispractice: false,
+                isexternal: false,
+                champrequire: false,
+                useastiebreak: false,
+                segments: 0
             }
         }
     },
@@ -83,18 +90,43 @@ export default {
         ...mapState(['paymentitems'])
     },
     methods: {
+        subtractDays(date, days) {
+            date.setDate(date.getDate() - days)
+            return date
+        },
+        createDate(date, prevdow, time) {
+            let adj = date.getDay() - prevdow
+            if (adj <= 0) adj += 7
+            this.subtractDays(date, adj)
+            date.setHours(time.getHours(), time.getMinutes())
+            return date
+        },
         createEvents() {
-            this.$store.dispatch('setdataxx', {
+            const data = this.$refs.template.events
+            const events = []
+            for (const e of data.namedays) {
+                const emod = cloneDeep(this.eventm)
+                emod.name = e.name
+                emod.date = e.date
+                emod.attr.location = e.location
+                emod.regopened = this.subtractDays(new Date(e.date), data.opendays).toISOString()
+                emod.regclosed = this.createDate(new Date(e.date), data.closeday, new Date(data.closetime)).toISOString()
+                emod.items = emod.items.filter(m => m.checked).map(m => m.map)
+                events.push(emod)
+            }
+            this.$store.dispatch('setdata', {
                 type: 'insert',
-                items: { events: [this.eventm] }
+                items: { events: events }
+            }).then(data => {
+                if (data) this.$router.push({ name: 'summary' })
             })
-        }
-    },
-    watch: {
-        paymentitems() {
+        },
+        setupEventItems() {
             this.eventm.items = createEventItems(Object.values(this.paymentitems), [], '')
         }
-    }
+    },
+    watch: { paymentitems() { this.setupEventItems() } },
+    mounted() { this.setupEventItems() }
 }
 </script>
 

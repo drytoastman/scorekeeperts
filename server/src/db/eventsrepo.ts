@@ -1,4 +1,5 @@
 import { IDatabase, IMain, ColumnSet } from 'pg-promise'
+import { v1 as uuidv1 } from 'uuid'
 import { ScorekeeperProtocol } from '.'
 
 import { SeriesEvent } from '@common/event'
@@ -13,7 +14,7 @@ export class EventsRepository {
     constructor(private db: IDatabase<any>, private pgp: IMain) {
         if (eventcols === undefined) {
             eventcols = new pgp.helpers.ColumnSet([
-                { name: 'eventid', cnd: true, cast: 'uuid' },
+                { name: 'eventid', cnd: true, cast: 'uuid', init: (col: any): any => { return col.exists ? col.value : uuidv1() } },
                 { name: 'date', cast: 'date' },
                 { name: 'regopened', cast: 'timestamp' },
                 { name: 'regclosed', cast: 'timestamp' },
@@ -61,29 +62,20 @@ export class EventsRepository {
     }
 
     private async loadItemMap(tx: ScorekeeperProtocol, events: SeriesEvent[]) {
-        try {
-            for (const event of events) {
-                event.items = await tx.any('SELECT * FROM itemeventmap WHERE eventid=$1', [event.eventid])
-            }
-        } catch (error) {
-            if (!process.env.OLD_DATABASE) throw error
-            dblog.warn(`loadItemMap failure (${error}) but using old database so ignoring`)
+        for (const event of events) {
+            event.items = await tx.any('SELECT * FROM itemeventmap WHERE eventid=$1', [event.eventid])
         }
     }
 
     private async updateItemMap(tx: ScorekeeperProtocol, events: SeriesEvent[]) {
-        try {
-            for (const event of events) {
-                await tx.none('DELETE FROM itemeventmap WHERE eventid=$1 AND itemid NOT IN ($1:csv)', [event.eventid, event.items])
-                for (const itemmap of event.items) {
-                    await tx.any('INSERT INTO itemeventmap (eventid, itemid, maxcount, required) ' +
+        for (const event of events) {
+            await tx.none(`DELETE FROM itemeventmap WHERE eventid=$1 ${event.items.length ? 'AND itemid NOT IN ($1:csv)' : ''}`, [event.eventid, event.items])
+            for (const itemmap of event.items) {
+                console.log(itemmap)
+                await tx.any('INSERT INTO itemeventmap (eventid, itemid, maxcount, required) ' +
                                  'VALUES ($(eventid), $(itemid), $(maxcount), $(required)) ' +
                                  'ON CONFLICT (eventid, itemid) DO NOTHING', itemmap)
-                }
             }
-        } catch (error) {
-            if (!process.env.OLD_DATABASE) throw error
-            dblog.warn(`updateItemMap failure (${error}) but using old database so ignoring`)
         }
     }
 

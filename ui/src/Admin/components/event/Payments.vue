@@ -3,7 +3,7 @@
         <div class='accountbox'>
             <v-select   v-model="eventm.accountid" style="grid-area: acct"  label="Payment Account" :items="acctlist"
                         item-value="accountid" item-text="name" class="accountselect" hide-details solo></v-select>
-            <v-checkbox v-model="eventm.required" style="grid-area: preq" label="Payment Required"></v-checkbox>
+            <v-checkbox v-model="eventm.attr.paymentreq" style="grid-area: preq" label="Payment Required"></v-checkbox>
         </div>
 
         <v-data-table :items="eventm.items" :headers="headers" item-key="item.itemid" class='itemstable'
