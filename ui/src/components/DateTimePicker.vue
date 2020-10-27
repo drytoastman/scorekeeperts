@@ -1,7 +1,7 @@
 <template>
   <v-dialog v-model="display" :width="dialogWidth">
     <template v-slot:activator="{ on }">
-      <v-text-field :disabled="disabled" :label="label" :value="displayedDateTime" :style="fieldstyle" :class="fieldclass" v-on="on" readonly></v-text-field>
+      <v-text-field :disabled="disabled" :label="label" :value="displayedDateTime" :style="fieldstyle" :class="fieldclass" :rules="rules" v-on="on" readonly></v-text-field>
     </template>
 
     <v-card>
@@ -85,6 +85,9 @@ export default {
         },
         timeOnly: {
             type: Boolean
+        },
+        rules: {
+            type: Array
         }
     },
     data() {

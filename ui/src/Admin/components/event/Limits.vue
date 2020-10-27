@@ -1,4 +1,5 @@
 <template>
+    <v-form ref='form'>
     <div class='limits'>
         <v-select     v-model="eventm.regtype"  style="grid-area: regt" label="Registration Type" :items="regtypes"></v-select>
         <v-text-field v-model="eventm.perlimit" style="grid-area: plim" :rules="vrules.perlimit" label="Person Limit" :disabled="noclassesevent"></v-text-field>
@@ -16,6 +17,7 @@
             <v-checkbox v-model="eventm.ispro"         style="grid-area: pro"   label="ProSolo Event" :disabled="noclassesevent"></v-checkbox>
         </div>
     </div>
+    </v-form>
 </template>
 
 <script>

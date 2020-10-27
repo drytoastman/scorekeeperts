@@ -6,21 +6,21 @@
         </div>
         <v-expansion-panel>
             <v-expansion-panel-header>Name/Times/Notes</v-expansion-panel-header>
-            <v-expansion-panel-content>
-                <Basics :eventm="eventm"></Basics>
+            <v-expansion-panel-content eager>
+                <Basics :eventm="eventm" ref='basic'></Basics>
             </v-expansion-panel-content>
         </v-expansion-panel>
 
         <v-expansion-panel>
             <v-expansion-panel-header>Type/Limits</v-expansion-panel-header>
-            <v-expansion-panel-content>
-                <Limits :eventm="eventm"></Limits>
+            <v-expansion-panel-content eager>
+                <Limits :eventm="eventm" ref='limits'></Limits>
             </v-expansion-panel-content>
         </v-expansion-panel>
 
         <v-expansion-panel>
             <v-expansion-panel-header>Other</v-expansion-panel-header>
-            <v-expansion-panel-content>
+            <v-expansion-panel-content eager>
                 <Other :eventm="eventm"></Other>
             </v-expansion-panel-content>
         </v-expansion-panel>
@@ -55,6 +55,10 @@ export default {
     },
     methods: {
         saveSettings() {
+            if (!(this.$refs.basic.$refs.form.validate() && this.$refs.limits.$refs.form.validate())) {
+                this.$store.commit('addErrors', ['there is an error in the form'])
+                return
+            }
             this.$store.dispatch('setdata', {
                 type: 'update',
                 items: { events: [this.eventm] }

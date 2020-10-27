@@ -11,28 +11,28 @@
 
         <v-expansion-panel>
             <v-expansion-panel-header>Basics</v-expansion-panel-header>
-            <v-expansion-panel-content>
+            <v-expansion-panel-content eager>
                 <BasicsTemplate :eventm="eventm" @count="count=$event" ref='template'></BasicsTemplate>
             </v-expansion-panel-content>
         </v-expansion-panel>
 
         <v-expansion-panel>
             <v-expansion-panel-header>Payments</v-expansion-panel-header>
-            <v-expansion-panel-content>
+            <v-expansion-panel-content eager>
                 <Payments :eventm="eventm"></Payments>
             </v-expansion-panel-content>
         </v-expansion-panel>
 
         <v-expansion-panel>
             <v-expansion-panel-header>Type/Limits</v-expansion-panel-header>
-            <v-expansion-panel-content>
-                <Limits :eventm="eventm"></Limits>
+            <v-expansion-panel-content eager>
+                <Limits :eventm="eventm" ref='limits'></Limits>
             </v-expansion-panel-content>
         </v-expansion-panel>
 
         <v-expansion-panel>
             <v-expansion-panel-header>Other</v-expansion-panel-header>
-            <v-expansion-panel-content>
+            <v-expansion-panel-content eager>
                 <Other :eventm="eventm"></Other>
             </v-expansion-panel-content>
         </v-expansion-panel>
@@ -102,6 +102,11 @@ export default {
             return date
         },
         createEvents() {
+            if (!(this.$refs.template.$refs.form.validate() && this.$refs.limits.$refs.form.validate())) {
+                this.$store.commit('addErrors', ['there is an error in the form'])
+                return
+            }
+
             const data = this.$refs.template.events
             const events = []
             for (const e of data.namedays) {
@@ -142,7 +147,7 @@ export default {
 .epanels ::v-deep .v-expansion-panel-content__wrap {
     padding-top: 1rem;
 }
-.epanels ::v-deep .v-messages__message {
+.epanels ::v-deep .v-messages:not(.error--text) .v-messages__message {
     font-style: italic;
     color: var(--v-secondary-darken2);
 }

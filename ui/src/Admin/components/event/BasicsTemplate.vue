@@ -1,12 +1,13 @@
 <template>
+    <v-form ref='form'>
     <div class='basicst'>
         <div class='templates'>
             <div class='helptext'>Click + to add additional events and fill out their name, date and location</div>
             <div class='namelist'>
                 <div v-for="(e, ii) in events.namedays" :key="ii" class='namedateloc'>
                     <v-btn class='index' icon small @click='removeevent(ii)'><v-icon>{{icons.mdiCloseBox}}</v-icon></v-btn>
-                    <v-text-field   v-model="e.name"     label="Event Name" class='name'></v-text-field>
-                    <DateTimePicker v-model="e.date"     label="Event Date" fieldclass='date' dateOnly></DateTimePicker>
+                    <v-text-field   v-model="e.name"     label="Event Name" class='name' :rules="vrules.name"></v-text-field>
+                    <DateTimePicker v-model="e.date"     label="Event Date" fieldclass='date' dateOnly :rules="[nonBlank]"></DateTimePicker>
                     <v-text-field   v-model="e.location" label="Location"   class='loc'  :rules="vrules.location"></v-text-field>
                 </div>
                 <v-btn fab small color="secondary" class='eventfab' @click="addevent">+</v-btn>
@@ -26,6 +27,7 @@
             <div><PrismEditor v-model="eventm.attr.notes" :highlight="html"></PrismEditor></div>
         </div>
     </div>
+    </v-form>
 </template>
 
 <script>
@@ -34,7 +36,7 @@ import { PrismEditor } from 'vue-prism-editor'
 import { prismlangs } from '@/util/prismwrapper'
 import { EventValidator } from '@/common/event'
 import DateTimePicker from '@/components/DateTimePicker.vue'
-import { Min } from '@/common/util'
+import { Min, nonBlank } from '@/common/util'
 
 export default {
     name: 'BasicSettings',
@@ -49,6 +51,7 @@ export default {
         return {
             vrules: EventValidator,
             min1: Min(1),
+            nonBlank: nonBlank,
             icons: {
                 mdiCloseBox
             },

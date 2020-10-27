@@ -1,4 +1,5 @@
 <template>
+    <v-form ref='form'>
     <div class='basics'>
         <v-text-field   v-model="eventm.name"       style="grid-area: name"      label="Event Name" :rules="vrules.name" ></v-text-field>
         <DateTimePicker v-model="eventm.date"       fieldstyle="grid-area: date" label="Date" dateOnly></DateTimePicker>
@@ -10,6 +11,7 @@
             <div><PrismEditor v-model="eventm.attr.notes" :highlight="html"></PrismEditor></div>
         </div>
     </div>
+    </v-form>
 </template>
 
 <script>
