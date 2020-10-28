@@ -3,11 +3,11 @@
         <div v-if="payments.length < map.maxcount">
             <v-select :items="countlist" hide-details solo :disabled="map.required || busy" v-model="selection">
                 <template v-slot:selection="d">
-                    <div v-if="d.item">{{d.item}}</div>
+                    <div v-if="d.item.text">{{d.item.text}}</div>
                     <div class='selectblanknote' v-else>Pay Here</div>
                 </template>
                 <template v-slot:item="d">
-                    {{d.item}}
+                    {{d.item.text}}
                 </template>
             </v-select>
         </div>
@@ -29,7 +29,7 @@ export default {
     computed: {
         ...mapState(['busyReg']),
         payments() { return (this.$store.state.payments[this.event.eventid] || []).filter(p => p.itemname === this.item.name && !p.refunded) },
-        countlist() { return [null, ...range(1, this.map.maxcount + 1 - this.payments.length)] },
+        countlist() { return [null, ...range(1, this.map.maxcount + 1 - this.payments.length)].map(i => ({ value: i, text: i })) },
         busy()    { return this.busyReg[this.event.eventid] === true },
         selection: {
             get() {

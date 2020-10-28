@@ -62,18 +62,24 @@ export default {
         },
 
         async loadPaypal() {
-            await Vue.loadScript(this.paypalURL)
-            const func = this.buildPaypalOrder
+            try {
+                await Vue.loadScript(this.paypalURL)
+                const func = this.buildPaypalOrder
 
-            paypal.Buttons({
-                style: {
-                    layout: 'horizontal',
-                    tagline: false,
-                    height: 35
-                },
-                createOrder: function(data, actions) { return actions.order.create(func()) },
-                onApprove: this.paypalApproved
-            }).render('#paypal-button-container')
+                paypal.Buttons({
+                    style: {
+                        layout: 'horizontal',
+                        tagline: false,
+                        height: 35
+                    },
+                    createOrder: function(data, actions) { return actions.order.create(func()) },
+                    onApprove: this.paypalApproved
+                }).render('#paypal-button-container')
+            } catch (error) {
+                this.$store.commit('addErrors', [`Failed to load ${this.paypalURL}, check any privacy extensions: ${error}`])
+                console.log('paypal load failure:')
+                console.log(error)
+            }
         },
 
         async unloadPaypal() {

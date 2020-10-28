@@ -1,16 +1,26 @@
 <template>
-    <div>
+    <div style='width: 100%'>
         <div v-if="!account.attr.applicationid" class='errors'>
             No Square Application Id was found!
         </div>
-        <div v-else class='sq-grid'>
-            <div id="sq-card-number"     class="sq-input"></div>
-            <div id="sq-expiration-date" class="sq-input"></div>
-            <div id="sq-cvv"             class="sq-input"></div>
-            <div id="sq-postal-code"     class="sq-input"></div>
-            <v-btn id="sq-creditcard" :disabled="total<=0" @click.prevent="squareform.requestCardNonce()" color="secondary">
-                <img class='buttonicon' :src="squareicon"/>
-            </v-btn>
+        <div v-else>
+            <div v-if="!formloaded">
+                <div class='loading'>
+                    Loading square payment form.
+                </div>
+                <div v-if="timeout" class='errors'>
+                    If this persists, check any privacy settings/extensions.
+                </div>
+            </div>
+            <div class='sq-grid'>
+                <div id="sq-card-number"     class="sq-input"></div>
+                <div id="sq-expiration-date" class="sq-input"></div>
+                <div id="sq-cvv"             class="sq-input"></div>
+                <div id="sq-postal-code"     class="sq-input"></div>
+                <v-btn id="sq-creditcard" :disabled="total<=0" @click.prevent="squareform.requestCardNonce()" color="secondary">
+                    <img class='buttonicon' :src="squareicon"/>
+                </v-btn>
+            </div>
         </div>
         <div v-if="errors.length > 0" class='errors'>
             <div v-for="error in errors" :key="error">{{error}}</div>
@@ -32,6 +42,8 @@ export default {
         return {
             squareForm: null,
             squareicon: squaresvg,
+            formloaded: false,
+            timeout: false,
             errors: []
         }
     },
@@ -70,9 +82,15 @@ export default {
                     placeholder: 'Postal'
                 },
                 callbacks: {
-                    cardNonceResponseReceived: this.cardNonceResponseReceived
+                    cardNonceResponseReceived: this.cardNonceResponseReceived,
+                    paymentFormLoaded: this.paymentFormLoaded
                 }
             })
+        },
+
+        paymentFormLoaded() {
+            console.log('loaded')
+            this.formloaded = true
         },
 
         cardNonceResponseReceived(errors, nonce) {
@@ -92,10 +110,14 @@ export default {
         async loadSquare() {
             if (this.account.attr.applicationid) {
                 try {
+                    this.timeout = false
+                    this.formloaded = false
+                    setTimeout(() => { this.timeout = true }, 4000)
                     await this.$loadScript(this.squareURL)
                     this.squareform = this.createSquareForm()
                     this.squareform.build()
                 } catch (error) {
+                    this.$store.commit('addErrors', [`Failed to load ${this.squareURL}, check any privacy extensions`])
                     console.log('square form load failure:')
                     console.log(error)
                 }
@@ -147,8 +169,13 @@ export default {
 .buttonicon {
     filter: brightness(0) invert(100);
 }
+.loading {
+    font-size: 90%;
+    color: grey;
+    text-align: center;
+}
 .errors {
     color: red;
-    padding: 0.5rem;
+    text-align: center;
 }
 </style>
