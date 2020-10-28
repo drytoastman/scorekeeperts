@@ -16,6 +16,7 @@ Vue.use(LoadScript)
 Vue.use(Vuetify)
 
 declare module 'vue/types/vue' {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     interface VueConstructor<V extends Vue = Vue> {
         loadScript: any;
         unloadScript: any;

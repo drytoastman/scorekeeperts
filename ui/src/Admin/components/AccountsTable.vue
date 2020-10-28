@@ -1,12 +1,12 @@
 <template>
     <div class='accountstable'>
         <div class='baseadminbuttons' :style=buttongridtemplate>
-            <v-btn color="secondary" :href="squareOAuthUrl" :disabled="!squareapplicationid || !devMode">
+            <v-btn color="secondary" :href="squareOAuthUrl" :disabled="!squareapplicationid">
                 (Re)Authorize <img class='squareicon' :src="icons.squareIcon"/>
                 <span v-if="squareapplicationid.includes('sandbox')" class='sandbox'>Sandbox</span>
             </v-btn>
 
-            <v-btn color="secondary" @click.stop="newpaypal" :disabled="!devMode">
+            <v-btn color="secondary" @click.stop="newpaypal">
                 Add <img class='paypalicon' :src="icons.paypalIcon"/>
             </v-btn>
         </div>
@@ -97,7 +97,6 @@ export default {
     computed: {
         ...mapState(['currentSeries', 'paymentaccounts', 'paymentitems', 'squareapplicationid']),
         accountsList() { return Object.values(this.paymentaccounts) },
-        devMode() { return process.env.NODE_ENV === 'development' },
         squareOAuthUrl() {
             let host = 'https://connect.squareup.com'
             if (this.squareapplicationid.includes('sandbox')) {

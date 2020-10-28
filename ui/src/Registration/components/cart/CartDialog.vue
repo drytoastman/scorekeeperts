@@ -17,10 +17,7 @@
             </v-card-text>
 
             <v-card-actions>
-                <div v-if="!devMode">
-                    Version 2 payments disabled for now
-                </div>
-                <PayPalButton v-else-if="account.type=='paypal'"
+                <PayPalButton v-if="account.type=='paypal'"
                         :opened=value :account=account :payments=payments :total=cart.total @complete=complete :purchase=cart.purchases>
                 </PayPalButton>
                 <SquarePaymentForm v-else
@@ -88,8 +85,7 @@ export default {
                     amount: item.price
                 }
             })
-        },
-        devMode() { return process.env.NODE_ENV === 'development' }
+        }
     },
     methods: {
         complete() {
