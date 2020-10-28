@@ -69,8 +69,9 @@ export class EventsRepository {
 
     private async updateItemMap(tx: ScorekeeperProtocol, events: SeriesEvent[]) {
         for (const event of events) {
-            await tx.none(`DELETE FROM itemeventmap WHERE eventid=$1 ${event.items.length ? 'AND itemid NOT IN ($1:csv)' : ''}`, [event.eventid, event.items])
+            await tx.none(`DELETE FROM itemeventmap WHERE eventid=$1 ${event.items.length > 0 ? 'AND itemid NOT IN ($2:csv)' : ''}`, [event.eventid, event.items])
             for (const itemmap of event.items) {
+                itemmap.eventid = event.eventid // make sure
                 await tx.any('INSERT INTO itemeventmap (eventid, itemid, maxcount, required) ' +
                                  'VALUES ($(eventid), $(itemid), $(maxcount), $(required)) ' +
                                  'ON CONFLICT (eventid, itemid) DO NOTHING', itemmap)
@@ -86,6 +87,7 @@ export class EventsRepository {
         return await this.db.tx(async tx => {
             if (type === 'insert') {
                 const ret: SeriesEvent[] = await tx.any(this.pgp.helpers.insert(events, eventcols) + ' RETURNING *')
+                ret.map((e, ii) => { events[ii].eventid = e.eventid })
                 await this.updateItemMap(tx, events)
                 await this.loadItemMap(tx, ret)
                 return ret
