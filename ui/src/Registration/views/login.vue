@@ -8,10 +8,10 @@
                 <LoginForm    color="primary" dark :ready=ready></LoginForm>
             </v-tab-item>
             <v-tab-item padding="1rem" eager v-if="!skipCaptcha">
-                <ResetForm    color="primary" dark :ready=ready @doCaptcha=doCaptcha ></ResetForm>
+                <ResetForm    color="primary" dark :ready=ready @do-captcha=doCaptcha ></ResetForm>
             </v-tab-item>
             <v-tab-item padding="1rem" eager>
-                <RegisterForm color="primary" dark :ready=ready @doCaptcha=doCaptcha></RegisterForm>
+                <RegisterForm color="primary" dark :ready=ready @do-captcha=doCaptcha></RegisterForm>
             </v-tab-item>
         </v-tabs>
 

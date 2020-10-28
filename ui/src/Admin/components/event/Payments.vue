@@ -1,4 +1,5 @@
 <template>
+    <!-- eslint-disable vue/no-mutating-props -->
     <div class='payments'>
         <div class='accountbox'>
             <v-select   v-model="eventm.accountid" style="grid-area: acct"  label="Payment Account" :items="acctlist"

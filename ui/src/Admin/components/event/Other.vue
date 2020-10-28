@@ -1,4 +1,5 @@
 <template>
+    <!-- eslint-disable vue/no-mutating-props -->
     <div class='other'>
         <v-text-field v-model="eventm.attr.sponsor"  style="grid-area: spon"  label="Sponsor"></v-text-field>
         <v-text-field v-model="eventm.attr.host"     style="grid-area: host"  label="Host"></v-text-field>

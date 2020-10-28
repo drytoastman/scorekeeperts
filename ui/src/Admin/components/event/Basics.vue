@@ -1,4 +1,5 @@
 <template>
+    <!-- eslint-disable vue/no-mutating-props -->
     <v-form ref='form'>
     <div class='basics'>
         <v-text-field   v-model="eventm.name"       style="grid-area: name"      label="Event Name" :rules="vrules.name" ></v-text-field>

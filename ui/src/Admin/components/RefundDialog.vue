@@ -7,10 +7,10 @@
             <v-card-text>
                 <v-data-table :items="txpayments" :headers="headers" item-key="payid" v-model="selected"
                                 disable-pagination disable-sort hide-default-footer show-select>
-                    <template v-slot:item.amount="{ item }">
+                    <template v-slot:[`item.amount`]="{ item }">
                         {{item.amount | cents2dollars}}
                     </template>
-                    <template v-slot:item.eventid="{ item }">
+                    <template v-slot:[`item.eventid`]="{ item }">
                         {{events[item.eventid].name}}
                     </template>
                 </v-data-table>

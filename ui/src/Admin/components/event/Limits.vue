@@ -1,4 +1,5 @@
 <template>
+    <!-- eslint-disable vue/no-mutating-props -->
     <v-form ref='form'>
     <div class='limits'>
         <v-select     v-model="eventm.regtype"  style="grid-area: regt" label="Registration Type" :items="regtypes"></v-select>
@@ -42,6 +43,7 @@ export default {
         noclassesevent() { return this.eventm.regtype !== 0 }
     },
     watch: {
+        /* eslint-disable vue/no-mutating-props */
         'eventm.regtype': function() {
             if (this.eventm.regtype !== REGTYPE_STANDARD) {
                 this.eventm.ispractice = true

@@ -38,7 +38,7 @@ export default {
     methods: {
         register() {
             if (!this.$refs.form.validate()) { return }
-            this.$emit('doCaptcha', this.captchaComplete)
+            this.$emit('do-captcha', this.captchaComplete)
         },
         captchaComplete(token) {
             if (!token || !this.$refs.form.validate()) { return }

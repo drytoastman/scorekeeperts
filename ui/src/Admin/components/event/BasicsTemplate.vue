@@ -1,4 +1,5 @@
 <template>
+    <!-- eslint-disable vue/no-mutating-props -->
     <v-form ref='form'>
     <div class='basicst'>
         <div class='templates'>
