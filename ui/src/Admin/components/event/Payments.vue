@@ -3,7 +3,7 @@
     <div class='payments'>
         <div class='accountbox'>
             <v-select   v-model="eventm.accountid" style="grid-area: acct"  label="Payment Account" :items="acctlist"
-                        item-value="accountid" item-text="name" class="accountselect" hide-details>
+                        item-value="accountid" item-text="name" class="accountselect" no-data-text="No V2 accounts to use" hide-details>
             </v-select>
             <v-checkbox v-model="eventm.attr.paymentreq" style="grid-area: preq" label="Payment Required"></v-checkbox>
         </div>
@@ -56,7 +56,11 @@ export default {
     },
     computed: {
         ...mapState(['paymentaccounts']),
-        acctlist()  { return [{ accountid: null, name: '' }, ...Object.values(this.paymentaccounts)] }
+        acctlist()  {
+            const accts = Object.values(this.paymentaccounts).filter(a => a.attr.version >= 2)
+            if (accts.length === 0) return []
+            return [{ accountid: null, name: '' }, ...accts]
+        }
     }
 }
 </script>

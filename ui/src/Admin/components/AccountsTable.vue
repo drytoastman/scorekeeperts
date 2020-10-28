@@ -25,13 +25,6 @@
                     <v-icon v-if="item.attr.mode==='sandbox'" color=red>{{icons.mdiBug}}</v-icon>
                 </template>
 
-                <template v-slot:[`item.version`]="{ item }">
-                    {{item.attr.version || 1}}
-                </template>
-
-                <template v-slot:[`item.itemcount`]="{ item }">
-                    {{oldItems(item.accountid).length}}
-                </template>
             </v-data-table>
         </div>
 
@@ -88,9 +81,7 @@ export default {
             headers: [
                 { text: 'Name', value: 'name' },
                 { text: 'Type', value: 'type' },
-                { text: 'Version', value: 'version' },
-                { text: 'Actions', value: 'actions', sortable: false },
-                { text: 'Old Items', value: 'itemcount' }
+                { text: 'Actions', value: 'actions', sortable: false }
             ]
         }
     },
@@ -110,9 +101,6 @@ export default {
         }
     },
     methods: {
-        oldItems(accountid) {
-            return  Object.values(this.paymentitems).filter(i => i.accountid === accountid)
-        },
         newitem(accountid) {
             this.dialogData = { accountid: accountid, itemid: uuidv1(), currency: 'USD' }
             this.dialogApiType = 'insert'
