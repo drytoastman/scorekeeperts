@@ -76,6 +76,7 @@ export const adminActions = {
             link.href     = window.URL.createObjectURL(blob)
             link.download = response.headers['content-disposition'].split(/[="]/)[2]
             link.click()
+            return 'done'
         } catch (error) {
             context.dispatch('axiosError', error)
         } finally {

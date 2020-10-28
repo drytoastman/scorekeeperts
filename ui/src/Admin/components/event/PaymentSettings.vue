@@ -1,10 +1,10 @@
 <template>
-    <div class='outer'>
+    <div class='inset'>
+        <Payments :eventm="eventm"></Payments>
         <div class='adminbuttons'>
             <v-btn color="secondary" :disabled="unchanged" @click="reset">Reset</v-btn>
             <v-btn color="secondary" :disabled="unchanged" @click="savePayments">Save</v-btn>
         </div>
-        <Payments :eventm="eventm"></Payments>
     </div>
 </template>
 

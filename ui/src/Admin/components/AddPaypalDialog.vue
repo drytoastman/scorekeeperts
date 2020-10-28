@@ -6,8 +6,8 @@
                 <v-text-field v-model="account.name"      label="Name"></v-text-field>
                 <v-text-field v-model="account.accountid" label="Client Id"></v-text-field>
                 <v-text-field v-model="secret.secret"     label="Client Secret"></v-text-field>
-                <v-select v-if="devMode" :items="['production', 'sandbox']" v-model="account.attr.mode"
-                          solo light hide-details placeholder="Select A Mode"></v-select>
+                <v-select v-if="devMode" :items="['production', 'sandbox']" v-model="account.attr.mode" label='mode'
+                          light hide-details placeholder="Select A Mode"></v-select>
             </v-container>
         </v-form>
     </BaseDialog>

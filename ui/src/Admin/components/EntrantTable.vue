@@ -93,7 +93,7 @@ export default {
                         eventname: '',
                         session: r.session,
                         car: c,
-                        payment: this.payments[this.eventid].find(p => p.carid === r.carid && p.session === r.session && !p.refunded) || null,
+                        payment: (this.payments[this.eventid] || []).find(p => p.carid === r.carid && p.session === r.session && !p.refunded) || null,
                         busy: false
                     }
                 })

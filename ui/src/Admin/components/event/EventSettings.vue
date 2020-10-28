@@ -1,9 +1,5 @@
 <template>
     <v-expansion-panels multiple focusable hover accordion v-model="panels" class='epanels'>
-        <div class='adminbuttons'>
-            <v-btn color="secondary" :disabled="unchanged" @click="reset">Reset</v-btn>
-            <v-btn color="secondary" :disabled="unchanged" @click="saveSettings">Save</v-btn>
-        </div>
         <v-expansion-panel>
             <v-expansion-panel-header>Name/Times/Notes</v-expansion-panel-header>
             <v-expansion-panel-content eager>
@@ -24,6 +20,10 @@
                 <Other :eventm="eventm"></Other>
             </v-expansion-panel-content>
         </v-expansion-panel>
+        <div class='adminbuttons'>
+            <v-btn color="secondary" :disabled="unchanged" @click="reset">Reset</v-btn>
+            <v-btn color="secondary" :disabled="unchanged" @click="saveSettings">Save</v-btn>
+        </div>
     </v-expansion-panels>
 </template>
 

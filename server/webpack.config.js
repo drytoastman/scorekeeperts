@@ -21,14 +21,20 @@ module.exports = {
             patterns: [
                 {
                     from: 'src/templates/*',
-                    to: 'templates/'
+                    to: 'templates/',
+                    flatten: true
                 },
                 {
                     from: 'src/public/*',
                     to: 'public/',
+                    flatten: true,
                     transform: async function(content, absoluteFrom) {
                         if (absoluteFrom.endsWith('.gz')) return await gunzip(content)
                         return content
+                    },
+                    transformPath: async function(targetPath, absolutePath) {
+                        if (absolutePath.endsWith('.gz')) return targetPath.slice(0, -3)
+                        return targetPath
                     }
                 }
             ]

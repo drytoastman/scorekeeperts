@@ -138,6 +138,9 @@ export default {
     column-gap: 1rem;
     margin: 1rem 0;
     width: 100%;
+    @media (max-width: 800px) {
+        margin: 1rem;
+    }
 }
 
 .adminbuttons {

@@ -1,23 +1,28 @@
 <template>
-    <div class='outer' v-if="event">
-        <h2>{{event.name}} {{fmtdate}}</h2>
+    <div class='' v-if="event">
+        <div class='header inset'>
+            <span class='name'>{{event.name}}</span>
+            <span class='date'>{{fmtdate}}</span>
+            <v-select :items="downloads" hide-details solo placeholder="Get Cards" v-model="cardtype" @change="carddownload">
+                <template v-slot:selection="d">
+                    <span v-if="d.item.text">{{d.item.text}}</span>
+                    <span v-else-if="downloading" class='nonitem'>Generating ...</span>
+                    <span v-else class='nonitem'>Get Cards</span>
+                </template>
+            </v-select>
+            <v-btn icon @click="confirmDelete=true"><v-icon>{{icons.mdiDelete}}</v-icon></v-btn>
+            <span></span>
+        </div>
+        <ConfirmDialog v-model=confirmDelete title="Confirm Event Deletion" @ok='deleteEvent'>
+            Are you sure you wish to delete {{event.name}} and its registered entries?
+            Events with runs or payments cannot be deleted directly.
+        </ConfirmDialog>
         <v-tabs color="secondary" show-arrows>
-            <v-tab>Cards</v-tab>
             <v-tab>Event Settings</v-tab>
             <v-tab>Payment Setup</v-tab>
             <v-tab>Entry Admin</v-tab>
             <v-tab v-if="event.ispro">Grid Order</v-tab>
 
-            <v-tab-item>
-                <div class='adminbuttons'>
-                    <v-btn @click='carddownload' color='secondary'>Generate Cards</v-btn>
-                </div>
-                <div class='cardswrap'>
-
-                    <v-select v-model="cardtype" label="Download Type" :items="['pdf', 'template', 'csv']"></v-select>
-                    <v-select v-model="order" label="Order" :items="['lastname', 'classnumber', 'blank']"></v-select>
-                </div>
-            </v-tab-item>
             <v-tab-item>
                 <EventSettings :seriesevent="event"></EventSettings>
             </v-tab-item>
@@ -36,12 +41,15 @@
 </template>
 
 <script>
+import Vue from 'vue'
+import { mdiDelete } from '@mdi/js'
 import { format } from 'date-fns'
 import { mapState } from 'vuex'
 import EventSettings from '../components/event/EventSettings.vue'
 import EntrantTable from '../components/EntrantTable.vue'
 import GridOrder from '../components/event/GridOrder.vue'
 import PaymentSettings from '../components/event/PaymentSettings.vue'
+import ConfirmDialog from '@/components/ConfirmDialog.vue'
 
 export default {
     name: 'EventInfo',
@@ -49,15 +57,26 @@ export default {
         EventSettings,
         EntrantTable,
         GridOrder,
-        PaymentSettings
+        PaymentSettings,
+        ConfirmDialog
     },
     props: {
         eventid: String
     },
     data()  {
         return {
-            cardtype: 'pdf',
-            order: 'lastname'
+            cardtype: null,
+            downloading: false,
+            confirmDelete: false,
+            icons: {
+                mdiDelete
+            },
+            downloads: [
+                { value: null,       text: '' },
+                { value: 'lastname', text: 'PDF by lastname' },
+                { value: 'blank',    text: 'PDF blank' },
+                { value: 'csv',      text: 'csv' }
+            ]
         }
     },
     computed: {
@@ -67,25 +86,59 @@ export default {
     },
     methods: {
         async carddownload() {
+            let order = 'lastname'
+            let type = 'pdf'
+            switch (this.cardtype) {
+                case 'blank':  order = 'blank'; break
+                case 'csv':    type  = 'csv';   break
+            }
+
+            this.downloading = true
+            Vue.nextTick(() => { this.cardtype = null })
+
             this.$store.dispatch('carddownload', {
-                eventid: this.eventid,
-                cardtype: this.cardtype,
-                order: this.order
+                eventid:  this.eventid,
+                cardtype: type,
+                order:    order
+            }).then(data => { if (data) this.downloading = false })
+        },
+        deleteEvent() {
+            this.$store.dispatch('setdata', {
+                type: 'delete',
+                items: { events: [this.event] }
+            }).then(data => {
+                if (data) this.$router.push({ name: 'summary' })
             })
         }
     }
 }
 </script>
 
-<style scoped>
-.outer {
-    margin: 0.5rem;
-}
-.cardswrap {
-    margin: 1rem 0;
-    max-width: 40rem;
+<style scoped lang='scss'>
+.header {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    column-gap: 1rem;
+    grid-template-columns: auto auto auto auto 1fr;
+    column-gap: 2rem;
+    align-items: center;
+    padding-bottom: 0.5rem;
+    .name {
+        font-size: 140%;
+        font-weight: bold;
+        color: #444;
+    }
+    .date {
+        font-size: 110%;
+    }
+    .v-select {
+        padding: 0;
+        margin: 0;
+    }
+    .nonitem {
+        color: #8A8C;
+    }
+}
+::v-deep .v-tabs-bar {
+    border-top: 1px solid #0004;
+    border-bottom: 1px dotted #0008;
 }
 </style>
