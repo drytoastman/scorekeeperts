@@ -1,10 +1,7 @@
 <template>
     <v-app fluid>
         <v-app-bar app height=45 extension-height=35 dark color="primary">
-            <span class='btitle'>Admin</span>
-            <v-select :items="serieslist" v-model="selectedSeries" solo light dense hide-details placeholder="Select A Series" ref="sselect"></v-select>
-            <span class='bdesc'>{{$route.meta.marker || $route.name}}</span>
-
+            <SeriesBar title="Admin"></SeriesBar>
             <template v-slot:extension>
                 <AdminMenu :items="eventMenu" text="events"  :disabled="!currentSeries"></AdminMenu>
                 <AdminMenu :items="settings"  text="series"  :disabled="!currentSeries"></AdminMenu>
@@ -34,13 +31,15 @@ import { mdiCog, mdiFlagCheckered, mdiAccountHardHat, mdiAccountCowboyHat, mdiFi
 import LoginForm from './components/LoginForm.vue'
 import AdminMenu from './components/AdminMenu.vue'
 import SnackBar from '@/components/SnackBar.vue'
+import SeriesBar from '@/components/SeriesBar.vue'
 
 export default {
     name: 'Admin',
     components: {
         LoginForm,
         AdminMenu,
-        SnackBar
+        SnackBar,
+        SeriesBar
     },
     data: () => ({
         icons: {
@@ -57,30 +56,12 @@ export default {
         }
     },
     computed: {
-        ...mapState(['adminAuthenticated', 'seriesAuthenticated', 'currentSeries', 'serieslist', 'events', 'gettingData']),
+        ...mapState(['adminAuthenticated', 'seriesAuthenticated', 'currentSeries', 'events', 'gettingData']),
         ...mapGetters(['haveAuth', 'orderedEvents']),
-        selectedSeries: {
-            get() {
-                return this.currentSeries
-            },
-            set(value) {
-                this.$store.commit('changeSeries', value)
-                let name = this.$route.name
-                switch (name) {
-                    case 'noseries':  // push to summary
-                    case 'event':     // same event on different series is nonsensical
-                        name = 'summary'
-                        break
-                }
-
-                this.$router.push({ name: name, params: { series: value }}).catch(error => {
-                    console.log(error)
-                })
-            }
-        },
         eventMenu() {
             return this.orderedEvents.map(e => ({
                 title: e.name,
+                key: e.eventid,
                 link: {
                     name: 'event',
                     params: { eventid: e.eventid }

@@ -12,7 +12,9 @@
 
             <div v-if="requestMembership" class='memberrequest'>
                 <MemberPayment class='memberselect'></MemberPayment>
-                <!-- {{driverMembership[0].itemname}} {{driverMembership[0].amount|cents2dollars}} -->
+            </div>
+            <div v-else-if="driverMembership.length" class='memberrequest'>
+                Membership Paid
             </div>
         </div>
 

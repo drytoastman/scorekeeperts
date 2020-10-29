@@ -1,10 +1,7 @@
 <template>
     <v-app fluid>
         <v-app-bar v-if="driverAuthenticated" app height=45 extension-height=35 dark color="primary">
-            <span class='btitle'>Registration</span>
-            <v-select :items="serieslist" v-model="selectedSeries" solo light dense hide-details placeholder="Select A Series" ref="sselect"></v-select>
-            <span class='bdesc'>{{$route.meta.marker || $route.name}}</span>
-
+            <SeriesBar title="Register"></SeriesBar>
             <template v-slot:extension>
                 <v-btn color=white text small exact :class="mProfileClass" :to="{name:'profile', params:{}}">Profile<span class='super'>All</span></v-btn>
                 <v-btn color=white text small exact :class="mCarsClass"    :to="{name:'cars',    params:{series:currentSeries}}" :disabled="!currentSeries">Cars</v-btn>
@@ -33,6 +30,7 @@ import Login from './views/login.vue'
 import CartFAB from './components/cart/CartFAB.vue'
 import SnackBar from '@/components/SnackBar.vue'
 import HelpMenu from './components/HelpMenu.vue'
+import SeriesBar from '@/components/SeriesBar.vue'
 
 export default {
     name: 'App',
@@ -40,7 +38,8 @@ export default {
         Login,
         CartFAB,
         SnackBar,
-        HelpMenu
+        HelpMenu,
+        SeriesBar
     },
     data: () => ({
         loadDelay: false
@@ -51,31 +50,11 @@ export default {
         }
     },
     computed: {
-        ...mapState(['currentSeries', 'serieslist', 'driverAuthenticated', 'gettingData', 'flashProfile', 'flashCars', 'flashEvents']),
+        ...mapState(['currentSeries', 'driverAuthenticated', 'gettingData', 'flashProfile', 'flashCars', 'flashEvents']),
         isOutside() { return this.$route.meta.outside === 1 },
         mProfileClass() { return this.flashProfile ? 'flashit' : '' },
         mCarsClass()    { return this.flashCars ?    'flashit' : '' },
         mEventsClass()  { return this.flashEvents ?  'flashit' : '' },
-
-        selectedSeries: {
-            get() { return this.currentSeries },
-            set(value) {
-                this.$store.commit('changeSeries', value)
-                this.$router.push({ name: this.$route.name, params: { series: value }}).catch(error => {
-                    // If we change series while on a non-series link, don't throw any errors
-                    if (error.name !== 'NavigationDuplicated') {
-                        throw error
-                    }
-                })
-            }
-        }
-    },
-    watch: {
-        serieslist: function() {
-            if (this.currentSeries) {
-                this.$refs.sselect.blur() // clear after load if it doesn't need to be open
-            }
-        }
     },
     mounted() {
         this.$store.dispatch('getdata').then(() => { this.loadDelay = true })
