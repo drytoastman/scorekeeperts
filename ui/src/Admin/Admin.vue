@@ -92,14 +92,14 @@ export default {
                 { title: 'Unique Attendance',    link: { name:'attendunique' }},
                 { title: 'Used Car Number List', link: { name:'usednumbers' }},
                 { link: {}},
-                { title: 'Payments',             link: { name:'payments' }},
-                { title: 'Contact List',         link: { name:'contacts' }},  // TODO
-                { title: 'Membership',           link: { name:'membersip' }}  // TODO
+                { title: 'Event Payments',       link: { name:'payments' }},
+                { title: 'Membership',           link: { name:'membership' }},
+                { title: 'Contact List',         link: { name:'contacts' }}  // TODO
             ].map(v => { v.link.params = { series: this.currentSeries }; return v })
         },
         admins() {
             return [
-                { title: 'New Events',        link: { name:'newevents' }},  // TODO
+                { title: 'New Events',        link: { name:'newevents' }},
                 { title: 'Driver/Car Editor', link: { name:'drivereditor' }},
                 { title: 'Purge Tool',        link: { name:'purge' }},
                 { link: {}},

@@ -1,16 +1,11 @@
 <template>
     <div class='entranttable'>
         <v-data-table :items="entrantlist" :headers="headers" :search="search" :custom-filter="itemFilter"
-                        :footer-props="{itemsPerPageOptions: [10,20,35,-1]}" :items-per-page.sync="$store.state.itemsPerPage"
+                        :footer-props="{itemsPerPageOptions: [10,20,30,-1]}" :items-per-page.sync="$store.state.itemsPerPage"
                         :sort-by="['lastname']" multi-sort dense>
             <template v-slot:top>
                 <div class='topgrid'>
-                <div v-if="eventid" class='left'>
-                    <h2>Entries</h2>
-                </div>
-                <div v-else class='left'>
-                    <h2>Series Payments</h2>
-                </div>
+                <div class='title'>{{title}}</div>
                 <v-text-field class='right' v-model="search" :append-icon="icons.mdiMagnify" single-line hide-details label="Search">
                 </v-text-field>
                 </div>
@@ -55,7 +50,8 @@ export default {
         PaymentLabel
     },
     props: {
-        eventid: String
+        eventid: String,
+        type: String
     },
     data() {
         return {
@@ -74,7 +70,7 @@ export default {
     computed: {
         ...mapState(['currentSeries', 'drivers', 'cars', 'events', 'payments', 'registered', 'busyPayment']),
         event() {
-            return this.eventid in this.events ? this.events[this.eventid] : {}
+            return this.events[this.eventid] || {}
         },
         doRunEdit() {
             return hasFinished(this.event)
@@ -98,7 +94,8 @@ export default {
                     }
                 })
             } else { // use payments
-                return flatten(Object.values(this.payments)).map(p => {
+                const payments = flatten(Object.values(this.payments)).filter(p => (this.type === 'membership') ? !p.eventid : !!p.eventid)
+                return payments.map(p => {
                     const c = this.cars[p.carid]
                     const d = this.drivers[p.driverid]
                     const e = this.events[p.eventid]
@@ -123,12 +120,19 @@ export default {
                 { text: 'Payment', value: 'payment', sortable: false },
                 { text: 'Actions', value: 'actions', sortable: false }
             ]
-            if (this.eventid) {
-                headers.splice(2, 1) // remove event column when looking at a single event
-            } else {
-                headers.splice(3, 2) // otherwise remove the session/car
+            switch (this.type) {
+                case 'membership': headers.splice(2, 3); break // remove the session/event/car
+                case 'payments':   headers.splice(3, 2); break // remove the session/car
+                default:           headers.splice(2, 1); break // remove the event column when looking at a single event
             }
             return headers
+        },
+        title() {
+            switch (this.type) {
+                case 'membership': return 'Membership'
+                case 'payments':   return 'Event Payments'
+            }
+            return ''
         }
     },
     methods: {

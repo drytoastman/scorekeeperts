@@ -1,6 +1,6 @@
 <template>
     <div class='outer'>
-        <EntrantTable :eventid=eventid></EntrantTable>
+        <EntrantTable :type=type></EntrantTable>
     </div>
 </template>
 
@@ -13,7 +13,7 @@ export default {
         EntrantTable
     },
     props: {
-        eventid: String
+        type: String
     }
 }
 </script>
