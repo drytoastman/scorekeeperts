@@ -61,6 +61,7 @@ export class Api2State {
     attendance: {[key: string]: UUID[]} = {}
     counts: {[key: string]: any} = {}
     classorder: {[key: string]: any} = {}
+    driversattr: {[key: string]: any} = {}
 
     // square oauth
     squareapplicationid = ''

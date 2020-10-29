@@ -67,6 +67,17 @@ export class DriverRepository {
         return this.db.oneOrNone('SELECT * FROM drivers WHERE username=$1', [username.trim()])
     }
 
+    async getDriverSeriesAttr(driverid: UUID): Promise<any> {
+        const row = await this.db.oneOrNone('SELECT attr FROM seriesattr WHERE driverid=$1', [driverid])
+        if (!row) return {}
+        return row.attr
+    }
+
+    async updateDriverSeriesAttr(seriesattr: any, driverid: UUID) {
+        await this.db.none('INSERT INTO seriesattr (driverid, attr) VALUES ($1, $2) ON CONFLICT(driverid) DO UPDATE SET attr=$2,modified=now()', [driverid, seriesattr, seriesattr])
+        return this.getDriverSeriesAttr(driverid)
+    }
+
     async getUnsubscribeByDriverId(driverid: UUID): Promise<string[]> {
         return (await this.db.any('SELECT emaillistid FROM unsubscribe WHERE driverid=$1', [driverid])).map(r => r.emaillistid)
     }

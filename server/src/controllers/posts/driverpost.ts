@@ -20,6 +20,10 @@ export async function driverpost(tx: ScorekeeperProtocol, driverid: string, para
                 ret.drivers = await tx.drivers.updateDriver(param.type, param.items.drivers, driverid)
                 break
 
+            case 'driversattr':
+                ret.driversattr = await tx.drivers.updateDriverSeriesAttr(param.items.driversattr, driverid)
+                break
+
             case 'cars':
                 ret.cars = await tx.cars.updateCars(param.type, param.items.cars, driverid)
                 addsummary = true

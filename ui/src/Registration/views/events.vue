@@ -1,50 +1,65 @@
 <template>
-    <div class='outer'>
-    <v-expansion-panels multiple focusable hover accordion tile v-model='panelstate'>
-        <v-expansion-panel v-for="event in orderedEvents" :key="event.eventid">
-            <v-expansion-panel-header class='elevation-4' xcolor='primary lighten-1 white--text'>
-                <v-container class="pa-0">
-                    <v-row no-gutters align=center class='eventrow'>
-                        <v-col class='datecol'>
-                            <span class='eventdate'>{{event.date | dmdy}}</span>
-                        </v-col>
-                        <v-col class='namecol'>
-                            <svg height="14" width="14">
-                                <circle cx=7 cy=7 r="6" :fill="opencolor(event)" />
-                            </svg>
-                            <span class='eventname'>{{event.name}}</span>
-                        </v-col>
-                    </v-row>
-                </v-container>
-            </v-expansion-panel-header>
-            <v-expansion-panel-content>
-                <RegisterEventDisplay :event="event" @regrequest="regrequest(event)" @payrequest="payrequest(event)"></RegisterEventDisplay>
-            </v-expansion-panel-content>
-        </v-expansion-panel>
-    </v-expansion-panels>
+    <div>
+        <div class='requests inset'>
+            <div v-if="settings.requestbarcodes && !driver.barcode" class='barcoderequest'>
+                {{currentSeries}} requests that you set the barcode value in your <router-link :to="{name: 'profile', params: {}}">profile</router-link> if you have one
+            </div>
+
+            <div v-if="settings.requestrulesack && (!driversattr.rulesack)" class='rulesrequest'>
+                {{currentSeries}} requires that the <a @click="rulesDialog=true">series rules be acknowledged</a>
+                <RulesAcknowledegment v-model="rulesDialog" @ok="addRulesAck"></RulesAcknowledegment>
+            </div>
+        </div>
+
+        <v-expansion-panels multiple focusable hover accordion tile v-model='panelstate'>
+            <v-expansion-panel v-for="event in orderedEvents" :key="event.eventid">
+                <v-expansion-panel-header class='elevation-4' xcolor='primary lighten-1 white--text'>
+                    <v-container class="pa-0">
+                        <v-row no-gutters align=center class='eventrow'>
+                            <v-col class='datecol'>
+                                <span class='eventdate'>{{event.date | dmdy}}</span>
+                            </v-col>
+                            <v-col class='namecol'>
+                                <svg height="14" width="14">
+                                    <circle cx=7 cy=7 r="6" :fill="opencolor(event)" />
+                                </svg>
+                                <span class='eventname'>{{event.name}}</span>
+                            </v-col>
+                        </v-row>
+                    </v-container>
+                </v-expansion-panel-header>
+                <v-expansion-panel-content>
+                    <RegisterEventDisplay :event="event" @regrequest="regrequest(event)" @payrequest="payrequest(event)"></RegisterEventDisplay>
+                </v-expansion-panel-content>
+            </v-expansion-panel>
+        </v-expansion-panels>
     </div>
 </template>
 
 <script>
 import orderBy from 'lodash/orderBy'
 import filter from 'lodash/filter'
-import { mapState } from 'vuex'
+import { mapState, mapGetters } from 'vuex'
 import { isOpen, hasClosed } from '@/common/event'
 import RegisterEventDisplay from '../components/RegisterEventDisplay.vue'
+import RulesAcknowledegment from '../components/RulesAcknowledgement.vue'
 
 export default {
     components: {
-        RegisterEventDisplay
+        RegisterEventDisplay,
+        RulesAcknowledegment
     },
     data: () => ({
         classDialogOpen: false,
         sessionDialogOpen: false,
         paymentOpen: false,
         cartOpen: false,
-        dialogEvent: null
+        dialogEvent: null,
+        rulesDialog: false
     }),
     computed: {
-        ...mapState(['events', 'counts', 'registered', 'panelstate']),
+        ...mapState(['currentSeries', 'driversattr', 'settings', 'events', 'counts', 'registered', 'panelstate']),
+        ...mapGetters(['driver']),
         // events by date, filtering out events that already occured as of today midnight, will still show up day of
         orderedEvents() { return filter(orderBy(this.events, ['date']), e => (new Date(e.date) - new Date()) > -86400) },
         panelstate: {
@@ -69,15 +84,38 @@ export default {
             if (isOpen(event)) return '#4C4'
             if (hasClosed(event)) return '#C44'
             return '#BBB'
+        },
+        addRulesAck() {
+            this.$store.dispatch('setdata', {
+                items: {
+                    driversattr: Object.assign({ rulesack: true }, this.driversattr)
+                }
+            })
         }
     }
 }
 </script>
 
-<style scoped>
-    .outer {
-        padding: 1rem;
+<style scoped lang="scss">
+    .requests {
+        margin-bottom: 1rem;
+        a {
+            text-decoration: underline;
+        }
+        .barcoderequest, .rulesrequest {
+            text-align: center;
+        }
+        .barcoderequest {
+            color: grey;
+        }
+        .rulesrequest {
+            color: #F559;
+            a {
+                color: #F00;
+            }
+        }
     }
+
     .eventdate, .eventname {
         font-size: 1.2rem;
         white-space: nowrap;
@@ -108,15 +146,4 @@ export default {
             margin-bottom: 5px;
         }
     }
-
-    /*
-    .v-expansion-panel-header--active {
-        background: var(--v-secondary-base);
-        color: white;
-    }
-
-    .v-expansion-panel-header:hover {
-        background:#3f51b5;
-        color: white;
-    } */
 </style>

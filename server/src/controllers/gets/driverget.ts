@@ -12,7 +12,7 @@ export async function driverget(task: ScorekeeperProtocol, driverid: UUID, param
 
     await task.series.setSeries(ret.series)
     // if no series, remove driver only items that won't work
-    if (!ret.series) param.items = param.items.filter((v:string) => !['settings', 'cars', 'payments', 'registered', 'usednumbers'].includes(v))
+    if (!ret.series) param.items = param.items.filter((v:string) => !['settings', 'driversattr', 'cars', 'payments', 'registered', 'usednumbers'].includes(v))
 
     for (const item of param.items) {
         if (await unauthget(task, item, ret)) continue
@@ -23,6 +23,7 @@ export async function driverget(task: ScorekeeperProtocol, driverid: UUID, param
             case 'payments':    ret.payments          = await task.payments.getPaymentsbyDriverId(driverid);     break
             case 'registered':  ret.registered        = await task.register.getRegistrationbyDriverId(driverid); break
             case 'unsubscribe': ret.driverunsubscribe = await task.drivers.getUnsubscribeByDriverId(driverid);   break
+            case 'driversattr': ret.driversattr       = await task.drivers.getDriverSeriesAttr(driverid);        break
             case 'settings':
                 ret.settings = _.pick(await task.series.seriesSettings(), [
                     'classinglink', 'seriesruleslink', 'requestrulesack', 'requestbarcodes',
