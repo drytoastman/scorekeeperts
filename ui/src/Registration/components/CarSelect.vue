@@ -38,6 +38,7 @@ export default {
             } else {
                 all = orderBy(all, ['number'])
             }
+            this.$emit('nocars', all.length === 0)
             return [{ carid: null }, ...all]
         },
         selectedcarid: {

@@ -40,25 +40,19 @@
         <v-divider v-if="hasOpened"></v-divider>
 
         <v-row v-if="hasOpened">
-            <LinkHoverToState v-if="noCars" :to="{name:'cars'}" variable="flashCars" class='carslink'>
-                Create, Edit and Delete Cars Via the Cars Menu
-            </LinkHoverToState>
-            <EventRegSelections v-else :event=event></EventRegSelections>
+            <EventRegSelections :event=event></EventRegSelections>
         </v-row>
     </v-container>
 </template>
 
 <script>
-import isEmpty from 'lodash/isEmpty'
 import { mapState } from 'vuex'
 import { isOpen, hasClosed, hasOpened } from '@/common/event'
 import EventRegSelections from './EventRegSelections.vue'
-import LinkHoverToState from './LinkHoverToState.vue'
 
 export default {
     components: {
-        EventRegSelections,
-        LinkHoverToState
+        EventRegSelections
     },
     filters: {
         timedate: function(v) {
@@ -74,8 +68,7 @@ export default {
         ecounts() { return this.counts[this.event.eventid] || {} },
         isOpen()    { return isOpen(this.event) },
         hasOpened() { return hasOpened(this.event) },
-        hasClosed() { return hasClosed(this.event) },
-        noCars() { return isEmpty(this.cars) }
+        hasClosed() { return hasClosed(this.event) }
     }
 }
 </script>

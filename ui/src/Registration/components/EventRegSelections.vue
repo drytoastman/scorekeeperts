@@ -3,10 +3,15 @@
         <div v-if=eventLimitReached class='limiterror'>
             Event Registration Limit Reached
         </div>
-        <div v-for="grp in groups" :key="grp.key" class='regrow'>
-            <span class='sessionlabel'>{{grp.key}}</span>
-            <CarSelect  :session=grp.session :index=grp.index :event=event class='select'></CarSelect>
-            <CarPayment :session=grp.session :index=grp.index :event=event class='payment' v-if='event.accountid'></CarPayment>
+        <div v-for="grp in groups" :key="grp.key">
+            <div class='regrow' >
+                <span class='sessionlabel'>{{grp.key}}</span>
+                <CarSelect  v-show="!nocars[grp.key]" :session=grp.session :index=grp.index :event=event class='select' @nocars="$set(nocars, grp.key, $event)"></CarSelect>
+                <CarPayment v-show="!nocars[grp.key]" :session=grp.session :index=grp.index :event=event class='payment' v-if='event.accountid'></CarPayment>
+                <LinkHoverToState v-show="!!nocars[grp.key]" :to="{name:'cars'}" variable="flashCars" class='carslink'>
+                    Create, Edit and Delete Cars Via the Cars Menu
+                </LinkHoverToState>
+            </div>
         </div>
         <div v-for="other in $store.getters.eventotherfees(event.eventid)" :key="other.item.itemid" class='regrow'>
             <div class='name'>{{ other.item.name }}</div>
@@ -24,15 +29,22 @@ import { getSessions } from '@/common/event.ts'
 import CarSelect from './CarSelect.vue'
 import CarPayment from './cart/CarPayment.vue'
 import OtherPayment from './cart/OtherPayment.vue'
+import LinkHoverToState from './LinkHoverToState.vue'
 
 export default {
     components: {
         CarSelect,
         CarPayment,
-        OtherPayment
+        OtherPayment,
+        LinkHoverToState
     },
     props: {
         event: Object
+    },
+    data() {
+        return {
+            nocars: {}
+        }
     },
     computed: {
         ...mapState(['cars', 'registered', 'counts']),
@@ -97,6 +109,9 @@ export default {
     }
     .select {
         grid-column: 2 / span 2;
+    }
+    .carslink {
+        grid-column: 2 / span 4;
     }
     .name {
         font-size: 90%;
