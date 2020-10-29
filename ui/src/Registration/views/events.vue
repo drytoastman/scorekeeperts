@@ -9,6 +9,11 @@
                 {{currentSeries}} requires that the <a @click="rulesDialog=true">series rules be acknowledged</a>
                 <RulesAcknowledegment v-model="rulesDialog" @ok="addRulesAck"></RulesAcknowledegment>
             </div>
+
+            <div v-if="requestMembership" class='memberrequest'>
+                <MemberPayment class='memberselect'></MemberPayment>
+                <!-- {{driverMembership[0].itemname}} {{driverMembership[0].amount|cents2dollars}} -->
+            </div>
         </div>
 
         <v-expansion-panels multiple focusable hover accordion tile v-model='panelstate'>
@@ -43,11 +48,13 @@ import { mapState, mapGetters } from 'vuex'
 import { isOpen, hasClosed } from '@/common/event'
 import RegisterEventDisplay from '../components/RegisterEventDisplay.vue'
 import RulesAcknowledegment from '../components/RulesAcknowledgement.vue'
+import MemberPayment from '../components/cart/MemberPayment.vue'
 
 export default {
     components: {
         RegisterEventDisplay,
-        RulesAcknowledegment
+        RulesAcknowledegment,
+        MemberPayment
     },
     data: () => ({
         classDialogOpen: false,
@@ -58,13 +65,17 @@ export default {
         rulesDialog: false
     }),
     computed: {
-        ...mapState(['currentSeries', 'driversattr', 'settings', 'events', 'counts', 'registered', 'panelstate']),
-        ...mapGetters(['driver']),
+        ...mapState(['currentSeries', 'driversattr', 'settings', 'events', 'counts', 'registered', 'paymentitems', 'panelstate']),
+        ...mapGetters(['driver', 'membershipfees', 'driverMembership']),
         // events by date, filtering out events that already occured as of today midnight, will still show up day of
         orderedEvents() { return filter(orderBy(this.events, ['date']), e => (new Date(e.date) - new Date()) > -86400) },
+
         panelstate: {
             get: function() { return this.$store.state.panelstate },
             set: function(v) { this.$store.state.panelstate = v }
+        },
+        requestMembership() {
+            return this.settings.membershipaccount && this.membershipfees.length > 0 && !this.driverMembership.length
         }
     },
     methods: {
@@ -88,7 +99,7 @@ export default {
         addRulesAck() {
             this.$store.dispatch('setdata', {
                 items: {
-                    driversattr: Object.assign({ rulesack: true }, this.driversattr)
+                    driversattr: Object.assign({}, this.driversattr, { rulesack: true })
                 }
             })
         }
@@ -102,11 +113,18 @@ export default {
         a {
             text-decoration: underline;
         }
-        .barcoderequest, .rulesrequest {
+        .barcoderequest, .memberrequest, .rulesrequest {
             text-align: center;
         }
-        .barcoderequest {
+        .barcoderequest, .memberrequest {
             color: grey;
+        }
+        .memberrequest {
+            display: flex;
+            flex-direction: row-reverse;
+        }
+        .memberselect {
+            max-width: 20rem;
         }
         .rulesrequest {
             color: #F559;

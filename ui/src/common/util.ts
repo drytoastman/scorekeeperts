@@ -13,7 +13,8 @@ export const nonBlank: VuetifyValidationRule   = v => { return v.length > 0 || '
 export const isNumber: VuetifyValidationRule   = v => { return typeof v === 'number' || (typeof v === 'string' && _V.isNumeric(v)) || 'must be a number ' }
 export const isEmailV: VuetifyValidationRule   = v => { return _V.isEmail(v) || 'must be a valid email address' }
 export const isUUIDV: VuetifyValidationRule    = v => { return _V.isUUID(v) || 'must be UUID' }
-export const isDate: VuetifyValidationRule     = v => { return (new Date(v).getTime() > 0) || 'must be an ISO date value' }
+export const isUUIDN: VuetifyValidationRule    = v => { return v === null || _V.isUUID(v) || 'must be UUID or null' }
+export const isDate: VuetifyValidationRule     = v => { return (new Date(v).getTime() >= 0) || 'must be an ISO date value' }
 export const isBarcode: VuetifyValidationRule  = v => { return /^([0-9A-Z]+|)$/.test(v) || 'barcode can only accept characters 0-9 an capital A-Z' }
 export const isISODate: VuetifyValidationRule  = v => { return _V.isISO8601(v) || 'not a valid ISO Date value' }
 export const isDomain: VuetifyValidationRule   = v => { return _V.isFQDN(v) || 'not a valid domain name' }

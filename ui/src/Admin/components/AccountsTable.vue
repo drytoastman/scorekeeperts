@@ -28,6 +28,11 @@
             </v-data-table>
         </div>
 
+        <div class='memberinputs'>
+            <v-select label="Membership Payment Account"  outlined item-value="accountid" item-text="name" ref="memselect"
+                v-model="membershipaccount" :items="memberAccountList"></v-select>
+        </div>
+
         <div class='adminbuttons1'>
             <v-btn color="secondary" @click.stop="newitem">
                 Add Item
@@ -86,8 +91,22 @@ export default {
         }
     },
     computed: {
-        ...mapState(['currentSeries', 'paymentaccounts', 'paymentitems', 'squareapplicationid']),
+        ...mapState(['currentSeries', 'settings', 'paymentaccounts', 'paymentitems', 'squareapplicationid']),
         accountsList() { return Object.values(this.paymentaccounts) },
+        memberAccountList() { return [{ accountid: '', name: '' }, ...this.accountsList] },
+
+        membershipaccount: {
+            get() { return this.settings.membershipaccount },
+            set(val) {
+                if (this.settings.membershipaccount === val) return
+                this.$store.dispatch('setdata', { items: { settings: Object.assign({}, this.settings, { membershipaccount: val }) }}).then(() => {
+                    if (this.$refs.memselect)  {
+                        this.$refs.memselect.setValue(this.settings.membershipaccount)
+                    }
+                })
+            }
+        },
+
         squareOAuthUrl() {
             let host = 'https://connect.squareup.com'
             if (this.squareapplicationid.includes('sandbox')) {
@@ -134,18 +153,10 @@ export default {
 </script>
 
 <style>
-.accountstable .v-icon, .itemstable .v-icon {
-    margin-left: 10px;
-}
-.itemstable .v-btn--fab .v-icon {
-    margin-left: 0;
-}
-.v-data-table__mobile-row__cell {
-    padding-left: 10px;
-}
+
 </style>
 
-<style scoped>
+<style scoped lang='scss'>
 .tableborder {
     border: 1px solid #CCC;
     padding: 1rem;
@@ -176,5 +187,23 @@ img {
 .accountstable > .v-btn {
     margin-left: 1rem;
     margin-top: 1rem;
+}
+.accountstable ::v-deep {
+    .accountstable .v-icon, .itemstable .v-icon {
+        margin-left: 10px;
+    }
+    .itemstable .v-btn--fab .v-icon {
+        margin-left: 0;
+    }
+    .v-data-table__mobile-row {
+        justify-content: initial;
+    }
+    .v-data-table__mobile-row__header {
+        width: 6rem;
+    }
+    .memberinputs {
+        margin-top: 1rem;
+        column-gap: 1rem;
+    }
 }
 </style>

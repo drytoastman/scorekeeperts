@@ -8,7 +8,7 @@ import VueRouter, { Route } from 'vue-router'
 import { api2Mutations, deepset } from './api2mutations'
 import { api2Actions, getDataWrap } from './api2actions'
 
-import { ITEM_TYPE_GENERAL_FEE, ITEM_TYPE_ENTRY_FEE } from '@/common/payments.ts'
+import { ITEM_TYPE_GENERAL_FEE, ITEM_TYPE_ENTRY_FEE, ITEM_TYPE_SERIES_FEE } from '@/common/payments.ts'
 import { UUID } from '@/common/util'
 import { Driver } from '@/common/driver'
 
@@ -54,6 +54,10 @@ export const cartMutations = {
         return deepset(state.carts, [state.currentSeries, data.accountid, data.eventid, 'other', data.itemid], data.value)
     },
 
+    cartSetMembership(state: Api2State, data: any) {
+        return deepset(state.carts, [state.currentSeries, data.accountid, 'noevent', 'membership'], data.value)
+    },
+
     cartClear(state: Api2State, data: any) {
         Vue.delete(state.carts[state.currentSeries], data.accountid)
     }
@@ -64,6 +68,14 @@ export const cartMutations = {
 const getters = {
     driver: (state) => {
         return state.driverid ? state.drivers[state.driverid] : {}
+    },
+
+    driverMembership: (state) => {
+        return state.payments.null || []
+    },
+
+    membershipfees: (state) => {
+        return orderBy(Object.values(state.paymentitems).filter(i => i.itemtype === ITEM_TYPE_SERIES_FEE), 'name')
     },
 
     eventitems: (state) => (eventid: UUID) => {
@@ -91,6 +103,10 @@ const getters = {
         return get(state.carts, [state.currentSeries, accountid, eventid, 'other', itemid])
     },
 
+    cartGetMembership: (state) => (accountid: string) => {
+        return get(state.carts, [state.currentSeries, accountid, 'noevent', 'membership'])
+    },
+
     cart: (state) => (accountid: string) => {
         const ret = {
             total: 0,
@@ -100,6 +116,16 @@ const getters = {
         if (!accountcart) return ret
 
         for (const eventid in accountcart) {
+            if (accountcart[eventid].membership) {
+                const item = state.paymentitems[accountcart[eventid].membership]
+                ret.purchases.push({
+                    eventid: null,
+                    itemid: item.itemid,
+                    sum: item.price
+                })
+                ret.total += item.price
+            }
+
             for (const carid in accountcart[eventid].cars) {
                 for (const session in accountcart[eventid].cars[carid]) {
                     const item = state.paymentitems[accountcart[eventid].cars[carid][session]]

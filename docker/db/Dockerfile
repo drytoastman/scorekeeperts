@@ -2,7 +2,7 @@ FROM postgres:9.6.15-alpine
 RUN apk --no-cache add openssl socat iptables iproute2
 ENV POSTGRES_DB=scorekeeper
 ENV POSTGRES_PASSWORD=thisgetsoverwrittenlater
-ENV TEMPLATE_SCHEMA_VERSION=20200701
+ENV TEMPLATE_SCHEMA_VERSION=20201028
 COPY dbconversion-scripts /dbconversion-scripts
 COPY dbinit-scripts /docker-entrypoint-initdb.d
 COPY backup.sh /usr/local/bin

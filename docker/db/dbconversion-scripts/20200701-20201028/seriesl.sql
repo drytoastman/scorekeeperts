@@ -1,0 +1,1 @@
+alter table payments alter column eventid drop not null;

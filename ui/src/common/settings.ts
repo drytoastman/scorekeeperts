@@ -22,8 +22,6 @@ export interface SeriesSettings
     resultscss: string;
     resultsheader: string;
     cardtemplate: string;
-    requestmembership: boolean;
-    membershipitem: string;
     membershipaccount: string;
 }
 

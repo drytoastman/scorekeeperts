@@ -41,7 +41,12 @@ export async function squareOrder(conn: ScorekeeperProtocol, square: any, paymen
     }
 
     for (const p of payments) {
-        const event = await conn.events.getEvent(p.eventid)
+        let event
+        if (p.eventid) {
+            event = await conn.events.getEvent(p.eventid)
+        } else {
+            event = { name: 'Membership Payments' }
+        }
         body.order.line_items.push({
             name: event.name,
             variation_name: p.itemname,

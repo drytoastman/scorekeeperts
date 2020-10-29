@@ -63,7 +63,7 @@ export default {
             const ret = []
             for (const eventid in idmap) {
                 ret.push({
-                    event: this.events[eventid],
+                    event: this.events[eventid] || { name: 'Membership Fees' },
                     purchases: idmap[eventid]
                 })
             }

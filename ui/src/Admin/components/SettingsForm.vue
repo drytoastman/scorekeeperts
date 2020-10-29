@@ -24,12 +24,6 @@
             v-model="settingsm.pospointlist" style="grid-area: ppoints" :rules="vrules.pospointlist" label="Position Points List">
         </v-text-field>
 
-        <v-checkbox v-model="settingsm.requestmembership" style="grid-area: reqmem" label="Request Membership"></v-checkbox>
-        <v-select v-model="settingsm.membershipitem"      style="grid-area: memitm" :items="memberitems"    item-value="itemid"    item-text="name"
-                placeholder="Payment Item"></v-select>
-        <v-select v-model="settingsm.membershipaccount"   style="grid-area: memact" :items="memberaccounts" item-value="accountid" item-text="name"
-                placeholder="Payment Account"></v-select>
-
         <v-checkbox v-model="settingsm.requestbarcodes"     style="grid-area: reqb"   :rules="vrules.requestbarcodes" label="Request Barcodes"></v-checkbox>
         <v-checkbox v-model="settingsm.indexafterpenalties" style="grid-area: indexa" :rules="vrules.indexafterpenalties" label="Index After Penalties"></v-checkbox>
         <v-checkbox v-model="settingsm.superuniquenumbers"  style="grid-area: superu" :rules="vrules.superuniquenumbers" label="Series Wide Unique Numbers"></v-checkbox>
@@ -53,12 +47,11 @@
 </template>
 
 <script>
-import isEqualWith from 'lodash/isEqualWith'
+import isEqual from 'lodash/isEqual'
 import { mapState } from 'vuex'
 import { PrismEditor } from 'vue-prism-editor'
 import { prismlangs } from '@/util/prismwrapper'
 import { SettingsValidator } from '@/common/settings'
-import { ITEM_TYPE_SERIES_FEE } from '@/common/payments'
 import ChangeSeriesPassword from './ChangeSeriesPassword.vue'
 
 export default {
@@ -77,30 +70,20 @@ export default {
     },
     computed: {
         ...mapState(['settings', 'paymentaccounts', 'paymentitems']),
-        memberitems()    { return Object.values(this.paymentitems).filter(i => i.itemtype === ITEM_TYPE_SERIES_FEE) },
-        memberaccounts() { return Object.values(this.paymentaccounts) },
         unchanged() {
-            return isEqualWith(this.settings, this.settingsm, (objv, othv) => {
-                if ((typeof objv === 'string') && (typeof othv === 'string')) {
-                    if (objv.trim() === othv.trim()) { return true }
-                }
-            })
+            return isEqual(this.settings, this.settingsm)
         }
     },
     methods: {
         ...prismlangs,
         saveSettings() {
-            this.$store.commit('gettingData', true)
             this.$store.dispatch('setdata', {
                 type: 'update',
                 items: { settings: this.settingsm }
-            }).then(() => this.$store.commit('gettingData', false))
+            })
         },
         reset() {
             this.settingsm = Object.assign({}, this.settings)
-            for (const template of ['resultscss', 'resultsheader', 'cardtemplate']) {
-                this.settingsm[template] = this.settingsm[template] || '\n'
-            }
         }
     },
     watch: { settings() { this.reset() } },
