@@ -1,6 +1,6 @@
 <template>
     <div>
-        <v-speed-dial class='righthang' direction="bottom" transition="scale" v-model="fab" v-if="positiveCount > 1">
+        <v-speed-dial direction="bottom" transition="scale" v-model="fab" v-if="positiveCount > 1">
             <template v-slot:activator>
             <v-btn v-model="fab" color="secondary" dark>
                 <v-icon v-if="fab">{{icons.mdiClose}}</v-icon>
@@ -81,10 +81,5 @@ export default {
     margin-left: 0.5rem;
     width: 4.0rem;
     text-align: right;
-}
-.righthang {
-    position: absolute;
-    top: calc(100% - 1px);
-    right: 0;
 }
 </style>

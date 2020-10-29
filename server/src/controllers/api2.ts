@@ -27,17 +27,21 @@ api2.use(async function(req: Request, res: Response, next: Function) {
     if (!req.session) {
         return res.status(500).json({ error: 'no session available' })
     }
-    req.auth = new AuthData(req.session)
+    req.auth = new AuthData(req.session as any)
     next()
 })
 
 export async function apiget(req: Request, res: Response) {
     try {
         const param = checkAuth(req)
+        let driverid
+
         res.json(await db.task('apiget-' + param.authtype, async task => {
             switch (param.authtype) {
                 case AUTHTYPE_DRIVER:
-                    return driverget(task, req.auth.driverId(), param)
+                    driverid = req.auth.driverId()
+                    if (!driverid) throw Error('No driverid in session')
+                    return driverget(task, driverid, param)
                 case AUTHTYPE_SERIES:
                 case AUTHTYPE_ADMIN:
                     return seriesget(task, req.auth, param)
@@ -57,10 +61,14 @@ export async function apiget(req: Request, res: Response) {
 export async function apipost(req: Request, res: Response) {
     try {
         const param = checkAuth(req)
+        let driverid
+
         res.json(await db.tx('apipost', async tx => {
             switch (param.authtype) {
                 case AUTHTYPE_DRIVER:
-                    return driverpost(tx, req.auth.driverId(), param)
+                    driverid = req.auth.driverId()
+                    if (!driverid) throw Error('No driverid in session')
+                    return driverpost(tx, driverid, param)
                 case AUTHTYPE_SERIES:
                 case AUTHTYPE_ADMIN:
                     return seriespost(tx, req.auth, param)

@@ -11,7 +11,12 @@ declare global {
     }
 }
 
-type CookieSess = CookieSessionInterfaces.CookieSessionObject;
+interface CookieSess {
+    driverid: UUID|null
+    series: {[key: string]: boolean}
+    admin: boolean|null
+}
+
 export class AuthData {
     session: CookieSess
 
@@ -105,8 +110,8 @@ export async function authtest(req: Request, res: Response) {
 // 'allclassindex', 'attendance', 'driverbrief', 'editorids', 'rotatekeygrip',
 
 const UNAUTHSPECIAL = ['recaptchasitekey', 'serieslist']
-const COMMONDEFAULT = ['classes', 'counts', 'events', 'indexes', 'listids', 'paymentaccounts', 'paymentitems', 'serieslist']
-const SERIESDEFAULT = [...COMMONDEFAULT, 'classorder', 'localsettings',  'settings', 'squareapplicationid', 'ismainserver']
+const COMMONDEFAULT = ['classes', 'counts', 'events', 'indexes', 'listids', 'paymentaccounts', 'paymentitems', 'serieslist', 'settings']
+const SERIESDEFAULT = [...COMMONDEFAULT, 'classorder', 'localsettings', 'squareapplicationid', 'ismainserver']
 const DRIVERDEFAULT = [...COMMONDEFAULT, 'cars', 'drivers', 'payments', 'registered', 'summary', 'unsubscribe']
 
 export const AUTHTYPE_DRIVER = 'driver'

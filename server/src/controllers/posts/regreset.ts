@@ -194,12 +194,15 @@ export async function reset(req: Request, res: Response) {
 export async function changepassword(req: Request, res: Response) {
     try {
         let reset = false
+        const driverid = req.auth.driverId()
+        if (!driverid) throw Error('No driverid in session')
+
         if (req.body.resetToken) {
             const o = unwrapObj(req.sessionOptions.keys as KeyGrip, req.body.resetToken.t, req.body.resetToken.s)
-            if (o.driverid !== req.auth.driverId()) throw Error('token driverid and authorization driverid do not match')
+            if (o.driverid !== driverid) throw Error('token driverid and authorization driverid do not match')
             reset = true
         }
-        await db.drivers.changePassword(req.auth.driverId(), req.body.currentpassword, req.body.newpassword, reset)
+        await db.drivers.changePassword(driverid, req.body.currentpassword, req.body.newpassword, reset)
         res.status(200).json({ result: 'Password change successful' })
     } catch (error) {
         controllog.error(error)

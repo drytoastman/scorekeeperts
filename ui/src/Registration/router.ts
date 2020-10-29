@@ -6,6 +6,7 @@ const CarsView     = () => import(/* webpackChunkName: "registerviews" */  './vi
 const ProfileView  = () => import(/* webpackChunkName: "registerviews" */  './views/profile.vue')
 const EmailResult  = () => import(/* webpackChunkName: "registerviews" */  './views/emailresult.vue')
 const TokenProcess = () => import(/* webpackChunkName: "registerviews" */  './views/tokenprocess.vue')
+const HelpPage     = () => import(/* webpackChunkName: "registerviews" */  './views/help.vue')
 
 Vue.use(VueRouter)
 
@@ -13,6 +14,8 @@ const routes = [
     { path: '/emailresult',    name: 'emailresult', component: EmailResult,  meta: { outside: 1 }},
     { path: '/token',          name: 'token',       component: TokenProcess, meta: { outside: 1 }},
     { path: '/profile',        name: 'profile',     component: ProfileView },
+    { path: '/help',           name: 'help',        component: HelpPage },
+    { path: '/:series/help',   name: 'help',        component: HelpPage },
     { path: '/:series/events', name: 'events',      component: EventsView },
     { path: '/:series/cars',   name: 'cars',        component: CarsView },
 

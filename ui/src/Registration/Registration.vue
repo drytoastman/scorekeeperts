@@ -11,7 +11,8 @@
                 <v-btn color=white text small exact :class="mEventsClass"  :to="{name:'events',  params:{series:currentSeries}}" :disabled="!currentSeries">Events</v-btn>
                 <v-btn color=white text small @click='logout'>Logout</v-btn>
                 <v-progress-linear :active="!!gettingData" indeterminate absolute bottom color="green accent-4"></v-progress-linear>
-                <CartFAB></CartFAB>
+                <CartFAB class='righthang'></CartFAB>
+                <HelpMenu btnclass='help'></HelpMenu>
             </template>
 
         </v-app-bar>
@@ -31,13 +32,15 @@ import { mapState } from 'vuex'
 import Login from './views/login.vue'
 import CartFAB from './components/cart/CartFAB.vue'
 import SnackBar from '@/components/SnackBar.vue'
+import HelpMenu from './components/HelpMenu.vue'
 
 export default {
     name: 'App',
     components: {
         Login,
         CartFAB,
-        SnackBar
+        SnackBar,
+        HelpMenu
     },
     data: () => ({
         loadDelay: false
@@ -84,6 +87,15 @@ export default {
 .main-page-warning {
     font-size: 150%;
     text-align: center;
+}
+::v-deep .help {
+    position: fixed;
+    right: 1rem;
+}
+.righthang {
+    position: absolute;
+    top: calc(100% - 1px);
+    right: 0;
 }
 .pushdown {
     margin-top: calc(15vh);
