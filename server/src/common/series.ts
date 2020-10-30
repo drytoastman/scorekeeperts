@@ -2,7 +2,7 @@ import { Challenge } from './challenge'
 import { SeriesClass, SeriesIndex } from './classindex'
 import { SeriesEvent } from './event'
 import { SeriesSettings } from './settings'
-import { DataValidationRules, isAlphaNum, isLower, Length } from './util'
+import { DataValidationRules, isAlphaNum, isLower, Length, UUID } from './util'
 
 export interface SeriesInfo {
     classes: SeriesClass[]
@@ -15,6 +15,17 @@ export interface SeriesInfo {
 export const SeriesValidator: DataValidationRules = {
     name:     [Length(6, 16), isLower, isAlphaNum],
     password: [Length(6, 16)]
+}
+
+export interface ActivityEntry {
+    driverid: UUID
+    firstname: string
+    lastname: string
+    email: string
+    optoutmail: boolean
+    barcode: string
+    reg:  {[key: string]: string[] } // UUID to classcode[], aliases not allowed in that position
+    runs: {[key: string]: string[] } // UUID to classcode[]
 }
 
 export enum SeriesStatus {

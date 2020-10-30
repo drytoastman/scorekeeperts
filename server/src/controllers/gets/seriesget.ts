@@ -30,6 +30,9 @@ export async function seriesget(task: ScorekeeperProtocol, auth: AuthData, param
                 ret.allclassindex = await allClassesAndIndexes(task)
                 await task.series.setSeries(ret.series)
                 break
+            case 'activity':
+                ret.activity = await task.series.activity()
+                break
         }
     }
 

@@ -9,6 +9,7 @@ const Classes      = () => import(/* webpackChunkName: "adminviews" */  './views
 const Indexes      = () => import(/* webpackChunkName: "adminviews" */  './views/indexes.vue')
 const EventInfo    = () => import(/* webpackChunkName: "adminviews" */  './views/eventinfo.vue')
 const Entrants     = () => import(/* webpackChunkName: "adminviews" */  './views/entrants.vue')
+const Contacts     = () => import(/* webpackChunkName: "adminviews" */  './views/contacts.vue')
 const Settings     = () => import(/* webpackChunkName: "adminviews" */  './views/settings.vue')
 const UsedNumbers  = () => import(/* webpackChunkName: "adminviews" */  './views/usednumbers.vue')
 const Attendance   = () => import(/* webpackChunkName: "adminviews" */  './views/attendance.vue')
@@ -48,6 +49,7 @@ const routes = [
     { path: '/:series/accounts',       name: 'accounts',  component: Accounts },
     { path: '/:series/payments',       name: 'payments',     component: Entrants, props: { type: 'payments' }},
     { path: '/:series/membership',     name: 'membership',   component: Entrants, props: { type: 'membership' }},
+    { path: '/:series/contacts',       name: 'contacts',     component: Contacts },
     { path: '/:series/attendseries',   name: 'attendseries', meta: { marker: 'attendance' }, component: Attendance, props: { type: 'series' }},
     { path: '/:series/attendevent',    name: 'attendevent',  meta: { marker: 'attendance' }, component: Attendance, props: { type: 'event'  }},
     { path: '/:series/attendunique',   name: 'attendunique', meta: { marker: 'attendance' }, component: Attendance, props: { type: 'unique' }},

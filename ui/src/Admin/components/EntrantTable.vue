@@ -43,7 +43,7 @@ import CarLabel from '../../components/CarLabel.vue'
 import PaymentLabel from './PaymentLabel.vue'
 
 export default {
-    name: 'entranttable',
+    name: 'EntrantTable',
     components: {
         RefundDialog,
         CarLabel,
@@ -77,7 +77,7 @@ export default {
         },
         entrantlist() {
             if (this.eventid) { // use registration, add payments
-                if (isEmpty(this.registered) || isEmpty(this.payments)) {
+                if (isEmpty(this.registered)) {
                     return [] // no data yet
                 }
                 return this.registered[this.eventid].map(r => {

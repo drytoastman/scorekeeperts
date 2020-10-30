@@ -1,8 +1,9 @@
 import { IMain } from 'pg-promise'
 import { ScorekeeperProtocol } from '.'
 import { SeriesSettings, DefaultSettings, SettingsValidator } from '@common/settings'
-import { SeriesStatus } from '@/common/series'
-import { validateObj } from '@/common/util'
+import { ActivityEntry, SeriesStatus } from '@/common/series'
+import { UUID, validateObj } from '@/common/util'
+import { getD } from '@/util/data'
 
 export class SeriesRepository {
     // eslint-disable-next-line no-useless-constructor
@@ -159,5 +160,34 @@ export class SeriesRepository {
 
             return {}
         })
+    }
+
+    async activity() {
+        const store: {[key: string] : ActivityEntry} = {}
+        const sql = (table) => 'SELECT distinct(d.driverid), d.firstname, d.lastname, d.email, d.optoutmail, d.barcode, r.eventid, c.classcode ' +
+                               `FROM ${table} r JOIN cars c ON r.carid=c.carid JOIN drivers d ON c.driverid=d.driverid`
+
+        const regs = await this.db.any(sql('runs'))
+        for (const r of regs) {
+            const e = getD(store, r.driverid, () => Object.assign(r, { reg: {}, runs: {}}) as ActivityEntry)
+            getD(e.runs, r.eventid, () => []).push(r.classcode)
+        }
+        const runs = await this.db.any(sql('registered'))
+        for (const r of runs) {
+            const e = getD(store, r.driverid, () => Object.assign(r, { reg: {}, runs: {}}) as ActivityEntry)
+            getD(e.reg, r.eventid, () => []).push(r.classcode)
+        }
+
+        const rows = await this.db.any("SELECT driverid FROM unsubscribe WHERE emaillistid=(SELECT val FROM settings WHERE name='emaillistid')")
+        const ids = new Set(rows.map(r => r.driverid as UUID))
+
+        const ret = Object.values(store)
+        for (const e of ret) {
+            if (e.optoutmail || ids.has(e.driverid)) {
+                e.email = '********'
+            }
+        }
+
+        return ret
     }
 }

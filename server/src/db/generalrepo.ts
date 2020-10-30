@@ -125,9 +125,7 @@ export class GeneralRepository {
     async getEmailFilterMatch(email: string): Promise<boolean|null> {
         // verbose version of matchend that postgres doesn't have
         const rows = await this.db.any('SELECT * from emailfilter WHERE substring(reverse($1),0,length(match)+1)=reverse(match) ORDER BY forder', [email])
-        for (const r of rows) {
-            return r.drop
-        }
+        if (rows.length) { return rows[0].drop }
         return null // no vote, different than yes or no vote
     }
 }
