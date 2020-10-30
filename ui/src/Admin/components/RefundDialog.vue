@@ -52,6 +52,7 @@ export default {
     computed: {
         ...mapState(['drivers', 'cars', 'events', 'payments']),
         txpayments() {
+            if (!this.base.txid) return [this.base]
             return filter(flatten(Object.values(this.payments)),
                 { txid: this.base.txid, refunded: false })
                 .map(p => {
