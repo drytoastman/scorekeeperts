@@ -9,6 +9,7 @@ import VueRouter, { Route } from 'vue-router'
 import { api2Mutations } from './api2mutations'
 import { api2Actions, getDataWrap } from './api2actions'
 import { UUID } from '@/common/util'
+import { sendAsDownload } from '@/util/sendtouser'
 
 
 export const adminActions = {
@@ -71,11 +72,8 @@ export const adminActions = {
                 withCredentials: true,
                 responseType: 'blob'
             })
-            const blob    = new Blob([response.data], { type: response.headers['content-type'] })
-            const link    = document.createElement('a')
-            link.href     = window.URL.createObjectURL(blob)
-            link.download = response.headers['content-disposition'].split(/[="]/)[2]
-            link.click()
+
+            sendAsDownload(response.data, response.headers['content-type'], response.headers['content-disposition'].split(/[="]/)[2])
             return 'done'
         } catch (error) {
             context.dispatch('axiosError', error)

@@ -6,7 +6,7 @@
             <template v-slot:top>
                 <div class='topgrid'>
                 <div class='title'>{{title}}</div>
-                <v-text-field class='right' v-model="search" :append-icon="icons.mdiMagnify" single-line hide-details label="Search">
+                <v-text-field class='right' v-model="search" :append-icon="icons.mdiMagnify" single-line hide-details label="Regex Search">
                 </v-text-field>
                 </div>
             </template>

@@ -54,7 +54,7 @@ export default {
         isOutside() { return this.$route.meta.outside === 1 },
         mProfileClass() { return this.flashProfile ? 'flashit' : '' },
         mCarsClass()    { return this.flashCars ?    'flashit' : '' },
-        mEventsClass()  { return this.flashEvents ?  'flashit' : '' },
+        mEventsClass()  { return this.flashEvents ?  'flashit' : '' }
     },
     mounted() {
         this.$store.dispatch('getdata').then(() => { this.loadDelay = true })
