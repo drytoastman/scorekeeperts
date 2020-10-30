@@ -31,6 +31,7 @@ export class Api2State {
     infos: string[] = []
     serieslist: string[] = []
     listids: string[] = []
+    paxlists: string[] = []
 
     // non series specific
     ismainserver = false

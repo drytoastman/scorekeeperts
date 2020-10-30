@@ -4,13 +4,13 @@
             <v-btn color=secondary @click.stop="newindex">Add Index</v-btn>
             <v-menu>
                 <template v-slot:activator="{ on, attrs }">
-                    <v-btn color="secondary" v-bind="attrs" v-on="on" :disabled="true">
+                    <v-btn color="secondary" v-bind="attrs" v-on="on">
                     Reset To Predefined List &#9660;
                     </v-btn>
                 </template>
                 <v-list>
-                    <v-list-item v-for="list in lists" :key="list">
-                        {{list}}
+                    <v-list-item v-for="list in paxlists" :key="list" @click='paxselect(list)'>
+                        {{list.slice(0, -5).replace('_', ' ')}}
                     </v-list-item>
                 </v-list>
             </v-menu>
@@ -58,14 +58,11 @@ export default {
                 { text: 'Desc', value: 'descrip', width: 250 },
                 { text: 'Value', value: 'value', sortable: false },
                 { text: 'Actions', value: 'actions', sortable: false }
-            ],
-            lists: [
-                'PAX 2020'
             ]
         }
     },
     computed: {
-        ...mapState(['indexes', 'busyIndex']),
+        ...mapState(['indexes', 'busyIndex', 'paxlists']),
         indexlist() { return orderBy(Object.values(this.indexes).filter(v => v.indexcode), 'indexcode') }
     },
     methods: {
@@ -83,6 +80,9 @@ export default {
             this.dialogData = item
             this.dialogApiType = 'delete'
             this.IndexDialog = true
+        },
+        paxselect(list) {
+            this.$store.dispatch('setdata', { items: { paxlist: list }})
         }
     }
 }

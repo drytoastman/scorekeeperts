@@ -1,4 +1,7 @@
 import _ from 'lodash'
+import fs from 'fs'
+import path from 'path'
+import util from 'util'
 
 import { Car } from '@common/car'
 import { ScorekeeperProtocol } from '@/db'
@@ -6,6 +9,22 @@ import * as square from '@/util/square'
 
 import { allSeriesCars, allSeriesDeleteDriverLinks, allSeriesMerge } from '../allseries'
 import { AuthData } from '../auth'
+import { SeriesIndex } from '@/common/classindex'
+
+const readAsync = util.promisify(fs.readFile)
+
+async function readPaxFile(name: string): Promise<SeriesIndex[]> {
+    const list = JSON.parse(await readAsync('public/' + name, 'utf-8'))
+    const ret  = [] as SeriesIndex[]
+    for (const key in list) {
+        ret.push({
+            indexcode: key,
+            descrip:   `${name.slice(0, -5).replace('_', ' ')} ${key}`,
+            value:     list[key]
+        })
+    }
+    return ret
+}
 
 export async function seriespost(tx: ScorekeeperProtocol, auth: AuthData, param: any) {
     const ret: any = {
@@ -77,6 +96,10 @@ export async function seriespost(tx: ScorekeeperProtocol, auth: AuthData, param:
 
             case 'indexes':
                 ret.indexes = await tx.clsidx.updateIndexes(param.type, param.items.indexes)
+                break
+
+            case 'paxlist':
+                Object.assign(ret, await tx.clsidx.resetIndex(await readPaxFile(path.basename(param.items.paxlist))))  // basename is a security measure
                 break
 
             case 'events':
