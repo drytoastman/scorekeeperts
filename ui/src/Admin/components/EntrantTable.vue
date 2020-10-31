@@ -28,6 +28,7 @@
         </v-data-table>
 
         <RefundDialog :base="dialogData" v-model="RefundDialog"></RefundDialog>
+        <RunEditDialog :data="dialogData" v-model="RunEditDialog"></RunEditDialog>
     </div>
 </template>
 
@@ -39,6 +40,7 @@ import { mdiCreditCardRefund, mdiDelete, mdiMagnify, mdiAccountRemove, mdiCarSet
 import { hasFinished } from '@/common/event'
 import { carMatch } from '@/common/car'
 import RefundDialog from './RefundDialog.vue'
+import RunEditDialog from './RunEditDialog.vue'
 import CarLabel from '../../components/CarLabel.vue'
 import PaymentLabel from './PaymentLabel.vue'
 
@@ -47,7 +49,8 @@ export default {
     components: {
         RefundDialog,
         CarLabel,
-        PaymentLabel
+        PaymentLabel,
+        RunEditDialog
     },
     props: {
         eventid: String,
@@ -55,8 +58,9 @@ export default {
     },
     data() {
         return {
-            dialogData: { attr: {}},
+            dialogData: {},
             RefundDialog: false,
+            RunEditDialog: false,
             icons: {
                 mdiCreditCardRefund,
                 mdiDelete,
@@ -141,7 +145,8 @@ export default {
             this.RefundDialog = true
         },
         editruns(item) {
-            console.log(item)
+            this.dialogData = Object.assign({ eventid: this.eventid }, item.car)
+            this.RunEditDialog = true
         },
         unregister(item) {
             item.busy = true

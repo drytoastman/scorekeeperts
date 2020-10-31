@@ -13,17 +13,48 @@ import _ from 'lodash'
 import { UUID } from '@common/util'
 import { SeriesInfo, SeriesStatus } from '@common/series'
 import { updatedSeriesInfo, updatedEventResults } from './calc'
-import { ChampResults, EventResults } from '@common/results'
+import { ChampResults, EventResults, Run } from '@common/results'
 import { updatedChallengeResults } from './calcchallenge'
 import { updatedChampResults } from './calcchamp'
 import { ScorekeeperProtocol } from '..'
 import { ChallengeResults } from '@common/challenge'
 import { dblog } from '@/util/logging'
+import { ColumnSet, IMain } from 'pg-promise'
+import { cleanAttr } from '../helper'
 
+let runcols: ColumnSet|undefined
 
 export class ResultsRepository {
     // eslint-disable-next-line no-useless-constructor
-    constructor(private db: ScorekeeperProtocol) {}
+    constructor(private db: ScorekeeperProtocol, private pgp: IMain) {
+        if (runcols === undefined) {
+            runcols = new pgp.helpers.ColumnSet([
+                { name: 'eventid',  cnd: true, cast: 'uuid' },
+                { name: 'carid',    cnd: true, cast: 'uuid' },
+                { name: 'rungroup', cnd: true },
+                { name: 'course',   cnd: true },
+                { name: 'run',      cnd: true },
+                'raw', 'cones', 'gates', 'status',
+                { name: 'attr',     cast: 'json', init: (col: any): any => { return cleanAttr(col.value) } },
+                { name: 'modified', cast: 'timestamp', mod: ':raw', init: (): any => { return 'now()' } }
+            ], { table: 'runs' })
+        }
+    }
+
+    async getRuns(eventid: UUID, carid: UUID): Promise<Run[]> {
+        return this.db.any('SELECT * FROM runs WHERE eventid=$1 AND carid=$2', [eventid, carid])
+    }
+
+    async updateRuns(runs: Run[]): Promise<Run[]> {
+        const ret = [] as Run[]
+        for (const run of runs) {
+            const res = await this.db.oneOrNone(this.pgp.helpers.insert([run], runcols) +
+                                    ' ON CONFLICT (eventid,carid,rungroup,course,run) DO UPDATE SET ' +
+                                    this.pgp.helpers.sets(run, runcols) + ' RETURNING *')
+            if (res) ret.push(res) // null means nothing changed do trigger stopped it
+        }
+        return ret
+    }
 
     async cacheAll(): Promise<void> {
         const series = await this.db.series.getCurrent()

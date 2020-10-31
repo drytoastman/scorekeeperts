@@ -2,7 +2,7 @@
     <v-dialog :value="value" @input="$emit('input')" persistent max-width="600px">
         <v-card>
             <v-card-title>
-                <span class="headline primary--text text--darken-2">Refund Payment Items</span>
+                <span class="headline primary--text">Refund Payment Items</span>
             </v-card-title>
             <v-card-text>
                 <v-data-table :items="txpayments" :headers="headers" item-key="payid" v-model="selected"
@@ -52,17 +52,15 @@ export default {
     computed: {
         ...mapState(['drivers', 'cars', 'events', 'payments']),
         txpayments() {
-            if (!this.base.txid) return [this.base]
-            return filter(flatten(Object.values(this.payments)),
-                { txid: this.base.txid, refunded: false })
-                .map(p => {
-                    const d = this.drivers[this.cars[p.carid]?.driverid]
-                    return {
-                        ...p,
-                        firstname: d?.firstname,
-                        lastname: d?.lastname
-                    }
-                })
+            const payments = (!this.base.txid) ? [this.base] : filter(flatten(Object.values(this.payments)), { txid: this.base.txid, refunded: false })
+            return payments.map(p => {
+                const d = this.drivers[p.driverid || this.cars[p.carid]?.driverid]
+                return {
+                    ...p,
+                    firstname: d?.firstname,
+                    lastname: d?.lastname
+                }
+            })
         },
         actionbutton() { return `Square Refund ${this.$options.filters.cents2dollars(sumBy(this.selected, 'amount'))}` }
     },

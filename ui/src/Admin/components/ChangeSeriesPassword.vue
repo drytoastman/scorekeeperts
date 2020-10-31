@@ -2,7 +2,7 @@
     <v-dialog :value="value" @input="$emit('input')" persistent max-width="600px">
         <v-card>
             <v-card-title>
-                <span class="headline primary--text text--darken-2">Change Series Password</span>
+                <span class="headline primary--text">Change Series Password</span>
             </v-card-title>
             <v-card-text>
                 <div class='alert'>

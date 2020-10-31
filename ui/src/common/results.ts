@@ -11,6 +11,7 @@ export enum RunStatus {
 }
 
 export interface Run {
+    eventid?: UUID;
     carid: UUID;
     rungroup: number;
     course: number;
@@ -19,10 +20,11 @@ export interface Run {
     cones: number;
     gates: number;
     status: string;
-    reaction?: number;
-    sixty?: number;
-    attr?: {[key: string]: string};
-    modified: Date;  // dateutil.parser.parse(r.get('modified', '2000-01-02')) # Catch JSON placeholders
+    attr?: {
+        reaction?: number;
+        sixty?: number;
+    }
+    modified: Date;
 }
 
 export interface DecoratedRun extends Run {
@@ -80,6 +82,8 @@ export interface Entrant extends Car {
     // cache
     lastcourse: number;
 }
+export type EventResults = {[key: string]: Entrant[]} // classcode to entrant list
+export type Event2Points = {[key: string]: number}
 
 export interface EventNotice {
     firstname: string
@@ -106,14 +110,6 @@ export interface PointsStorage {
     usingbest: number
 }
 
-export interface TopTimesTable {
-    titles: string[]
-    colcount: number[]
-    cols: string[][]
-    fields: string[][]
-    rows: TopTimeEntry[][]
-}
-
 export interface TopTimeEntry {
     name: string
     classcode: string
@@ -124,6 +120,14 @@ export interface TopTimeEntry {
     pos: number|null
     ispotential: boolean
     isold: boolean
+}
+
+export interface TopTimesTable {
+    titles: string[]
+    colcount: number[]
+    cols: string[][]
+    fields: string[][]
+    rows: TopTimeEntry[][]
 }
 
 export interface ChampEntrant {
@@ -139,6 +143,7 @@ export interface ChampEntrant {
     // decoration
     current: boolean
 }
+export type ChampResults = {[key: string]: ChampEntrant[]} // classcode to champ entrant list
 
 export interface ChampNotice {
     firstname: string
@@ -171,7 +176,3 @@ export class TopTimesKey {
         Object.assign(this, options)
     }
 }
-
-export type Event2Points = {[key: string]: number}
-export type EventResults = {[key: string]: Entrant[]} // classcode to entrant list
-export type ChampResults = {[key: string]: ChampEntrant[]} // classcode to champ entrant list

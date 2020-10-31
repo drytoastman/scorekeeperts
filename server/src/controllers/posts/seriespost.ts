@@ -57,6 +57,10 @@ export async function seriespost(tx: ScorekeeperProtocol, auth: AuthData, param:
                 Object.assign(ret, await tx.register.updateRegistration(param.type, param.items.registered, param.eventid))
                 break
 
+            case 'runs':
+                ret.runs = await tx.results.updateRuns(param.items.runs)
+                break
+
             case 'payments':
                 ret.payments = await tx.payments.updatePayments(param.type, param.items.payments)
                 break

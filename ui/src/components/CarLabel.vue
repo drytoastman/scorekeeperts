@@ -9,7 +9,7 @@
             <span class='secondaryitem'>#{{car.number}}</span>
             <span class='normalitem'>{{indexstr}}</span>
         </div>
-        <div class='normalitem'>
+        <div class='normalitem' v-if="car.attr">
             {{car.attr.year}} {{car.attr.make}} {{car.attr.model}} {{car.attr.color}}
         </div>
         <slot></slot>

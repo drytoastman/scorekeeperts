@@ -43,7 +43,7 @@ const initOptions: IInitOptions<DBExtensions> = {
         obj.general = new GeneralRepository(obj)
         obj.runs = new RunsRepository(obj, pgp)
         obj.challenge = new ChallengeRepository(obj, pgp)
-        obj.results = new ResultsRepository(obj)
+        obj.results = new ResultsRepository(obj, pgp)
     }
 }
 
