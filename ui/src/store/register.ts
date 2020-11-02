@@ -2,12 +2,12 @@ import get from 'lodash/get'
 import orderBy from 'lodash/orderBy'
 import axios from 'axios'
 import Vue from 'vue'
+
 import { Api2State, API2 } from './state'
 import { ActionContext, ActionTree, Store, GetterTree, MutationTree } from 'vuex'
 import VueRouter, { Route } from 'vue-router'
 import { api2Mutations, deepset } from './api2mutations'
-import { api2Actions, getDataWrap } from './api2actions'
-
+import { api2Actions, getDataWrap, restartWebsocket } from './api2actions'
 import { ITEM_TYPE_GENERAL_FEE, ITEM_TYPE_ENTRY_FEE, ITEM_TYPE_SERIES_FEE } from '@/common/payments.ts'
 import { UUID } from '@/common/util'
 import { Driver } from '@/common/driver'
@@ -175,16 +175,11 @@ const getters = {
 
 export function createRegisterStore(router: VueRouter): Store<Api2State> {
     const store = new Store({
-        state: new Api2State(),
+        state:     new Api2State('driver'),
         mutations: { ...api2Mutations(false), ...cartMutations },
         actions:   { ...api2Actions,   ...registerActions },
         getters:   getters
     })
-
-    /* Create our websocket handler and default get request */
-    store.state.ws.onmessage = (e) => store.commit('apiData', JSON.parse(e.data))
-    store.state.ws.reconnect()
-    store.state.authtype = 'driver'
 
     /* On certain route changes, we check if we changed our series via the URL */
     router.beforeResolve(function(to: Route, from: Route, next): void {
@@ -209,5 +204,8 @@ export function createRegisterStore(router: VueRouter): Store<Api2State> {
         }
     )
 
+    restartWebsocket(store)
+
+    store.dispatch('getdata', { items: 'serieslist,authinfo' })
     return store
 }

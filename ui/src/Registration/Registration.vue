@@ -1,6 +1,6 @@
 <template>
     <v-app fluid>
-        <v-app-bar v-if="driverAuthenticated" app height=45 extension-height=35 dark color="primary">
+        <v-app-bar v-if="auth.driver" app height=45 extension-height=35 dark color="primary">
             <SeriesBar title="Register"></SeriesBar>
             <template v-slot:extension>
                 <v-btn color=white text small exact :class="mProfileClass" :to="{name:'profile', params:{}}">Profile<span class='super'>All</span></v-btn>
@@ -16,8 +16,8 @@
 
         <v-main>
             <div v-if="loadDelay && !$route.name" class='pushdown main-page-warning'>Unknown Page</div>
-            <router-view v-else-if="driverAuthenticated || isOutside" />
-            <Login v-else-if="driverAuthenticated===false" class='pushdown'></Login>
+            <router-view v-else-if="auth.driver || isOutside" />
+            <Login v-else-if="auth.driver===false" class='pushdown'></Login>
         </v-main>
 
         <SnackBar></SnackBar>
@@ -50,7 +50,7 @@ export default {
         }
     },
     computed: {
-        ...mapState(['currentSeries', 'driverAuthenticated', 'gettingData', 'flashProfile', 'flashCars', 'flashEvents']),
+        ...mapState(['currentSeries', 'auth', 'gettingData', 'flashProfile', 'flashCars', 'flashEvents']),
         isOutside() { return this.$route.meta.outside === 1 },
         mProfileClass() { return this.flashProfile ? 'flashit' : '' },
         mCarsClass()    { return this.flashCars ?    'flashit' : '' },

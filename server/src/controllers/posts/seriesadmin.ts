@@ -1,3 +1,4 @@
+import { AUTHTYPE_SERIES } from '@/common/auth'
 import { Car } from '@/common/car'
 import { Driver } from '@/common/driver'
 import { SeriesValidator } from '@/common/series'
@@ -6,12 +7,12 @@ import { db, pgdb, ScorekeeperProtocol } from '@/db'
 import { controllog } from '@/util/logging'
 import { Request, Response } from 'express'
 import { allSeriesDeleteDriverLinks, getInactiveCars, getInactiveDrivers } from '../allseries'
-import { AuthData, AUTHTYPE_ADMIN, AUTHTYPE_SERIES, checkAuth } from '../auth'
+import { AuthData, checkAuth } from '../auth'
 
 export async function seriesadmin(req: Request, res: Response) {
     try {
         const param = checkAuth(req)
-        if (![AUTHTYPE_SERIES, AUTHTYPE_ADMIN].includes(param.authtype)) {
+        if (param.authtype !== AUTHTYPE_SERIES) {
             throw Error('Don\'t have the correct authtype')
         }
 

@@ -1,5 +1,6 @@
 import axios, { AxiosResponse } from 'axios'
-import { ActionTree, ActionContext } from 'vuex'
+import ReconnectingWebSocket from 'reconnecting-websocket'
+import { ActionTree, ActionContext, Store } from 'vuex'
 import { Api2State, API2 } from './state'
 
 
@@ -45,19 +46,40 @@ export async function getDataWrap(context: ActionContext<Api2State, any>, axiosc
     return undefined
 }
 
+
+let ws: ReconnectingWebSocket|null = null
+export function restartWebsocket(store: Store<Api2State>): void {
+    /* Create our websocket handler and default get request */
+    if (ws != null) {
+        console.log('close old websocket')
+        ws.close()
+    }
+
+    console.log('open new websocket')
+    ws = new ReconnectingWebSocket(`ws://${window.location.host}${API2.LIVE}?authtype=${store.state.auth.type}&series=${store.state.currentSeries}`, undefined, {
+        minReconnectionDelay: 1000,
+        maxRetries: 10,
+        startClosed: true
+    })
+    ws.onmessage = (e) => { store.commit('apiData', JSON.parse(e.data)) }
+    ws.onclose   = (e) => { console.log(e) }
+    ws.reconnect()
+}
+
+
 export const api2Actions = {
 
     async getdata(context: ActionContext<Api2State, any>, p: ApiGetData) {
         if (!p) { p = { items: '' } }
         p.series = p.series || this.state.currentSeries
-        p.authtype = this.state.authtype
+        p.authtype = this.state.auth.type
         return await getDataWrap(context, axios.get(API2.ROOT, { params: p, withCredentials: true }))
     },
 
     async setdata(context: ActionContext<Api2State, any>, porig: ApiPostData) {
         const { busy, ...p } = porig
         p.series = p.series || this.state.currentSeries
-        p.authtype = this.state.authtype
+        p.authtype = this.state.auth.type
         return await getDataWrap(context, axios.post(API2.ROOT, p, { withCredentials: true }), busy)
     },
 
@@ -80,9 +102,6 @@ export const api2Actions = {
                         context.commit('seriesAuthenticated', { series: this.state.currentSeries, ok: false })
                     }
                     context.commit('adminAuthenticated', false)  // can't be if series fails
-                }
-                if (error.response.data.authtype === 'admin') {
-                    context.commit('adminAuthenticated', false)
                 }
             }
 

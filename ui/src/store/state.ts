@@ -1,4 +1,3 @@
-import ReconnectingWebSocket from 'reconnecting-websocket'
 import { Driver } from '@/common/driver'
 import { PaymentAccount, PaymentItem } from '@/common/payments'
 import { SeriesClass, SeriesIndex } from '@/common/classindex'
@@ -9,29 +8,41 @@ import { UUID } from '../common/util'
 
 export const EMPTY = ''
 export const API2 = {
-    ROOT:  '/api2',
-    SERIESADMIN: '/api2/seriesadmin',
-    LOGIN: '/api2/login',
-    TOKEN: '/api2/token',
-    LIVE:  '/api2/live',
-    LOGOUT: '/api2/logout',
-    REGISTER: '/api2/register',
-    RESET:    '/api2/reset',
+    ROOT:           '/api2',
+    SERIESADMIN:    '/api2/seriesadmin',
+    LOGIN:          '/api2/login',
+    TOKEN:          '/api2/token',
+    LIVE:           '/api2/live',
+    LOGOUT:         '/api2/logout',
+    REGISTER:       '/api2/register',
+    RESET:          '/api2/reset',
     CHANGEPASSWORD: '/api2/changepassword',
-    ADMINLOGIN: '/api2/adminlogin',
-    SERIESLOGIN: '/api2/serieslogin',
-    ADMINLOGOUT: '/api2/adminlogout',
-    LOGS: '/api2/logs',
-    CARDS: '/api2/cards',
-    AUTHTEST: '/api2/authtest'
+    ADMINLOGIN:     '/api2/adminlogin',
+    SERIESLOGIN:    '/api2/serieslogin',
+    ADMINLOGOUT:    '/api2/adminlogout',
+    LOGS:           '/api2/logs',
+    CARDS:          '/api2/cards'
 }
 
+
 export class Api2State {
+    constructor(authtype: string) {
+        this.auth.type = authtype
+    }
+
     errors: string[] = []
     infos: string[] = []
     serieslist: string[] = []
     listids: string[] = []
     paxlists: string[] = []
+
+    // auth
+    auth = {
+        driver: false, // driver authenticated
+        admin:  false, // admin authenticated
+        series: {},    // which series have been authenticated
+        type: ''       // what type of authtype to send in requests (driver, series, admin)
+    }
 
     // non series specific
     ismainserver = false
@@ -42,11 +53,6 @@ export class Api2State {
     emailresult: any = {}
     tokenresult = ''
     carts: {[key: string]: {[key: string]: {[key: string]: any }}} = {}
-
-    // auth pieces, we always assume we are and then fallback if our API requests fail
-    driverAuthenticated = true
-    seriesAuthenticated = {}
-    adminAuthenticated = true
 
     // series specific
     currentSeries = EMPTY
@@ -78,14 +84,6 @@ export class Api2State {
     busyIndex:  {[key: string]: boolean} = {} // indexcode set
     busyPayment: {[key: string]: boolean} = {} // txid set
     itemsPerPage = 20
-
-    // used for communications
-    authtype= ''
-    ws: ReconnectingWebSocket = new ReconnectingWebSocket(`ws://${window.location.host}${API2.LIVE}`, undefined, {
-        minReconnectionDelay: 1000,
-        maxRetries: 10,
-        startClosed: true
-    })
 
     // opaque things that we don't track
     panelstate = [] // we set/get at will, saves state across page movement

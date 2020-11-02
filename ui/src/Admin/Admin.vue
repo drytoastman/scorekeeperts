@@ -56,7 +56,7 @@ export default {
         }
     },
     computed: {
-        ...mapState(['adminAuthenticated', 'seriesAuthenticated', 'currentSeries', 'events', 'gettingData']),
+        ...mapState(['auth', 'currentSeries', 'events', 'gettingData']),
         ...mapGetters(['haveAuth', 'orderedEvents']),
         eventMenu() {
             return this.orderedEvents.map(e => ({
@@ -71,9 +71,9 @@ export default {
         haveAuth() {
             // const r = this.$router.matcher.match(this.$route.name)
             if (this.$route.meta.adminauth) {
-                return this.adminAuthenticated
+                return this.auth.admin
             }
-            return this.seriesAuthenticated[this.currentSeries] || this.adminAuthenticated
+            return this.auth.series[this.currentSeries] || this.auth.admin
         },
         settings() {
             if (!this.currentSeries) { return [] }

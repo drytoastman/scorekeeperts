@@ -60,7 +60,7 @@ BEGIN
 
     audit_row.logid = NEXTVAL(TG_ARGV[0] || '_logid_seq');
     EXECUTE 'INSERT INTO ' || TG_ARGV[0] || ' VALUES (($1).*)' USING audit_row;
-    EXECUTE pg_notify(TG_TABLE_NAME, TG_TABLE_SCHEMA);
+    EXECUTE pg_notify(TG_TABLE_NAME, TG_TABLE_SCHEMA || to_json(NEW.*));
     RETURN NULL;
 END;
 $body$

@@ -3,11 +3,12 @@ import isEmpty from 'lodash/isEmpty'
 import flatten from 'lodash/flatten'
 import uniq from 'lodash/uniq'
 import axios from 'axios'
+
 import { Api2State, API2 } from './state'
 import { ActionContext, ActionTree, Store, GetterTree } from 'vuex'
 import VueRouter, { Route } from 'vue-router'
 import { api2Mutations } from './api2mutations'
-import { api2Actions, getDataWrap } from './api2actions'
+import { api2Actions, getDataWrap, restartWebsocket } from './api2actions'
 import { UUID } from '@/common/util'
 import { sendAsDownload } from '@/util/sendtouser'
 
@@ -18,18 +19,12 @@ export const adminActions = {
         if (await getDataWrap(context, axios.post(API2.ADMINLOGIN, p, { withCredentials: true }))) {
             // undefined means an error occured, otherwise we believe we are authenticated (until next call)
             context.commit('adminAuthenticated', { ok: true })
-            if (this.state.currentSeries) {
-                console.log('authenticated getdata')
-                context.dispatch('getdata')
-            }
         }
     },
 
     async serieslogin(context: ActionContext<Api2State, any>, p: any) {
         if (await getDataWrap(context, axios.post(API2.SERIESLOGIN, p, { withCredentials: true }))) {
             context.commit('seriesAuthenticated', { series: p.series, ok: true })
-            console.log('authenticated getdata')
-            context.dispatch('getdata')
         }
     },
 
@@ -44,21 +39,14 @@ export const adminActions = {
 
     async seriesadmin(context: ActionContext<Api2State, any>, p: any) {
         p.series = p.series || this.state.currentSeries
-        p.authtype = this.state.authtype
+        p.authtype = this.state.auth.type
         return await getDataWrap(context, axios.post(API2.SERIESADMIN, p, { withCredentials: true }))
-    },
-
-    async authTest(context: ActionContext<Api2State, any>) {
-        const data = await getDataWrap(context, axios.get(API2.AUTHTEST, { withCredentials: true }))
-        if (data && data.authtypes.admin) {
-            context.commit('adminAuthenticated', true)
-        }
     },
 
     async carddownload(context: ActionContext<Api2State, any>, p: any) {
         try {
             p.series   = this.state.currentSeries
-            p.authtype = this.state.authtype
+            p.authtype = this.state.auth.type
 
             context.commit('gettingData', true)
             if (p.cardtype === 'template') {
@@ -87,7 +75,7 @@ export const adminActions = {
 
         const p = {
             series: this.state.currentSeries,
-            authtype: this.state.authtype,
+            authtype: this.state.auth.type,
             type: 'update', // we are not necessarily getting entire list
             items: {
                 editorids: driverids
@@ -119,7 +107,7 @@ export const adminActions = {
 
         const p = {
             series: this.state.currentSeries,
-            authtype: this.state.authtype,
+            authtype: this.state.auth.type,
             type: 'update', // we are not necessarily getting entire list
             items: {
                 carids: cids,
@@ -133,7 +121,7 @@ export const adminActions = {
     async ensureSeriesCarDriverInfo(context: ActionContext<Api2State, any>) {
         const p = {
             series: this.state.currentSeries,
-            authtype: this.state.authtype,
+            authtype: this.state.auth.type,
             type: 'update', // we are not necessarily getting entire list
             items: {
                 notcarids: Object.keys(this.state.cars),
@@ -153,16 +141,11 @@ const adminGetters = {
 
 export function createAdminStore(router: VueRouter): Store<Api2State> {
     const store = new Store({
-        state: new Api2State(),
+        state:     new Api2State('series'),
         mutations: api2Mutations(true),
         actions:   { ...api2Actions,   ...adminActions },
-        getters: adminGetters
+        getters:   adminGetters
     })
-
-    /* Create our websocket handler and default get request */
-    store.state.ws.onmessage = (e) => store.commit('apiData', JSON.parse(e.data))
-    store.state.ws.reconnect()
-    store.state.authtype = 'series'
 
     /*
         On route changes, check to see if we have data or need to load it
@@ -171,18 +154,22 @@ export function createAdminStore(router: VueRouter): Store<Api2State> {
         if ((to.params.series) && (to.params.series !== store.state.currentSeries)) {
             store.commit('changeSeries', to.params.series)
         }
-        // on any route change, if we don't have series list, try and load now
-        if (store.state.serieslist.length === 0) {
-            store.dispatch('getdata', { items: 'serieslist' })
-        }
         next()
     })
 
-    /* When the current series changes (URL or UI), we need to load new data */
-    store.watch(
-        (state: Api2State) => { return state.currentSeries },
-        (value) => { if (value) store.dispatch('getdata') }
-    )
+    function dataWatch() {
+        if (!store.state.currentSeries) return
+        if (store.state.auth.admin || store.state.auth.series[store.state.currentSeries]) {
+            console.log('restart socket and getdata')
+            restartWebsocket(store)
+            store.dispatch('getdata')
+        }
+    }
 
+    store.watch((state) => { return state.currentSeries }, dataWatch)
+    store.watch((state) => { return state.auth.admin }, dataWatch)
+    store.watch((state) => { return state.auth.series }, dataWatch)
+
+    store.dispatch('getdata', { items: 'serieslist,authinfo' })
     return store
 }

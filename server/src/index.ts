@@ -1,5 +1,6 @@
 import cookieSession from 'cookie-session'
 import express, { Request, Response } from 'express'
+import querystring from 'querystring'
 import helmet from 'helmet'
 import morgan from 'morgan'
 import promiseRetry from 'promise-retry'
@@ -10,6 +11,8 @@ import { startCronJobs } from './cron'
 import { accesslog, mainlog } from './util/logging'
 
 const app = express()
+let cookiesessioner
+
 app.use(helmet())
 app.use(morgan('combined', {
     stream: {
@@ -39,12 +42,13 @@ async function dbWaitAndApiSetup() {
 
     app._router.stack.pop() // remove placeholder /api2
 
-    app.use(cookieSession({
+    cookiesessioner = cookieSession({
         name: 'scorekeeper',
         keys: keygrip,
         maxAge: 24 * 60 * 60 * 1000, // 1000 days
         sameSite: 'strict'
-    }))
+    })
+    app.use(cookiesessioner)
     app.use(function(req, res, next) {
         // session continuation if they are active
         if (req.session) { req.session.now = Math.floor(Date.now() / 60e3) }
@@ -66,8 +70,12 @@ const server = app.listen(PORT, () => {
 })
 
 server.on('upgrade', function upgrade(request, socket, head) {
-    const pathname = request.url.split('?')[0]
-    if (pathname === '/api2/live') {
+    // this is outside of express so we need to parse query ourselves
+    const [pathname, query] = request.url.split('?')
+    request.query = querystring.parse(query)
+
+    if (pathname.startsWith('/api2/live')) {
+        cookiesessioner(request, {}, () => {}) // make sure cookie session (auth) is processed before handling
         live.handleUpgrade(request, socket, head, ws => live.emit('connection', ws, request))
     } else {
         socket.destroy()

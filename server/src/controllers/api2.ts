@@ -4,7 +4,7 @@ import delay from 'express-delay'
 import { db } from '@/db'
 import { controllog } from '@/util/logging'
 
-import { login, logout, AuthData, serieslogin, adminlogin, adminlogout, checkAuth, AUTHTYPE_DRIVER, AUTHTYPE_SERIES, AUTHTYPE_ADMIN, authtest } from './auth'
+import { login, logout, AuthData, serieslogin, adminlogin, adminlogout, checkAuth } from './auth'
 import { changepassword, register, reset, token } from './posts/regreset'
 import { cards } from './gets/cards'
 import { logs } from './gets/logs'
@@ -13,6 +13,7 @@ import { seriesget } from './gets/seriesget'
 import { driverpost } from './posts/driverpost'
 import { seriespost } from './posts/seriespost'
 import { seriesadmin } from './posts/seriesadmin'
+import { AUTHTYPE_DRIVER, AUTHTYPE_SERIES } from '@/common/auth'
 
 export const api2 = Router()
 
@@ -37,16 +38,24 @@ export async function apiget(req: Request, res: Response) {
         let driverid
 
         res.json(await db.task('apiget-' + param.authtype, async task => {
+            let ret
             switch (param.authtype) {
                 case AUTHTYPE_DRIVER:
                     driverid = req.auth.driverId()
                     if (!driverid) throw Error('No driverid in session')
-                    return driverget(task, driverid, param)
+                    ret = await driverget(task, driverid, param)
+                    break
                 case AUTHTYPE_SERIES:
-                case AUTHTYPE_ADMIN:
-                    return seriesget(task, req.auth, param)
+                    ret = await seriesget(task, param)
+                    break
+                default:
+                    throw Error('Unknown authtype')
             }
-            throw Error('Unknown authtype')
+
+            if (param.items.includes('authinfo')) {
+                ret.authinfo = await req.auth.authflags()
+            }
+            return ret
         }))
     } catch (error) {
         if (error.authtype) {
@@ -70,7 +79,6 @@ export async function apipost(req: Request, res: Response) {
                     if (!driverid) throw Error('No driverid in session')
                     return driverpost(tx, driverid, param)
                 case AUTHTYPE_SERIES:
-                case AUTHTYPE_ADMIN:
                     return seriespost(tx, req.auth, param)
             }
             throw Error('Unknown authtype')
@@ -95,7 +103,6 @@ api2.post('/reset',    reset)
 api2.post('/serieslogin', serieslogin)
 api2.post('/adminlogin',  adminlogin)
 api2.get('/adminlogout',  adminlogout)
-api2.get('/authtest', authtest)
 
 // Authenticated items
 api2.get('/', apiget)

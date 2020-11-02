@@ -66,9 +66,9 @@ export default {
         }
     },
     computed: {
-        ...mapState(['authtype', 'adminAuthenticated', 'classes', 'errors']),
+        ...mapState(['auth', 'classes', 'errors']),
         years() { return range(new Date().getFullYear(), 2018 - 1) },  // 2018 was the first year with UUID ids
-        amAdmin() { return this.authtype === 'admin' && this.adminAuthenticated }
+        amAdmin() { return this.auth.admin }
     },
     methods: {
         purge(type)    { return this.docall(type, false) },
@@ -117,9 +117,6 @@ export default {
                 }
             })
         }
-    },
-    mounted() {
-        this.$store.dispatch('authTest')
     }
 }
 </script>

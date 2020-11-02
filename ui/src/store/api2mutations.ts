@@ -50,30 +50,29 @@ export function deepset(nested: {[key: string]: any}, path: string[], value: unk
 export function api2Mutations(adminOptions: boolean):  MutationTree<Api2State> {
     return {
         driverAuthenticated(state: Api2State, ok: boolean) {
-            state.driverAuthenticated = ok
-            if (state.driverAuthenticated) {
+            state.auth.driver = ok
+            if (state.auth.driver) {
                 state.errors = []
             }
         },
 
         seriesAuthenticated(state: Api2State, data: any) {
-            Vue.set(state.seriesAuthenticated, data.series, data.ok)
-            if (state.seriesAuthenticated[data.series]) {
+            Vue.set(state.auth.series, data.series, data.ok)
+            if (state.auth.series[data.series]) {
                 state.errors = []
             }
         },
 
         adminAuthenticated(state: Api2State, ok: boolean) {
-            state.adminAuthenticated = ok
-            if (state.adminAuthenticated) {
-                state.authtype = 'admin'
+            state.auth.admin = ok
+            if (state.auth.admin) {
                 state.errors = []
             }
         },
 
         adminlogout(state: Api2State) {
-            state.adminAuthenticated = false
-            state.seriesAuthenticated = {}
+            state.auth.admin = false
+            state.auth.series = {}
         },
 
         clearTokenResult(state: Api2State) {
@@ -153,13 +152,19 @@ export function api2Mutations(adminOptions: boolean):  MutationTree<Api2State> {
 
         apiData(state: Api2State, data: any) {
             if (data === undefined) return
+            if (data.series && data.series !== state.currentSeries) return
 
             if ('serieslist' in data) {
                 state.serieslist = data.serieslist.sort()
+                console.log(state.serieslist)
             }
 
             if ('errors' in data) {
                 state.errors = [...state.errors, ...data.errors]
+            }
+
+            if ('authinfo' in data) {
+                Object.assign(state.auth, data.authinfo)
             }
 
             for (const key of ['listids', 'unsubscribe', 'summary', 'attendance', 'classorder', 'ismainserver', 'paxlists',

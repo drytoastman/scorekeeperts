@@ -2,6 +2,7 @@ import _ from 'lodash'
 import { Request, Response } from 'express'
 import { db } from '@/db'
 import { UUID } from '@common/util'
+import { AUTHTYPE_DRIVER, AUTHTYPE_SERIES } from '@/common/auth'
 
 declare global {
     module Express {
@@ -11,14 +12,14 @@ declare global {
     }
 }
 
-interface CookieSess {
+export interface CookieSess {
     driverid: UUID|null
     series: {[key: string]: boolean}
     admin: boolean|null
 }
 
 export class AuthData {
-    session: CookieSess
+    private session: CookieSess
 
     constructor(session: CookieSess) {
         this.session = session
@@ -50,11 +51,11 @@ export class AuthData {
     clearAdmin()                        { this.session.admin = null }
     requireAdmin()                      { if (!this.hasAdminAuth()) { throw new Error('Admin auth required for this request') } }
 
-    adminTypes() {
+    authflags() {
         return {
-            driver: this.session.driverid,
+            driver: !!this.session.driverid,
             series: this.session.series,
-            admin: this.session.admin
+            admin:  !!this.session.admin
         }
     }
 }
@@ -103,20 +104,12 @@ export async function adminlogout(req: Request, res: Response) {
     res.status(200).json({ result: 'logged out' })
 }
 
-export async function authtest(req: Request, res: Response) {
-    res.status(200).json({ authtypes: req.auth.adminTypes() })
-}
-
 // 'allclassindex', 'attendance', 'driverbrief', 'editorids', 'rotatekeygrip',
 
-const UNAUTHSPECIAL = ['recaptchasitekey', 'serieslist']
+const UNAUTHSPECIAL = ['recaptchasitekey', 'serieslist', 'authinfo']
 const COMMONDEFAULT = ['classes', 'counts', 'events', 'indexes', 'listids', 'paymentaccounts', 'paymentitems', 'serieslist', 'settings']
 const SERIESDEFAULT = [...COMMONDEFAULT, 'classorder', 'localsettings', 'squareapplicationid', 'ismainserver', 'paxlists']
 const DRIVERDEFAULT = [...COMMONDEFAULT, 'cars', 'drivers', 'payments', 'registered', 'summary', 'unsubscribe', 'driversattr']
-
-export const AUTHTYPE_DRIVER = 'driver'
-export const AUTHTYPE_SERIES = 'series'
-export const AUTHTYPE_ADMIN  = 'admin'
 const BLANK = ['BLANK']
 
 export class AuthError extends Error {
@@ -159,10 +152,6 @@ export function checkAuth(req: Request): any {
             break
         case AUTHTYPE_SERIES:
             if (!req.auth.hasSeriesAuth(series)) throw new AuthError('not authenticated', AUTHTYPE_SERIES)
-            if (_.isEqual(param.items, BLANK)) param.items = SERIESDEFAULT
-            break
-        case AUTHTYPE_ADMIN:
-            if (!req.auth.hasAdminAuth()) throw new AuthError('not authenticated', AUTHTYPE_ADMIN)
             if (_.isEqual(param.items, BLANK)) param.items = SERIESDEFAULT
             break
         default:

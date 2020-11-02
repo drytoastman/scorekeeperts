@@ -136,7 +136,7 @@ export default {
 <style lang='scss' scoped>
 .desc {
     display: flex;
-    align-items: end;
+    align-items: flex-end;
     column-gap: 2rem;
     white-space: nowrap;
 }
