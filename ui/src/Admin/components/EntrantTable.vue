@@ -33,7 +33,6 @@
 </template>
 
 <script>
-import isEmpty from 'lodash/isEmpty'
 import flatten from 'lodash/flatten'
 import { mapState } from 'vuex'
 import { mdiCreditCardRefund, mdiDelete, mdiMagnify, mdiAccountRemove, mdiCarSettings } from '@mdi/js'
@@ -81,7 +80,7 @@ export default {
         },
         entrantlist() {
             if (this.eventid) { // use registration, add payments
-                if (isEmpty(this.registered)) {
+                if (!this.registered[this.eventid]) {
                     return [] // no data yet
                 }
                 return this.registered[this.eventid].map(r => {

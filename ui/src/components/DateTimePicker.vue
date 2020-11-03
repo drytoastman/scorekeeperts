@@ -127,7 +127,14 @@ export default {
     methods: {
         init() {
             if (!this.datetimestr) { return }
-            const d = new Date(this.datetimestr)
+            let full = this.datetimestr
+            let d
+            if (full.indexOf('T') < 0) {
+                d = parse(full, 'yyyy-MM-dd', new Date())
+            } else {
+                if (full.indexOf('Z') < 0) full += '.000Z'
+                d = new Date(full)
+            }
             this.date = format(d, VDATE)
             this.time = format(d, VTIME)
         },
