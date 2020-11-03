@@ -80,6 +80,10 @@ export async function seriespost(tx: ScorekeeperProtocol, auth: AuthData, param:
                 ret.paymentitems = await tx.payments.updatePaymentItems(param.type, param.items.paymentitems)
                 break
 
+            case 'itemeventmap':
+                ret.itemeventmap = await tx.payments.updateItemMaps(param.type, param.eventid, param.items.itemeventmap)
+                break
+
             case 'squareoauthcode':
                 ret.squareoauthresp = await square.squareoAuthRequest(tx, param.series, param.items.squareoauthcode)
                 break
@@ -107,7 +111,7 @@ export async function seriespost(tx: ScorekeeperProtocol, auth: AuthData, param:
                 break
 
             case 'events':
-                ret.events = await tx.events.updateEvents(param.type, param.items.events)
+                Object.assign(ret, await tx.events.updateEvents(param.type, param.items.events))
                 break
 
             case 'carids':

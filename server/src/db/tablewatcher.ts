@@ -32,10 +32,14 @@ export class TableWatcher extends EventEmitter {
     }
 
     tableChange(data) {
-        const start  = data.payload.indexOf('{')
-        const series = data.payload.slice(0, start)
-        const json   = JSON.parse(data.payload.slice(start))
-        this.emit(data.channel, series, json)
+        const jsonstart  = data.payload.indexOf('{')
+        if (jsonstart > 0) {
+            const [series, type] = data.payload.slice(0, jsonstart).split(',')
+            const rowdata        = JSON.parse(data.payload.slice(jsonstart))
+            this.emit(data.channel, series, type, rowdata)
+        } else {
+            this.emit(data.channel)
+        }
     }
 
     reconnect() {

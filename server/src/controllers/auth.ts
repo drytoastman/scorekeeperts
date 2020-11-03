@@ -107,7 +107,7 @@ export async function adminlogout(req: Request, res: Response) {
 // 'allclassindex', 'attendance', 'driverbrief', 'editorids', 'rotatekeygrip',
 
 const UNAUTHSPECIAL = ['recaptchasitekey', 'serieslist', 'authinfo']
-const COMMONDEFAULT = ['classes', 'counts', 'events', 'indexes', 'listids', 'paymentaccounts', 'paymentitems', 'serieslist', 'settings']
+const COMMONDEFAULT = ['classes', 'counts', 'events', 'indexes', 'listids', 'paymentaccounts', 'paymentitems', 'itemeventmap', 'serieslist', 'settings']
 const SERIESDEFAULT = [...COMMONDEFAULT, 'classorder', 'localsettings', 'squareapplicationid', 'ismainserver', 'paxlists']
 const DRIVERDEFAULT = [...COMMONDEFAULT, 'cars', 'drivers', 'payments', 'registered', 'summary', 'unsubscribe', 'driversattr']
 const BLANK = ['BLANK']

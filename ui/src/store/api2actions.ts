@@ -51,11 +51,9 @@ let ws: ReconnectingWebSocket|null = null
 export function restartWebsocket(store: Store<Api2State>): void {
     /* Create our websocket handler and default get request */
     if (ws != null) {
-        console.log('close old websocket')
         ws.close()
     }
 
-    console.log('open new websocket')
     ws = new ReconnectingWebSocket(`ws://${window.location.host}${API2.LIVE}?authtype=${store.state.auth.type}&series=${store.state.currentSeries}`, undefined, {
         minReconnectionDelay: 1000,
         maxRetries: 10,

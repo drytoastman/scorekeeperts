@@ -1,7 +1,7 @@
 import WebSocket from 'ws'
 import { Request } from 'express'
 
-import { tableWatcher } from '../db'
+import { db, tableWatcher } from '../db'
 import { controllog } from '../util/logging'
 import { CookieSess } from './auth'
 import { AUTHTYPE_DRIVER, AUTHTYPE_SERIES } from '@/common/auth'
@@ -24,16 +24,21 @@ class AuthStore {
     }
 }
 
-// class SocketStore extends Map<string, AuthStore> {
 class SessionServer extends WebSocket.Server {
 
     EMPTY = new Set<SessionWebSocket>()
     store = new Map<string, AuthStore>()
 
-    getAll(series: string, authtype: string): Set<SessionWebSocket> {
+    getSeriesByAuth(series: string, authtype: string): Set<SessionWebSocket> {
         const auth = this.store.get(series)
         if (!auth) { return this.EMPTY }
         return auth.getSet(authtype)
+    }
+
+    getSeriesAllAuth(series: string): Array<SessionWebSocket> {
+        const auth = this.store.get(series)
+        if (!auth) { return [] }
+        return [...auth.getSet(AUTHTYPE_DRIVER), ...auth.getSet(AUTHTYPE_SERIES)]
     }
 
     put(series: string, authtype: string, ws: SessionWebSocket) {
@@ -52,12 +57,22 @@ class SessionServer extends WebSocket.Server {
     }
 }
 
-/*
-    store = new SocketStore()
-} */
+async function allsend(series: string, type: string, data: any) {
+    try {
+        const msg = JSON.stringify(Object.assign({ type: type, series: series }, data))
+        live.clients.forEach(ws => ws.send(msg))
+    } catch (error) {
+        controllog.error(error)
+    }
+}
 
+// 'runs', 'timertimes', 'localeventstream'
 export function liveStart() {
-    tableWatcher.addTables(['runs', 'timertimes', 'localeventstream', 'registered', 'events'])
+    tableWatcher.addTables(['registered', 'events', 'itemeventmap', 'paymentitems', 'paymentaccounts'])
+}
+
+for (const tbl of ['events', 'itemeventmap', 'paymentitems', 'paymentaccounts']) {
+    tableWatcher.on(tbl, (series, type, row) => allsend(series, type, { [tbl]: [row] }))
 }
 
 export const live = new SessionServer({ noServer: true })
@@ -72,47 +87,24 @@ live.on('connection', function connection(ws: SessionWebSocket, req: Request) {
     }
 
     live.put(series, authtype, ws)
-    ws.onclose = () => {
-        live.remove(series, authtype, ws)
-    }
-    ws.onmessage = () => {
-        ws.send('pong')
-    }
+    ws.onclose   = () => live.remove(series, authtype, ws)
+    ws.onmessage = () => ws.send('hello')
 })
 
-tableWatcher.on('registered', async function change() {
+tableWatcher.on('registered', async function change(series: string, type: string, row: any) {
     try {
-        /*
-        const admin = live.getAll(series, AUTHTYPE_SERIES)
-        if (admin.size > 0) {
-            const res = await db.task('apiget', async t => {
-                await t.series.setSeries(series)
-                return t.register.getRegistationCounts()
+        const auth = live.getSeriesAllAuth(series)
+        if (auth.length > 0) {
+            const msg = await db.task('apiget', async t => {
+                await  t.series.setSeries(series)
+                return JSON.stringify({
+                    type:   'get',
+                    series: series,
+                    counts: await t.register.getRegistationCounts()
+                })
             })
-            const msg = JSON.stringify({
-                type: 'update',
-                series: series,
-                counts: res
-            })
-            admin.forEach(function(ws) {
-                ws.send(msg)
-            })
+            auth.forEach(ws => ws.send(msg))
         }
-        */
-    } catch (error) {
-        controllog.error(error)
-    }
-})
-
-tableWatcher.on('events', async function change(series: string, data: any) {
-    try {
-        const msg = JSON.stringify({
-            type: 'update',
-            series: series,
-            events: [data]
-        })
-        // everybody gets basic event data
-        live.clients.forEach(ws => ws.send(msg))
     } catch (error) {
         controllog.error(error)
     }

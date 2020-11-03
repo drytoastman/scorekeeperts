@@ -7,10 +7,8 @@ import 'typeface-roboto'
 import Registration from './Registration.vue'
 import router from './router'
 import { createRegisterStore } from '@/store'
-import { installLoggingHandlers } from '@/util/logging'
 import filters from '@/util/filters'
 
-installLoggingHandlers()
 Vue.use(filters)
 Vue.use(LoadScript)
 Vue.use(Vuetify)

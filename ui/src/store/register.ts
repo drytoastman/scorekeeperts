@@ -8,9 +8,11 @@ import { ActionContext, ActionTree, Store, GetterTree, MutationTree } from 'vuex
 import VueRouter, { Route } from 'vue-router'
 import { api2Mutations, deepset } from './api2mutations'
 import { api2Actions, getDataWrap, restartWebsocket } from './api2actions'
-import { ITEM_TYPE_GENERAL_FEE, ITEM_TYPE_ENTRY_FEE, ITEM_TYPE_SERIES_FEE } from '@/common/payments.ts'
+import { ITEM_TYPE_SERIES_FEE } from '@/common/payments.ts'
 import { UUID } from '@/common/util'
 import { Driver } from '@/common/driver'
+import { api2Getters } from './api2getters'
+import { installLoggingHandlers } from './logging'
 
 export const registerActions = {
 
@@ -65,7 +67,8 @@ export const cartMutations = {
 } as MutationTree<Api2State>
 
 
-const getters = {
+const registerGetters = {
+
     driver: (state) => {
         return state.driverid ? state.drivers[state.driverid] : {}
     },
@@ -76,23 +79,6 @@ const getters = {
 
     membershipfees: (state) => {
         return orderBy(Object.values(state.paymentitems).filter(i => i.itemtype === ITEM_TYPE_SERIES_FEE), 'name')
-    },
-
-    eventitems: (state) => (eventid: UUID) => {
-        if (!state.events[eventid].accountid) return []
-        const itemids = state.events[eventid].items.map(m => m.itemid)
-        return Object.values(state.paymentitems).filter(i => itemids.includes(i.itemid))
-    },
-
-    evententryfees: (state, getters) => (eventid: UUID) => {
-        return orderBy(getters.eventitems(eventid).filter(i => i.itemtype === ITEM_TYPE_ENTRY_FEE), 'name')
-    },
-
-    eventotherfees: (state, getters) => (eventid: UUID) => {
-        return getters.eventitems(eventid).filter(i => i.itemtype === ITEM_TYPE_GENERAL_FEE).map(i => ({
-            item: i,
-            map: state.events[eventid].items.filter(m => m.itemid === i.itemid)[0]
-        }))
     },
 
     cartGetCar: (state) => (accountid: string, eventid: UUID, carid: string, session: string) => {
@@ -177,9 +163,10 @@ export function createRegisterStore(router: VueRouter): Store<Api2State> {
     const store = new Store({
         state:     new Api2State('driver'),
         mutations: { ...api2Mutations(false), ...cartMutations },
-        actions:   { ...api2Actions,   ...registerActions },
-        getters:   getters
+        actions:   { ...api2Actions, ...registerActions },
+        getters:   { ...api2Getters, ...registerGetters }
     })
+    installLoggingHandlers(store)
 
     /* On certain route changes, we check if we changed our series via the URL */
     router.beforeResolve(function(to: Route, from: Route, next): void {
@@ -188,12 +175,6 @@ export function createRegisterStore(router: VueRouter): Store<Api2State> {
         }
         next()
     })
-
-    /* When the current series changes (URL or UI), we need to load new data */
-    store.watch(
-        (state: Api2State) => { return state.currentSeries },
-        () => { store.dispatch('getdata') }
-    )
 
     /* We share the drivers table, in register case copy out the singular driverid for reference */
     store.watch(
@@ -204,7 +185,16 @@ export function createRegisterStore(router: VueRouter): Store<Api2State> {
         }
     )
 
-    restartWebsocket(store)
+    function dataWatch() {
+        if (!store.state.currentSeries) return
+        if (store.state.auth.driver) {
+            console.log('restart socket and getdata')
+            restartWebsocket(store)
+            store.dispatch('getdata')
+        }
+    }
+    store.watch((state) => { return state.currentSeries }, dataWatch)
+    store.watch((state) => { return state.auth.driver }, dataWatch)
 
     store.dispatch('getdata', { items: 'serieslist,authinfo' })
     return store

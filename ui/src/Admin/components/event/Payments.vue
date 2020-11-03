@@ -8,7 +8,7 @@
             <v-checkbox v-model="eventm.attr.paymentreq" style="grid-area: preq" label="Payment Required"></v-checkbox>
         </div>
 
-        <v-data-table :items="eventm.items" :headers="headers" item-key="item.itemid" class='itemstable'
+        <v-data-table :items="uiitems" :headers="headers" item-key="item.itemid" class='itemstable'
                 disable-pagination hide-default-footer dense>
 
             <template v-slot:[`item.checked`]="{ item }">
@@ -39,7 +39,8 @@ import { ITEMTYPES, ITEM_TYPE_GENERAL_FEE } from '@/common/payments'
 export default {
     name: 'Payments',
     props: {
-        eventm: Object
+        eventm: Object,
+        uiitems: Array
     },
     data() {
         return {

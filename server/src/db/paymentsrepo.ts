@@ -5,11 +5,13 @@ import { verifyDriverRelationship, cleanAttr } from './helper'
 import { PaymentAccount, PaymentItem, PaymentAccountSecret } from '@common/payments'
 import { UUID, validateObj } from '@common/util'
 import { Payment, PaymentValidator } from '@common/register'
+import { ItemMap } from '@/common/event'
 
 let paymentcols: ColumnSet|undefined
 let secretcols: ColumnSet|undefined
 let accountcols: ColumnSet|undefined
 let itemcols: ColumnSet|undefined
+let itemmapcols: ColumnSet|undefined
 
 export class PaymentsRepository {
     // eslint-disable-next-line no-useless-constructor
@@ -61,6 +63,16 @@ export class PaymentsRepository {
                 { name: 'modified', cast: 'timestamp', mod: ':raw', init: (): any => { return 'now()' } }
             ], { table: 'paymentitems' })
         }
+
+        if (itemmapcols === undefined) {
+            itemmapcols = new pgp.helpers.ColumnSet([
+                { name: 'eventid', cnd: true, cast: 'uuid' },
+                { name: 'itemid',  cnd: true },
+                { name: 'maxcount', cast: 'int' },
+                { name: 'required', cast: 'bool' },
+                { name: 'modified', cast: 'timestamp', mod: ':raw', init: (): any => { return 'now()' } }
+            ], { table: 'itemeventmap' })
+        }
     }
 
     async getPaymentAccounts(): Promise<PaymentAccount[]> {
@@ -83,6 +95,27 @@ export class PaymentsRepository {
             return this.db.any('DELETE from paymentitems WHERE itemid in ($1:csv) RETURNING itemid', items.map(i => i.itemid))
         }
         throw Error(`Unknown operation type ${JSON.stringify(type)}`)
+    }
+
+    async getItemMaps(): Promise<ItemMap[]> {
+        return this.db.any('SELECT * FROM itemeventmap')
+    }
+
+    async updateItemMaps(type: string, eventid: UUID, maps: ItemMap[]): Promise<ItemMap[]> {
+        if (type === 'insert') {
+            return this.db.any(this.pgp.helpers.insert(maps, itemmapcols) + ' RETURNING *')
+
+        } else if (type === 'eventupdate') {
+            await this.db.none(`DELETE FROM itemeventmap WHERE eventid=$1 ${maps.length > 0 ? 'AND itemid NOT IN ($2:csv)' : ''}`, [eventid, maps.map(m => m.itemid)])
+            for (const itemmap of maps) {
+                await this.db.any(this.pgp.helpers.insert([itemmap], itemmapcols) +
+                                ' ON CONFLICT (eventid, itemid) DO UPDATE SET ' +
+                                this.pgp.helpers.sets(itemmap, itemmapcols))
+            }
+            return this.db.any('SELECT * FROM itemeventmap WHERE eventid=$1', [eventid])
+        }
+
+        throw Error(`Unknown operation type for updateItemMaps ${JSON.stringify(type)}`)
     }
 
     async getPaymentAccount(accountid: string): Promise<PaymentAccount> {

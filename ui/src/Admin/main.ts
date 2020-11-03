@@ -6,10 +6,8 @@ import 'typeface-roboto'
 import Admin from './Admin.vue'
 import router from './router'
 import { createAdminStore } from '../store'
-import { installLoggingHandlers } from '../util/logging'
 import filters from '../util/filters'
 
-installLoggingHandlers()
 Vue.use(filters)
 Vue.use(Vuetify)
 

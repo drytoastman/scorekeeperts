@@ -19,7 +19,7 @@
         <v-expansion-panel>
             <v-expansion-panel-header>Payments</v-expansion-panel-header>
             <v-expansion-panel-content eager>
-                <Payments :eventm="eventm"></Payments>
+                <Payments :eventm="eventm" :uiitems="uiitems"></Payments>
             </v-expansion-panel-content>
         </v-expansion-panel>
 
@@ -44,12 +44,11 @@
 </template>
 
 <script>
-import { mapState } from 'vuex'
+import { mapGetters, mapState } from 'vuex'
 import BasicsTemplate from './BasicsTemplate.vue'
 import Limits from './Limits.vue'
 import Other from './Other.vue'
 import Payments from './Payments.vue'
-import { createEventItems } from '@/common/event'
 import cloneDeep from 'lodash/cloneDeep'
 
 export default {
@@ -83,11 +82,13 @@ export default {
                 champrequire: false,
                 useastiebreak: false,
                 segments: 0
-            }
+            },
+            uiitems: []
         }
     },
     computed: {
-        ...mapState(['paymentitems'])
+        ...mapState(['paymentitems']),
+        ...mapGetters(['eventUIItems'])
     },
     methods: {
         subtractDays(date, days) {
@@ -116,7 +117,7 @@ export default {
                 emod.attr.location = e.location
                 emod.regopened = this.subtractDays(new Date(e.date), data.opendays).toISOString()
                 emod.regclosed = this.createDate(new Date(e.date), data.closeday, new Date(data.closetime)).toISOString()
-                emod.items = emod.items.filter(m => m.checked).map(m => m.map)
+                emod.items     = this.uiitems.filter(m => m.checked).map(m => m.map)
                 events.push(emod)
             }
             this.$store.dispatch('setdata', {
@@ -127,7 +128,7 @@ export default {
             })
         },
         setupEventItems() {
-            this.eventm.items = createEventItems(Object.values(this.paymentitems), [], '')
+            this.uiitems = this.eventUIItems()
         }
     },
     watch: { paymentitems() { this.setupEventItems() } },

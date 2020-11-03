@@ -1,5 +1,4 @@
-import orderBy from 'lodash/orderBy'
-import { ITEM_TYPE_SERIES_FEE, PaymentItem } from './payments'
+import { PaymentItem } from './payments'
 import { DataValidationRules, Length, isUUIDV, isDate, UUID, Range, Min, DateString, VuetifyValidationRule, MaxLength } from './util'
 
 export interface ItemMap {
@@ -33,7 +32,6 @@ export interface SeriesEvent
     ispro: boolean;
     ispractice: boolean;
     accountid: string;
-    items: ItemMap[];
     attr?: {
         chair: string;
         location: string;
@@ -41,6 +39,9 @@ export interface SeriesEvent
     }
     modified: DateString;
     created: DateString;
+
+    // for insertions only as eventids are linked
+    items?: ItemMap[];
 }
 
 export interface UIItemMap {
@@ -67,31 +68,6 @@ export const REGTYPE_AMPM = 1
 export const REGTYPE_DAY = 2
 
 export const isSession: VuetifyValidationRule = v => { return ['', 'AM', 'PM', 'Day'].includes(v) || 'Session can only be one of AM, PM or Day' }
-
-export function createEventItems(paymentitems: PaymentItem[], maps: ItemMap[], eventid: UUID): UIItemMap[] {
-    const items = {} as {[key: string]: UIItemMap}
-    for (const item of paymentitems) {
-        if (item.itemtype === ITEM_TYPE_SERIES_FEE) continue
-        items[item.itemid] = {
-            checked: false,
-            item: item,
-            map: {
-                eventid: eventid,
-                itemid: item.itemid,
-                maxcount: 0,
-                required: false
-            }
-        }
-    }
-
-    for (const map of maps) {
-        items[map.itemid].checked = true
-        items[map.itemid].map = map
-    }
-
-    return orderBy(Object.values(items), ['itemtype', 'name'])
-}
-
 
 export const EventValidator: DataValidationRules = {
     eventid:       [isUUIDV],

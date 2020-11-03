@@ -3,7 +3,7 @@ import Vue from 'vue'
 import { MutationTree } from 'vuex'
 import { Api2State, EMPTY } from './state'
 import { UUID } from '@/common/util'
-import { Payment, Registration } from '@/common/register'
+import { Registration } from '@/common/register'
 
 export function clearApi2SeriesData(state: Api2State): void {
     state.paymentaccounts = {}
@@ -156,7 +156,6 @@ export function api2Mutations(adminOptions: boolean):  MutationTree<Api2State> {
 
             if ('serieslist' in data) {
                 state.serieslist = data.serieslist.sort()
-                console.log(state.serieslist)
             }
 
             if ('errors' in data) {
@@ -169,7 +168,7 @@ export function api2Mutations(adminOptions: boolean):  MutationTree<Api2State> {
 
             for (const key of ['listids', 'unsubscribe', 'summary', 'attendance', 'classorder', 'ismainserver', 'paxlists',
                 'emailresult', 'settings', 'squareapplicationid', 'squareoauthresp', 'tokenresult', 'driversattr']) {
-            // easy straight assignments/replacements
+                // easy straight assignments/replacements
                 if (key in data) {
                     state[key] = data[key]
                 }
@@ -223,17 +222,22 @@ export function api2Mutations(adminOptions: boolean):  MutationTree<Api2State> {
             }
 
             // special of eventid to array of values
-            if ('payments' in data) {
-                // get, insert, delete, eventupdate
-                if (data.type === 'get') { state.payments = {} }
-                if (data.type === 'eventupdate') { Vue.delete(state.payments, data.eventid) }
-                data.payments.forEach((p: Payment) => {
-                    ensure(state.payments, p.eventid, [])
-                    findDelete(state.payments[p.eventid], { payid: p.payid })
-                    if (data.type !== 'delete') {
-                        state.payments[p.eventid].push(p)
-                    }
-                })
+            for (const pair of [
+                ['payments',     'payid'],
+                ['itemeventmap', 'itemid']
+            ]) {
+                const [key, idfield] = pair
+                if (key in data) {
+                    if (data.type === 'get') { state[key] = {} }
+                    if (data.type === 'eventupdate') { Vue.delete(state[key], data.eventid) }
+                    data[key].forEach(v => {
+                        ensure(state[key], v.eventid, [])
+                        findDelete(state[key][v.eventid], { [idfield]: v[idfield] })
+                        if (data.type !== 'delete') {
+                            state[key][v.eventid].push(v)
+                        }
+                    })
+                }
             }
         }
     }

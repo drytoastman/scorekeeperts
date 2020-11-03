@@ -1,7 +1,7 @@
 import { Driver } from '@/common/driver'
 import { PaymentAccount, PaymentItem } from '@/common/payments'
 import { SeriesClass, SeriesIndex } from '@/common/classindex'
-import { SeriesEvent } from '@/common/event'
+import { ItemMap, SeriesEvent } from '@/common/event'
 import { Car } from '@/common/car'
 import { Registration, Payment } from '@/common/register'
 import { UUID } from '../common/util'
@@ -59,6 +59,7 @@ export class Api2State {
     settings: {[key: string]: any} = {}
     paymentaccounts: {[key: string]: PaymentAccount} = {}
     paymentitems: {[key: string]: PaymentItem} = {}
+    itemeventmap: {[key: string]: ItemMap[]} = {}
     classes: {[key: string]: SeriesClass} = {}
     indexes: {[key: string]: SeriesIndex} = {}
     events: {[key: string]: SeriesEvent} = {}

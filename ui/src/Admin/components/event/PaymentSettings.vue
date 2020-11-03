@@ -1,6 +1,6 @@
 <template>
     <div class='inset'>
-        <Payments :eventm="eventm"></Payments>
+        <Payments :eventm="eventm" :uiitems="uiitems"></Payments>
         <div class='adminbuttons'>
             <v-btn color="secondary" :disabled="unchanged" @click="reset">Reset</v-btn>
             <v-btn color="secondary" :disabled="unchanged" @click="savePayments">Save</v-btn>
@@ -9,12 +9,10 @@
 </template>
 
 <script>
-import Vue from 'vue'
-import { mapState } from 'vuex'
+import { mapGetters, mapState } from 'vuex'
 import cloneDeep from 'lodash/cloneDeep'
 import isEqual from 'lodash/isEqual'
 import Payments from './Payments.vue'
-import { createEventItems } from '@/common/event'
 
 export default {
     name: 'PaymentSettings',
@@ -26,38 +24,44 @@ export default {
     },
     data() {
         return {
-            saveeventdata: {},
-            eventm: { attr: {}}
+            eventm: { attr: {}},
+            saveitems: [],
+            uiitems: []
         }
     },
     computed: {
-        ...mapState(['paymentitems']),
-        unchanged() { return isEqual(this.saveeventdata, this.eventm) }
+        ...mapState(['paymentitems', 'itemeventmap']),
+        ...mapGetters(['eventUIItems']),
+        unchanged() { return isEqual(this.seriesevent, this.eventm) && isEqual(this.saveitems, this.uiitems) }
     },
     methods: {
         savePayments() {
             const emod = cloneDeep(this.seriesevent)
             emod.accountid       = this.eventm.accountid
             emod.attr.paymentreq = this.eventm.attr.paymentreq
-            emod.items           = this.eventm.items.filter(m => m.checked).map(m => m.map)
 
             this.$store.dispatch('setdata', {
-                type: 'update',
-                items: { events: [emod] }
+                type: 'eventupdate',
+                eventid: this.seriesevent.eventid,
+                items: {
+                    events: [emod],
+                    itemeventmap: this.uiitems.filter(m => m.checked).map(m => m.map)
+                }
             })
         },
         reset() {
-            this.saveeventdata = cloneDeep(this.seriesevent)
-            if (!this.saveeventdata.attr.paymentreq) {
-                Vue.set(this.saveeventdata.attr, 'paymentreq', false)
-            }
-            this.saveeventdata.items = createEventItems(Object.values(this.paymentitems), this.seriesevent.items, this.seriesevent.eventid)
-            this.eventm = cloneDeep(this.saveeventdata)
+            this.saveitems = this.eventUIItems(this.seriesevent.eventid)
+            this.eventm  = cloneDeep(this.seriesevent)
+            this.uiitems = cloneDeep(this.saveitems)
         }
     },
     watch: {
         seriesevent() { this.reset() },
-        paymentitems() { this.reset() }
+        paymentitems() { this.reset() },
+        itemeventmap: {
+            deep: true,
+            handler() { this.reset() }
+        }
     },
     mounted() { this.reset() }
 }
