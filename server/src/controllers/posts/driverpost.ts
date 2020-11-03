@@ -5,14 +5,18 @@ import { paypalCapture } from '@/util/paypal'
 import * as square from '@/util/square'
 
 import { allSeriesSummary } from '../allseries'
+import { UUID } from '@/common/util'
+import { AuthError } from '../auth'
+import { AUTHTYPE_DRIVER } from '@/common/auth'
 
-export async function driverpost(tx: ScorekeeperProtocol, driverid: string, param: any) {
+export async function driverpost(tx: ScorekeeperProtocol, driverid: UUID|null, param: any) {
     const ret: any = {
         type: param.type,
         series: param.series
     }
     let addsummary = false
 
+    if (!driverid) throw new AuthError('not authenticated', AUTHTYPE_DRIVER)
     await tx.series.setSeries(param.series)
     for (const key in param.items) {
         switch (key) {

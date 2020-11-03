@@ -51,6 +51,10 @@ export class AuthData {
     clearAdmin()                        { this.session.admin = null }
     requireAdmin()                      { if (!this.hasAdminAuth()) { throw new Error('Admin auth required for this request') } }
 
+    hasAnyAuth()  {
+        return !!this.session.driverid || !!this.session.admin || _.reduce(this.session.series, (r:boolean, v) => r || v, false)
+    }
+
     authflags() {
         return {
             driver: !!this.session.driverid,

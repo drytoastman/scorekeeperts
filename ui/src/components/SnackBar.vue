@@ -1,11 +1,11 @@
 <template>
     <v-snackbar :value="snackbar" :timeout="-1">
         <div class='snackerror'>
-            <div v-for="error in filteredErrors" :key="error">{{ error }}</div>
+            <div v-for="(error, ii) in filteredErrors" :key="error+ii">{{ error }}</div>
         </div>
         <div v-if='filteredErrors.length && infos.length' class='snackdivider'></div>
         <div class='snackinfo'>
-            <div v-for="info in infos"   :key="info">{{ info }}</div>
+            <div v-for="(info, ii) in infos"   :key="info+ii">{{ info }}</div>
         </div>
         <template v-slot:action="{}">
             <v-btn text @click="snackclear">Clear</v-btn>
@@ -19,7 +19,7 @@ export default {
     computed: {
         ...mapState(['errors', 'infos']),
         snackbar() { return this.filteredErrors.length > 0 || this.infos.length > 0 },
-        filteredErrors() { return this.errors.filter(s => s !== 'not authenticated') }
+        filteredErrors() { return this.errors.filter(s => !['not authenticated', 'No driverid in session'].includes(s)) }
     },
     methods: {
         snackclear: function() {

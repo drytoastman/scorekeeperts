@@ -54,7 +54,10 @@ export function restartWebsocket(store: Store<Api2State>): void {
         ws.close()
     }
 
-    ws = new ReconnectingWebSocket(`ws://${window.location.host}${API2.LIVE}?authtype=${store.state.auth.type}&series=${store.state.currentSeries}`, undefined, {
+    let prefix = 'ws:'
+    if (window.location.protocol === 'https:') prefix = 'wss:'
+
+    ws = new ReconnectingWebSocket(`${prefix}//${window.location.host}${API2.LIVE}?authtype=${store.state.auth.type}&series=${store.state.currentSeries}`, undefined, {
         minReconnectionDelay: 1000,
         maxRetries: 10,
         startClosed: true

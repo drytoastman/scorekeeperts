@@ -3,8 +3,10 @@ import { allSeriesSummary } from '../allseries'
 import { ScorekeeperProtocol } from '@/db'
 import { UUID } from '@common/util'
 import { unauthget } from './unauthget'
+import { AuthError } from '../auth'
+import { AUTHTYPE_DRIVER } from '@/common/auth'
 
-export async function driverget(task: ScorekeeperProtocol, driverid: UUID, param: any) {
+export async function driverget(task: ScorekeeperProtocol, driverid: UUID|null, param: any) {
     const ret: any = {
         type: 'get',
         series: param.series
@@ -16,6 +18,7 @@ export async function driverget(task: ScorekeeperProtocol, driverid: UUID, param
 
     for (const item of param.items) {
         if (await unauthget(task, item, ret)) continue
+        if (!driverid) throw new AuthError('not authenticated', AUTHTYPE_DRIVER)
 
         switch (item) {
             case 'cars':        ret.cars              = await task.cars.getCarsbyDriverId(driverid);             break

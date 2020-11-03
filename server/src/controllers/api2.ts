@@ -35,27 +35,17 @@ api2.use(async function(req: Request, res: Response, next: Function) {
 export async function apiget(req: Request, res: Response) {
     try {
         const param = checkAuth(req)
-        let driverid
-
         res.json(await db.task('apiget-' + param.authtype, async task => {
-            let ret
-            switch (param.authtype) {
-                case AUTHTYPE_DRIVER:
-                    driverid = req.auth.driverId()
-                    if (!driverid) throw Error('No driverid in session')
-                    ret = await driverget(task, driverid, param)
-                    break
-                case AUTHTYPE_SERIES:
-                    ret = await seriesget(task, param)
-                    break
-                default:
-                    throw Error('Unknown authtype')
-            }
-
+            const other = {} as any
             if (param.items.includes('authinfo')) {
-                ret.authinfo = await req.auth.authflags()
+                other.authinfo = req.auth.authflags()
+                param.items = param.items.filter(v => v !== 'authinfo')
             }
-            return ret
+            switch (param.authtype) {
+                case AUTHTYPE_DRIVER: return { ...other, ...await driverget(task,  req.auth.driverId(), param) }
+                case AUTHTYPE_SERIES: return { ...other, ...await seriesget(task, param) }
+                default: throw Error('Unknown authtype')
+            }
         }))
     } catch (error) {
         if (error.authtype) {
@@ -70,16 +60,10 @@ export async function apiget(req: Request, res: Response) {
 export async function apipost(req: Request, res: Response) {
     try {
         const param = checkAuth(req)
-        let driverid
-
         res.json(await db.tx('apipost', async tx => {
             switch (param.authtype) {
-                case AUTHTYPE_DRIVER:
-                    driverid = req.auth.driverId()
-                    if (!driverid) throw Error('No driverid in session')
-                    return driverpost(tx, driverid, param)
-                case AUTHTYPE_SERIES:
-                    return seriespost(tx, req.auth, param)
+                case AUTHTYPE_DRIVER: return driverpost(tx, req.auth.driverId(), param)
+                case AUTHTYPE_SERIES: return seriespost(tx, req.auth, param)
             }
             throw Error('Unknown authtype')
         }))

@@ -3,7 +3,7 @@ import { Request } from 'express'
 
 import { db, tableWatcher } from '../db'
 import { controllog } from '../util/logging'
-import { CookieSess } from './auth'
+import { AuthData, CookieSess } from './auth'
 import { AUTHTYPE_DRIVER, AUTHTYPE_SERIES } from '@/common/auth'
 
 interface SessionWebSocket extends WebSocket {
@@ -76,14 +76,20 @@ for (const tbl of ['events', 'itemeventmap', 'paymentitems', 'paymentaccounts'])
 }
 
 export const live = new SessionServer({ noServer: true })
-live.on('connection', function connection(ws: SessionWebSocket, req: Request) {
+live.on('connection', async function connection(ws: SessionWebSocket, req: Request) {
     ws.session     = req.session as CookieSess
     const series   = req.query.series as string
     const authtype = req.query.authtype as string
+    const ismain   = await db.general.isMainServer()
+    const auth     = new AuthData(req.session as any)
 
     if (!series || !authtype) {
         ws.close(1002, `No series (${series}) or authtype (${authtype}) provided`)
         return
+    }
+
+    if (ismain && !auth.hasAnyAuth()) {
+        ws.close(1002, 'Not authenticated for main server')
     }
 
     live.put(series, authtype, ws)
