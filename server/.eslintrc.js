@@ -1,7 +1,11 @@
 let rules = {
     'max-len': ['error', { code: 180, ignoreTemplateLiterals: true }],
     '@typescript-eslint/no-explicit-any': 'off',
-    'space-before-function-paren': ['warn', 'never'],
+    'space-before-function-paren': ['warn', {
+        anonymous: 'never',
+        named: 'never',
+        asyncArrow: 'always'
+    }],
     'no-multi-spaces': 'off', // I like to visually align things
     'no-multiple-empty-lines': 'off',
     'key-spacing': 'off',

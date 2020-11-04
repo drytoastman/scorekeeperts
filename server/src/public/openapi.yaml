@@ -1,0 +1,778 @@
+swagger: '2.0'
+basePath: /api
+produces: [application/json, application/xml, text/xml]
+info:
+  title: Scorekeeper
+  description: This API is currently just a source for results data from a scorekeeper server
+  version: "2.0.0"
+
+paths:
+  /:
+    get:
+      summary: list the series available
+      operationId: listSeries
+      description: get the list of series available on the server
+      responses:
+        200:
+          description: request ok
+          schema:
+            type: array
+            items:
+              type: string
+              description: series name
+              example: nwr2018
+
+  /{series}:
+    get:
+      summary: get the basic series info
+      operationId: getSeriesInfo
+      description: get the events, challenges, classes, indexes and settings for the series
+      responses:
+        200:
+          description: request ok
+          schema:
+            $ref: '#/definitions/SeriesInfo'
+      parameters:
+      - in: path
+        name: series
+        description: the series name
+        required: true
+        type: string
+
+  /{series}/event/{eventid}:
+    get:
+      summary: get the results for an event
+      operationId: getEventResults
+      description: get the annotated results for all classes in the event
+      responses:
+        200:
+          description: request ok
+          schema:
+            $ref: '#/definitions/EventResults'
+      parameters:
+      - in: path
+        name: series
+        description: the series name
+        required: true
+        type: string
+      - in: path
+        name: eventid
+        description: the event UUID identifier
+        required: true
+        type: string
+
+  /{series}/event/{eventid}/{classcode}:
+    get:
+      summary: get the results for an event for a specific class
+      operationId: getClassResults
+      description: get the annotated results for a single class in the event
+      responses:
+        200:
+          description: request ok
+          schema:
+            $ref: '#/definitions/ClassResults'
+      parameters:
+      - in: path
+        name: series
+        description: the series name
+        required: true
+        type: string
+      - in: path
+        name: eventid
+        description: the event UUID identifier
+        required: true
+        type: string
+      - in: path
+        name: classcode
+        description: the class to return
+        required: true
+        type: string
+
+  /{series}/challenge/{challengeid}:
+    get:
+      summary: get the results for a ProSolo challenge
+      operationId: getChallengeResults
+      responses:
+        200:
+          description: request ok
+          schema:
+            $ref: '#/definitions/ChallengeResults'
+      parameters:
+      - in: path
+        name: series
+        description: the series name
+        required: true
+        type: string
+      - in: path
+        name: challengeid
+        description: the challenge UUID identifier
+        required: true
+        type: string
+
+  /{series}/challenge/{challengeid}/{round}:
+    get:
+      summary: get the results for a particular ProSolo challenge round
+      operationId: getChallengeRoundResults
+      responses:
+        200:
+          description: request ok
+          schema:
+            $ref: '#/definitions/ChallengeRound'
+      parameters:
+      - in: path
+        name: series
+        description: the series name
+        required: true
+        type: string
+      - in: path
+        name: challengeid
+        description: the challenge UUID identifier
+        required: true
+        type: string
+      - in: path
+        name: round
+        description: the challenge round number
+        required: true
+        type: integer
+
+  /{series}/champ:
+    get:
+      summary: get the championship results for the series
+      operationId: getChampResults
+      responses:
+        200:
+          description: request ok
+          schema:
+            $ref: '#/definitions/ChampResults'
+      parameters:
+      - in: path
+        name: series
+        description: the series name
+        required: true
+        type: string
+
+  /{series}/champ/{classcode}:
+    get:
+      summary: get the championship results for the series for a particular class
+      operationId: getClassChampResults
+      responses:
+        200:
+          description: request ok
+          schema:
+            $ref: '#/definitions/ClassChampResults'
+      parameters:
+      - in: path
+        name: series
+        description: the series name
+        required: true
+        type: string
+      - in: path
+        name: classcode
+        description: the class to return
+        required: true
+        type: string
+
+
+definitions:
+
+  Run:
+    type: object
+    properties:
+      course:
+        type: integer
+        description: the course number
+        example: 1
+      run:
+        type: integer
+        description: the run number
+        example: 1
+      reaction:
+        type: number
+        format: float
+        description: the reaction time (ProSolo)
+        example: 0.654
+      sixty:
+        type: number
+        format: float
+        description: the sixty foot time (ProSolo)
+        example: 2.123
+      raw:
+        type: number
+        format: float
+        description: the raw time from the timer
+        example: 59.773
+      cones:
+        type: integer
+        description: the number of cones hit
+        example: 1
+      gates:
+        type: integer
+        description: the number of gates missed
+        example: 0
+      status:
+        type: string
+        description: the run status such as OK, DNF, DNS, etc
+        example: "OK"
+      pen:
+        type: number
+        format: float
+        description: the raw time with just penalties applied
+        example: 61.773
+      net:
+        type: number
+        format: float
+        description: "the net time including penalties and indexing, NOTE: the time displayed will be rounded to .001"
+        example: 50.595449
+      modified:
+        type: string
+        format: date-time
+        description: the mod time
+
+
+  DecoratedRun:
+    allOf:
+    - $ref: '#/definitions/Run'
+    - type: object
+      properties:
+        rorder:
+          type: integer
+          description: the run order compared to other runs on this course using the raw time of COUNTED runs, 1 is best
+          example: 3
+        norder:
+          type: integer
+          description: the run order compared to other runs on this course using the net time of COUNTED runs, 1 is best
+          example: 3
+        arorder:
+          type: integer
+          description: the run order compared to other runs on this course using the raw time of ALL runs, 1 is best
+          example: 3
+        anorder:
+          type: integer
+          description: the run order compared to other runs on this course using the net time of ALL runs, 1 is best
+          example: 3
+
+
+  ResultEntry:
+    type: object
+    properties:
+      driverid:
+        type: string
+        format: uuid
+        description: the UUID of the driver
+      carid:
+        type: string
+        format: uuid
+        description: the UUID of the car
+      firstname:
+        type: string
+        description: the driver firstname
+        example: John
+      lastname:
+        type: string
+        description: the driver lastname
+        example: Doe
+      year:
+        type: string
+        description: the car year
+        example: 2004
+      make:
+        type: string
+        description: the car make
+        example: Honda
+      model:
+        type: string
+        description: the car model
+        example: S2000
+      color:
+        type: string
+        description: the car color
+        example: Silver
+      number:
+        type: integer
+        description: the car number
+        example: 99
+      classcode:
+        type: string
+        description: the car classcode (in series classlist)
+        example: S1
+      indexcode:
+        type: string
+        description: the car indexcode (in series indexlist)
+        example: BS
+      indexstr:
+        type: string
+        description: the displayed indexcode (may have indentifiers such as * if special handling is provided)
+        example: BS
+      useclsmult:
+        type: boolean
+        description: true if the flag is set that will selectively apply the classcode multiplier (not common)
+      indexval:
+        type: number
+        format: float
+        description: the compiled index value to use (includes zero or more of class index, car index and class multiplier)
+        example: 0.813
+      rungroup:
+        type: integer
+        description: the rungroup this entry ran in
+        example: 2
+      runs:
+        type: array
+        description: an array of runs
+        items:
+            $ref: '#/definitions/DecoratedRun'
+      net:
+        type: number
+        format: float
+        description: the sum net time of the best COUNTED run from each course
+        example: 46.81254
+      pen:
+        type: number
+        format: float
+        description: the sum unindexed time of COUNTED runs from each course (includes penalties)
+        example: 57.58
+      netall:
+        type: number
+        format: float
+        description: the sum net time of the best run from each course
+        example: 46.81254
+      penall:
+        type: number
+        format: float
+        description: the sum unindexed time of the best run from each course (includes penalties)
+        example: 57.58
+      position:
+        type: integer
+        description: the finishing position in class
+        example: 3
+      diff1:
+        type: number
+        format: float
+        description: "the difference in time to first place: (net1 - netx)/indexval"
+        example: 1.234
+      diffn:
+        type: number
+        format: float
+        description: "the difference in time to the next position: (netn - netx)/indexval"
+        example: 0.432
+      pospoints:
+        type: integer
+        description: the championship points for the current position
+        example: 11
+      diffpoints:
+        type: number
+        format: float
+        description: the championship points based on difference from first
+        example: 98.123
+      points:
+        type: number
+        description: one of pospoints or diffpoints depending on the series settings
+        example: 98.123
+      trophy:
+        type: boolean
+        description: true if this position is awarded a trophy for the event
+      modified:
+        type: string
+        format: date-time
+        description: the mod time
+
+
+  ClassResults:
+    type: object
+    properties:
+      classcode:
+        type: string
+      entries:
+        type: array
+        description: a list of result entries
+        items:
+          $ref: '#/definitions/ResultEntry'
+
+
+  EventResults:
+    type: object
+    description: a list of result entries
+    properties:
+      eventid:
+        type: string
+        format: uuid
+      classes:
+        type: array
+        items:
+          $ref: '#/definitions/ClassResults'
+
+
+  RoundEntry:
+    type: object
+    description: a single entrant in a round
+    properties:
+      carid:
+        type: string
+        format: uuid
+        description: the car identifier of the entrant
+      firstname:
+        type: string
+        description: entrant first name
+      lastname:
+        type: string
+        description: entrant last name
+      classcode:
+        type: string
+        description: the class of the entrant
+      indexcode:
+        type: string
+        description: the index of the entrant
+      dial:
+        type: number
+        format: float
+        description: the incoming dialin for this entrant,
+            the first round is calculated from event results, later rounds are the newdial carried forward
+      left:
+        description: the left run of the entrant for this round
+        $ref: '#/definitions/Run'
+      right:
+        description: the right run of the entrant for this round
+        $ref: '#/definitions/Run'
+      result:
+        type: number
+        format: float
+        description: the final difference value, (left net + right net) - (2 * dial)
+      newdial:
+        type: number
+        format: float
+        description: the dial for the next round, either the original dial or a calculated breakout if the round result was negative
+
+
+  ChallengeRound:
+    type: object
+    description: a single round in a challenge
+    properties:
+      round:
+        type: integer
+        description: the round number, 1 is the final, 2 and 3 are the semifinals, etc. 99 is 3rd place run off
+        example: 1
+      top:
+        description: the top entrant
+        $ref: '#/definitions/RoundEntry'
+      bottom:
+        description: the bottom entrant
+        $ref: '#/definitions/RoundEntry'
+      winner:
+        type: string
+        desciption: the winner of the round
+        example: top
+      detail:
+        type: string
+        decription: a string describing who won and why (difference, RL, DNF, etc)
+        example: Dieter wins by 24.085
+
+
+  ChallengeResults:
+    type: object
+    description: the challenge results
+    properties:
+      challengeid:
+        type: string
+        format: uuid
+        description: the challenge id
+      rounds:
+        type: array
+        items:
+          $ref: '#/definitions/ChallengeRound'
+
+
+  SeriesSettings:
+    type: object
+    properties:
+      minevents:
+        type: integer
+        description: if > 0, the minimum number of events attended to make the championship list
+      dropevents:
+        type: integer
+        description: the number of events that can dropped for calculating championship points
+      seriesname:
+        type: string
+        description: the series name
+        example: "NWR Regional Series 2018"
+      pospointlist:
+        type: string
+        description: csv list of points assgined when using position for points
+        example: "20,16,13,11,9,7,6,5,4,3,2,1"
+      usepospoints:
+        type: boolean
+        description: true if points should be calculated based on position, not difference from first
+      indexafterpenalties:
+        type: boolean
+        description: true if any index value should be applied after penalties, rather than before
+
+  EventInfo:
+    type: object
+    properties:
+      eventdate:
+        type: string
+        format: date
+        description: the date of the event
+        example: "2017-04-09"
+      modified:
+        type: string
+        format: date-time
+        description: the mod time
+      name:
+        type: string
+        description: the event name
+        example: "Regional #1"
+      champrequire:
+        type: boolean
+        description: true if entrants must attend this event to qualify for a championship trophy
+      useastiebreak:
+        type: boolean
+        description: true if the results from this event should be prepended to the tiebreaking array
+      isexternal:
+        type: boolean
+        description: true if this is an external event that we only import net results from
+      runs:
+        type: integer
+        description: number of runs in the event
+        example: 3
+      ispro:
+        type: boolean
+        description: true if a ProSolo event
+      conepen:
+        type: number
+        format: float
+        description: the penalty for hitting a cone
+        example: 2.0
+      courses:
+        type: integer
+        description: the number of courses in the event
+        example: 1
+      eventid:
+        type: string
+        format: uuid
+        description: the event id
+        example: "b7cc2c8b-cb59-11e7-883c-0c4de9c60d73"
+      gatepen:
+        type: number
+        format: float
+        description: the penalty for missing a gate
+        example: 10.0
+      location:
+        type: string
+        description: the event location
+        example: "Bremerton"
+      segments:
+        type: integer
+        description: the number of segments per course (not used yet)
+      ispractice:
+        type: boolean
+        description: true if this is a practice and does not count towards championship points
+      countedruns:
+        type: integer
+        description: if > 0, the number of runs that count towards class position and points
+      regtype:
+        type: integer
+        description: 0 for regular event, 1 for AM/PM sessions without classes, 2 for Day session without classes
+
+  ChallengeInfo:
+    type: object
+    properties:
+      challengeid:
+        type: string
+        format: uuid
+        description: the challenge identifier
+      eventid:
+        type: string
+        format: uuid
+        description: the event identifier that this challenge is associated with
+      name:
+        type: string
+        description: the challenge name
+        example: Bonus Challenge
+      depth:
+        type: integer
+        description: the depth of the bracket, the max number of entries would be 2^depth
+        example: 3
+      modified:
+        type: string
+        format: date-time
+        description: the mod time
+
+  ClassInfo:
+    type: object
+    properties:
+      classcode:
+        type: string
+        description: the letter code for the class
+        example: ITO2
+      descrip:
+        type: string
+        description: the full class description
+        example: Second indexed time-only runs of the day
+      modified:
+        type: string
+        format: date-time
+        description: the mod time
+      champtrophy:
+        type: boolean
+        description: true if this class is included in the overall championship list
+      eventtrophy:
+        type: boolean
+        description: true if this class get an event tropy
+      countedruns:
+        type: integer
+        description: if > 0, the limit to the number of runs that are counted for points
+      carindexed:
+        type: boolean
+        description: true if each car in the class has its own index to apply towards times
+      caridxrestrict:
+        type: string
+        description: formatted string that determine which indexcodes are allowed for this class and class multiplier
+      secondruns:
+        type: boolean
+        description: informational flag to indicate a class whose entrants are generally taking second runs of the day
+      indexcode:
+        type: string
+        description: an index that is applied to everyone in the class
+      classmultiplier:
+        type: number
+        format: float
+        description: a static multiplier that is applied to all entries in the class if they are in the classmultiplier portion of caridxrestrict
+      usecarflag:
+        type: boolean
+        description: true if flag in car entry must be set to apply classwide multiplier (i.e. street tire entries)
+
+  IndexInfo:
+    type: object
+    properties:
+      indexcode:
+        type: string
+        description: the letter code for the index
+        example: CS
+      value:
+        type: number
+        format: float
+        description: the index value
+        example: 0.805
+      descrip:
+        type: string
+        description: the full index description
+        example: 2018 PAX CS
+      modified:
+        type: string
+        format: date-time
+        description: the mod time
+
+  SeriesInfo:
+    type: object
+    properties:
+      settings:
+        $ref: '#/definitions/SeriesSettings'
+      events:
+        type: array
+        items:
+          $ref: '#/definitions/EventInfo'
+      challenges:
+        type: array
+        items:
+          $ref: '#/definitions/ChallengeInfo'
+      classes:
+        type: array
+        items:
+          $ref: '#/definitions/ClassInfo'
+      indexes:
+        type: array
+        items:
+          $ref: '#/definitions/IndexInfo'
+
+
+  ChampEntry:
+    type: object
+    properties:
+      driverid:
+        type: string
+        format: uuid
+        description: the unique driver identifier
+      firstname:
+        type: string
+        description: the driver first name
+      lastname:
+        type: string
+        description: the driver last name
+      eventcount:
+        type: integer
+        description: the number of events attended
+      position:
+        type: integer
+        description: the finishing position, if enough events were attended, no value otherwise
+      points:
+        type: number
+        format: float
+        description: the final tally of points
+      events:
+        type: array
+        items:
+          type: object
+          properties:
+            eventdate:
+              type: string
+              description: the date of the event
+            drop:
+              type: boolean
+              description: true if this event was dropped from the final calculation
+            points:
+              type: number
+              format: float
+              description: the points earned at this event
+      missingrequired:
+        description: array of event identifiers that are required for champ result but not attended
+        type: array
+        items:
+            type: string
+      tiebreakers:
+        type: array
+        description: items used to break ties, includes the number of times finishing 1st, 2nd, 3rd and 4th, etc.  May also include specific event results
+        items:
+            type: number
+            format: float
+
+  ClassChampResults:
+    type: object
+    properties:
+      classcode:
+        type: string
+        description: the classcode for the results
+      entries:
+        $ref: '#/definitions/ChampEntry'
+
+  ChampResults:
+    type: object
+    properties:
+      series:
+        type: string
+        description: the series
+      classes:
+        $ref: '#/definitions/ClassChampResults'
+
+
+  Entry:
+    type: object
+    description: Format for SCCA report entry
+    properties:
+      FirstName:
+          type: string
+      LastName:
+          type: string
+      MemberNo:
+          type: string
+      Class:
+          type: string
+      Index:
+          type: string
+      Pos:
+          type: string
+      CarModel:
+          type: string
+      CarNo:
+          type: string
+      TotalTm:
+          type: string
+

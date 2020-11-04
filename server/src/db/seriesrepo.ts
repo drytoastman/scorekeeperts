@@ -43,6 +43,11 @@ export class SeriesRepository {
         return results.map(v => v.schema_name)
     }
 
+    async allSeries(): Promise<string[]> {
+        const results = await this.db.map('SELECT schema_name FROM information_schema.schemata UNION SELECT DISTINCT series FROM results', [], r => r.schema_name)
+        return results.filter(s => !['pg_catalog', 'information_schema', 'public', 'template'].includes(s)).sort()
+    }
+
     async emailListIds(): Promise<string[]> {
         const ids = new Set<string>()
         for (const series of await this.seriesList()) {

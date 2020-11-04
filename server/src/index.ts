@@ -5,7 +5,7 @@ import helmet from 'helmet'
 import morgan from 'morgan'
 import promiseRetry from 'promise-retry'
 
-import { api2, live, liveStart } from './controllers'
+import { api2, oldapi, live, liveStart } from './controllers'
 import { db, tableWatcher, pgp } from './db'
 import { startCronJobs } from './cron'
 import { accesslog, mainlog } from './util/logging'
@@ -54,6 +54,8 @@ async function dbWaitAndApiSetup() {
         if (req.session) { req.session.now = Math.floor(Date.now() / 60e3) }
         next()
     })
+
+    app.use('/api', oldapi)
     app.use('/api2', api2)
 
     liveStart()
