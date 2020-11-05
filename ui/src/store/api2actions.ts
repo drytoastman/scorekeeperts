@@ -47,24 +47,25 @@ export async function getDataWrap(context: ActionContext<Api2State, any>, axiosc
 }
 
 
-let ws: ReconnectingWebSocket|null = null
-export function restartWebsocket(store: Store<Api2State>): void {
+export function restartWebsocket(store: Store<Api2State>, endpoint: string): void {
     /* Create our websocket handler and default get request */
-    if (ws != null) {
-        ws.close()
+    if (store.state.websocket) {
+        store.state.websocket.close()
     }
 
     let prefix = 'ws:'
     if (window.location.protocol === 'https:') prefix = 'wss:'
-
-    ws = new ReconnectingWebSocket(`${prefix}//${window.location.host}${API2.LIVE}?authtype=${store.state.auth.type}&series=${store.state.currentSeries}`, undefined, {
+    if ((!store.state.auth.type) || (!store.state.currentSeries)) {
+        return
+    }
+    store.state.websocket = new ReconnectingWebSocket(`${prefix}//${window.location.host}${endpoint}?authtype=${store.state.auth.type}&series=${store.state.currentSeries}`, undefined, {
         minReconnectionDelay: 1000,
         maxRetries: 10,
         startClosed: true
     })
-    ws.onmessage = (e) => { store.commit('apiData', JSON.parse(e.data)) }
-    ws.onclose   = (e) => { console.log(e) }
-    ws.reconnect()
+    store.state.websocket.onmessage = (e) => { store.commit('apiData', JSON.parse(e.data)) }
+    store.state.websocket.onerror   = (e) => { store.commit('addErrors', [e.message]) }
+    store.state.websocket.reconnect()
 }
 
 

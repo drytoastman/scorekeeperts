@@ -10,6 +10,11 @@ module.exports = {
             entry: './src/Admin/main.ts',
             template: 'public/index.html',
             title: 'Scorekeeper Admin'
+        },
+        live: {
+            entry: './src/Live/main.ts',
+            template: 'public/index.html',
+            title: 'Scorekeeper Live'
         }
     },
     css: {

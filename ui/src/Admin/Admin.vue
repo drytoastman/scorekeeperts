@@ -152,5 +152,5 @@ export default {
     padding: 0.3rem 0.5rem !important;
 }
 
-@import '@/styles/general.scss'
+@import '@/styles/general.scss';
 </style>

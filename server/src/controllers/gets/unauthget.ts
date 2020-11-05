@@ -6,7 +6,20 @@ import { SQ_APPLICATION_ID, RECAPTCHA_SITEKEY, IS_MAIN_SERVER } from '@/db/gener
 
 const readdirAsync = util.promisify(fs.readdir)
 
-export async function unauthget(db: ScorekeeperProtocol, item: any, ret: any): Promise<boolean> {
+export async function unauthget(task: ScorekeeperProtocol, param: any) {
+    const ret: any = {
+        type: 'get',
+        series: param.series
+    }
+
+    for (const item of param.items) {
+        await unauthgetone(task, item, ret)
+    }
+
+    return ret
+}
+
+export async function unauthgetone(db: ScorekeeperProtocol, item: any, ret: any): Promise<boolean> {
     let res = true
 
     // things that don't require a series

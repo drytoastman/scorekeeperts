@@ -113,5 +113,5 @@ export default {
     animation-iteration-count: infinite;
 }
 
-@import '@/styles/general.scss'
+@import '@/styles/general.scss';
 </style>

@@ -13,7 +13,8 @@ import { seriesget } from './gets/seriesget'
 import { driverpost } from './posts/driverpost'
 import { seriespost } from './posts/seriespost'
 import { seriesadmin } from './posts/seriesadmin'
-import { AUTHTYPE_DRIVER, AUTHTYPE_SERIES } from '@/common/auth'
+import { AUTHTYPE_DRIVER, AUTHTYPE_NONE, AUTHTYPE_SERIES } from '@/common/auth'
+import { unauthget } from './gets/unauthget'
 
 export const api2 = Router()
 
@@ -36,14 +37,17 @@ export async function apiget(req: Request, res: Response) {
     try {
         const param = checkAuth(req)
         res.json(await db.task('apiget-' + param.authtype, async task => {
+
             const other = {} as any
             if (param.items.includes('authinfo')) {
                 other.authinfo = req.auth.authflags()
                 param.items = param.items.filter(v => v !== 'authinfo')
             }
+
             switch (param.authtype) {
                 case AUTHTYPE_DRIVER: return { ...other, ...await driverget(task,  req.auth.driverId(), param) }
                 case AUTHTYPE_SERIES: return { ...other, ...await seriesget(task, param) }
+                case AUTHTYPE_NONE:   return { ...other, ...await unauthget(task, param) }
                 default: throw Error('Unknown authtype')
             }
         }))

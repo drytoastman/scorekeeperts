@@ -5,7 +5,7 @@ import helmet from 'helmet'
 import morgan from 'morgan'
 import promiseRetry from 'promise-retry'
 
-import { api2, oldapi, live, liveStart } from './controllers'
+import { api2, oldapi, updates, updatesStart } from './controllers'
 import { db, tableWatcher, pgp } from './db'
 import { startCronJobs } from './cron'
 import { accesslog, mainlog } from './util/logging'
@@ -58,7 +58,7 @@ async function dbWaitAndApiSetup() {
     app.use('/api', oldapi)
     app.use('/api2', api2)
 
-    liveStart()
+    updatesStart()
     if (process.env.NODE_ENV !== 'development') {
         startCronJobs()
     }
@@ -76,9 +76,13 @@ server.on('upgrade', function upgrade(request, socket, head) {
     const [pathname, query] = request.url.split('?')
     request.query = querystring.parse(query)
 
-    if (pathname.startsWith('/api2/live')) {
-        cookiesessioner(request, {}, () => {}) // make sure cookie session (auth) is processed before handling
-        live.handleUpgrade(request, socket, head, ws => live.emit('connection', ws, request))
+    if (pathname.startsWith('/api2/updates')) {
+        if (!cookiesessioner) {
+            socket.destroy()
+        } else {
+            cookiesessioner(request, {}, () => {}) // make sure cookie session (auth) is processed before handling
+            updates.handleUpgrade(request, socket, head, ws => updates.emit('connection', ws, request))
+        }
     } else {
         socket.destroy()
     }

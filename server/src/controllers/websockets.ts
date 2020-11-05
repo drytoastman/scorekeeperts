@@ -60,14 +60,14 @@ class SessionServer extends WebSocket.Server {
 async function allsend(series: string, type: string, data: any) {
     try {
         const msg = JSON.stringify(Object.assign({ type: type, series: series }, data))
-        live.clients.forEach(ws => ws.send(msg))
+        updates.clients.forEach(ws => ws.send(msg))
     } catch (error) {
         controllog.error(error)
     }
 }
 
 // 'runs', 'timertimes', 'localeventstream'
-export function liveStart() {
+export function updatesStart() {
     tableWatcher.addTables(['registered', 'events', 'itemeventmap', 'paymentitems', 'paymentaccounts'])
 }
 
@@ -75,12 +75,11 @@ for (const tbl of ['events', 'itemeventmap', 'paymentitems', 'paymentaccounts'])
     tableWatcher.on(tbl, (series, type, row) => allsend(series, type, { [tbl]: [row] }))
 }
 
-export const live = new SessionServer({ noServer: true })
-live.on('connection', async function connection(ws: SessionWebSocket, req: Request) {
+export const updates = new SessionServer({ noServer: true })
+updates.on('connection', async function connection(ws: SessionWebSocket, req: Request) {
     ws.session     = req.session as CookieSess
     const series   = req.query.series as string
     const authtype = req.query.authtype as string
-    const ismain   = await db.general.isMainServer()
     const auth     = new AuthData(req.session as any)
 
     if (!series || !authtype) {
@@ -88,18 +87,19 @@ live.on('connection', async function connection(ws: SessionWebSocket, req: Reque
         return
     }
 
-    if (ismain && !auth.hasAnyAuth()) {
-        ws.close(1002, 'Not authenticated for main server')
+    if (!auth.hasAnyAuth()) {
+        ws.close(1002, 'Not authenticated for updates')
     }
 
-    live.put(series, authtype, ws)
-    ws.onclose   = () => live.remove(series, authtype, ws)
+    // updates.put(series, authtype, ws)
+    ws.onerror   = (error) => console.log(error)
+    ws.onclose   = (event) => updates.remove(series, authtype, ws)
     ws.onmessage = () => ws.send('hello')
 })
 
 tableWatcher.on('registered', async function change(series: string, type: string, row: any) {
     try {
-        const auth = live.getSeriesAllAuth(series)
+        const auth = updates.getSeriesAllAuth(series)
         if (auth.length > 0) {
             const msg = await db.task('apiget', async t => {
                 await  t.series.setSeries(series)

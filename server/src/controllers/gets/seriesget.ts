@@ -1,7 +1,7 @@
 import { ScorekeeperProtocol } from '@/db'
 
 import { allClassesAndIndexes } from '../allseries'
-import { unauthget } from './unauthget'
+import { unauthgetone } from './unauthget'
 
 export async function seriesget(task: ScorekeeperProtocol, param: any) {
     const ret: any = {
@@ -11,7 +11,7 @@ export async function seriesget(task: ScorekeeperProtocol, param: any) {
 
     await task.series.setSeries(ret.series)
     for (const item of param.items) {
-        if (await unauthget(task, item, ret)) continue
+        if (await unauthgetone(task, item, ret)) continue
 
         switch (item) {
             case 'attendance':    ret.attendance = await task.runs.attendance(); break

@@ -2,7 +2,7 @@ import _ from 'lodash'
 import { Request, Response } from 'express'
 import { db } from '@/db'
 import { UUID } from '@common/util'
-import { AUTHTYPE_DRIVER, AUTHTYPE_SERIES } from '@/common/auth'
+import { AUTHTYPE_DRIVER, AUTHTYPE_NONE, AUTHTYPE_SERIES } from '@/common/auth'
 
 declare global {
     module Express {
@@ -157,6 +157,8 @@ export function checkAuth(req: Request): any {
         case AUTHTYPE_SERIES:
             if (!req.auth.hasSeriesAuth(series)) throw new AuthError('not authenticated', AUTHTYPE_SERIES)
             if (_.isEqual(param.items, BLANK)) param.items = SERIESDEFAULT
+            break
+        case AUTHTYPE_NONE:
             break
         default:
             throw new AuthError('unknown authtype', authtype)

@@ -39,6 +39,9 @@ export interface SeriesEvent
     }
     modified: DateString;
     created: DateString;
+
+    // for insertions only as eventids are linked
+    items?: ItemMap[];
 }
 
 export interface UIItemMap {

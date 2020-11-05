@@ -1,7 +1,6 @@
 import Vue from 'vue'
-import VueRouter, { RouterOptions } from 'vue-router'
+import VueRouter from 'vue-router'
 
-// const Placeholder  = () => import(/* webpackChunkName: "adminviews" */  './views/placeholder.vue')
 const Summary      = () => import(/* webpackChunkName: "adminviews" */  './views/summary.vue')
 const OAuthHandler = () => import(/* webpackChunkName: "adminviews" */  './views/oauthhandler.vue')
 const Accounts     = () => import(/* webpackChunkName: "adminviews" */  './views/accounts.vue')
@@ -20,8 +19,6 @@ const Archive      = () => import(/* webpackChunkName: "adminviews" */  './views
 const Purge        = () => import(/* webpackChunkName: "adminviews" */  './views/purge.vue')
 const NewSeries    = () => import(/* webpackChunkName: "adminviews" */  './views/newseries.vue')
 const NewEvents    = () => import(/* webpackChunkName: "adminviews" */  './views/newevents.vue')
-
-Vue.use(VueRouter)
 
 const routes = [
     {
@@ -63,13 +60,9 @@ const routes = [
 ]
 
 declare const VUE_BASE: string
-const options = {
+Vue.use(VueRouter)
+export default new VueRouter({
     mode: 'history',
-    base: '/admin',
+    base: (VUE_BASE && VUE_BASE !== 'PUT_BASE_HERE') ? VUE_BASE : '/admin',
     routes
-} as RouterOptions
-if (VUE_BASE && VUE_BASE !== 'PUT_BASE_HERE') {
-    options.base = VUE_BASE
-}
-const router = new VueRouter(options)
-export default router
+})

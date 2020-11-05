@@ -4,15 +4,11 @@ import axios from 'axios'
 import Vue from 'vue'
 
 import { Api2State, API2 } from './state'
-import { ActionContext, ActionTree, Store, GetterTree, MutationTree } from 'vuex'
-import VueRouter, { Route } from 'vue-router'
-import { api2Mutations, deepset } from './api2mutations'
-import { api2Actions, getDataWrap, restartWebsocket } from './api2actions'
+import { ActionContext, ActionTree, GetterTree, MutationTree } from 'vuex'
+import { deepset } from './api2mutations'
+import { getDataWrap } from './api2actions'
 import { ITEM_TYPE_SERIES_FEE } from '@/common/payments.ts'
 import { UUID } from '@/common/util'
-import { Driver } from '@/common/driver'
-import { api2Getters } from './api2getters'
-import { installLoggingHandlers } from './logging'
 
 export const registerActions = {
 
@@ -67,7 +63,7 @@ export const cartMutations = {
 } as MutationTree<Api2State>
 
 
-const registerGetters = {
+export const registerGetters = {
 
     driver: (state) => {
         return state.driverid ? state.drivers[state.driverid] : {}
@@ -156,46 +152,3 @@ const registerGetters = {
     }
 
 } as GetterTree<Api2State, Api2State>
-
-
-
-export function createRegisterStore(router: VueRouter): Store<Api2State> {
-    const store = new Store({
-        state:     new Api2State('driver'),
-        mutations: { ...api2Mutations(false), ...cartMutations },
-        actions:   { ...api2Actions, ...registerActions },
-        getters:   { ...api2Getters, ...registerGetters }
-    })
-    installLoggingHandlers(store)
-
-    /* On certain route changes, we check if we changed our series via the URL */
-    router.beforeResolve(function(to: Route, from: Route, next): void {
-        if ((to.params.series) && (to.params.series !== store.state.currentSeries)) {
-            store.commit('changeSeries', to.params.series)
-        }
-        next()
-    })
-
-    /* We share the drivers table, in register case copy out the singular driverid for reference */
-    store.watch(
-        (state: Api2State) => { return state.drivers },
-        (newvalue: any) => {
-            const d: Driver[] = Object.values(newvalue)
-            store.commit('setDriverId', d.length > 0 ? d[0].driverid : '')
-        }
-    )
-
-    function dataWatch() {
-        if (!store.state.currentSeries) return
-        if (store.state.auth.driver) {
-            console.log('restart socket and getdata')
-            restartWebsocket(store)
-            store.dispatch('getdata')
-        }
-    }
-    store.watch((state) => { return state.currentSeries }, dataWatch)
-    store.watch((state) => { return state.auth.driver }, dataWatch)
-
-    store.dispatch('getdata', { items: 'serieslist,authinfo' })
-    return store
-}

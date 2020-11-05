@@ -4,14 +4,10 @@ import uniq from 'lodash/uniq'
 import axios from 'axios'
 
 import { Api2State, API2 } from './state'
-import { ActionContext, ActionTree, Store } from 'vuex'
-import VueRouter, { Route } from 'vue-router'
-import { api2Mutations } from './api2mutations'
-import { api2Actions, getDataWrap, restartWebsocket } from './api2actions'
+import { ActionContext, ActionTree } from 'vuex'
+import { getDataWrap } from './api2actions'
 import { UUID } from '@/common/util'
 import { sendAsDownload } from '@/util/sendtouser'
-import { api2Getters } from './api2getters'
-import { installLoggingHandlers } from './logging'
 
 
 export const adminActions = {
@@ -133,40 +129,3 @@ export const adminActions = {
     }
 
 }  as ActionTree<Api2State, any>
-
-
-export function createAdminStore(router: VueRouter): Store<Api2State> {
-    const store = new Store({
-        state:     new Api2State('series'),
-        mutations: api2Mutations(true),
-        actions:   { ...api2Actions,   ...adminActions },
-        getters:   api2Getters
-    })
-    installLoggingHandlers(store)
-
-    /*
-        On route changes, check to see if we have data or need to load it
-    */
-    router.beforeResolve(function(to: Route, from: Route, next): void {
-        if ((to.params.series) && (to.params.series !== store.state.currentSeries)) {
-            store.commit('changeSeries', to.params.series)
-        }
-        next()
-    })
-
-    function dataWatch() {
-        if (!store.state.currentSeries) return
-        if (store.state.auth.admin || store.state.auth.series[store.state.currentSeries]) {
-            console.log('restart socket and getdata')
-            restartWebsocket(store)
-            store.dispatch('getdata')
-        }
-    }
-
-    store.watch((state) => { return state.currentSeries }, dataWatch)
-    store.watch((state) => { return state.auth.admin }, dataWatch)
-    store.watch((state) => { return state.auth.series }, dataWatch)
-
-    store.dispatch('getdata', { items: 'serieslist,authinfo' })
-    return store
-}

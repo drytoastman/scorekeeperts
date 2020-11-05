@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import VueRouter, { RouterOptions } from 'vue-router'
+import VueRouter from 'vue-router'
 
 const EventsView   = () => import(/* webpackChunkName: "registerviews" */  './views/events.vue')
 const CarsView     = () => import(/* webpackChunkName: "registerviews" */  './views/cars.vue')
@@ -7,8 +7,6 @@ const ProfileView  = () => import(/* webpackChunkName: "registerviews" */  './vi
 const EmailResult  = () => import(/* webpackChunkName: "registerviews" */  './views/emailresult.vue')
 const TokenProcess = () => import(/* webpackChunkName: "registerviews" */  './views/tokenprocess.vue')
 const HelpPage     = () => import(/* webpackChunkName: "registerviews" */  './views/help.vue')
-
-Vue.use(VueRouter)
 
 const routes = [
     { path: '/emailresult',    name: 'emailresult', component: EmailResult,  meta: { outside: 1 }},
@@ -24,13 +22,9 @@ const routes = [
 ]
 
 declare const VUE_BASE: string
-const options = {
+Vue.use(VueRouter)
+export default new VueRouter({
     mode: 'history',
-    base: '/register',
+    base: (VUE_BASE && VUE_BASE !== 'PUT_BASE_HERE') ? VUE_BASE : '/register',
     routes
-} as RouterOptions
-if (VUE_BASE && VUE_BASE !== 'PUT_BASE_HERE') {
-    options.base = VUE_BASE
-}
-const router = new VueRouter(options)
-export default router
+})

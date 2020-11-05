@@ -5,6 +5,7 @@ import { ItemMap, SeriesEvent } from '@/common/event'
 import { Car } from '@/common/car'
 import { Registration, Payment } from '@/common/register'
 import { UUID } from '../common/util'
+import ReconnectingWebSocket from 'reconnecting-websocket'
 
 export const EMPTY = ''
 export const API2 = {
@@ -13,6 +14,7 @@ export const API2 = {
     LOGIN:          '/api2/login',
     TOKEN:          '/api2/token',
     LIVE:           '/api2/live',
+    UPDATES:        '/api2/updates',
     LOGOUT:         '/api2/logout',
     REGISTER:       '/api2/register',
     RESET:          '/api2/reset',
@@ -35,6 +37,7 @@ export class Api2State {
     serieslist: string[] = []
     listids: string[] = []
     paxlists: string[] = []
+    websocket: ReconnectingWebSocket | undefined
 
     // auth
     auth = {
