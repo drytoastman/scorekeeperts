@@ -1,11 +1,13 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 
-const Announcer = () => import(/* webpackChunkName: "liveviews" */  './views/announcer.vue')
+import announcer from './views/announcer.vue'
 
 const routes = [
     {
-        path: '/announcer/:series/:eventid', name: 'announcer', component: Announcer
+        path: '/announcer/:series/:eventid',
+        name: 'announcer',
+        component: announcer
     }
     // { path: '/', redirect: { name: 'announcer' }}
 ]

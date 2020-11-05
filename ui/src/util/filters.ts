@@ -11,6 +11,10 @@ function cents2dollars(v: number): string {
     return `$${(v / 100).toFixed(2)}`
 }
 
+function t3(v: number): string {
+    return v.toFixed(3)
+}
+
 function dmdy(v: DateString): string {
     return new Date(v).toDateString()
 }
@@ -26,6 +30,7 @@ export default {
     install(Vue: VueConstructor<Vue>): void {
         Vue.filter('capitalize', capitalize)
         Vue.filter('cents2dollars', cents2dollars)
+        Vue.filter('t3', t3)
         Vue.filter('dmdy', dmdy)
         Vue.filter('lenlimit', lenlimit)
     }
