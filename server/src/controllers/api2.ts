@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express'
 import delay from 'express-delay'
+import _ from 'lodash'
 
 import { db } from '@/db'
 import { controllog } from '@/util/logging'
@@ -33,9 +34,25 @@ api2.use(async function(req: Request, res: Response, next: Function) {
     next()
 })
 
+
+function defaultget(authtype: string) {
+    const COMMONDEFAULT = ['classes', 'counts', 'events', 'indexes', 'listids', 'paymentaccounts', 'paymentitems', 'itemeventmap', 'serieslist', 'settings']
+    const SERIESDEFAULT = [...COMMONDEFAULT, 'classorder', 'localsettings', 'squareapplicationid', 'ismainserver', 'paxlists']
+    const DRIVERDEFAULT = [...COMMONDEFAULT, 'cars', 'drivers', 'payments', 'registered', 'summary', 'unsubscribe', 'driversattr']
+    switch (authtype) {
+        case AUTHTYPE_DRIVER:
+            return DRIVERDEFAULT
+        case AUTHTYPE_SERIES:
+            return SERIESDEFAULT
+    }
+    return []
+}
+
 export async function apiget(req: Request, res: Response) {
     try {
         const param = checkAuth(req)
+        param.items = param.items ? param.items.split(',') : defaultget(param.authtype)
+
         res.json(await db.task('apiget-' + param.authtype, async task => {
 
             const other = {} as any

@@ -108,14 +108,6 @@ export async function adminlogout(req: Request, res: Response) {
     res.status(200).json({ result: 'logged out' })
 }
 
-// 'allclassindex', 'attendance', 'driverbrief', 'editorids', 'rotatekeygrip',
-
-const UNAUTHSPECIAL = ['recaptchasitekey', 'serieslist', 'authinfo']
-const COMMONDEFAULT = ['classes', 'counts', 'events', 'indexes', 'listids', 'paymentaccounts', 'paymentitems', 'itemeventmap', 'serieslist', 'settings']
-const SERIESDEFAULT = [...COMMONDEFAULT, 'classorder', 'localsettings', 'squareapplicationid', 'ismainserver', 'paxlists']
-const DRIVERDEFAULT = [...COMMONDEFAULT, 'cars', 'drivers', 'payments', 'registered', 'summary', 'unsubscribe', 'driversattr']
-const BLANK = ['BLANK']
-
 export class AuthError extends Error {
     authtype: string
     constructor(message: string, authtype: string) {
@@ -140,23 +132,12 @@ export function checkAuth(req: Request): any {
 
     const authtype = param.authtype // driver or series
     const series   = param.series
-
-    if (req.method === 'GET') {
-        param.items = param.items ? param.items.split(',') : BLANK
-        // only special unauth items, skip by auth checks
-        if (param.items.filter((v: string) => !UNAUTHSPECIAL.includes(v)).length === 0) {
-            return param
-        }
-    }
-
     switch (authtype) {
         case AUTHTYPE_DRIVER:
             if (!req.auth.hasDriverAuth()) throw new AuthError('not authenticated', AUTHTYPE_DRIVER)
-            if (_.isEqual(param.items, BLANK)) param.items = DRIVERDEFAULT
             break
         case AUTHTYPE_SERIES:
             if (!req.auth.hasSeriesAuth(series)) throw new AuthError('not authenticated', AUTHTYPE_SERIES)
-            if (_.isEqual(param.items, BLANK)) param.items = SERIESDEFAULT
             break
         case AUTHTYPE_NONE:
             break
