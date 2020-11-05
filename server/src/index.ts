@@ -1,11 +1,10 @@
 import cookieSession from 'cookie-session'
 import express, { Request, Response } from 'express'
-import querystring from 'querystring'
 import helmet from 'helmet'
 import morgan from 'morgan'
 import promiseRetry from 'promise-retry'
 
-import { api2, oldapi, updates, updatesStart } from './controllers'
+import { api2, oldapi, websockets, websocketsStartWatching } from './controllers'
 import { db, tableWatcher, pgp } from './db'
 import { startCronJobs } from './cron'
 import { accesslog, mainlog } from './util/logging'
@@ -58,7 +57,7 @@ async function dbWaitAndApiSetup() {
     app.use('/api', oldapi)
     app.use('/api2', api2)
 
-    updatesStart()
+    websocketsStartWatching()
     if (process.env.NODE_ENV !== 'development') {
         startCronJobs()
     }
@@ -73,16 +72,10 @@ const server = app.listen(PORT, () => {
 
 server.on('upgrade', function upgrade(request, socket, head) {
     // this is outside of express so we need to parse query ourselves
-    const [pathname, query] = request.url.split('?')
-    request.query = querystring.parse(query)
-
-    if (pathname.startsWith('/api2/updates')) {
-        if (!cookiesessioner) {
-            socket.destroy()
-        } else {
-            cookiesessioner(request, {}, () => {}) // make sure cookie session (auth) is processed before handling
-            updates.handleUpgrade(request, socket, head, ws => updates.emit('connection', ws, request))
-        }
+    const pathname = request.url.split('?')[0]
+    if (pathname.startsWith('/api2') && cookiesessioner) {
+        cookiesessioner(request, {}, () => {}) // make sure cookie session (auth) is processed before handling
+        websockets.handleUpgrade(request, socket, head, ws => websockets.emit('connection', ws, request))
     } else {
         socket.destroy()
     }
