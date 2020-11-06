@@ -42,3 +42,13 @@ export class DefaultMap<K, V> extends Map<K, V> {
         return v
     }
 }
+
+export function intersect<V>(setA: Set<V>, setB: Set<V>): Set<V> {
+    const intersection = new Set<V>()
+    for (const elem of setB) {
+        if (setA.has(elem)) {
+            intersection.add(elem)
+        }
+    }
+    return intersection
+}

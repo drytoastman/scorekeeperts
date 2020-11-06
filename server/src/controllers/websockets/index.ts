@@ -5,6 +5,7 @@ import { controllog } from '../../util/logging'
 import { AuthData } from '../auth'
 import { AUTHTYPE_DRIVER, AUTHTYPE_NONE, AUTHTYPE_SERIES } from '@/common/auth'
 import { SessionMessage, SessionWebSocket, TrackingServer } from './types'
+import { processLiveRequest } from './livedata'
 
 
 export function websocketsStartWatching() {
@@ -53,23 +54,17 @@ websockets.on('connection', async function connection(ws: SessionWebSocket, req:
         if (authtype !== AUTHTYPE_NONE) {
             return ws.close(1002, 'Authtype provided for non authenticated live data')
         }
-        ws.onmessage = (event) => processLiveRequest(event.data.toString())
-        ws.onclose   = (event) => websockets.removeLive(series, ws)
-        websockets.addLive(series, ws)
-
+        ws.series    = ''
+        ws.last      = new Date(0)
+        ws.watch     = new Set()
+        ws.onmessage = (event) => processLiveRequest(ws, event.data.toString())
+        ws.onclose   = (event) => websockets.clearLive(ws)
+        websockets.addLive(ws)
 
     } else {
         return ws.close(1002, 'Unknown endpoint')
     }
 })
-
-function processLiveRequest(data: string) {
-    console.log(data)
-}
-
-for (const tbl of ['runs', 'timertimes', 'localeventstream']) {
-}
-
 
 // these general updates can go to any authenticated users
 for (const tbl of ['events', 'itemeventmap', 'paymentitems', 'paymentaccounts']) {
