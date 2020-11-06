@@ -15,9 +15,14 @@
         </v-app-bar>
 
         <v-main>
-            <div v-if="loadDelay && !$route.name" class='pushdown main-page-warning'>Unknown Page</div>
-            <router-view v-else-if="auth.driver || isOutside" />
-            <Login v-else-if="auth.driver===false" class='pushdown'></Login>
+            <router-view v-if="$route.name && (auth.driver || isOutside)" />
+            <div v-else class='pushdown'>
+                <Login v-if="authinitial && !auth.driver"></Login>
+                <div v-else class='main-page-warning'>
+                    <div v-if="!authinitial">Scorekeeper connecting ...</div>
+                    <div v-else>Unknown Page</div>
+                </div>
+            </div>
         </v-main>
 
         <SnackBar></SnackBar>
@@ -33,7 +38,7 @@ import HelpMenu from './components/HelpMenu.vue'
 import SeriesBar from '@/components/SeriesBar.vue'
 
 export default {
-    name: 'App',
+    name: 'Registration',
     components: {
         Login,
         CartFAB,
@@ -41,23 +46,17 @@ export default {
         HelpMenu,
         SeriesBar
     },
-    data: () => ({
-        loadDelay: false
-    }),
     methods: {
         logout: function() {
             this.$store.dispatch('logout')
         }
     },
     computed: {
-        ...mapState(['currentSeries', 'auth', 'gettingData', 'flashProfile', 'flashCars', 'flashEvents']),
+        ...mapState(['currentSeries', 'auth', 'authinitial', 'gettingData', 'flashProfile', 'flashCars', 'flashEvents']),
         isOutside() { return this.$route.meta.outside === 1 },
         mProfileClass() { return this.flashProfile ? 'flashit' : '' },
         mCarsClass()    { return this.flashCars ?    'flashit' : '' },
         mEventsClass()  { return this.flashEvents ?  'flashit' : '' }
-    },
-    mounted() {
-        this.$store.dispatch('getdata').then(() => { this.loadDelay = true })
     }
 }
 </script>

@@ -19,8 +19,6 @@ export const registerActions = {
     async login(context: ActionContext<Api2State, any>, p: any) {
         if (await getDataWrap(context, axios.post(API2.LOGIN, p, { withCredentials: true }))) {
             context.commit('driverAuthenticated', true)
-            console.log('authenticated getdata')
-            context.dispatch('getdata')
             return true
         }
     },

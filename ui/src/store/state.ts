@@ -38,13 +38,14 @@ export class Api2State {
     listids: string[] = []
     paxlists: string[] = []
     websocket: ReconnectingWebSocket | undefined
+    authinitial = false // true once we get our first authinfo back
 
     // auth
     auth = {
         driver: false, // driver authenticated
         admin:  false, // admin authenticated
         series: {},    // which series have been authenticated
-        type: ''       // what type of authtype to send in requests (driver, series, admin)
+        type:   ''     // what type of authtype to send in requests (driver, series, admin)
     }
 
     // non series specific

@@ -4,6 +4,7 @@ import { MutationTree } from 'vuex'
 import { Api2State, EMPTY } from './state'
 import { UUID } from '@/common/util'
 import { Registration } from '@/common/register'
+import ReconnectingWebSocket from 'reconnecting-websocket'
 
 export function clearApi2SeriesData(state: Api2State): void {
     state.paymentaccounts = {}
@@ -150,6 +151,10 @@ export function api2Mutations(adminOptions: boolean):  MutationTree<Api2State> {
             }
         },
 
+        newWebSocket(state: Api2State, websocket: ReconnectingWebSocket) {
+            state.websocket = websocket
+        },
+
         apiData(state: Api2State, data: any) {
             if (data === undefined) return
             if (data.series && data.series !== state.currentSeries) return
@@ -164,6 +169,7 @@ export function api2Mutations(adminOptions: boolean):  MutationTree<Api2State> {
 
             if ('authinfo' in data) {
                 Object.assign(state.auth, data.authinfo)
+                state.authinitial = true
             }
 
             for (const key of ['listids', 'unsubscribe', 'summary', 'attendance', 'classorder', 'ismainserver', 'paxlists',

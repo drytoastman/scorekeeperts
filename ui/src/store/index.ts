@@ -4,7 +4,7 @@ import Vuex, { Store } from 'vuex'
 
 import { Driver } from '@/common/driver'
 import { adminActions } from './admin'
-import { api2Actions, restartWebsocket } from './api2actions'
+import { api2Actions } from './api2actions'
 import { api2Getters } from './api2getters'
 import { api2Mutations } from './api2mutations'
 import { installLoggingHandlers } from './logging'
@@ -14,7 +14,7 @@ import { AUTHTYPE_DRIVER, AUTHTYPE_NONE, AUTHTYPE_SERIES } from '@/common/auth'
 
 Vue.use(Vuex)
 
-export function finishStore(store: Store<Api2State>, router: VueRouter, wsendpoint: string): Store<Api2State> {
+function finishStore(store: Store<Api2State>, router: VueRouter, authwatch: string[], dataWatch: (s: Store<Api2State>) => void): Store<Api2State> {
     installLoggingHandlers(store)
 
     /* On route changes, check to see if we have data or need to load it */
@@ -25,23 +25,13 @@ export function finishStore(store: Store<Api2State>, router: VueRouter, wsendpoi
         next()
     })
 
-    function dataWatch() {
-        if (!store.state.currentSeries) return
-        if (store.state.auth.admin || store.state.auth.series[store.state.currentSeries] || store.state.auth.driver) {
-            console.log('restart socket and getdata')
-            restartWebsocket(store, wsendpoint)
-            store.dispatch('getdata')
-        }
-    }
-
-    store.watch((state) => { return state.currentSeries }, dataWatch)
-    store.watch((state) => { return state.auth.admin },    dataWatch)
-    store.watch((state) => { return state.auth.series },   dataWatch)
-    store.watch((state) => { return state.auth.driver },   dataWatch)
+    store.watch((state) => { return state.currentSeries }, () => dataWatch(store))
+    for (const s of authwatch) { store.watch((state) => { return state.auth[s] }, () => dataWatch(store)) }
 
     store.dispatch('getdata', { items: 'serieslist,authinfo' })
     return store
 }
+
 
 export function createAdminStore(router: VueRouter): Store<Api2State> {
     return finishStore(
@@ -52,7 +42,15 @@ export function createAdminStore(router: VueRouter): Store<Api2State> {
             getters:   api2Getters
         }),
         router,
-        API2.UPDATES
+        ['series', 'admin'],
+        (store) => {
+            if (!store.state.currentSeries) return
+            if (store.state.auth.admin || store.state.auth.series[store.state.currentSeries]) {
+                console.log('restart socket and getdata')
+                store.dispatch('getdata')
+                store.dispatch('restartWebSocket', API2.UPDATES)
+            }
+        }
     )
 }
 
@@ -65,11 +63,18 @@ export function createRegisterStore(router: VueRouter): Store<Api2State> {
             getters:   { ...api2Getters, ...registerGetters }
         }),
         router,
-        API2.UPDATES
+        ['driver', 'currentSeries'],
+        (store) => {
+            console.log('register socket and getdata')
+            store.dispatch('getdata')
+            store.dispatch('restartWebSocket', API2.UPDATES)
+        }
     )
+
     store.watch(
         (state: Api2State) => { return state.drivers },
         (newvalue: any) => {
+            // copy driverid from drivers into store driverid
             const d: Driver[] = Object.values(newvalue)
             store.commit('setDriverId', d.length > 0 ? d[0].driverid : '')
         }
@@ -86,6 +91,11 @@ export function createLiveStore(router: VueRouter): Store<Api2State> {
             getters:   api2Getters
         }),
         router,
-        API2.LIVE
+        [],
+        (store) => {
+            if (!store.state.currentSeries) return
+            store.dispatch('getdata')
+            store.dispatch('restartWebSocket', API2.LIVE)
+        }
     )
 }

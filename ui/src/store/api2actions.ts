@@ -1,6 +1,6 @@
 import axios, { AxiosResponse } from 'axios'
 import ReconnectingWebSocket from 'reconnecting-websocket'
-import { ActionTree, ActionContext, Store } from 'vuex'
+import { ActionTree, ActionContext } from 'vuex'
 import { Api2State, API2 } from './state'
 
 
@@ -45,29 +45,6 @@ export async function getDataWrap(context: ActionContext<Api2State, any>, axiosc
     }
     return undefined
 }
-
-
-export function restartWebsocket(store: Store<Api2State>, endpoint: string): void {
-    /* Create our websocket handler and default get request */
-    if (store.state.websocket) {
-        store.state.websocket.close()
-    }
-
-    let prefix = 'ws:'
-    if (window.location.protocol === 'https:') prefix = 'wss:'
-    if ((!store.state.auth.type) || (!store.state.currentSeries)) {
-        return
-    }
-    store.state.websocket = new ReconnectingWebSocket(`${prefix}//${window.location.host}${endpoint}?authtype=${store.state.auth.type}&series=${store.state.currentSeries}`, undefined, {
-        minReconnectionDelay: 1000,
-        maxRetries: 10,
-        startClosed: true
-    })
-    store.state.websocket.onmessage = (e) => { store.commit('apiData', JSON.parse(e.data)) }
-    store.state.websocket.onerror   = (e) => { store.commit('addErrors', [e.message]) }
-    store.state.websocket.reconnect()
-}
-
 
 export const api2Actions = {
 
@@ -131,6 +108,30 @@ export const api2Actions = {
             }
             context.commit('addErrors', [errorstring])
         }
+    },
+
+    restartWebSocket(context: ActionContext<Api2State, any>, endpoint: string): void {
+        /* Create our websocket handler and default get request */
+        if (context.state.websocket) {
+            context.state.websocket.close()
+        }
+
+        if ((!context.state.auth.type) || (!context.state.currentSeries)) {
+            return
+        }
+
+        let prefix = 'ws:'
+        if (window.location.protocol === 'https:') prefix = 'wss:'
+        const ws = new ReconnectingWebSocket(`${prefix}//${window.location.host}${endpoint}?authtype=${context.state.auth.type}&series=${context.state.currentSeries}`, undefined, {
+            minReconnectionDelay: 1000,
+            maxRetries: 10,
+            startClosed: true
+        })
+        ws.onmessage = (e) => { context.commit('apiData', JSON.parse(e.data)) }
+        ws.onerror   = (e) => { if (e.error && e.error.message !== 'TIMEOUT') context.commit('addErrors', [`Websocket: ${e.error.message}`]) }
+        ws.reconnect()
+
+        context.commit('newWebSocket', ws)
     }
 
 }  as ActionTree<Api2State, any>
