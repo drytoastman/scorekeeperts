@@ -110,9 +110,11 @@ export async function adminlogout(req: Request, res: Response) {
 
 export class AuthError extends Error {
     authtype: string
-    constructor(message: string, authtype: string) {
-        super(message)
+    param: any
+    constructor(authtype: string, param: any) {
+        super('not authenticated')
         this.authtype = authtype
+        this.param = param
     }
 }
 
@@ -127,22 +129,22 @@ export function checkAuth(req: Request): any {
         req.query = {}
         param = req.body
     } else {
-        throw new AuthError('unknown method', '')
+        throw new Error('unknown api request method')
     }
 
     const authtype = param.authtype // driver or series
     const series   = param.series
     switch (authtype) {
         case AUTHTYPE_DRIVER:
-            if (!req.auth.hasDriverAuth()) throw new AuthError('not authenticated', AUTHTYPE_DRIVER)
+            if (!req.auth.hasDriverAuth()) throw new AuthError(AUTHTYPE_DRIVER, param)
             break
         case AUTHTYPE_SERIES:
-            if (!req.auth.hasSeriesAuth(series)) throw new AuthError('not authenticated', AUTHTYPE_SERIES)
+            if (!req.auth.hasSeriesAuth(series)) throw new AuthError(AUTHTYPE_SERIES, param)
             break
         case AUTHTYPE_NONE:
             break
         default:
-            throw new AuthError('unknown authtype', authtype)
+            throw new Error(`unknown authtype ${authtype}`)
     }
 
     return param

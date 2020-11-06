@@ -1,9 +1,10 @@
 import { ScorekeeperProtocol } from '@/db'
 
 import { allClassesAndIndexes } from '../allseries'
+import { AuthData } from '../auth'
 import { unauthgetone } from './unauthget'
 
-export async function seriesget(task: ScorekeeperProtocol, param: any) {
+export async function seriesget(task: ScorekeeperProtocol, auth: AuthData, param: any) {
     const ret: any = {
         type: 'get',
         series: param.series
@@ -11,7 +12,7 @@ export async function seriesget(task: ScorekeeperProtocol, param: any) {
 
     await task.series.setSeries(ret.series)
     for (const item of param.items) {
-        if (await unauthgetone(task, item, ret)) continue
+        if (await unauthgetone(task, auth, item, ret)) continue
 
         switch (item) {
             case 'attendance':    ret.attendance = await task.runs.attendance(); break

@@ -40,31 +40,33 @@ function defaultget(authtype: string) {
     const SERIESDEFAULT = [...COMMONDEFAULT, 'classorder', 'localsettings', 'squareapplicationid', 'ismainserver', 'paxlists']
     const DRIVERDEFAULT = [...COMMONDEFAULT, 'cars', 'drivers', 'payments', 'registered', 'summary', 'unsubscribe', 'driversattr']
     switch (authtype) {
-        case AUTHTYPE_DRIVER:
-            return DRIVERDEFAULT
-        case AUTHTYPE_SERIES:
-            return SERIESDEFAULT
+        case AUTHTYPE_DRIVER: return DRIVERDEFAULT
+        case AUTHTYPE_SERIES: return SERIESDEFAULT
     }
     return []
 }
 
 export async function apiget(req: Request, res: Response) {
+    let param
     try {
-        const param = checkAuth(req)
-        param.items = param.items ? param.items.split(',') : defaultget(param.authtype)
-
-        res.json(await db.task('apiget-' + param.authtype, async task => {
-
-            const other = {} as any
-            if (param.items.includes('authinfo')) {
-                other.authinfo = req.auth.authflags()
-                param.items = param.items.filter(v => v !== 'authinfo')
+        res.json(await db.task('apiget', async task => {
+            try {
+                param = checkAuth(req)
+                param.items = param.items ? param.items.split(',') : defaultget(param.authtype)
+            } catch (error) {
+                if (error.param) {
+                    // for apigets, try unauthget on authfail for unauth items
+                    error.param.items = error.param.items.split(',') // don't add defaults, must be specific
+                    const res = await unauthget(task, req.auth, error.param)
+                    if (res.success) return res
+                }
+                throw error
             }
 
             switch (param.authtype) {
-                case AUTHTYPE_DRIVER: return { ...other, ...await driverget(task,  req.auth.driverId(), param) }
-                case AUTHTYPE_SERIES: return { ...other, ...await seriesget(task, param) }
-                case AUTHTYPE_NONE:   return { ...other, ...await unauthget(task, param) }
+                case AUTHTYPE_DRIVER: return await driverget(task, req.auth, param)
+                case AUTHTYPE_SERIES: return await seriesget(task, req.auth, param)
+                case AUTHTYPE_NONE:   return await unauthget(task, req.auth, param)
                 default: throw Error('Unknown authtype')
             }
         }))
@@ -73,7 +75,9 @@ export async function apiget(req: Request, res: Response) {
             res.status(401).json({ error: error.message, authtype: error.authtype })
         } else {
             controllog.error(error)
-            res.status(500).json({ error: error.message })
+            const match = error.message.match(/relation "(.*)" does not exist/)
+            const msg = (match) ? `Invalid series ${param.series} (${match[1]} does not exist)` : error.message
+            res.status(500).json({ error: msg })
         }
     }
 }

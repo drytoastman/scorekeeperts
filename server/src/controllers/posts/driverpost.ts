@@ -16,7 +16,7 @@ export async function driverpost(tx: ScorekeeperProtocol, driverid: UUID|null, p
     }
     let addsummary = false
 
-    if (!driverid) throw new AuthError('not authenticated', AUTHTYPE_DRIVER)
+    if (!driverid) throw new AuthError(AUTHTYPE_DRIVER, param)
     await tx.series.setSeries(param.series)
     for (const key in param.items) {
         switch (key) {

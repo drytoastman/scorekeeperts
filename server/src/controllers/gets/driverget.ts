@@ -1,24 +1,24 @@
 import _ from 'lodash'
 import { allSeriesSummary } from '../allseries'
 import { ScorekeeperProtocol } from '@/db'
-import { UUID } from '@common/util'
 import { unauthgetone } from './unauthget'
-import { AuthError } from '../auth'
+import { AuthData, AuthError } from '../auth'
 import { AUTHTYPE_DRIVER } from '@/common/auth'
 
-export async function driverget(task: ScorekeeperProtocol, driverid: UUID|null, param: any) {
+export async function driverget(task: ScorekeeperProtocol, auth: AuthData, param: any) {
     const ret: any = {
         type: 'get',
         series: param.series
     }
 
+    const driverid = auth.driverId()
     await task.series.setSeries(ret.series)
     // if no series, remove driver only items that won't work
     if (!ret.series) param.items = param.items.filter((v:string) => !['settings', 'driversattr', 'cars', 'payments', 'registered', 'usednumbers'].includes(v))
 
     for (const item of param.items) {
-        if (await unauthgetone(task, item, ret)) continue
-        if (!driverid) throw new AuthError('not authenticated', AUTHTYPE_DRIVER)
+        if (await unauthgetone(task, auth, item, ret)) continue
+        if (!driverid) throw new AuthError(AUTHTYPE_DRIVER, param)
 
         switch (item) {
             case 'cars':        ret.cars              = await task.cars.getCarsbyDriverId(driverid);             break
