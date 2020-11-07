@@ -103,6 +103,7 @@ export async function updatedEventResults(task: ScorekeeperProtocol, eventid: UU
         for (const cc of _.range(event.courses)) {
             for (const rr of _.range(event.runs)) {
                 e.runs[cc][rr] = {
+                    eventid: '',
                     carid: '',
                     rungroup: e.rungroup,
                     course: cc + 1,

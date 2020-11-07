@@ -6,12 +6,23 @@ import { CookieSess } from '../auth'
 import { AUTHTYPE_DRIVER, AUTHTYPE_SERIES } from '@/common/auth'
 import { DefaultMap } from '@/util/data'
 
+export type WebSocketWatch = {
+    entrant: boolean,
+    class: boolean,
+    champ: boolean,
+    next: boolean,
+    topnet: boolean,
+    topraw: boolean,
+    runorder: boolean,
+    timer: boolean,
+    protimer: boolean
+}
 
 export interface SessionWebSocket extends WebSocket {
     driverid: UUID|null
     series: string|null
-    last: Date
-    watch: Set<String>
+    lastresulttime: Date
+    watch: WebSocketWatch
 }
 
 export interface SessionMessage extends http.IncomingMessage {
@@ -62,10 +73,10 @@ export class TrackingServer extends WebSocket.Server {
     }
 
     getAllLive(item: string): Array<SessionWebSocket> {
-        return [...this.live.values()].filter(ws => ws.watch.has(item))
+        return [...this.live.values()].filter(ws => ws.watch[item])
     }
 
     getLive(series: string, item: string): Array<SessionWebSocket> {
-        return [...this.live.values()].filter(ws => ws.series === series && ws.watch.has(item))
+        return [...this.live.values()].filter(ws => ws.series === series && ws.watch[item])
     }
 }

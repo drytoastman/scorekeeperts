@@ -11,7 +11,7 @@ export enum RunStatus {
 }
 
 export interface Run {
-    eventid?: UUID;
+    eventid: UUID;
     carid: UUID;
     rungroup: number;
     course: number;
@@ -43,7 +43,7 @@ export interface DecoratedRun extends Run {
 export interface Entrant extends Car {
     firstname: string;
     lastname: string;
-    scca: string
+    scca?: string
 
     rungroup: number;
     indexval: number;
@@ -63,6 +63,7 @@ export interface Entrant extends Car {
     current: boolean;
     ispotential: boolean;
     isold: boolean;
+    bestrun?: DecoratedRun
 
     oldpoints: number;
     potpoints: number;

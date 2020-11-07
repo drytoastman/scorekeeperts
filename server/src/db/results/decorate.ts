@@ -85,7 +85,7 @@ export function decorateEntrant(e: Entrant) {
     }
 }
 
-export function decorateClassResults(settings: SeriesSettings, eventresults: EventResults, carids: UUID[], rungroup = 0): [Entrant[], Entrant[]] {
+export function decorateClassResults(settings: SeriesSettings, eventresults: EventResults, carids: UUID[], rungroupfilter?: number): [Entrant[], Entrant[]] {
     /* Calculate things for the announcer/info displays */
     // carids = list(map(str, carids)) // json data holds UUID as strings
     const ppoints = new PosPoints(settings.pospointlist)
@@ -95,7 +95,7 @@ export function decorateClassResults(settings: SeriesSettings, eventresults: Eve
     // Find the class and entrants for the results
     for (const [clscode, entrants] of Object.entries(eventresults)) {
         for (const e of entrants) {
-            if (rungroup && e.rungroup !== rungroup) continue
+            if (rungroupfilter && e.rungroup !== rungroupfilter) continue
             if (!carids.includes(e.carid)) continue
             entrantlist = entrants
             // drivers[e.carid] = e
