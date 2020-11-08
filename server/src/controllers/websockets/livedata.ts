@@ -1,14 +1,11 @@
-import { ClassData } from '@/common/classindex'
-import { SeriesEvent } from '@/common/event'
-import { ChampResults, Entrant, EventResults, LiveSocketWatch, Run, TopTimesKey } from '@/common/results'
+import { LiveSocketWatch, Run, TopTimesKey, watchNonTimers } from '@/common/results'
 import { SeriesStatus } from '@/common/series'
-import { SeriesSettings } from '@/common/settings'
 import { UUID } from '@/common/util'
-import { db, ScorekeeperProtocol, tableWatcher } from '@/db'
+import { db, tableWatcher } from '@/db'
 import { createTopTimesTable } from '@/db/results/calctoptimes'
-import { decorateChampResults, decorateClassResults, getBestNetRun } from '@/db/results/decorate'
 import { getDObj } from '@/util/data'
 import { websockets } from '.'
+import { LazyData } from './lazydata'
 import { SessionWebSocket } from './types'
 
 export async function processLiveRequest(ws: SessionWebSocket, data: any) {
@@ -21,24 +18,24 @@ export async function processLiveRequest(ws: SessionWebSocket, data: any) {
 
     ws.watch  = data.watch
     ws.series = data.series
-    ws.lastresulttime = new Date(0)
+    ws.eventid = data.eventid
     websockets.addLive(ws)
 
-    // fire off current data now!
-    if (ws.watch.protimer) ws.send(generateProTimer(data.series))
-    ws.send(JSON.stringify({ hello: 'ok' }))
+    // fire off current data now
+    if (ws.watch.protimer) ws.send(await generateProTimer())
+    if (ws.watch.timer)    ws.send(await generateTimer(data.series))
+    if (watchNonTimers(ws.watch)) doDataSend([ws], data.series, { eventid: data.eventid })
 }
-
 
 tableWatcher.on('timertimes', (series: string, type: string, row: any) => {
     const msg = JSON.stringify({ timer: row.raw })
     websockets.getLiveItem('timer').forEach(ws => ws.send(msg))
 })
 
-tableWatcher.on('localeventstream', (series: string, type: string, row: any) => {
+tableWatcher.on('localeventstream', (series: string) => {
     const rx = websockets.getLive(series, 'protimer')
     if (rx.length > 0) {
-        const msg = generateProTimer(series)
+        const msg = generateProTimer()
         rx.forEach(ws => ws.send(msg))
     }
 })
@@ -46,24 +43,37 @@ tableWatcher.on('localeventstream', (series: string, type: string, row: any) => 
 tableWatcher.on('runs', (series: string, type: string, row: any) => {
     const rx = websockets.getLiveSeries(series)
     if (rx.length <= 0) return
+    doDataSend(rx, series, row)
+})
+
+
+
+async function doDataSend(rx: SessionWebSocket[], series: string, lastrun: any) {
     db.task(async t => {
         await t.series.setSeries(series)
         const lazy = new LazyData(t)
         for (const ws of rx) {
-            await sendNextResult(ws, lazy, row)
+            if (lastrun.eventid !== ws.eventid) continue
+            await sendNextResult(ws, lazy, lastrun)
         }
     }).catch(error => {
         console.log(error)
     })
-})
+}
 
-
-async function generateProTimer(series: string): Promise<string> {
-    const limit  = 30
-    const events = await db.task(async t => {
+async function generateTimer(series: string): Promise<string> {
+    // only used on initial request
+    return db.task(async t => {
         await t.series.setSeries(series)
-        return await t.any('SELECT * FROM localeventstream ORDER BY time DESC LIMIT $1', [limit])
+        const row = await t.oneOrNone('SELECT raw FROM timertimes ORDER BY modified DESC LIMIT 1')
+        if (row) return JSON.stringify({ timer: row.raw })
+        return ''
     })
+}
+
+async function generateProTimer(): Promise<string> {
+    const limit  = 30
+    const events = await db.any('SELECT * FROM localeventstream ORDER BY time DESC LIMIT $1', [limit])
 
     if (!events) return ''
     events.reverse()
@@ -111,23 +121,33 @@ async function generateProTimer(series: string): Promise<string> {
 }
 
 
-async function sendNextResult(ws: SessionWebSocket, lazy: LazyData, lastrun: Run, lastclasscode?: string) {
-    let data
+async function sendNextResult(ws: SessionWebSocket, lazy: LazyData, lastrun: Run): Promise<void> {
+    let lastclasscode
+    if (!lastrun.modified) {
+        // if caller doesn't have a last run to base off of, find our own, still pass eventid this way
+        const r = await lazy.lastRun(lastrun.eventid, new Date(0))
+        if (!r) return
+        lastrun = r
+        lastclasscode = r.classcode
+    } else {
+        lastclasscode = (await lazy.getCar(lastrun.carid)).classcode
+    }
+
     const event = await lazy.getEvent(lastrun.eventid)
+    let data
     if (event.ispro) {
         //  Get the last run on the opposite course with the same classcode
-        const back  = new Date(ws.lastresulttime)
-        back.setSeconds(-60)
-        const opp = await lazy.lastRuns(lastrun.eventid, back, lastclasscode, lastrun.course === 1 ? 2 : 1)
-        data = await loadEventResults(lazy, ws.watch, lastrun, opp ? opp.lastEntry.carid : undefined, lastclasscode)
+        const back = new Date(lastrun.modified); back.setSeconds(-60)
+        const opp  = await lazy.lastRun(lastrun.eventid, back, lastclasscode, lastrun.course === 1 ? 2 : 1)
+        data = await loadEventResults(lazy, ws.watch, lastrun, opp ? opp.carid : undefined, lastclasscode)
     } else {
         data = await loadEventResults(lazy, ws.watch, lastrun)
     }
 
     data.timestamp = lastrun.modified
     ws.send(JSON.stringify(data))
-    return [data, lastrun.modified]
 }
+
 
 /**
  * Load Event results based on the last run data
@@ -194,107 +214,4 @@ async function loadEntrantResults(lazy: LazyData, watch: LiveSocketWatch, eventi
     }
 
     return ret
-}
-
-
-class LazyData {
-
-    _events:     Map<UUID, SeriesEvent> = new Map()
-    _settings:   SeriesSettings|null = null
-    _classdata:  ClassData|null      = null
-    _eresults:   Map<UUID, any>      = new Map()
-    _cresults:   ChampResults|null   = null
-    _calculated: Map<any, any>       = new Map()
-    task: ScorekeeperProtocol
-
-    constructor(task: ScorekeeperProtocol) {
-        this.task = task
-    }
-
-    async getEvent(eventid: UUID) {
-        if (!this._events.has(eventid)) {
-            this._events.set(eventid, await this.task.events.getEvent(eventid))
-        }
-        return this._events.get(eventid) as SeriesEvent
-    }
-
-    async lastRuns(eventid: UUID, earliest: Date, classcodefilter?: string, coursefilter?: number) {
-        return await this.task.runs.getLastSet(eventid, earliest, classcodefilter, coursefilter)
-    }
-
-    async settings(): Promise<SeriesSettings> {
-        if (!this._settings) {
-            this._settings = await this.task.series.seriesSettings()
-        }
-        return this._settings
-    }
-
-    async classdata(): Promise<ClassData> {
-        if (!this._classdata) {
-            this._classdata = await this.task.clsidx.getClassData()
-        }
-        return this._classdata
-    }
-
-    async eresults(eventid: UUID): Promise<EventResults> {
-        if (!this._eresults.has(eventid)) {
-            // load and filter results
-            const results = await this.task.results.getEventResults(eventid)
-            for (const elist of Object.values(results)) {
-                for (const e of elist) {
-                    delete e.scca
-                }
-            }
-            this._eresults[eventid] = results
-        }
-        return this._eresults[eventid]
-    }
-
-    async cresults(): Promise<ChampResults> {
-        if (!this._cresults) {
-            this._cresults = await this.task.results.getChampResults()
-        }
-        return this._cresults
-    }
-
-    async event(eventid: UUID, carids: UUID[], rungroupfilter?: number): Promise<[Entrant[], Entrant[]]> {
-        const key = ['e', eventid, carids, rungroupfilter]
-        if (!this._calculated.has(key)) {
-            this._calculated.set(key, decorateClassResults(await this.settings(), await this.eresults(eventid), carids, rungroupfilter))
-        }
-        return this._calculated.get(key)
-    }
-
-    async champ(entrants: Entrant[]) {
-        const key = ['c', entrants.map(e => e.driverid)]
-        if (!this._calculated.has(key)) {
-            this._calculated.set(key, decorateChampResults(await this.cresults(), entrants))
-        }
-        return this._calculated.get(key)
-    }
-
-    async nextorder(eventid: UUID, course: number, rungroup: number, aftercarid: UUID, classcodefilter?: string): Promise<Entrant[]> {
-        // Get next carids in order and then match/return their results entries
-        const key = ['n', eventid, course, rungroup, aftercarid]
-        if (!this._calculated.has(key)) {
-            const nextcars = await this.task.runs.getNextRunOrder(aftercarid, eventid, course, rungroup, classcodefilter)
-            const order    = [] as Entrant[]
-            const results  = await this.eresults(eventid)
-            for (const n of nextcars) {
-                const subkey = (n.classcode in results ? n.classcode : rungroup.toString())
-                if (!(subkey in results)) continue
-
-                for (const e of results[subkey]) {
-                    if (e.carid === n.carid) {
-                        e.bestrun = getBestNetRun(e, course)
-                        order.push(e)
-                        break
-                    }
-                }
-
-            }
-            this._calculated.set(key, order)
-        }
-        return this._calculated.get(key)
-    }
 }

@@ -199,3 +199,8 @@ export class LiveSocketWatch {
     timer    = false
     protimer = false
 }
+
+export function watchNonTimers(w: LiveSocketWatch): boolean {
+    return (w.entrant || w.class || w.champ || w.next || w.runorder ||
+        Object.values(w.top.net).some(v => v) || Object.values(w.top.raw).some(v => v))
+}

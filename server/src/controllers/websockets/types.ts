@@ -10,7 +10,7 @@ import { DefaultMap } from '@/util/data'
 export interface SessionWebSocket extends WebSocket {
     driverid: UUID|null
     series: string|null
-    lastresulttime: Date
+    eventid: UUID|null
     watch: LiveSocketWatch
 }
 

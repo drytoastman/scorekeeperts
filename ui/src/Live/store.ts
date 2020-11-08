@@ -20,8 +20,8 @@ class LiveState {
     next: any = {}
     topnet: any = {}
     topraw: any = {}
-    timer: any = {}
     runorder: any = {}
+    timer = 0
 }
 
 const livemutations: MutationTree<LiveState> = {
@@ -89,7 +89,7 @@ const liveactions: ActionTree<LiveState, any> = {
 
         ws.onopen    = ()  => { context.dispatch('sendRequest') }
         ws.onmessage = (e) => { context.commit('processData', JSON.parse(e.data)) }
-        ws.onclose   = (e) => { if (e.code >= 1002) context.commit('addErrors', [`Websocket: ${e.reason}`]) }
+        ws.onclose   = (e) => { if (e.code >= 1002 && e.reason) context.commit('addErrors', [`Websocket: ${e.reason}`]) }
         ws.onerror   = (e) => { if (e.error && e.error.message !== 'TIMEOUT') context.commit('addErrors', [`Websocket: ${e.error.message}`]) }
         ws.reconnect()
 

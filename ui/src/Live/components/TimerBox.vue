@@ -2,7 +2,7 @@
     <table>
         <tbody>
             <tr class='head'><th colspan='6'>Timer</th></tr>
-            <tr><td class='timer'>{{timer.timer | t3}}</td></tr>
+            <tr><td class='timer'>{{timer | t3}}</td></tr>
         </tbody>
     </table>
 </template>
@@ -11,7 +11,7 @@
 export default {
     name: 'TimerBox',
     props: {
-        timer: Object
+        timer: Number
     }
 }
 </script>

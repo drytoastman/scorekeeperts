@@ -63,10 +63,10 @@
                     <v-tab>Raw</v-tab>
 
                     <v-tab-item>
-                        <TopTimesTable :order="topnet" type="Index"></TopTimesTable>
+                        <TopTimesTable :tttable="topnet" type="Index"></TopTimesTable>
                     </v-tab-item>
                     <v-tab-item>
-                        <TopTimesTable :order="topraw" type="Raw"></TopTimesTable>
+                        <TopTimesTable :tttable="topraw" type="Raw"></TopTimesTable>
                     </v-tab-item>
                 </v-tabs>
             </div>

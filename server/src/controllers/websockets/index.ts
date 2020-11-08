@@ -52,7 +52,7 @@ websockets.on('connection', async function connection(ws: SessionWebSocket, req:
 
     } else if (pathname === '/api2/live') {
         ws.series    = ''
-        ws.lastresulttime = new Date(0)
+        ws.eventid   = ''
         ws.watch     = {} as any
         ws.onmessage = (e) => processLiveRequest(ws, JSON.parse(e.data.toString()))
         ws.onclose   = ()  => websockets.clearLive(ws)

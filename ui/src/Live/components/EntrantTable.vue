@@ -25,8 +25,6 @@
 </template>
 
 <script>
-import { t3 } from '@/util/filters'
-
 export default {
     name: 'EntrantTable',
     props: {
@@ -46,7 +44,11 @@ export default {
             return c.join(' ')
         },
         impval(val) {
-            if (val) return `[${t3(val)}]`
+            if (val) {
+                let s = val.toFixed(3)
+                if (val > 0) { s = '+' + s }
+                return `[${s}]`
+            }
             return ''
         }
     }

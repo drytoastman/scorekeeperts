@@ -17,7 +17,7 @@
                 <td v-if="!noindexcol" class='index'>{{e.indexstr}}</td>
                 <td>{{e.net|t3}}</td>
                 <td class='diffn'>{{e.diffn|t3}}</td>
-                <td v-if="!nodiff1col" class='diff1'>{{e.diff1|t3}}}</td>
+                <td v-if="!nodiff1col" class='diff1'>{{e.diff1|t3}}</td>
             </tr>
         </tbody>
     </table>
