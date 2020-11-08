@@ -11,7 +11,8 @@ function cents2dollars(v: number): string {
     return `$${(v / 100).toFixed(2)}`
 }
 
-function t3(v: number): string {
+export function t3(v: number): string {
+    if (typeof v !== 'number') return ''
     return v.toFixed(3)
 }
 

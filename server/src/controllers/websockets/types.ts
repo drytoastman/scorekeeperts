@@ -4,25 +4,14 @@ import WebSocket from 'ws'
 import { UUID } from '@/common/util'
 import { CookieSess } from '../auth'
 import { AUTHTYPE_DRIVER, AUTHTYPE_SERIES } from '@/common/auth'
+import { LiveSocketWatch } from '@/common/results'
 import { DefaultMap } from '@/util/data'
-
-export type WebSocketWatch = {
-    entrant: boolean,
-    class: boolean,
-    champ: boolean,
-    next: boolean,
-    topnet: boolean,
-    topraw: boolean,
-    runorder: boolean,
-    timer: boolean,
-    protimer: boolean
-}
 
 export interface SessionWebSocket extends WebSocket {
     driverid: UUID|null
     series: string|null
     lastresulttime: Date
-    watch: WebSocketWatch
+    watch: LiveSocketWatch
 }
 
 export interface SessionMessage extends http.IncomingMessage {
@@ -72,8 +61,12 @@ export class TrackingServer extends WebSocket.Server {
         this.live.delete(ws)
     }
 
-    getAllLive(item: string): Array<SessionWebSocket> {
+    getLiveItem(item: string): Array<SessionWebSocket> {
         return [...this.live.values()].filter(ws => ws.watch[item])
+    }
+
+    getLiveSeries(series: string): Array<SessionWebSocket> {
+        return [...this.live.values()].filter(ws => ws.series === series)
     }
 
     getLive(series: string, item: string): Array<SessionWebSocket> {

@@ -12,7 +12,7 @@
                     <th>Pos</th>
                     <th>Need</th>
                 </tr>
-                <tr v-for="e in order" :key="e.carid">
+                <tr v-for="e in order.next" :key="e.carid">
                     <td class='name limit'>{{e.firstname}} {{e.lastname}}</td>
                     <td v-if="!small" class='limit'>{{e.year}} {{e.model}} {{e.color}}</td>
                     <td>{{e.classcode}}</td>

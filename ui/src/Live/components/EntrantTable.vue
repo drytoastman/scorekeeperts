@@ -12,19 +12,20 @@
                 <th width='35%'>Net</th>
             </tr>
 
-            <tr v-for="r in runs" :key="r.key" :class="rowclass(r)">
-                <td>{{run.run}}</td>
-                <td>{{run.raw|t3}} {{impval(run.rawimp)}}</td>
-                <td>{{run.cones}}</td>
-                <td>{{run.gates}}</td>
-                <td v-if="r.status !== 'OK'"><span class='status'>{{run.status}}</span></td>
-                <td v-else>{{run.net|t3}} {{impval(run.netimp)}}</td>
+            <tr v-for="r in entrant.runs[0]" :key="r.run" :class="rowclass(r)">
+                <td>{{r.run}}</td>
+                <td>{{r.raw|t3}} <span class='change' v-html="impval(r.rawimp)"></span></td>
+                <td>{{r.cones}}</td>
+                <td>{{r.gates}}</td>
+                <td v-if="r.status !== 'OK'"><span class='status'>{{r.status}}</span></td>
+                <td v-else>{{r.net|t3}} <span class='change' v-html="impval(r.netimp)"></span></td>
             </tr>
         </tbody>
     </table>
 </template>
 
 <script>
+import { t3 } from '@/util/filters'
 
 export default {
     name: 'EntrantTable',
@@ -45,7 +46,7 @@ export default {
             return c.join(' ')
         },
         impval(val) {
-            if (val) return `<span class='change'>[${val}|t3}]</span>`
+            if (val) return `[${t3(val)}]`
             return ''
         }
     }

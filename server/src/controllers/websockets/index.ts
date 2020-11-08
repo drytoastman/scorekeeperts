@@ -27,12 +27,12 @@ websockets.on('connection', async function connection(ws: SessionWebSocket, req:
     const series   = query.series as string
     const authtype = query.authtype as string
 
-    if (!series) {
-        ws.close(1002, 'Invalid series provided')
-        return
-    }
-
     if (pathname === '/api2/updates') {
+        if (!series) {
+            ws.close(1002, 'Invalid series provided')
+            return
+        }
+
         const auth = new AuthData(req.session)
         switch (authtype) {
             case AUTHTYPE_DRIVER:
@@ -51,14 +51,11 @@ websockets.on('connection', async function connection(ws: SessionWebSocket, req:
 
 
     } else if (pathname === '/api2/live') {
-        if (authtype !== AUTHTYPE_NONE) {
-            return ws.close(1002, 'Authtype provided for non authenticated live data')
-        }
         ws.series    = ''
-        ws.last      = new Date(0)
-        ws.watch     = new Set()
-        ws.onmessage = (event) => processLiveRequest(ws, event.data.toString())
-        ws.onclose   = (event) => websockets.clearLive(ws)
+        ws.lastresulttime = new Date(0)
+        ws.watch     = {} as any
+        ws.onmessage = (e) => processLiveRequest(ws, JSON.parse(e.data.toString()))
+        ws.onclose   = ()  => websockets.clearLive(ws)
         websockets.addLive(ws)
 
     } else {

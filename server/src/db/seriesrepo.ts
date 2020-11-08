@@ -81,10 +81,11 @@ export class SeriesRepository {
     }
 
     async seriesSettings(): Promise<SeriesSettings> {
-        const ret: SeriesSettings = new DefaultSettings();
-        (await this.db.any('SELECT name,val FROM settings')).forEach(r => {
+        const ret: SeriesSettings = new DefaultSettings()
+        const rows = await this.db.any('SELECT name,val FROM settings')
+        for (const r of rows) {
             this._db2obj(r.name, r.val, ret)
-        })
+        }
         return ret
     }
 

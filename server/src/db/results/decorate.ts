@@ -14,8 +14,9 @@ export function getLastCourse(e: Entrant): number {
     let lasttime = y2k
     for (const c of e.runs) {
         for (const r of c) {
-            if (r.modified > lasttime) {
-                lasttime = r.modified
+            const mod = new Date(r.modified)
+            if (mod > lasttime) {
+                lasttime = mod
                 e.lastcourse = r.course
             }
         }

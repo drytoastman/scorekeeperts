@@ -76,7 +76,10 @@
 
 
 <script>
+import { mapState } from 'vuex'
 import isEmpty from 'lodash/isEmpty'
+
+import { UUID } from '@/common/util'
 import TimerBox from '../components/TimerBox.vue'
 import RunOrderTable from '../components/RunOrderTable.vue'
 import ClassTable from '../components/ClassTable.vue'
@@ -95,63 +98,33 @@ export default {
         EntrantTable,
         TopTimesTable
     },
+    props: {
+        series: String,
+        eventid: UUID
+    },
     data() {
         return {
-            prev:      {},
-            last:      {},
-            next:      {},
             lastclass: {},
-            runorder:  {},
-            timer:     1.234,
-            topnet:    {},
-            topraw:    {},
             tselected: 0,
             classcodes: ['Off', 'A', 'B', 'C'],
             selectedClass: '',
             isEmpty
         }
     },
+    computed: {
+        ...mapState(['prev', 'last', 'next', 'topnet', 'topraw', 'timer', 'runorder'])
+    },
     methods: {
         tabchange() {
             return ''
+        },
+        updateRequest() {
+            /* */
         }
     }
-
     /*
     nothing() {
-        super()
-        var me = this
-        this.classData = null
-        this.dataSource = new DataSource(
-            panelConfig.wsurl,
-            function(d) {
-                if ('last' in d) {
-                    me.prev = me.last
-                    me.last = d.last
-                }
-                if ('next' in d)    me.next    = d.next
-                if ('topnet' in d)  me.topnet  = d.topnet
-                if ('topraw' in d)  me.topraw  = d.topraw
-                if ('timer' in d)   me.timer   = d.timer
-                if ('runorder' in d) me.runorder = d.runorder
-            }
-        )
 
-        this.dataSource.request({
-            watch: {
-                series:  series,
-                eventid: eventid,
-                timer:   true,
-                runorder: true,
-                //protimer: true,
-                entrant: true,
-                class:   true,
-                champ:   true,
-                next:    true,
-                topnet:  true,
-                topraw:  true
-            }
-        })
     },
 
     classChange(e) {

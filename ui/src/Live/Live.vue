@@ -20,6 +20,9 @@ export default {
     methods: {
     },
     computed: {
+    },
+    mounted() {
+        this.$store.dispatch('restartWebSocket')
     }
 }
 </script>

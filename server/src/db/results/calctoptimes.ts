@@ -5,7 +5,7 @@ import { decorateEntrant } from './decorate'
 import { ClassData } from '@common/classindex'
 import { UUID } from '@common/util'
 
-export function loadTopTimesTable(classdata: ClassData, results: EventResults, keys: TopTimesKey[], carid?: UUID): TopTimesTable {
+export function createTopTimesTable(classdata: ClassData, results: EventResults, keys: TopTimesKey[], carid?: UUID): TopTimesTable {
     /*
         Generate lists on demand as there are many iterations.  Returns a TopTimesTable class
         that wraps all the TopTimesLists together.
@@ -31,8 +31,8 @@ export function loadTopTimesTable(classdata: ClassData, results: EventResults, k
         ret.colcount.push(cols.length)
         ret.cols.push(cols)
         ret.fields.push(fields)
-        if (ret.rows.length < entries.length) {
-            ret.rows.length = entries.length
+        while (ret.rows.length < entries.length) {
+            ret.rows.push([])
         }
         entries.forEach((entry, index) => {
             ret.rows[index].push(entry)

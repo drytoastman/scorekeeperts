@@ -35,7 +35,7 @@ CREATE INDEX ON publiclog(ltime);
 COMMENT ON TABLE publiclog IS 'Change logs that are specific to this local database';
 
 
-CREATE OR REPLACE FUNCTION logmods() RETURNS TRIGGER AS $body$
+CREATE OR REPLACE FUNCTION public.logmods() RETURNS TRIGGER AS $body$
 DECLARE
     audit_row publiclog;
     data text;

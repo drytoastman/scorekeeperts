@@ -24,7 +24,7 @@ export interface Run {
         reaction?: number;
         sixty?: number;
     }
-    modified: Date;
+    modified: string;
 }
 
 export interface DecoratedRun extends Run {
@@ -176,4 +176,26 @@ export class TopTimesKey {
         this.fields = []
         Object.assign(this, options)
     }
+}
+
+
+export class CourseWatch {
+    0 = false
+    1 = false
+    2 = false
+}
+
+export class LiveSocketWatch {
+    entrant  = false
+    class    = false
+    champ    = false
+    next     = false
+    runorder = false
+    top = {
+        net: new CourseWatch(),
+        raw: new CourseWatch()
+    }
+
+    timer    = false
+    protimer = false
 }

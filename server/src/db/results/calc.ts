@@ -10,8 +10,6 @@ import { getDList, make2D } from '@/util/data'
 import { ScorekeeperProtocol } from '..'
 import { dblog } from '@/util/logging'
 
-const y2k = new Date('2000-01-01')
-
 export async function updatedSeriesInfo(task: ScorekeeperProtocol): Promise<SeriesInfo> {
     dblog.debug('updatedSeriesInfo')
     const ret = {
@@ -117,7 +115,7 @@ export async function updatedEventResults(task: ScorekeeperProtocol, eventid: UU
                     norder: -1,
                     rorder: -1,
                     anorder: -1,
-                    modified: y2k
+                    modified: '2000-01-01T00:00:00.000Z'
                 }
             }
         }

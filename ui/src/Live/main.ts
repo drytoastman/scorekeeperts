@@ -5,8 +5,9 @@ import 'typeface-roboto'
 
 import Live from './Live.vue'
 import router from './router'
-import { createLiveStore } from '@/store'
+import store from './store'
 import filters from '@/util/filters'
+import { Route } from 'vue-router'
 
 Vue.use(filters)
 Vue.use(Vuetify)
@@ -36,7 +37,10 @@ const vuetify = new Vuetify({
     }
 })
 
-const store = createLiveStore(router)
+router.beforeResolve(function(to: Route, from: Route, next): void {
+    store.dispatch('newRouteParam', to.params)
+    next()
+})
 
 new Vue({
     router,

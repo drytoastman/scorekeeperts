@@ -1,19 +1,22 @@
 import { ClassData } from '@/common/classindex'
 import { SeriesEvent } from '@/common/event'
-import { ChampResults, Entrant, EventResults, Run, TopTimesKey } from '@/common/results'
+import { ChampResults, Entrant, EventResults, LiveSocketWatch, Run, TopTimesKey } from '@/common/results'
 import { SeriesStatus } from '@/common/series'
 import { SeriesSettings } from '@/common/settings'
 import { UUID } from '@/common/util'
 import { db, ScorekeeperProtocol, tableWatcher } from '@/db'
-import { loadTopTimesTable } from '@/db/results/calctoptimes'
+import { createTopTimesTable } from '@/db/results/calctoptimes'
 import { decorateChampResults, decorateClassResults, getBestNetRun } from '@/db/results/decorate'
+import { getDObj } from '@/util/data'
 import { websockets } from '.'
-import { SessionWebSocket, WebSocketWatch } from './types'
+import { SessionWebSocket } from './types'
 
 export async function processLiveRequest(ws: SessionWebSocket, data: any) {
+    console.log(data)
     websockets.clearLive(ws)
+
     if (await db.series.getStatus(data.series) !== SeriesStatus.ACTIVE) {
-        return ws.send(JSON.stringify({ error: 'not an active series' }))
+        return ws.send(JSON.stringify({ errors: ['not an active series'] }))
     }
 
     ws.watch  = data.watch
@@ -23,12 +26,13 @@ export async function processLiveRequest(ws: SessionWebSocket, data: any) {
 
     // fire off current data now!
     if (ws.watch.protimer) ws.send(generateProTimer(data.series))
+    ws.send(JSON.stringify({ hello: 'ok' }))
 }
 
 
 tableWatcher.on('timertimes', (series: string, type: string, row: any) => {
     const msg = JSON.stringify({ timer: row.raw })
-    websockets.getAllLive('timer').forEach(ws => ws.send(msg))
+    websockets.getLiveItem('timer').forEach(ws => ws.send(msg))
 })
 
 tableWatcher.on('localeventstream', (series: string, type: string, row: any) => {
@@ -40,12 +44,16 @@ tableWatcher.on('localeventstream', (series: string, type: string, row: any) => 
 })
 
 tableWatcher.on('runs', (series: string, type: string, row: any) => {
-    const rx = websockets.getLive(series, 'everything else?')
+    const rx = websockets.getLiveSeries(series)
     if (rx.length <= 0) return
     db.task(async t => {
         await t.series.setSeries(series)
         const lazy = new LazyData(t)
-        rx.forEach(async ws => await sendNextResult(ws, lazy, row))
+        for (const ws of rx) {
+            await sendNextResult(ws, lazy, row)
+        }
+    }).catch(error => {
+        console.log(error)
     })
 })
 
@@ -105,7 +113,8 @@ async function generateProTimer(series: string): Promise<string> {
 
 async function sendNextResult(ws: SessionWebSocket, lazy: LazyData, lastrun: Run, lastclasscode?: string) {
     let data
-    if ((await lazy.getEvent(lastrun.eventid)).ispro) {
+    const event = await lazy.getEvent(lastrun.eventid)
+    if (event.ispro) {
         //  Get the last run on the opposite course with the same classcode
         const back  = new Date(ws.lastresulttime)
         back.setSeconds(-60)
@@ -116,6 +125,7 @@ async function sendNextResult(ws: SessionWebSocket, lazy: LazyData, lastrun: Run
     }
 
     data.timestamp = lastrun.modified
+    ws.send(JSON.stringify(data))
     return [data, lastrun.modified]
 }
 
@@ -126,22 +136,23 @@ async function sendNextResult(ws: SessionWebSocket, lazy: LazyData, lastrun: Run
  * @param lastrun the last run data
  * @param oppcarid optional carid to lookup on the opposite course (for ProSolo)
  */
-async function loadEventResults(lazy: LazyData, watch: WebSocketWatch, lastrun: Run, oppcarid?:UUID, classcodefilter?: string) {
+async function loadEventResults(lazy: LazyData, watch: LiveSocketWatch, lastrun: Run, oppcarid?:UUID, classcodefilter?: string) {
     const data      = {} as any
     const carids    = [lastrun.carid]
 
     if (oppcarid) carids.push(oppcarid)
-    data.last  = loadEntrantResults(lazy, watch, lastrun.eventid, carids, lastrun.rungroup)
+    data.last = await loadEntrantResults(lazy, watch, lastrun.eventid, carids, lastrun.rungroup)
 
-    for (const type of ['net', 'raw']) {
-        for (const side of ['', 'left', 'right']) {
-            const key = `top${type}${side}`
-            if (watch[key]) {
-                const cd  = await lazy.classdata()
-                const er  = await lazy.eresults(lastrun.eventid)
-                const cc  = side === 'left' ? 1 : (side === 'right' ? 2 : 0)
-                const tt  = new TopTimesKey({ indexed: type === 'net', counted: type === 'net', course: cc })
-                data[key] = loadTopTimesTable(cd, er, [tt], lastrun.carid)
+    for (const type in watch.top) {
+        getDObj(data, 'top')[type] = {}
+        for (const course in watch.top[type]) {
+            if (watch.top[type][course]) {
+                data.top[type][course] = createTopTimesTable(
+                    await lazy.classdata(),
+                    await lazy.eresults(lastrun.eventid),
+                    [new TopTimesKey({ indexed: type === 'net', counted: type === 'net', course: course })],
+                    lastrun.carid
+                )
             }
         }
     }
@@ -157,14 +168,14 @@ async function loadEventResults(lazy: LazyData, watch: WebSocketWatch, lastrun: 
     if (watch.next) {
         const nextids = await lazy.nextorder(lastrun.eventid, lastrun.course, lastrun.rungroup, lastrun.carid, classcodefilter)
         if (nextids && nextids.length) {
-            data.next = loadEntrantResults(lazy, watch, lastrun.eventid, [nextids[0].carid], lastrun.rungroup)
+            data.next = await loadEntrantResults(lazy, watch, lastrun.eventid, [nextids[0].carid], lastrun.rungroup)
         }
     }
 
     return data
 }
 
-async function loadEntrantResults(lazy: LazyData, watch: WebSocketWatch, eventid: UUID, carids: UUID[], rungroupfilter?: number) {
+async function loadEntrantResults(lazy: LazyData, watch: LiveSocketWatch, eventid: UUID, carids: UUID[], rungroupfilter?: number) {
     const ret = {} as any
     if (!carids || carids.length <= 0) return ret
 
@@ -174,11 +185,12 @@ async function loadEntrantResults(lazy: LazyData, watch: WebSocketWatch, eventid
     const classcode = drivers[0].classcode
 
     if (watch.entrant) ret.entrant = drivers[0]
-
-    if (watch.class) ret.class = { classcode:classcode, order: group }
-
+    if (watch.class)   ret.class   = { classcode: classcode, order: group }
     if (watch.champ && !(await lazy.getEvent(eventid)).ispractice && (await lazy.classdata()).classlist[classcode].champtrophy) {
-        ret.champ = { classcode:classcode, order: await lazy.champ(drivers) }
+        ret.champ = {
+            classcode: classcode,
+            order: await lazy.champ(drivers)
+        }
     }
 
     return ret
@@ -267,7 +279,7 @@ class LazyData {
         if (!this._calculated.has(key)) {
             const nextcars = await this.task.runs.getNextRunOrder(aftercarid, eventid, course, rungroup, classcodefilter)
             const order    = [] as Entrant[]
-            const results  = this.eresults(eventid)
+            const results  = await this.eresults(eventid)
             for (const n of nextcars) {
                 const subkey = (n.classcode in results ? n.classcode : rungroup.toString())
                 if (!(subkey in results)) continue

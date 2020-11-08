@@ -7,7 +7,8 @@ const routes = [
     {
         path: '/announcer/:series/:eventid',
         name: 'announcer',
-        component: announcer
+        component: announcer,
+        props: true
     }
     // { path: '/', redirect: { name: 'announcer' }}
 ]

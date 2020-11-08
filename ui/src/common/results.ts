@@ -11,7 +11,7 @@ export enum RunStatus {
 }
 
 export interface Run {
-    eventid?: UUID;
+    eventid: UUID;
     carid: UUID;
     rungroup: number;
     course: number;
@@ -24,7 +24,7 @@ export interface Run {
         reaction?: number;
         sixty?: number;
     }
-    modified: Date;
+    modified: string;
 }
 
 export interface DecoratedRun extends Run {
@@ -43,7 +43,7 @@ export interface DecoratedRun extends Run {
 export interface Entrant extends Car {
     firstname: string;
     lastname: string;
-    scca: string
+    scca?: string
 
     rungroup: number;
     indexval: number;
@@ -63,6 +63,7 @@ export interface Entrant extends Car {
     current: boolean;
     ispotential: boolean;
     isold: boolean;
+    bestrun?: DecoratedRun
 
     oldpoints: number;
     potpoints: number;
@@ -175,4 +176,26 @@ export class TopTimesKey {
         this.fields = []
         Object.assign(this, options)
     }
+}
+
+
+export class CourseWatch {
+    0 = false
+    1 = false
+    2 = false
+}
+
+export class LiveSocketWatch {
+    entrant  = false
+    class    = false
+    champ    = false
+    next     = false
+    runorder = false
+    top = {
+        net: new CourseWatch(),
+        raw: new CourseWatch()
+    }
+
+    timer    = false
+    protimer = false
 }

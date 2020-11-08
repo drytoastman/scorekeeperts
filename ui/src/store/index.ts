@@ -10,7 +10,7 @@ import { api2Mutations } from './api2mutations'
 import { installLoggingHandlers } from './logging'
 import { cartMutations, registerActions, registerGetters } from './register'
 import { Api2State, API2 } from './state'
-import { AUTHTYPE_DRIVER, AUTHTYPE_NONE, AUTHTYPE_SERIES } from '@/common/auth'
+import { AUTHTYPE_DRIVER, AUTHTYPE_SERIES } from '@/common/auth'
 
 Vue.use(Vuex)
 
@@ -80,22 +80,4 @@ export function createRegisterStore(router: VueRouter): Store<Api2State> {
         }
     )
     return store
-}
-
-export function createLiveStore(router: VueRouter): Store<Api2State> {
-    return finishStore(
-        new Store({
-            state:     new Api2State(AUTHTYPE_NONE),
-            mutations: api2Mutations(false),
-            actions:   api2Actions,
-            getters:   api2Getters
-        }),
-        router,
-        [],
-        (store) => {
-            if (!store.state.currentSeries) return
-            store.dispatch('getdata')
-            store.dispatch('restartWebSocket', API2.LIVE)
-        }
-    )
 }
