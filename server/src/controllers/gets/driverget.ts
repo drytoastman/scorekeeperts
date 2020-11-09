@@ -17,7 +17,7 @@ export async function driverget(task: ScorekeeperProtocol, auth: AuthData, param
     if (!ret.series) param.items = param.items.filter((v:string) => !['settings', 'driversattr', 'cars', 'payments', 'registered', 'usednumbers'].includes(v))
 
     for (const item of param.items) {
-        if (await unauthgetone(task, auth, item, ret)) continue
+        if (await unauthgetone(task, auth, param, item, ret)) continue
         if (!driverid) throw new AuthError(AUTHTYPE_DRIVER, param)
 
         switch (item) {

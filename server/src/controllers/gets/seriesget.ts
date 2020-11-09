@@ -12,7 +12,7 @@ export async function seriesget(task: ScorekeeperProtocol, auth: AuthData, param
 
     await task.series.setSeries(ret.series)
     for (const item of param.items) {
-        if (await unauthgetone(task, auth, item, ret)) continue
+        if (await unauthgetone(task, auth, param, item, ret)) continue
 
         switch (item) {
             case 'attendance':    ret.attendance = await task.runs.attendance(); break

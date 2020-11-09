@@ -190,6 +190,7 @@ export class LiveSocketWatch {
     class    = false
     champ    = false
     next     = false
+    classcode = ''
     runorder = false
     top = {
         net: new CourseWatch(),

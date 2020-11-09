@@ -5,7 +5,7 @@
             <RunOrderTable :order="runorder"></RunOrderTable>
 
             <div id='classtabs'>
-                <v-tabs color="secondary" @changed="tabchange">
+                <v-tabs color="secondary" v-model="selectedTab">
                     <v-tab>2nd Last</v-tab>
                     <v-tab>Last</v-tab>
                     <v-tab>Next</v-tab>
@@ -43,10 +43,13 @@
                     </v-tab-item>
                     <v-tab-item>
                         <v-select :items="classcodes" v-model="selectedClass"></v-select>
-                        <template v-if="!isEmpty(lastclass)">
+                        <template v-if="!isEmpty(lastclass) && !lastclass.nodata">
                             <EntrantTable :entrant="lastclass.entrant"></EntrantTable>
                             <ClassTable       :cls="lastclass.class"></ClassTable>
                             <ChampTable     :champ="lastclass.champ"></ChampTable>
+                        </template>
+                        <template v-else-if="!isEmpty(lastclass)">
+                            No class data yet
                         </template>
                         <template v-else>
                             Waiting for data...
@@ -58,7 +61,7 @@
 
         <div class='col2'>
             <div id='tttabs'>
-                <v-tabs color="secondary" @changed="tabchange">
+                <v-tabs color="secondary" v-model="selectedTTab">
                     <v-tab>Index</v-tab>
                     <v-tab>Raw</v-tab>
 
@@ -104,63 +107,37 @@ export default {
     },
     data() {
         return {
-            lastclass: {},
-            tselected: 0,
-            classcodes: ['Off', 'A', 'B', 'C'],
-            selectedClass: '',
+            selectedTab: '',
+            selectedTTab: '',
             isEmpty
         }
     },
     computed: {
-        ...mapState(['prev', 'last', 'next', 'topnet', 'topraw', 'timer', 'runorder'])
+        ...mapState(['classes', 'prev', 'last', 'next', 'lastclass', 'topnet', 'topraw', 'timer', 'runorder', 'getclass']),
+        classcodes() { return this.classes.map(c => c.classcode).sort() },
+        selectedClass: {
+            get() { return this.getclass },
+            set(nv) { this.$store.dispatch('setClass', nv) }
+        }
     },
-    methods: {
-        tabchange() {
-            return ''
-        },
-        updateRequest() {
-            /* */
-        }
-    }
-    /*
-    nothing() {
-
+    watch: {
+        // last() { this.selectedTab = 1 },
     },
-
-    classChange(e) {
-        var idx = e.target.selected
-        var code = e.target.children[idx].textContent
-
-        if (code === 'Off') {
-            if (this.classData != null) {
-                this.classData.shutdown()
-                this.classData = null
-            }
-            this.lastclass = null
-            return
-        }
-
-        var me = this
-        if (this.classData == null) {
-            this.classData = new DataSource(
-                panelConfig.wsurl,
-                (d) => { if ('last' in d) me.lastclass = d.last }
-            )
-        }
-
-        this.lastclass = null
-        this.classData.request({
-            watch: {
-                series:  panelConfig.series,
-                eventid: panelConfig.eventid,
-                classcode: code,
-                entrant: true,
-                class:   true,
-                champ:   true
+    mounted() {
+        this.$store.dispatch('setWatch', {
+            timer:    true,
+            runorder: true,
+            entrant:  true,
+            class:    true,
+            champ:    true,
+            next:     true,
+            classcode: '',
+            top: {
+                net:  { 0: true },
+                raw:  { 0: true }
             }
         })
     }
-    */
 }
 </script>
 

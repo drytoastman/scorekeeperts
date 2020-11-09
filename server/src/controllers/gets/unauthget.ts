@@ -4,6 +4,9 @@ import util from 'util'
 import { ScorekeeperProtocol } from '@/db'
 import { SQ_APPLICATION_ID, RECAPTCHA_SITEKEY, IS_MAIN_SERVER } from '@/db/generalrepo'
 import { AuthData } from '../auth'
+import { generateProTimer, loadResultData } from './livedata'
+import { LazyData } from '../lazydata'
+import { LiveSocketWatch, watchNonTimers } from '@/common/results'
 
 const readdirAsync = util.promisify(fs.readdir)
 
@@ -14,14 +17,15 @@ export async function unauthget(task: ScorekeeperProtocol, auth: AuthData, param
         success: true
     }
 
+    task.series.setSeries(param.series)
     for (const item of param.items) {
-        ret.success = ret.success && await unauthgetone(task, auth, item, ret)
+        ret.success = ret.success && await unauthgetone(task, auth, param, item, ret)
     }
 
     return ret
 }
 
-export async function unauthgetone(task: ScorekeeperProtocol, auth: AuthData, item: any, ret: any): Promise<boolean> {
+export async function unauthgetone(task: ScorekeeperProtocol, auth: AuthData, param: any, item: any, ret: any): Promise<boolean> {
     let res = true
 
     // things that don't require a series
@@ -45,6 +49,8 @@ export async function unauthgetone(task: ScorekeeperProtocol, auth: AuthData, it
     if (!res && ret.series) {
         // try again with things that require a series if one is provided
         res = true
+        let run
+        let watch: LiveSocketWatch
         switch (item) {
             case 'events':          ret.events          = await task.events.eventList();              break
             case 'counts':          ret.counts          = await task.register.getRegistationCounts(); break
@@ -54,7 +60,20 @@ export async function unauthgetone(task: ScorekeeperProtocol, auth: AuthData, it
             case 'itemeventmap':    ret.itemeventmap    = await task.payments.getItemMaps();          break
             case 'paymentaccounts': ret.paymentaccounts = await task.payments.getPaymentAccounts();   break
             case 'classorder':      ret.classorder      = await task.clsidx.classOrder();             break
-            default: res = false
+            case 'live':
+                watch = JSON.parse(param.watch)
+                if (watch.protimer) ret.protimer = await generateProTimer()
+                if (watch.timer)    ret.timer    = await task.series.getLastTimer()
+                if (watchNonTimers(watch)) {
+                    run = await task.runs.getLastRun(param.eventid, new Date(0), watch.classcode)
+                    if (!run) break
+                    Object.assign(ret, await loadResultData(new LazyData(task), watch, run))
+                }
+                break
+
+            default:
+                res = false
+                break
         }
     }
 

@@ -92,6 +92,7 @@ export class LazyData {
     }
 
     async nextorder(eventid: UUID, course: number, rungroup: number, aftercarid: UUID, classcodefilter?: string): Promise<Entrant[]> {
+        console.log(`aftercarid = ${aftercarid}`)
         // Get next carids in order and then match/return their results entries
         const key = ['n', eventid, course, rungroup, aftercarid]
         if (!this._calculated.has(key)) {

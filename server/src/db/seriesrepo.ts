@@ -102,6 +102,12 @@ export class SeriesRepository {
         return this.seriesSettings()
     }
 
+    async getLastTimer(): Promise<number|undefined> {
+        const row = await this.db.oneOrNone('SELECT raw FROM timertimes ORDER BY modified DESC LIMIT 1')
+        if (row) return row.raw
+        return undefined
+    }
+
     async dropSeries(series: string) {
         return await this.db.tx(async tx => {
             await tx.none('DROP SCHEMA $1:name CASCADE', [series])

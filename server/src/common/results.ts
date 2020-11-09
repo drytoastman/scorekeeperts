@@ -1,3 +1,4 @@
+import _ from 'lodash'
 import { Car } from './car'
 import { UUID } from './util'
 
@@ -190,6 +191,7 @@ export class LiveSocketWatch {
     class    = false
     champ    = false
     next     = false
+    classcode:string|undefined = ''
     runorder = false
     top = {
         net: new CourseWatch(),
@@ -203,4 +205,15 @@ export class LiveSocketWatch {
 export function watchNonTimers(w: LiveSocketWatch): boolean {
     return (w.entrant || w.class || w.champ || w.next || w.runorder ||
         Object.values(w.top.net).some(v => v) || Object.values(w.top.raw).some(v => v))
+}
+
+export function watchDifference(w1: LiveSocketWatch, w2: LiveSocketWatch) {
+    // w1 and w2 assumed to be full instances, nothing missing
+    const diffs = [] as string[]
+    for (const k of Object.keys(w1)) {
+        if (!_.isEqual(w1[k], w2[k])) {
+            diffs.push(k)
+        }
+    }
+    return diffs
 }

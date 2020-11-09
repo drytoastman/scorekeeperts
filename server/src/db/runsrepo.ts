@@ -60,7 +60,8 @@ export class RunsRepository {
         Promise<Array<{carid: UUID, classcode: string, number: number}>> {
 
         // Returns a list of objects (classcode, carid) for the next cars in order after carid """
-        const order = await this.db.map('SELECT unnest(cars) cid from runorder WHERE eventid=$1 AND course=$2 AND rungroup=$2', [eventid, course, rungroup], r => r.cid)
+        const order = await this.db.map('SELECT unnest(cars) cid from runorder WHERE eventid=$(eventid) AND course=$(course) AND rungroup=$(rungroup)',
+                                        { eventid, course, rungroup }, r => r.cid)
         const ret = [] as any[]
         for (const [ii, rowid] of order.entries()) {
             if (rowid === aftercarid) {

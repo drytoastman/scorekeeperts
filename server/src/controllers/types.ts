@@ -2,7 +2,7 @@ import http from 'http'
 import WebSocket from 'ws'
 
 import { UUID } from '@/common/util'
-import { CookieSess } from '../auth'
+import { CookieSess } from './auth'
 import { AUTHTYPE_DRIVER, AUTHTYPE_SERIES } from '@/common/auth'
 import { LiveSocketWatch } from '@/common/results'
 import { DefaultMap } from '@/util/data'

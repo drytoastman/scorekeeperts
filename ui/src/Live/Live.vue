@@ -14,15 +14,6 @@ export default {
     name: 'Live',
     components: {
         SnackBar
-    },
-    data: () => ({
-    }),
-    methods: {
-    },
-    computed: {
-    },
-    mounted() {
-        this.$store.dispatch('restartWebSocket')
     }
 }
 </script>

@@ -1,11 +1,14 @@
 import querystring from 'querystring'
 
-import { db, tableWatcher } from '../../db'
-import { controllog } from '../../util/logging'
-import { AuthData } from '../auth'
-import { AUTHTYPE_DRIVER, AUTHTYPE_NONE, AUTHTYPE_SERIES } from '@/common/auth'
+import { db, tableWatcher } from '../db'
+import { controllog } from '../util/logging'
+import { AuthData } from './auth'
+import { AUTHTYPE_DRIVER, AUTHTYPE_SERIES } from '@/common/auth'
 import { SessionMessage, SessionWebSocket, TrackingServer } from './types'
-import { processLiveRequest } from './livedata'
+import { Run, watchDifference, watchNonTimers } from '@/common/results'
+import { SeriesStatus } from '@/common/series'
+import { generateProTimer, loadResultData } from './gets/livedata'
+import { LazyData } from './lazydata'
 
 
 export function websocketsStartWatching() {
@@ -62,6 +65,54 @@ websockets.on('connection', async function connection(ws: SessionWebSocket, req:
         return ws.close(1002, 'Unknown endpoint')
     }
 })
+
+async function processLiveRequest(ws: SessionWebSocket, data: any) {
+    if (await db.series.getStatus(data.series) !== SeriesStatus.ACTIVE) {
+        return ws.send(JSON.stringify({ errors: ['not an active series'] }))
+    }
+
+    const diffs = watchDifference(ws.watch, data.watch)
+    if (ws.series === data.series && ws.eventid === data.eventid && diffs.length <= 0) {
+        console.log('same request')
+        return
+    }
+
+    console.log(data)
+    ws.watch   = data.watch
+    ws.series  = data.series
+    ws.eventid = data.eventid
+}
+
+tableWatcher.on('timertimes', (series: string, type: string, row: any) => {
+    const msg = JSON.stringify({ timer: row.raw })
+    websockets.getLiveItem('timer').forEach(ws => ws.send(msg))
+})
+
+tableWatcher.on('localeventstream', (series: string) => {
+    const rx = websockets.getLive(series, 'protimer')
+    if (rx.length > 0) {
+        const msg = generateProTimer()
+        rx.forEach(ws => ws.send(msg))
+    }
+})
+
+tableWatcher.on('runs', (series: string, type: string, row: Run&{classcode:string}) => {
+    const rx = websockets.getLiveSeries(series)
+    if (rx.length <= 0) return
+    db.task(async t => {
+        await t.series.setSeries(series)
+        const lazy = new LazyData(t)
+
+        for (const ws of rx) {
+            if (row.eventid !== ws.eventid) continue
+            if (!watchNonTimers(ws.watch))  continue
+            ws.send(JSON.stringify(await loadResultData(lazy, ws.watch, row)))
+        }
+    }).catch(error => {
+        console.log(error)
+    })
+})
+
 
 // these general updates can go to any authenticated users
 for (const tbl of ['events', 'itemeventmap', 'paymentitems', 'paymentaccounts']) {
