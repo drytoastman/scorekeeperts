@@ -82,7 +82,6 @@
 import { mapState } from 'vuex'
 import isEmpty from 'lodash/isEmpty'
 
-import { UUID } from '@/common/util'
 import TimerBox from '../components/TimerBox.vue'
 import RunOrderTable from '../components/RunOrderTable.vue'
 import ClassTable from '../components/ClassTable.vue'
@@ -100,10 +99,6 @@ export default {
         ChampTable,
         EntrantTable,
         TopTimesTable
-    },
-    props: {
-        series: String,
-        eventid: UUID
     },
     data() {
         return {
@@ -146,23 +141,10 @@ export default {
         display: flex;
         width: 100%;
     }
-
     .col1 {
-        flex-grow: 1;
+        flex: 0.75;
     }
-
-    .timer-box, .runorder-table {
-        display: block;
-        width: 100%;
-    }
-
-    .panel {
-        display: flex;
-        flex-wrap: wrap;
-    }
-
-    .panel * {
-        margin: 2px;
-        flex-grow: 1;
+    .col2 {
+        flex: 0.25;
     }
 </style>

@@ -207,7 +207,7 @@ export function watchNonTimers(w: LiveSocketWatch): boolean {
         Object.values(w.top.net).some(v => v) || Object.values(w.top.raw).some(v => v))
 }
 
-export function watchDifference(w1: LiveSocketWatch, w2: LiveSocketWatch) {
+export function watchDifference(w1: LiveSocketWatch, w2: LiveSocketWatch): string[] {
     // w1 and w2 assumed to be full instances, nothing missing
     const diffs = [] as string[]
     for (const k of Object.keys(w1)) {

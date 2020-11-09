@@ -70,14 +70,6 @@ async function processLiveRequest(ws: SessionWebSocket, data: any) {
     if (await db.series.getStatus(data.series) !== SeriesStatus.ACTIVE) {
         return ws.send(JSON.stringify({ errors: ['not an active series'] }))
     }
-
-    const diffs = watchDifference(ws.watch, data.watch)
-    if (ws.series === data.series && ws.eventid === data.eventid && diffs.length <= 0) {
-        console.log('same request')
-        return
-    }
-
-    console.log(data)
     ws.watch   = data.watch
     ws.series  = data.series
     ws.eventid = data.eventid
