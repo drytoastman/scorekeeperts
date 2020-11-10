@@ -4,8 +4,6 @@ WORKDIR /code
 COPY server/package*.json ./server/
 RUN cd server && npm install
 COPY server server
-COPY ui/src/common ui/src/common
-RUN ln -s /code/server/node_modules /code/ui/
 RUN cd server && npm run build
 
 FROM node:12.18.2-buster-slim

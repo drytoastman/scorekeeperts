@@ -1,5 +1,9 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 module.exports = {
+    chainWebpack: config => {
+        // const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
+        // config.plugin('analyze').use(BundleAnalyzerPlugin)
+    },
     pages: {
         register: {
             entry: './src/Registration/main.ts',
@@ -15,6 +19,11 @@ module.exports = {
             entry: './src/Live/main.ts',
             template: 'public/index.html',
             title: 'Scorekeeper Live'
+        },
+        docs: {
+            entry: './src/Docs/main.ts',
+            template: 'public/index.html',
+            title: 'Scorekeeper Docs'
         }
     },
     css: {

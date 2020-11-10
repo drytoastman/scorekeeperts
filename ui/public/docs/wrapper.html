@@ -1,0 +1,77 @@
+{% extends "common/base.html" %}
+
+{% block headers %}
+{{super()}}
+{%- assets "docs.css" %}
+<link rel="stylesheet" href="{{ASSET_URL}}" /> 
+{%- endassets -%}
+{% assets "vendor.js", "vendor_admin.js", "docs.js" %}
+    <script type="text/javascript" src="{{ASSET_URL}}"></script>
+{% endassets %}
+{% endblock headers %}
+
+{% block content %}
+<nav class="navbar navbar-expand-md navbar-dark bg-results d-print-none">
+  <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class='navbar-brand'><img src='/static/images/cone.png'/>Scorekeeper Docs</div>
+  <div class="collapse navbar-collapse" id="navbarNav">
+    <ul class="navbar-nav">
+
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown">General</a>
+          <div class="dropdown-menu">
+          <a class="dropdown-item" href="{{url_for(".docpage", selection="recommend.md")}}">Recommended Setups</a>
+          <a class="dropdown-item" href="{{url_for(".docpage", selection="install.md")}}">Installation</a>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" href="{{url_for(".docpage", selection="pt2730.md")}}">PT2730 Label Printer</a>
+          <a class="dropdown-item" href="{{url_for(".docpage", selection="nadamoo.md")}}">Nadamoo Barcode Scanner</a>
+          <a class="dropdown-item" href="{{url_for(".docpage", selection="commonbarcodescanner.md")}}">Keyboard Barcode Scanners</a>
+          <a class="dropdown-item" href="{{url_for(".docpage", selection="runningpro.md")}}">Running a ProSolo</a>
+          </div>
+        </li>
+
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown">Applications</a>
+          <div class="dropdown-menu">
+          <a class="dropdown-item" href="{{url_for(".docpage", selection="starting.md")}}">Starting the System</a>
+          <a class="dropdown-item" href="{{url_for(".docpage", selection="sync.md")}}">Syncing Databases</a>
+          <a class="dropdown-item" href="{{url_for(".docpage", selection="backupdebug.md")}}">Backups And Debug Data</a>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" href="{{url_for(".docpage", selection="registration.md")}}">Registration</a>
+          <a class="dropdown-item" href="{{url_for(".docpage", selection="dataentry.md")}}">DataEntry</a>
+          <a class="dropdown-item" href="{{url_for(".docpage", selection="dataentry-pro.md")}}">DataEntry - ProSolo</a>
+          <a class="dropdown-item" href="{{url_for(".docpage", selection="protimer.md")}}">ProTimer</a>
+          <a class="dropdown-item" href="{{url_for(".docpage", selection="challenge.md")}}">Old Challenge GUI</a>
+          <a class="dropdown-item" href="{{url_for(".docpage", selection="fxchallenge.md")}}">New Challenge GUI (Beta)</a>
+          </div>
+        </li>
+
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown">Website Admin</a>
+          <div class="dropdown-menu">
+          {#<a class="dropdown-item" href="{{url_for(".docpage", selection="seriessettings.md")}}">Series Settings</a> #}
+          <a class="dropdown-item" href="{{url_for(".docpage", selection="paymentaccounts.md")}}">Setting Up Square/Paypal</a>
+          <a class="dropdown-item" href="{{url_for(".docpage", selection="externalresults.md")}}">Adding External Results</a>
+          {# <a class="dropdown-item" href="{{url_for(".docpage", selection="eventsettings.md")}}">Event Administration</a> #}
+          </div>
+        </li>
+
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown">Website User</a>
+          <div class="dropdown-menu">
+          <a class="dropdown-item" href="{{url_for(".docpage", selection="onsite.md")}}">Onsite Results/Registation</a>
+          </div>
+        </li>
+
+    </ul>
+  </div>
+</nav>
+
+<div class='container-fluid markdown'>
+{{content}}
+</div>
+
+{% endblock content %}
+
