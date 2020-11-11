@@ -33,7 +33,7 @@ export default {
                 return
             }
             this.pagedata = 'loading ...'
-            axios.get(this.pagename + '.md').then(res => {
+            axios.get(`/markdown/${this.pagename}.md`).then(res => {
                 if (res.data) {
                     this.pagedata = res.data
                 } else {

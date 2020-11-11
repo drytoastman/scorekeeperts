@@ -12,7 +12,5 @@ COPY docker/proxy/dhparam.pem    /etc/nginx/
 COPY docker/proxy/services.conf  /etc/nginx/
 COPY docker/proxy/nginx*         /etc/nginx/
 COPY docker/proxy/servers.*.conf /etc/nginx/
-# Temp large static files from pythonweb, goes away with pythonweb
-COPY docker/proxy/pystatic       /app/pystatic/
 RUN rm -rf /var/log/*
 CMD ["/etc/nginx/nginxstart.sh"]
