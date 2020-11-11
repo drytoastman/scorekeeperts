@@ -1,10 +1,14 @@
 <template>
     <v-app fluid>
-        <v-app-bar app dark color="primary">
-            <DocMenu :items="generalMenu" text="General"></DocMenu>
-            <DocMenu :items="applicationsMenu" text="Applications"></DocMenu>
-            <DocMenu :items="adminMenu" text="Website Admin"></DocMenu>
-            <DocMenu :items="userMenu" text="Website User"></DocMenu>
+        <v-app-bar dark color="primary">
+            <v-img :src=cone max-height=40 max-width=40></v-img>
+            <div class='header'>Scorekeeper Docs</div>
+            <div class='menus'>
+                <DocMenu :items="generalMenu" text="General"></DocMenu>
+                <DocMenu :items="applicationsMenu" text="Applications"></DocMenu>
+                <DocMenu :items="adminMenu" text="Website Admin"></DocMenu>
+                <DocMenu :items="userMenu" text="Website User"></DocMenu>
+            </div>
         </v-app-bar>
 
         <v-main>
@@ -15,6 +19,7 @@
 
 <script>
 import DocMenu from './DocMenu.vue'
+import cone from '@/../public/images/cone.png'
 export default {
     name: 'Docs',
     components: {
@@ -22,6 +27,7 @@ export default {
     },
     data() {
         return  {
+            cone,
             generalMenu: [
                 { title: 'Recommended Setups',         page: 'recommend' },
                 { title: 'Installation',               page: 'install' },
@@ -56,6 +62,34 @@ export default {
     }
 }
 </script>
+
+<style lang="scss" scoped>
+.header {
+    margin-left: 1rem;
+    margin-right: 1rem;
+}
+
+.menus {
+    display: flex;
+    justify-content: space-evenly;
+    flex-grow: 1;
+    column-gap: 2px;
+    z-index: 100;
+    ::v-deep .v-btn {
+        padding: 0 !important;
+    }
+}
+
+.v-sheet.v-app-bar {
+    height: initial !important;
+    flex-grow: 0;
+}
+
+::v-deep .v-toolbar__content {
+    flex-wrap: wrap;
+    height: initial !important;
+}
+</style>
 
 <style lang="scss">
 @import '@/styles/docs.scss';

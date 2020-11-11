@@ -15,6 +15,7 @@ const router = new VueRouter({
     mode: 'history',
     base: (VUE_BASE && VUE_BASE !== 'PUT_BASE_HERE') ? VUE_BASE : '/docs',
     routes: [
+        { path: '/',          name: 'md', component: mdpage, props: { pagename: 'blank' }},
         { path: '/:pagename', name: 'md', component: mdpage, props: true }
     ]
 })

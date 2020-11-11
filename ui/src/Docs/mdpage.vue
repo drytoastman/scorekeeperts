@@ -28,6 +28,10 @@ export default {
     },
     methods: {
         downloadPage() {
+            if (this.pagename === 'blank') {
+                this.pagedata = '### Select pages from above'
+                return
+            }
             this.pagedata = 'loading ...'
             axios.get(this.pagename + '.md').then(res => {
                 if (res.data) {

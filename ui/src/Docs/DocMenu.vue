@@ -1,7 +1,7 @@
 <template>
     <v-menu close-on-content-click>
         <template v-slot:activator="{ on }">
-            <v-btn color=white text v-on="on">{{text}}</v-btn>
+            <v-btn color=white text large v-on="on">{{text}}</v-btn>
         </template>
         <v-list>
             <template v-for="item in items">

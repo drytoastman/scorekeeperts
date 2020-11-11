@@ -9,6 +9,7 @@ import { Run, watchDifference, watchNonTimers } from '@/common/results'
 import { SeriesStatus } from '@/common/series'
 import { generateProTimer, loadResultData } from './gets/livedata'
 import { LazyData } from './lazydata'
+import { IS_MAIN_SERVER } from '@/db/generalrepo'
 
 
 export function websocketsStartWatching() {
@@ -54,6 +55,9 @@ websockets.on('connection', async function connection(ws: SessionWebSocket, req:
 
 
     } else if (pathname === '/api2/live') {
+        if (await db.general.getLocalSetting(IS_MAIN_SERVER) === '1') {
+            return ws.close(1002, 'Available onsite only')
+        }
         ws.series    = ''
         ws.eventid   = ''
         ws.watch     = {} as any
