@@ -1,6 +1,9 @@
 <template>
     <div>
-        <div class='title'>Upcoming Entries</div>
+        <div class='title'>
+            <span class=''>Upcoming Entries</span>
+            <a class='icallink' :href="icallink"><v-icon color="secondary">{{mdiCalendarClock}}</v-icon> ical</a>
+        </div>
         <div class='eventsummary' v-for="s in summary" :key="s.eventid">
             <div class='eventinfo'>
                 <span class='date'>{{s.date | dmdy}}</span>
@@ -22,6 +25,8 @@
 
 <script>
 import { mapState } from 'vuex'
+import { mdiCalendarClock } from '@mdi/js'
+import { API2 } from '@/store/state'
 import CarLabel from '../../components/CarLabel'
 
 export default {
@@ -29,8 +34,14 @@ export default {
     components: {
         CarLabel
     },
+    data() {
+        return {
+            mdiCalendarClock
+        }
+    },
     computed: {
-        ...mapState(['summary'])
+        ...mapState(['summary', 'driverid']),
+        icallink() { return API2.ICAL.replace('DRIVERID', this.driverid) }
     }
 }
 </script>
@@ -56,5 +67,15 @@ export default {
 }
 .series {
     font-style: italic;
+}
+.title {
+    display: flex;
+    align-items: center;
+    column-gap: 1rem;
+}
+.icallink {
+    font-size: 65%;
+    color: var(--v-secondary-darken2);
+    text-decoration: none;
 }
 </style>

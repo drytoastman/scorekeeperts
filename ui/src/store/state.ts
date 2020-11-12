@@ -23,7 +23,8 @@ export const API2 = {
     SERIESLOGIN:    '/api2/serieslogin',
     ADMINLOGOUT:    '/api2/adminlogout',
     LOGS:           '/api2/logs',
-    CARDS:          '/api2/cards'
+    CARDS:          '/api2/cards',
+    ICAL:           '/api2/ical/DRIVERID'
 }
 
 
