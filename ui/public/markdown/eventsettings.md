@@ -1,6 +1,6 @@
 # Event Administration
 
-**<span style='color:red'>This page needs to be updated</span>**
+**This page needs to be updated** {.warning}
 
 ## Connecting
 1. Open your web browser and connect to http://scorekeeper.wwscc.org/admin/ (Or http://127.0.0.1/admin for the local machine)

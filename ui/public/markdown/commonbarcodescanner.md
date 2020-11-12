@@ -1,6 +1,8 @@
 # Common Keyboard Wedge Scanner
 
-**This style of barcode scanner is not recommended for DataEntry.**  As the scans come in as keyboard input outside
+This style of barcode scanner is not recommended for DataEntry {.warning}
+
+As the scans come in as keyboard input outside
 of the control of the data entry worker, it is possible that the scans get lost on other applications or mix with typing
 from the worker.  Therefore, they work well for Registration but not DataEntry.
 
@@ -17,8 +19,6 @@ To configure the application to use the scanner, select **Keyboard** as the scan
  * ETX end character
  * 100ms max delay
 
-<span class='spacer100'></span>
 ![keyboardbarcodemenu](/images/keyboardbarcodemenu.png)
-<span class='spacer100'></span>
 ![keyboardbarcodeconfig](/images/keyboardbarcodeconfig.png)
 

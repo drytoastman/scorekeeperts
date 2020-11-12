@@ -10,7 +10,7 @@
 ## Installing
 1. Verify that the above requirements for Docker are installed (a system install of Java is no longer required)
 
-1. Download the latest scorekeeper zip from <https://github.com/drytoastman/scorekeeperfrontend/releases>
+1. Download the latest scorekeeper zip from https://github.com/drytoastman/scorekeeperfrontend/releases
    for your OS and extract to a chosen directory.  There are several scripts (or .bat files on Windows):
    * **StartScorekeeper** - the normal way to start the system
    * **StartProtimer** - used to start just the pro timer interface without requirng Docker or a database
@@ -24,9 +24,7 @@
    **certs.tgz** provided by the system administrator. These are shared
    between versions so you only need to do it once.
 
-   <span style='color:red'>
-   Without this step, you cannot sync with scorekeeper.wwscc.org or other laptops.
-   </span>
+Without this step, you cannot sync with scorekeeper.wwscc.org or other laptops. {.warning}
 
 1. For non-Linux installs you **may** need to open incoming firewall ports depending on your own system:
 
@@ -34,7 +32,7 @@
       turn off the IIS and InternetConnectionSharing services that get in the way.
 
     * For others, the following ports are used:
-        1. **TCP:80**    for the local web server (results, etc)    
+        1. **TCP:80**    for the local web server (results, etc)
         1. **TCP:54329** for syncing with other nearby machines
         1. **TCP:54328** for most network timer connections (i.e. ProSolo Timer)
         1. **UDP:53**    standard unicast dns for onsite resolving of "de" and "reg" to a Scorekeeper laptop IP

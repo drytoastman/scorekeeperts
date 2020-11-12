@@ -6,13 +6,11 @@ To connect to onsite registration or results, you must connect your device to
 the local WiFi for your event.  The WiFi name is usually related to the club
 running the event.  There may be multiple WiFi networks onsite:
 
-1. at the timing van which provides results 
-2. possibly one at registration which allows you to create a profile and cars 
+1. at the timing van which provides results
+2. possibly one at registration which allows you to create a profile and cars
 
-**<span style='color:red'>
-Note: You may need to disable cellular data or switch to airplane mode and
-then enable Wifi for some of the following things to work
-</span>**
+**Note: You may need to disable cellular data or switch to airplane mode and
+then enable Wifi for some of the following things to work** {.warning}
 
 
 ## Results
@@ -57,10 +55,8 @@ setup to so that users have their DNS set to one of the Scorekeeper machines rat
 than the router itself. The target is usually the data entry machine.  This is
 assuming an onsite isolated network where you don't require normal DNS services.
 
-<span style='color:#F46700'>
 Some clients may use Multicast DNS and Scorekeeper will respond to those
-automatically but some will require the usual unicast DNS location to be setup.
-</span>
+automatically but some will require the usual unicast DNS location to be setup. {.smallwarning}
 
 Most routers will let you set the DNS value that DHCP serves up from one of the
 adminstration pages.  As this is a static value, it would be wise to also setup

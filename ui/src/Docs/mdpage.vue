@@ -5,7 +5,8 @@
 
 <script>
 import axios from 'axios'
-import Markdownit from 'markdown-it'
+import MarkdownIt from 'markdown-it'
+import MarkdownItAttrs from 'markdown-it-attrs'
 
 export default {
     name: 'MdPage',
@@ -17,13 +18,17 @@ export default {
     },
     data() {
         return {
-            markdown: new Markdownit({ html: true }),
             pagedata: ''
         }
     },
     computed: {
         mdhtml() {
             return this.markdown.render(this.pagedata)
+        },
+        markdown() {
+            const md = new MarkdownIt({ linkify: true })
+            md.use(MarkdownItAttrs, { allowedAttributes: ['class'] })
+            return md
         }
     },
     methods: {

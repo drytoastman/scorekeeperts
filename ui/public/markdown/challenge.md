@@ -1,6 +1,6 @@
 # Challenge
 
-**<span style='color:red'>THIS MIGHT BE SLIGHTLY OUT OF DATE</span>**
+**THIS MIGHT BE SLIGHTLY OUT OF DATE** {.warning}
 
 ## Initial Setup
 

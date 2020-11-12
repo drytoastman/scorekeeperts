@@ -63,7 +63,7 @@ Download/Merge from the [sync tool in the status window](sync.md)
    ![CarEntry](/images/regcars.png)
 
    * The registration icon ![RegIcon](/images/reg.png) indicates that the car is registered for the event
-   * A green dollar amount (<span style='color:green'><b>$12.34</b></span>) indicates that they entry has been paid for
+   * A green dollar amount (**$12.34**{.green}) indicates that they entry has been paid for
    * An orange star icon ![StarIcon](/images/star.png) indicates the car has activity in other events
    * A grayed out entry with **In Event** over it means that the car is being used in the current event and cannot be changed
 

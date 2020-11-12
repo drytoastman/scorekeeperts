@@ -17,11 +17,11 @@ The Scorekeeper app will use the item list from one of your locations as the ite
 
 1. Before Authorizing
 
-    Before you authorize the Scorekeeper application, it is suggested that you have created a location in your square account and 
+    Before you authorize the Scorekeeper application, it is suggested that you have created a location in your square account and
     only assigned items to that location that you wish to allow for online payment.
 
 2. Authorize Scorekeeper
- 
+
     From the payment accounts page, click **Setup/Update A Square Location**.  This should bring up a square page where you can
     login to your account and authorize Scorekeeper which produces a 30-day token for Scorekeeper to use.
 
@@ -35,17 +35,17 @@ The Scorekeeper app will use the item list from one of your locations as the ite
 ## PayPal Accounts
 
 Paypal setup is a little more manual.  We do **NOT** use your account email or password.  Instead we rely on their REST API and an
-app that you setup from your paypal account.  
+app that you setup from your paypal account.
 
 1. App Setup
 
-    To setup your app, see the paypal documentation at <https://developer.paypal.com/docs/integration/admin/manage-apps/>.  You may need
+    To setup your app, see the paypal documentation at https://developer.paypal.com/docs/integration/admin/manage-apps/.  You may need
     to setup developer access to do so.  The created app just needs to allow Accept Payments, nothing else.
 
 2. Add App To Scorekeeper
 
     From the payment accounts page, click **Add PayPal App**. The values to enter are:
-    * Account Name - A user provided name 
+    * Account Name - A user provided name
     * Client Id - The **Client ID** field from the **LIVE** version of your PayPal App
     * Client Secret - The enabled **Secret** from your PayPal App
 

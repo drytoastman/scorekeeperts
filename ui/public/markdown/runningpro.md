@@ -3,7 +3,7 @@
 1. Registration will have their own laptop, they will merge data later
     * After registration closes, verify that any pregregistered entrants who didn't show have been removed from registration
     * Registration must also verify that all single/first drivers use numbers 1-99 and that all second drivers use 101-199
-    * <span style='color:red'>The above two points are important or the grid report will be wrong</span>
+    * The two points above are important or the grid report will be wrong {.warning}
 
 2. Setup 3 laptops with power and network connections along with PA, etc
     * Laptop 1 will become DataEntry for left side
@@ -20,7 +20,7 @@
       This means that they can sync with each other as the event progresses.
 
 4. Print out grid reports (after registration merges updates)
-    * Go to the admin page on the data entry machine (<http://127.0.0.1/admin/>)
+    * Go to the admin page on the data entry machine (http://127.0.0.1/admin/)
     * From the menu bar, select Event&rarr;(EventName)
     * Click on Grid Order
     * Drag and drop classes into their associated groups (1 or 2) and order and then click **Update**
@@ -35,13 +35,13 @@
     * Standard run group print out.  Should open two tabs in the browser, one for course 1 and one for course 2.
 
 7. After first half, print out new grid report
-    * Go to the results page on the data entry machine (<http://127.0.0.1/results/>)
+    * Go to the results page on the data entry machine (http://127.0.0.1/results/)
     * Select the current event and click on Grid Order by Standings and print out for grid chief
     * You can use **Reorder by Net** from the ProSolo menu to reorder the run order automatically, see the [Data Entry Pro](dataentry-pro.md) page for details.
 
 8. Perform final audit
 
-9. Print dialin report from the results page on the data entry machine (<http://127.0.0.1/results/>)
+9. Print dialin report from the results page on the data entry machine (http://127.0.0.1/results/)
 
 10. See the challenge document for running challenges.
 

@@ -1,4 +1,4 @@
-.markdown {
+.v-main .markdown {
 
     max-width: 1000px;
     margin-left: 2rem;
@@ -58,13 +58,32 @@
 
     img {
         vertical-align: top;
-        margin-left: 2rem;
+        margin-left: 1rem;
+        margin-right: 1rem;
         border: 1px solid #ccc;
     }
 
     span.spacer100 {
         display: inline-block;
         width: 100px;
+    }
+
+    .warning {
+        color: red;
+        background-color: initial !important;
+    }
+
+    .smallwarning {
+        color: #F46700;
+    }
+
+    .green {
+        color: green;
+        background-color: initial !important;
+    }
+
+    a {
+        color: blue !important;
     }
 }
 
