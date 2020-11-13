@@ -24,7 +24,7 @@ export const api2 = Router()
 
 if (process.env.NODE_ENV === 'development') {
     controllog.warn('Using development environment fake delay')
-    api2.use(delay(500))
+    api2.use(delay(50))
 } else {
     controllog.info('Using production environment')
 }

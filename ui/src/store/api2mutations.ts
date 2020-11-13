@@ -20,6 +20,7 @@ export function clearApi2SeriesData(state: Api2State): void {
     state.busyReg = {}
     state.busyPay = {}
     state.panelstate = []
+    state.seriesinfo = {}
 }
 
 /* Helper functions that do some lodash like things but force reactivity */
@@ -176,7 +177,7 @@ export function api2Mutations(adminOptions: boolean):  MutationTree<Api2State> {
             }
 
             for (const key of ['listids', 'unsubscribe', 'summary', 'attendance', 'classorder', 'ismainserver', 'paxlists',
-                'emailresult', 'settings', 'squareapplicationid', 'squareoauthresp', 'tokenresult', 'driversattr']) {
+                'emailresult', 'settings', 'squareapplicationid', 'squareoauthresp', 'tokenresult', 'driversattr', 'allseries', 'seriesinfo']) {
                 // easy straight assignments/replacements
                 if (key in data) {
                     state[key] = data[key]

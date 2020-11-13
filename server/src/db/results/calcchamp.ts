@@ -4,7 +4,7 @@ import moment from 'moment'
 import { SeriesEvent } from '@common/event'
 import { ChampEntrant, ChampResults, Entrant, Event2Points } from '@common/results'
 import { UUID } from '@common/util'
-import { getD, getDList, getDObj } from '@/util/data'
+import { getD, getDList, getDObj } from '@/common/data'
 import { ScorekeeperProtocol } from '..'
 import { dblog } from '@/util/logging'
 

@@ -19,10 +19,7 @@ import { updatedChampResults } from './calcchamp'
 import { ScorekeeperProtocol } from '..'
 import { ChallengeResults } from '@common/challenge'
 import { dblog } from '@/util/logging'
-import { ColumnSet, IMain } from 'pg-promise'
-import { cleanAttr } from '../helper'
-
-let runcols: ColumnSet|undefined
+import { IMain } from 'pg-promise'
 
 export class ResultsRepository {
     // eslint-disable-next-line no-useless-constructor

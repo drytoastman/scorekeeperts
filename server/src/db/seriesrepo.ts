@@ -3,7 +3,7 @@ import { ScorekeeperProtocol } from '.'
 import { SeriesSettings, DefaultSettings, SettingsValidator } from '@common/settings'
 import { ActivityEntry, SeriesStatus } from '@/common/series'
 import { UUID, validateObj } from '@/common/util'
-import { getD } from '@/util/data'
+import { getD } from '@/common/data'
 
 export class SeriesRepository {
     // eslint-disable-next-line no-useless-constructor

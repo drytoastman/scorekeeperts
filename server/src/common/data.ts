@@ -26,7 +26,6 @@ export function make2D<V>(d1: number): V[][] {
 }
 
 export class DefaultMap<K, V> extends Map<K, V> {
-
     default: () => V
     constructor(defaultFunction: () => V) {
         super()

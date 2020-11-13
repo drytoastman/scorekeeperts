@@ -83,8 +83,8 @@ export class Api2State {
 
     // results
     allseries: string[] = []
+    seriesinfo: any = {}
     live = {
-        series: '',
         eventid: '',
         getclass: '',
         watch: undefined as LiveSocketWatch|undefined,

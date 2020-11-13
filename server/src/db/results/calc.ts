@@ -6,7 +6,7 @@ import { DecoratedRun, Entrant, EventResults, ExternalResult, RunStatus } from '
 import { PosPoints, SeriesInfo } from '@common/series'
 import { SeriesSettings } from '@common/settings'
 import { UUID } from '@common/util'
-import { getDList, make2D } from '@/util/data'
+import { getDList, make2D } from '@/common/data'
 import { ScorekeeperProtocol } from '..'
 import { dblog } from '@/util/logging'
 

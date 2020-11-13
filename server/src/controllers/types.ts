@@ -5,7 +5,7 @@ import { UUID } from '@/common/util'
 import { CookieSess } from './auth'
 import { AUTHTYPE_DRIVER, AUTHTYPE_SERIES } from '@/common/auth'
 import { LiveSocketWatch } from '@/common/results'
-import { DefaultMap } from '@/util/data'
+import { DefaultMap } from '@/common/data'
 
 export interface SessionWebSocket extends WebSocket {
     driverid: UUID|null

@@ -4,9 +4,9 @@
             <v-img :src=cone max-height=40 max-width=40></v-img>
             <div class='header'>Scorekeeper Results</div>
             <div class='menus'>
-                <v-select :items="yearlist"   background-color="primary" hide-details v-model="year"></v-select>
-                <v-select :items="serieslist" background-color="primary" hide-details v-model="series"></v-select>
-                <v-select :items="eventlist"  background-color="primary" hide-details v-model="eventid" v-if="series"></v-select>
+                <ResultsMenu v-model="selectedYear"    depend="ok"             :items="yearlist"   placeholder="Select Year"></ResultsMenu>
+                <ResultsMenu v-model="selectedSeries" :depend="selectedYear"   :items="serieslist" placeholder="Select Series"></ResultsMenu>
+                <ResultsMenu v-model="selectedEvent"  :depend="selectedSeries" :items="eventlist"  placeholder="Select Event"></ResultsMenu>
             </div>
         </v-app-bar>
 
@@ -20,41 +20,80 @@
 
 
 <script>
+import orderBy from 'lodash/orderBy'
+import { mapGetters, mapState } from 'vuex'
+
 import SnackBar from '@/components/SnackBar.vue'
+import ResultsMenu from './components/ResultsMenu.vue'
 import cone from '@/../public/images/cone.png'
+import { seriesYear } from '@/store/results'
 
 export default {
     name: 'Results',
     components: {
-        SnackBar
+        SnackBar,
+        ResultsMenu
     },
     data() {
         return  {
             cone,
-            year: 0,
-            // series: '',
-            // eventid: '',
-            yearlist: [2020, 2019, 2018, 2017],
-            // serieslist: ['seriesa', 'seriesb', 'pro2019', 'other'],
-            eventlist: ['eventa', 'eetnasd', 'blah c']
+            year: undefined,
+            event: undefined
         }
     },
     computed: {
-        series: {
-            get() { return this.$route.params.series },
-            set(nv) { this.$router.push({ name: 'series', params: { series: nv }}) }
-        },
-        eventid: {
-            get() { return this.$route.params.eventid },
-            set(nv) { this.$router.push({ name: 'eventindex', params: { eventid: nv }}) }
-        },
-        serieslist() {
-            const rs = this.$route.params.series
-            const ret = ['seriesa', 'seriesb', 'pro2019', 'other']
-            if (rs && !ret.includes(rs)) {
-                ret.push(rs)
+        ...mapState(['currentSeries', 'seriesinfo']),
+        ...mapGetters(['yearGroups']),
+
+        yearlist()   { return orderBy([...this.yearGroups.keys()], v => v, 'desc') },
+        serieslist() { return orderBy(this.yearGroups.getD(this.year), v => v) },
+        eventlist()  { return orderBy(this.seriesinfo.events, 'date') },
+
+        selectedYear: {
+            get() { return this.year },
+            set(value) {
+                this.year = value
+                this.$store.commit('changeSeries', '')
+                this.push(name, {})
             }
-            return ret
+        },
+
+        selectedSeries: {
+            get() { return this.currentSeries },
+            set(value) {
+                this.$store.commit('changeSeries', value)
+                this.selectedEvent = undefined
+                if (value) {
+                    this.push('series', { series: value })
+                }
+            }
+        },
+
+        selectedEvent: {
+            get() { return this.event },
+            set(value) {
+                this.event = value
+                if (this.event) {
+                    this.push('eventindex', { eventid: this.event.eventid })
+                }
+            }
+        }
+    },
+    methods: {
+        push(name, params) {
+            this.$router.push({ name: name, params: params }).catch(error => {
+                if (error.name !== 'NavigationDuplicated') { throw error }
+            })
+        }
+    },
+    mounted() {
+        this.$store.dispatch('getdata', { items: 'allseries' })
+    },
+    watch: {
+        '$route'() {
+            if (this.$route.params.series) { // catch year from initial route
+                this.year = seriesYear(this.$route.params.series)
+            }
         }
     }
 }
@@ -68,19 +107,24 @@ export default {
 
 .menus {
     display: flex;
-    justify-content: space-evenly;
-    flex-grow: 0;
     column-gap: 2px;
-    z-index: 100;
     .v-select {
         min-width: 5rem;
     }
-    ::v-deep .v-select.v-text-field input {
-        max-width: 5px;
-    }
-    ::v-deep .v-text-field .v-input__control .v-input__slot {
-        &::before, &::after {
-            border: none;
+    ::v-deep {
+        .v-select__selections {
+            width: min-content;
+        }
+        .v-select.v-text-field input {
+            flex: 0;
+        }
+        .v-select__selection {
+            max-width: 100%;
+        }
+        .v-text-field .v-input__control .v-input__slot {
+           &::before, &::after {
+                border: none;
+            }
         }
     }
 }

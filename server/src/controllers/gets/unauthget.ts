@@ -36,6 +36,7 @@ export async function unauthgetone(task: ScorekeeperProtocol, auth: AuthData, pa
         case 'squareapplicationid': ret.squareapplicationid = await task.general.getLocalSetting(SQ_APPLICATION_ID); break
         case 'ismainserver':        ret.ismainserver        = await task.general.getLocalSetting(IS_MAIN_SERVER) === '1'; break
         case 'paxlists':            ret.paxlists            = (await readdirAsync('public')).filter(f => f.endsWith('.json')); break
+        case 'allseries':           ret.allseries           = await task.series.allSeries(); break
         case 'recaptchasitekey':
             if (await task.general.isMainServer()) {
                 ret.recaptchasitekey = await task.general.getLocalSetting(RECAPTCHA_SITEKEY)
@@ -60,6 +61,7 @@ export async function unauthgetone(task: ScorekeeperProtocol, auth: AuthData, pa
             case 'itemeventmap':    ret.itemeventmap    = await task.payments.getItemMaps();          break
             case 'paymentaccounts': ret.paymentaccounts = await task.payments.getPaymentAccounts();   break
             case 'classorder':      ret.classorder      = await task.clsidx.classOrder();             break
+            case 'seriesinfo':      ret.seriesinfo      = await task.results.getSeriesInfo();         break
             case 'live':
                 watch = JSON.parse(param.watch)
                 if (watch.protimer) ret.protimer = await generateProTimer()

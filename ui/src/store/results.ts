@@ -7,6 +7,7 @@ import { UUID } from '@/common/util'
 import ReconnectingWebSocket from 'reconnecting-websocket'
 import { ActionContext, ActionTree, GetterTree, MutationTree } from 'vuex'
 import { API2, Api2State } from './state'
+import { DefaultMap } from '@/common/data'
 
 export const resultsMutations: MutationTree<Api2State> = {
 
@@ -20,7 +21,6 @@ export const resultsMutations: MutationTree<Api2State> = {
     },
 
     setSeriesEvent(state: Api2State, param: any) {
-        state.live.series  = param.series
         state.live.eventid = param.eventid
     },
 
@@ -60,7 +60,7 @@ export const resultsMutations: MutationTree<Api2State> = {
 export const resultsActions: ActionTree<Api2State, any> = {
 
     newRouteParam(context: ActionContext<Api2State, any>, params: any): void {
-        if ((context.state.live.series !== params.series) || (context.state.live.eventid !== params.eventid)) {
+        if ((context.state.currentSeries !== params.series) || (context.state.live.eventid !== params.eventid)) {
             context.commit('setSeriesEvent', params)
         }
     },
@@ -79,7 +79,7 @@ export const resultsActions: ActionTree<Api2State, any> = {
 
         const p = {
             authtype: AUTHTYPE_NONE,
-            series: context.state.live.series,
+            series: context.state.currentSeries,
             eventid: context.state.live.eventid,
             items: 'live',
             watch: {
@@ -124,7 +124,7 @@ export const resultsActions: ActionTree<Api2State, any> = {
         if (!context.state.websocket || !context.state.live.watch) return
 
         context.state.websocket.send(JSON.stringify({
-            series: context.state.live.series,
+            series: context.state.currentSeries,
             eventid: context.state.live.eventid,
             watch: context.state.live.watch
         }))
@@ -132,7 +132,7 @@ export const resultsActions: ActionTree<Api2State, any> = {
         // When changing send a direct request to get latest data rather than waiting for next run
         const p = {
             authtype: AUTHTYPE_NONE,
-            series: context.state.live.series,
+            series: context.state.currentSeries,
             eventid: context.state.live.eventid,
             items: 'live,classes',
             watch: context.state.live.watch
@@ -146,6 +146,18 @@ export const resultsActions: ActionTree<Api2State, any> = {
     }
 }
 
+const yearMatch = /\d{2}$/
+export function seriesYear(series: string): string {
+    const m = yearMatch.exec(series)
+    return m ? '20' + m[0] : 'Other'
+}
+
 export const resultsGetters: GetterTree<Api2State, Api2State> = {
-    // getyears
+    yearGroups: (state): DefaultMap<string, string[]> => {
+        const years = new DefaultMap<string, string[]>(() => [])
+        for (const s of state.allseries) {
+            years.getD(seriesYear(s)).push(s)
+        }
+        return years
+    }
 }

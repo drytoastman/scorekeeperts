@@ -3,7 +3,7 @@ import { LiveSocketWatch, Run, TopTimesKey } from '@/common/results'
 import { UUID } from '@/common/util'
 import { db } from '@/db'
 import { createTopTimesTable } from '@/db/results/calctoptimes'
-import { getDObj } from '@/util/data'
+import { getDObj } from '@/common/data'
 import { LazyData } from '../lazydata'
 
 export async function generateProTimer(): Promise<string> {

@@ -94,21 +94,15 @@ export function createResultsStore(router: VueRouter): Store<Api2State> {
         }),
         router,
         [],
-        () => { /* */ }
+        (store) => {
+            // series change
+            store.dispatch('getdata', { items: 'seriesinfo' })
+        }
     )
 
     router.beforeResolve(function(to: Route, from: Route, next): void {
         store.dispatch('newRouteParam', to.params)
         next()
     })
-
-    store.watch(
-        (state: Api2State) => { return state.drivers },
-        (newvalue: any) => {
-            // copy driverid from drivers into store driverid
-            const d: Driver[] = Object.values(newvalue)
-            store.commit('setDriverId', d.length > 0 ? d[0].driverid : '')
-        }
-    )
     return store
 }
