@@ -10,7 +10,8 @@ import { api2Mutations } from './api2mutations'
 import { installLoggingHandlers } from './logging'
 import { cartMutations, registerActions, registerGetters } from './register'
 import { Api2State, API2 } from './state'
-import { AUTHTYPE_DRIVER, AUTHTYPE_SERIES } from '@/common/auth'
+import { AUTHTYPE_DRIVER, AUTHTYPE_NONE, AUTHTYPE_SERIES } from '@/common/auth'
+import { resultsMutations, resultsActions, resultsGetters } from './results'
 
 Vue.use(Vuex)
 
@@ -70,6 +71,36 @@ export function createRegisterStore(router: VueRouter): Store<Api2State> {
             store.dispatch('restartWebSocket', API2.UPDATES)
         }
     )
+
+    store.watch(
+        (state: Api2State) => { return state.drivers },
+        (newvalue: any) => {
+            // copy driverid from drivers into store driverid
+            const d: Driver[] = Object.values(newvalue)
+            store.commit('setDriverId', d.length > 0 ? d[0].driverid : '')
+        }
+    )
+    return store
+}
+
+
+export function createResultsStore(router: VueRouter): Store<Api2State> {
+    const store = finishStore(
+        new Store({
+            state:     new Api2State(AUTHTYPE_NONE),
+            mutations: { ...api2Mutations(false), ...resultsMutations },
+            actions:   { ...api2Actions, ...resultsActions },
+            getters:   { ...api2Getters, ...resultsGetters }
+        }),
+        router,
+        [],
+        () => { /* */ }
+    )
+
+    router.beforeResolve(function(to: Route, from: Route, next): void {
+        store.dispatch('newRouteParam', to.params)
+        next()
+    })
 
     store.watch(
         (state: Api2State) => { return state.drivers },

@@ -5,25 +5,25 @@ module.exports = {
         // config.plugin('analyze').use(BundleAnalyzerPlugin)
     },
     pages: {
-        register: {
-            entry: './src/Registration/main.ts',
-            template: 'public/index.html',
-            title: 'Scorekeeper Registration'
-        },
         admin: {
             entry: './src/Admin/main.ts',
             template: 'public/index.html',
             title: 'Scorekeeper Admin'
         },
-        live: {
-            entry: './src/Live/main.ts',
-            template: 'public/index.html',
-            title: 'Scorekeeper Live'
-        },
         docs: {
             entry: './src/Docs/main.ts',
             template: 'public/index.html',
             title: 'Scorekeeper Docs'
+        },
+        register: {
+            entry: './src/Registration/main.ts',
+            template: 'public/index.html',
+            title: 'Scorekeeper Registration'
+        },
+        results: {
+            entry: './src/Results/main.ts',
+            template: 'public/index.html',
+            title: 'Scorekeeper Results'
         }
     },
     css: {

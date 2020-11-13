@@ -3,17 +3,16 @@ import Vuetify from 'vuetify/lib'
 import colors from 'vuetify/es5/util/colors'
 import 'typeface-roboto'
 
-import Live from './Live.vue'
+import Results from './Results.vue'
 import router from './router'
-import store from './store'
+import { createResultsStore } from '@/store'
 import filters from '@/util/filters'
-import { Route } from 'vue-router'
 
 Vue.use(filters)
 Vue.use(Vuetify)
 
 const base = {
-    primary: '#465146',
+    primary: colors.blue.base, // '#465146',
     secondary: '#478841',
     accent: '#799d8e',
     error: colors.red.base,
@@ -37,14 +36,10 @@ const vuetify = new Vuetify({
     }
 })
 
-router.beforeResolve(function(to: Route, from: Route, next): void {
-    store.dispatch('newRouteParam', to.params)
-    next()
-})
-
+const store = createResultsStore(router)
 new Vue({
     router,
     store,
     vuetify,
-    render: h => h(Live)
+    render: h => h(Results)
 }).$mount('#app')

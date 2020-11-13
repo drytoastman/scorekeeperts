@@ -6,6 +6,7 @@ import { Car } from '@/common/car'
 import { Registration, Payment } from '@/common/register'
 import { UUID } from '../common/util'
 import ReconnectingWebSocket from 'reconnecting-websocket'
+import { LiveSocketWatch } from '@/common/results'
 
 export const EMPTY = ''
 export const API2 = {
@@ -79,6 +80,24 @@ export class Api2State {
     // square oauth
     squareapplicationid = ''
     squareoauthresp = {}
+
+    // results
+    allseries: string[] = []
+    live = {
+        series: '',
+        eventid: '',
+        getclass: '',
+        watch: undefined as LiveSocketWatch|undefined,
+
+        prev: {},
+        last: {},
+        next: {},
+        lastclass: { nodata: 'no data' } as  any|undefined,
+        topnet: {},
+        topraw: {},
+        runorder: {},
+        timer: 0
+    }
 
     // other more temporary things
     gettingData = 0

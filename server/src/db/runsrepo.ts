@@ -44,7 +44,7 @@ export class RunsRepository {
 
         let filt = ''
         if (classcodefilter) filt += 'AND lower(c.classcode)=lower($(classcodefilter)) '
-        if (coursefilter)    filt += "AND (s.newdata->>'course'=$(coursefilter) OR s.olddata->>'course'=$(coursefilter)) "
+        if (coursefilter)    filt += "AND (s.newdata->>'course'=$(coursefilter)::text OR s.olddata->>'course'=$(coursefilter)::text) "
 
         const row = await this.db.oneOrNone('select s.ltime, c.carid, c.classcode, s.olddata, s.newdata ' +
                         "FROM serieslog s JOIN cars c ON c.carid=uuid(s.newdata->>'carid') OR c.carid=uuid(s.olddata->>'carid') " +

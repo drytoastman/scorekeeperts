@@ -17,7 +17,7 @@ export async function unauthget(task: ScorekeeperProtocol, auth: AuthData, param
         success: true
     }
 
-    task.series.setSeries(param.series)
+    await task.series.setSeries(param.series)
     for (const item of param.items) {
         ret.success = ret.success && await unauthgetone(task, auth, param, item, ret)
     }

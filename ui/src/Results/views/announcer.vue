@@ -108,15 +108,23 @@ export default {
         }
     },
     computed: {
-        ...mapState(['classes', 'prev', 'last', 'next', 'lastclass', 'topnet', 'topraw', 'timer', 'runorder', 'getclass']),
-        classcodes() { return this.classes.map(c => c.classcode).sort() },
+        ...mapState(['classes']),  // mapstate doesn't really work with sub value with dot notation
+        prev()      { return this.$store.state.live.prev },
+        last()      { return this.$store.state.live.last },
+        next()      { return this.$store.state.live.next },
+        lastclass() { return this.$store.state.live.lastclass },
+        runorder()  { return this.$store.state.live.runorder },
+        timer()     { return this.$store.state.live.timer },
+        topraw()    { return this.$store.state.live.topraw },
+        topnet()    { return this.$store.state.live.topnet },
+        classcodes() { return Object.values(this.classes).map(c => c.classcode).sort() },
         selectedClass: {
-            get() { return this.getclass },
+            get() { return this.$store.state.live.getclass },
             set(nv) { this.$store.dispatch('setClass', nv) }
         }
     },
     watch: {
-        // last() { this.selectedTab = 1 },
+        last() { this.selectedTab = 1 }
     },
     mounted() {
         this.$store.dispatch('setWatch', {

@@ -107,6 +107,9 @@ export function api2Mutations(adminOptions: boolean):  MutationTree<Api2State> {
 
         addErrors(state: Api2State, errors: string[]) {
             state.errors = [...state.errors, ...errors]
+            if (state.errors.length > 10) {
+                state.errors.splice(0, state.errors.length - 10)
+            }
         },
 
         clearErrors(state: Api2State) {
