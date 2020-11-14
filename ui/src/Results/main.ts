@@ -12,8 +12,8 @@ Vue.use(filters)
 Vue.use(Vuetify)
 
 const base = {
-    primary: colors.blue.base, // '#465146',
-    secondary: '#478841',
+    primary: '#29608e',
+    secondary: '#4598dd',
     accent: '#799d8e',
     error: colors.red.base,
     warning: colors.orange.base,

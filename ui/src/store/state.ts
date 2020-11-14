@@ -84,6 +84,7 @@ export class Api2State {
     // results
     allseries: string[] = []
     seriesinfo: any = {}
+    eventresults: any = {}
     live = {
         eventid: '',
         getclass: '',

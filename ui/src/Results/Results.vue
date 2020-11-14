@@ -11,7 +11,7 @@
         </v-app-bar>
 
         <v-main>
-             {{$route.name}} {{$route.params}}
+             <!-- {{$route.name}} {{$route.params}} -->
             <router-view/>
         </v-main>
         <SnackBar></SnackBar>
@@ -47,7 +47,7 @@ export default {
 
         yearlist()   { return orderBy([...this.yearGroups.keys()], v => v, 'desc') },
         serieslist() { return orderBy(this.yearGroups.getD(this.year), v => v) },
-        eventlist()  { return orderBy(this.seriesinfo.events, 'date') },
+        eventlist()  { return this.seriesinfo.events ? orderBy(this.seriesinfo.events, 'date') : [] },
 
         selectedYear: {
             get() { return this.year },
@@ -74,6 +74,7 @@ export default {
             set(value) {
                 this.event = value
                 if (this.event) {
+                    this.$store.dispatch('getdata', { items: 'eventresults', eventid: this.event.eventid })
                     this.push('eventindex', { eventid: this.event.eventid })
                 }
             }
@@ -86,13 +87,20 @@ export default {
             })
         }
     },
-    mounted() {
-        this.$store.dispatch('getdata', { items: 'allseries' })
-    },
     watch: {
+        // Need to wait for certain things before we can initialize year and event from route info
         '$route'() {
-            if (this.$route.params.series) { // catch year from initial route
+            if (this.$route.params.series) {
                 this.year = seriesYear(this.$route.params.series)
+            }
+        },
+        eventlist(nv) {
+            if (nv.length && !this.event && this.$route.params.eventid) {
+                const f = nv.filter(e => e.eventid === this.$route.params.eventid)
+                if (f.length) {
+                    this.event = f[0]
+                    this.$store.dispatch('getdata', { items: 'eventresults', eventid: this.event.eventid })
+                }
             }
         }
     }
@@ -107,26 +115,7 @@ export default {
 
 .menus {
     display: flex;
-    column-gap: 2px;
-    .v-select {
-        min-width: 5rem;
-    }
-    ::v-deep {
-        .v-select__selections {
-            width: min-content;
-        }
-        .v-select.v-text-field input {
-            flex: 0;
-        }
-        .v-select__selection {
-            max-width: 100%;
-        }
-        .v-text-field .v-input__control .v-input__slot {
-           &::before, &::after {
-                border: none;
-            }
-        }
-    }
+    column-gap: 5px;
 }
 
 .v-sheet.v-app-bar {
@@ -142,5 +131,6 @@ export default {
 </style>
 
 <style lang="scss">
-@import '@/styles/live.scss';
+@import '@/styles/general.scss';
+@import '@/styles/results.scss';
 </style>

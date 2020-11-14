@@ -148,6 +148,7 @@ export default {
     .outer {
         display: flex;
         width: 100%;
+        font-size: 0.95rem;
     }
     .col1 {
         flex: 0.75;

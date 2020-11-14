@@ -104,5 +104,9 @@ export function createResultsStore(router: VueRouter): Store<Api2State> {
         store.dispatch('newRouteParam', to.params)
         next()
     })
+
+    router.onReady(() => {
+        store.dispatch('getdata', { items: 'allseries,ismainserver' })
+    })
     return store
 }

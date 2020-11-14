@@ -62,6 +62,7 @@ export async function unauthgetone(task: ScorekeeperProtocol, auth: AuthData, pa
             case 'paymentaccounts': ret.paymentaccounts = await task.payments.getPaymentAccounts();   break
             case 'classorder':      ret.classorder      = await task.clsidx.classOrder();             break
             case 'seriesinfo':      ret.seriesinfo      = await task.results.getSeriesInfo();         break
+            case 'eventresults':    ret.eventresults    = await task.results.getEventResults(param.eventid); break
             case 'live':
                 watch = JSON.parse(param.watch)
                 if (watch.protimer) ret.protimer = await generateProTimer()

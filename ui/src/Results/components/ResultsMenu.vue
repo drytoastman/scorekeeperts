@@ -4,9 +4,11 @@
             <v-btn color="primary" v-bind="attrs" v-on="on">{{ value ? (value.name || value) : placeholder}}</v-btn>
         </template>
         <v-list>
-            <v-list-item v-for="(item, index) in items" :key="index" @click="$emit('input', item)">
-                {{ item.name || item }}
-            </v-list-item>
+            <template v-for="(item, index) in items">
+                <v-list-item :key="index" :disabled="item === value" @click="$emit('input', item)">
+                    {{ item.name || item }}
+                </v-list-item>
+            </template>
         </v-list>
     </v-menu>
 </template>

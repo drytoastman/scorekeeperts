@@ -43,7 +43,10 @@ export class ResultsRepository {
         if (await this.needUpdate(false, ['challenges', 'classlist', 'indexlist', 'events', 'settings'], name)) {
             await this.insertResults(name, updatedSeriesInfo(this.db))
         }
-        return this.loadResults(name)
+
+        const ret  = await this.loadResults(name)
+        ret.status = await this.db.series.getStatus(await this.db.series.getCurrent())
+        return ret
     }
 
 

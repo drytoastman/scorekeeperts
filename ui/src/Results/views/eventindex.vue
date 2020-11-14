@@ -1,11 +1,115 @@
 <template>
-    <div>
-        EventIndex!
+    <div class='mainwrap'>
+        <div class='list'>
+            <h3>Results</h3>
+            <router-link :to="{name: 'post'}">Event Results</router-link>
+            <!-- PAX Dist, Net Dist, does anyone care -->
+            <template v-if='!hassession'>
+                <router-link :to="{name: 'champ'}">Championship</router-link>
+            </template>
+            <template v-if="active && !ismainserver">
+                <router-link :to="{name: 'announcer'}">Announcer</router-link>
+                <router-link :to="{name: 'live'}">Live</router-link>
+            </template>
+        </div>
+
+        <div class='list'>
+            <h3>Top Times Lists</h3>
+            <template v-if="event.ispro">
+                <router-link :to="{name: 'toptimes', query: { indexed: 0 }}">Unindexed</router-link>
+                <router-link :to="{name: 'toptimes', query: { indexed: 1 }}">Indexed</router-link>
+            </template>
+            <template v-if="!hassession">
+                <router-link :to="{name: 'toptimes', query: { counted: 1 }}">Counted Runs</router-link>
+                <router-link :to="{name: 'toptimes', query: { counted: 0 }}">All Runs</router-link>
+            </template>
+            <template v-if="hassession">
+                <router-link :to="{name: 'toptimes', query: { counted: 0, indexed:0 }}">All Runs</router-link>
+            </template>
+            <template v-if="event.segments > 0">
+                Need to implement segments stuff
+            </template>
+        </div>
+
+        <div class='list' v-if="event.ispro">
+            <h3>ProSolo</h3>
+            <template v-if="active">
+                <router-link :to="{name: 'grid', query: { order: 'number' }}">Grid By Number</router-link>
+                <router-link :to="{name: 'grid', query: { order: 'position' }}">Grid By Standings</router-link>
+            </template>
+
+            <router-link :to="{name: 'dialins', query: { order: 'net' }}">Dialins By Net Time</router-link>
+            <router-link :to="{name: 'dialins', query: { order: 'prodiff' }}">Dialins By Class Diff</router-link>
+
+            <router-link v-for="c in challenges" :key="c.challengeid" :to="{name: 'bracket', params: { challengeid: c.challengeid }}">{{c.name}}</router-link>
+        </div>
+
+        <div class='classwrap'>
+            <h3>By RunGroup <template v-if="!hassession">Or Active Class</template></h3>
+            <div class='bothgroups'>
+                <div class='groups'>
+                <router-link v-for="ii in groups"  :key="ii" :to="{name: 'bygroup', query: { list: ii }}">Group {{ii}}</router-link>
+                </div>
+                <div class='classes'>
+                <router-link v-for="cc in classes" :key="cc" :to="{name: 'byclass', query: { list: cc }}">{{cc}}</router-link>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
 <script>
+import orderBy from 'lodash/orderBy'
+import { mapState } from 'vuex'
+import { SeriesStatus } from '@/common/series'
+import { hasSessions } from '@/common/event'
+
 export default {
-    name: 'EventIndex'
+    name: 'EventIndex',
+    props: {
+        eventid: String
+    },
+    computed: {
+        ...mapState(['seriesinfo', 'ismainserver', 'eventresults']),
+        event() {
+            if (!this.seriesinfo.events) return {}
+            return this.seriesinfo.events.filter(e => e.eventid === this.eventid)[0]
+        },
+        challenges() { return this.seriesinfo.challenges.filter(c => c.eventid === this.eventid) },
+        hassession() { return this.event ? hasSessions(this.event) : false },
+        active() { return this.seriesinfo.status === SeriesStatus.ACTIVE },
+        groups() { return [1, 2, 3, 4] },
+        classes() { return orderBy(Object.keys(this.eventresults), v => v) }
+    }
 }
 </script>
+
+<style lang="scss" scoped>
+.mainwrap {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+}
+.list {
+    display: flex;
+    flex-direction: column;
+}
+.classwrap {
+    grid-column: 1 / span 3;
+}
+.bothgroups {
+    display: flex;
+    column-gap: 7rem;
+}
+.groups {
+    display: flex;
+    flex-direction: column;
+}
+.classes {
+    flex: 1;
+    columns: auto 7rem;
+    a {
+        display: block;
+        white-space: nowrap;
+    }
+}
+</style>
