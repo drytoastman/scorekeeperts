@@ -1,4 +1,3 @@
-
 html, body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
 
@@ -6,7 +5,8 @@ html, body {
     --headercolor: white;
     --titlesfill: #4598dd;
     --titlescolor: white;
-    --general-border-color: #a8a8a8;
+    // --general-border-color: #a8a8a8;
+    --general-border-color: #ccc;
     --could-have-background: #EDD;
     --could-have-color: #E77;
     --improved-on-background: #EEF;
@@ -14,61 +14,187 @@ html, body {
     --highlight-background: #DDD;
 }
 
-table, th, td {
+table.live {
+    width: 100%;
     border-collapse: collapse;
-    border: 1px solid var(--general-border-color);
     padding: 0 0.3rem;
     vertical-align: top;
+
+    tr, td {
+        white-space: nowrap;
+        border: 1px solid var(--general-border-color);
+    }
+
+    td.limit {
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    tr.couldhave td {
+        background: var(--could-have-background);
+        color: var(--could-have-color);
+        font-weight: bold;
+        font-size: 110%;
+    }
+
+    tr.improvedon td {
+        background: var(--improved-on-background);
+        color: var(--improved-on-color);
+        font-weight: bold;
+        font-size: 110%;
+    }
+
+    tr.highlight td {
+        background: var(--highlight-background);
+        font-weight: bold;
+        font-size: 110%;
+    }
+
+    span.change {
+        font-size: 80%;
+    }
+
+    tr.head th {
+        text-align: center;
+        font-weight: bold;
+        background-color: var(--headerfill);
+        border-color: var(--headerfill);
+        color: var(--headercolor);
+    }
+    tr.subhead th {
+        text-align: center;
+        font-weight: bold;
+        background-color: var(--titlesfill);
+        border-color: var(--titlesfill);
+        color: var(--titlescolor);
+    }
 }
 
-table {
-    width: 100%;
+table.classresults {
+    margin: 0px auto;
+    border-collapse: collapse;
+
+    tbody tr.mainentrantrow {
+        border-top: 1px solid var(--general-border-color);
+    }
+    tbody tr:last-child {
+        border-bottom: 1px solid var(--general-border-color);
+        td {
+            margin-bottom: 1rem;
+        }
+    }
+
+    tr.head th {
+        background-color: var(--headerfill);
+        border-color: var(--headerfill);
+        color: var(--headercolor);
+        text-align: left;
+        font-weight: 500;
+        padding-left: 0.6rem;
+        padding-right: 0.2rem;
+    }
+
+    tr.subhead th {
+        background-color: var(--titlesfill);
+        border-color: var(--titlesfill);
+        color: var(--titlescolor);
+        text-align: center;
+        padding: 0.1rem 0.3rem;
+    }
+
+    tr.missingmin td { // haven't met championship min
+    	color: #ccc;
+    }
+
+    td {
+        padding: 0.2rem 0.5rem;
+        font-size: 90%;
+
+		&.name {
+			max-width: 10rem;
+		}
+
+		&.cardesc {
+			max-width: 18rem;
+		}
+
+        &.trophy, &.sort, &.bestnet {
+            font-weight: bold;
+        }
+
+        &.run, &.points, &.attend {
+            text-align: center;
+        }
+
+        &.carnum {
+            text-align: right;
+        }
+
+        &.bestnet .net {
+            text-decoration: underline;
+        }
+
+        &.drop {
+            text-decoration: line-through;
+            color: #BBB;
+        }
+
+        span {
+            &.raw, &.net {
+                display: block;
+                white-space: nowrap;
+            }
+            &.raw {
+                font-size: 90%;
+            }
+            &.reaction {
+                display: block;
+                font-size: 0.8em;
+            }
+        }
+    }
 }
 
-td {
-    white-space: nowrap;
+table.champ {
+    margin-top: 1rem;
 }
 
-td.limit {
-    overflow: hidden;
-    text-overflow: ellipsis;
+// Borders to separate multiple tables of toptime data in one table
+table.toptimes {
+	td.pos {
+		border-left: 1px solid var(--general-border-color);
+	}
+	td.time {
+		border-right: 1px solid var(--general-border-color);
+		font-weight: bold;
+	}
 }
 
-tr.couldhave td {
-    background: var(--could-have-background);
-    color: var(--could-have-color);
-    font-weight: bold;
-    font-size: 110%;
+// Some extra borders for printout
+table.dialins {
+	td {
+		border-top: 1px solid var(--general-border-color);
+	}
 }
 
-tr.improvedon td {
-    background: var(--improved-on-background);
-    color: var(--improved-on-color);
-    font-weight: bold;
-    font-size: 110%;
-}
-
-tr.highlight td {
-    background: var(--highlight-background);
-    font-weight: bold;
-    font-size: 110%;
-}
-
-span.change {
-    font-size: 80%;
-}
-
-tr.head th {
-    text-align: center;
-    font-weight: bold;
-    background-color: var(--headerfill);
-    border-color: var(--headerfill);
-    color: var(--headercolor);
-}
-tr.subhead th {
-    text-align: center;
-    font-weight: bold;
-    background-color: var(--titlesfill);
-    border-color: var(--titlesfill);
-    color: var(--titlescolor);
+// Special table for challenge report
+table.challengeround {
+    margin: 1px;
+    td {
+        white-space: nowrap;
+    }
+    tr.head th {
+        font-size: 0.8rem;
+    }
+	tr.winner td {
+	    // background: lighten(adjust-hue($basecolor, 10), 40%);
+	}
+	span.dial {
+		font-weight: bold;
+        float: right;
+	}
+	td.result {
+	    text-align: center;
+	    font-size: 1.2em;
+	}
 }

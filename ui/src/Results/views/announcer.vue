@@ -82,13 +82,12 @@
 import { mapState } from 'vuex'
 import isEmpty from 'lodash/isEmpty'
 
-import TimerBox from '../components/TimerBox.vue'
-import RunOrderTable from '../components/RunOrderTable.vue'
-import ClassTable from '../components/ClassTable.vue'
-import ChampTable from '../components/ChampTable.vue'
-import EntrantTable from '../components/EntrantTable.vue'
-import TopTimesTable from '../components/TopTimesTable.vue'
-
+import TimerBox from '../components/live/TimerBox.vue'
+import RunOrderTable from '../components/live/RunOrderTable.vue'
+import ClassTable from '../components/live/ClassTable.vue'
+import ChampTable from '../components/live/ChampTable.vue'
+import EntrantTable from '../components/live/EntrantTable.vue'
+import TopTimesTable from '../components/live/TopTimesTable.vue'
 
 export default {
     name: 'AnnouncerPanel',

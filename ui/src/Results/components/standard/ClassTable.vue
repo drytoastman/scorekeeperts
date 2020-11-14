@@ -1,0 +1,91 @@
+<template>
+    <table class='classresults'>
+    <tbody v-for="(entrants, code) in results" :key="code" :id='`body${code}`'>
+        <tr class='head'>
+            <th :colspan='colspan'>{{code}} - {{descrip(code)}}</th>
+        </tr>
+        <tr class='subhead'>
+            <th class='pos'></th>
+            <th class='trophy'></th>
+            <th class='name'>Name</th>
+            <th class='carnum'>#</th>
+            <th class='cardesc'>Car</th>
+            <th class='caridx'>Idx</th>
+            <th v-for="ii in runs" :key="ii" class='run'>Run {{ii+1}}</th>
+            <th v-if="event.courses > 1" class='total'>Total</th>
+            <th class='points'>Points</th>
+        </tr>
+
+        <template v-for="e of entrants">
+            <tr :key="e.carid" class='mainentrantrow'>
+                <td class='pos'     :rowspan="rowspan">{{e.position}}</td>
+                <td class='trophy'  :rowspan="rowspan">{{e.trophy ? 'T' : ''}}</td>
+                <td class='name'    :rowspan="rowspan">{{e.firstname}} {{e.lastname}}</td>
+                <td class='carnum'  :rowspan="rowspan">{{e.number}}</td>
+                <td class='cardesc' :rowspan="rowspan">{{e.year}} {{e.make}} {{e.model}} {{e.color}}</td>
+                <td class='caridx'  :rowspan="rowspan">{{e.indexstr}}</td>
+                <template v-for="(run, ii) in e.runs[0]">
+                    <td :key="ii" v-if="!run" class='run'>no data</td>
+                    <td :key="ii" v-else :class="runclasses(run)" v-html="rundata(run, e.indexstr.length)"></td>
+                </template>
+                <td class='total'   :rowspan="rowspan" v-if="event.courses > 1">{{e.net | t3}}</td>
+                <td class='points'  :rowspan="rowspan">{{e.points | t3}}</td>
+            </tr>
+            <tr v-for="c in pluscourses" :key="e.carid + c" class='subentrantrow'>
+                <template v-for="(run, ii) in e.runs[c]">
+                    <td :key="ii" v-if="!run" class='run'>no data</td>
+                    <td :key="ii" v-else :class="runclasses(run)" v-html="rundata(run, e.indexstr.length)"></td>
+                </template>
+            </tr>
+        </template>
+    </tbody>
+    </table>
+</template>
+
+<script>
+import pick from 'lodash/pick'
+import range from 'lodash/range'
+import { mapGetters, mapState } from 'vuex'
+import { t3 } from '@/util/filters'
+
+export default {
+    name: 'ClassTable',
+    props: {
+        classcodes: Array
+    },
+    computed: {
+        ...mapState(['eventresults', 'eventresultsid']),
+        ...mapGetters(['eventInfo']),
+
+        rowspan() { return this.event.courses > 1 ? this.event.courses : undefined },
+        colspan() { return this.event.runs + (this.event.courses > 1 ? 8 : 7) },
+        pluscourses() { return range(1, this.event.courses) },
+        runs() { return range(this.event.runs) },
+        event() { return this.eventInfo(this.eventresultsid) },
+        results() { return this.classcodes ? pick(this.eventresults, this.classcodes) : this.eventresults }
+    },
+    methods: {
+        runclasses(run) {
+            const classes = ['run']
+            if (run.norder === 1) classes.push('bestnet')
+            if (run.rorder === 1) classes.push('bestraw')
+            return classes.join(' ')
+        },
+        rundata(run, showraw) {
+            const data = []
+            if (run.status === 'OK') {
+                data.push(`<span class='net'>${t3(run.net)} (${run.cones},${run.gates})</span>`)
+                if (showraw) {
+                    data.push(`<span class='raw'>[${t3(run.raw)}]</span>`)
+                }
+            } else if (run.status !== 'PLC') {
+                data.push(`<span class='net'>${run.status}</span>`)
+            }
+            return data.join('')
+        },
+        descrip(classcode) {
+            return `class info for ${classcode}`
+        }
+    }
+}
+</script>

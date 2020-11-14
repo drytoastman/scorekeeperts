@@ -74,7 +74,7 @@ export default {
             set(value) {
                 this.event = value
                 if (this.event) {
-                    this.$store.dispatch('getdata', { items: 'eventresults', eventid: this.event.eventid })
+                    this.updateResults()
                     this.push('eventindex', { eventid: this.event.eventid })
                 }
             }
@@ -84,6 +84,12 @@ export default {
         push(name, params) {
             this.$router.push({ name: name, params: params }).catch(error => {
                 if (error.name !== 'NavigationDuplicated') { throw error }
+            })
+        },
+        updateResults() {
+            this.$store.dispatch('getdata', { items: 'eventresults', eventid: this.event.eventid }).then(data => {
+                console.log('commit')
+                if (data) this.$store.commit('apiData', { eventresultsid: this.event.eventid })
             })
         }
     },
@@ -99,7 +105,7 @@ export default {
                 const f = nv.filter(e => e.eventid === this.$route.params.eventid)
                 if (f.length) {
                     this.event = f[0]
-                    this.$store.dispatch('getdata', { items: 'eventresults', eventid: this.event.eventid })
+                    this.updateResults()
                 }
             }
         }

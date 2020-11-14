@@ -1,5 +1,5 @@
 <template>
-    <table class='res'>
+    <table class='live'>
         <tbody>
             <tr class='head'><th colspan='6'>Top Times ({{this.type}})</th></tr>
             <tr class='subhead'><th>#</th><th>Name</th><th>Class</th><th colspan=1>Index</th><th>Time</th></tr>
@@ -17,7 +17,7 @@
 </template>
 
 <script>
-import { rowclass } from './util'
+import { rowclass } from '../util'
 
 export default {
     name: 'TopTimesTable',

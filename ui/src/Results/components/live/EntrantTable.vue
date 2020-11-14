@@ -1,5 +1,5 @@
 <template>
-    <table class='res'>
+    <table class='live'>
         <tbody>
             <tr class='head'>
                 <th colspan='5'>{{entrant.firstname}} {{entrant.lastname}} - Course {{entrant.lastcourse}}</th>

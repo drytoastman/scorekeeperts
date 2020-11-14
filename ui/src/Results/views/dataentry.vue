@@ -14,9 +14,9 @@
 <script>
 import { mapState } from 'vuex'
 import isEmpty from 'lodash/isEmpty'
-import ClassTable from '../components/ClassTable.vue'
-import ChampTable from '../components/ChampTable.vue'
-import EntrantTable from '../components/EntrantTable.vue'
+import ClassTable from '../components/live/ClassTable.vue'
+import ChampTable from '../components/live/ChampTable.vue'
+import EntrantTable from '../components/live/EntrantTable.vue'
 
 export default {
     name: 'AnnouncerPanel',

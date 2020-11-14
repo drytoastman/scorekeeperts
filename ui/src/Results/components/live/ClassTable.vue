@@ -1,5 +1,5 @@
 <template>
-    <table class='res'>
+    <table class='live'>
         <tbody>
             <tr class='head'>
                 <th :colspan="colspan">Event - {{cls.classcode}}</th>
@@ -24,7 +24,7 @@
 </template>
 
 <script>
-import { rowclass } from './util'
+import { rowclass } from '../util'
 
 export default {
     name: 'ClassTable',

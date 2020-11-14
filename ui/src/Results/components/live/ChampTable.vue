@@ -1,5 +1,5 @@
 <template>
-    <table v-if="champ" class='res'>
+    <table v-if="champ" class='live'>
         <tbody>
             <tr class='head'><th colspan='4'>Champ - {{champ.classcode}}</th></tr>
             <tr class='subhead'><th>#</th><th>Name</th><th></th><th>Points</th></tr>

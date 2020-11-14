@@ -1,7 +1,7 @@
 <template>
     <div>
         <div v-if="!order">Waiting for data</div>
-        <table class='runorder'>
+        <table class='live runorder'>
             <tbody>
                 <tr class='head'><th :colspan='small?5:6'>Next To Finish</th></tr>
                 <tr class='subhead'>

@@ -2,12 +2,14 @@ import axios from 'axios'
 import Vue from 'vue'
 
 import { AUTHTYPE_NONE } from '@/common/auth'
+import { DefaultMap } from '@/common/data'
+import { SeriesEvent } from '@/common/event'
 import { LiveSocketWatch } from '@/common/results'
 import { UUID } from '@/common/util'
 import ReconnectingWebSocket from 'reconnecting-websocket'
 import { ActionContext, ActionTree, GetterTree, MutationTree } from 'vuex'
 import { API2, Api2State } from './state'
-import { DefaultMap } from '@/common/data'
+
 
 export const resultsMutations: MutationTree<Api2State> = {
 
@@ -159,5 +161,12 @@ export const resultsGetters: GetterTree<Api2State, Api2State> = {
             years.getD(seriesYear(s)).push(s)
         }
         return years
+    },
+
+    eventInfo: (state) => (eventid: UUID) => {
+        if (!state.seriesinfo.events) return {}
+        const e = state.seriesinfo.events.filter((e: SeriesEvent) => e.eventid === eventid)
+        if (e.length) return e[0]
+        return {}
     }
 }
