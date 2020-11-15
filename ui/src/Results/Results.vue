@@ -87,10 +87,7 @@ export default {
             })
         },
         updateResults() {
-            this.$store.dispatch('getdata', { items: 'eventresults', eventid: this.event.eventid }).then(data => {
-                console.log('commit')
-                if (data) this.$store.commit('apiData', { eventresultsid: this.event.eventid })
-            })
+            this.$store.dispatch('getdata', { items: 'eventresults', eventid: this.event.eventid })
         }
     },
     watch: {

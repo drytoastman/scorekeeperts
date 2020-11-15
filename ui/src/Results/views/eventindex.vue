@@ -51,7 +51,7 @@
                 <router-link v-for="ii in groups"  :key="ii" :to="{name: 'bygroup', query: { groups: ii }}">Group {{ii}}</router-link>
                 </div>
                 <div class='classes'>
-                <router-link v-for="cc in classes" :key="cc" :to="{name: 'byclass', query: { codes: cc }}">{{cc}}</router-link>
+                <router-link v-for="cc in resultsClasses" :key="cc" :to="{name: 'byclass', query: { codes: cc }}">{{cc}}</router-link>
                 </div>
             </div>
         </div>
@@ -59,8 +59,7 @@
 </template>
 
 <script>
-import orderBy from 'lodash/orderBy'
-import { mapState } from 'vuex'
+import { mapGetters, mapState } from 'vuex'
 import { SeriesStatus } from '@/common/series'
 import { hasSessions } from '@/common/event'
 
@@ -70,7 +69,8 @@ export default {
         eventid: String
     },
     computed: {
-        ...mapState(['seriesinfo', 'ismainserver', 'eventresults']),
+        ...mapState(['seriesinfo', 'ismainserver']),
+        ...mapGetters(['resultsClasses']),
         event() {
             if (!this.seriesinfo.events) return {}
             return this.seriesinfo.events.filter(e => e.eventid === this.eventid)[0]
@@ -78,8 +78,7 @@ export default {
         challenges() { return this.seriesinfo.challenges.filter(c => c.eventid === this.eventid) },
         hassession() { return this.event ? hasSessions(this.event) : false },
         active() { return this.seriesinfo.status === SeriesStatus.ACTIVE },
-        groups() { return [1, 2, 3, 4] },
-        classes() { return orderBy(Object.keys(this.eventresults), v => v) }
+        groups() { return [1, 2, 3, 4] }
     }
 }
 </script>

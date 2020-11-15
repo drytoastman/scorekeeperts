@@ -85,7 +85,7 @@ export class Api2State {
     allseries: string[] = []
     seriesinfo: any = {}
     eventresults: any = {}
-    eventresultsid: UUID = ''
+    champresults: any = {}
     live = {
         eventid: '',
         getclass: '',

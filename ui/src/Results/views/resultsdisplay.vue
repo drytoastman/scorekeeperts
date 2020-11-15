@@ -8,11 +8,11 @@
 
 <script>
 import orderBy from 'lodash/orderBy'
-import { mapGetters, mapState } from 'vuex'
+import { mapGetters } from 'vuex'
 import ClassTable from '../components/standard/ClassTable.vue'
 
 export default {
-    name: 'Post',
+    name: 'ResultsDisplay',
     components: {
         ClassTable
     },
@@ -23,15 +23,14 @@ export default {
         groups:  Array
     },
     computed: {
-        ...mapState(['eventresults']),
-        ...mapGetters(['classesForGroups']),
+        ...mapGetters(['classesForGroups', 'resultsClasses']),
         usecodes() {
             return orderBy(this.filteredcodes, v => v)
         },
         filteredcodes() {
             if (this.codes  && this.codes.length)  return this.codes
             if (this.groups && this.groups.length) return this.classesForGroups(this.groups)
-            return Object.keys(this.eventresults)
+            return this.resultsClasses
         },
         title() {
             if (this.codes  && this.codes.length)  return `Class ${this.codes.join(', ')}`

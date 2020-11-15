@@ -28,7 +28,7 @@
                     <td class='carnum'  :rowspan="rowspan">{{e.number}}</td>
                     <td class='cardesc' :rowspan="rowspan">{{e.year}} {{e.make}} {{e.model}} {{e.color}}</td>
                     <td class='caridx'  :rowspan="rowspan">{{e.indexstr}}</td>
-                    <template v-for="(run, ii) in e.runs[0]">
+                    <template v-for="(run, ii) in e.runs ? e.runs[0] : []">
                         <td :key="ii" v-if="!run" class='run'>no data</td>
                         <td :key="ii" v-else :class="runclasses(run)" v-html="rundata(run, e.indexstr.length)"></td>
                     </template>
@@ -36,7 +36,7 @@
                     <td class='points'  :rowspan="rowspan">{{e.points | t3}}</td>
                 </tr>
                 <tr v-for="c in pluscourses" :key="e.carid + c" class='subentrantrow'>
-                    <template v-for="(run, ii) in e.runs[c]">
+                    <template v-for="(run, ii) in e.runs ? e.runs[c] : []">
                         <td :key="ii" v-if="!run" class='run'>no data</td>
                         <td :key="ii" v-else :class="runclasses(run)" v-html="rundata(run, e.indexstr.length)"></td>
                     </template>
@@ -59,14 +59,14 @@ export default {
         classcodes: Array
     },
     computed: {
-        ...mapState(['eventresults', 'eventresultsid']),
-        ...mapGetters(['eventInfo']),
+        ...mapState(['eventresults']),
+        ...mapGetters(['eventInfo', 'resultsEvent']),
 
         rowspan() { return this.event.courses > 1 ? this.event.courses : undefined },
         colspan() { return this.event.runs + (this.event.courses > 1 ? 8 : 7) },
         pluscourses() { return range(1, this.event.courses) },
         runs() { return range(this.event.runs) },
-        event() { return this.eventInfo(this.eventresultsid) },
+        event() { return this.resultsEvent },
         results() { return pick(this.eventresults, this.classcodes) }
     },
     methods: {

@@ -54,7 +54,7 @@ export class ResultsRepository {
         if (await this.needEventUpdate(eventid)) {
             await this.insertResults(eventid, updatedEventResults(this.db, eventid))
         }
-        return this.loadResults(eventid)
+        return Object.assign(await this.loadResults(eventid), { _eventid: eventid })
     }
 
 

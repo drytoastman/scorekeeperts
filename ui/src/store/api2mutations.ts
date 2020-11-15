@@ -21,6 +21,8 @@ export function clearApi2SeriesData(state: Api2State): void {
     state.busyPay = {}
     state.panelstate = []
     state.seriesinfo = {}
+    state.champresults = {}
+    state.eventresults = {}
 }
 
 const type2idfield = {
@@ -204,7 +206,7 @@ export function api2Mutations(adminOptions: boolean):  MutationTree<Api2State> {
                     case 'allseries':
                     case 'seriesinfo':
                     case 'eventresults':
-                    case 'eventresultsid':
+                    case 'champresults':
                         (state as any)[key] = data[key]
                         break
 

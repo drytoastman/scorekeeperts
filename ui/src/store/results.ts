@@ -170,6 +170,14 @@ export const resultsGetters: GetterTree<Api2State, Api2State> = {
         return {}
     },
 
+    resultsClasses: (state): string[] => {
+        return Object.keys(state.eventresults).filter(c => c !== '_eventid').sort()
+    },
+
+    resultsEvent: (state, getters): string[] => {
+        return getters.eventInfo(state.eventresults._eventid)
+    },
+
     classesForGroups: (state) => (groups: number[]) => {
         const codes = new Set<string>()
         for (const [code, res] of Object.entries(state.eventresults)) {
