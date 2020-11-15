@@ -23,6 +23,19 @@ export function clearApi2SeriesData(state: Api2State): void {
     state.seriesinfo = {}
 }
 
+const type2idfield = {
+    drivers:         'driverid',
+    cars:            'carid',
+    events:          'eventid',
+    paymentitems:    'itemid',
+    paymentaccounts: 'accountid',
+    classes:         'classcode',
+    indexes:         'indexcode',
+    counts:          'eventid',
+    payments:        'payid',
+    itemeventmap:    'itemid'
+}
+
 /* Helper functions that do some lodash like things but force reactivity */
 export function ensure(obj: {[key: string]: any}, key: string, val: unknown): void {
     if (!(key in obj)) { Vue.set(obj, key, val) }
@@ -163,91 +176,98 @@ export function api2Mutations(adminOptions: boolean):  MutationTree<Api2State> {
             if (data === undefined) return
             if (data.series && data.series !== state.currentSeries) return
 
-            if ('serieslist' in data) {
-                state.serieslist = data.serieslist.sort()
-            }
+            for (const key of Object.keys(data)) {
+                let idfield
+                switch (key) {
+                    case 'errors':
+                        state.errors = [...state.errors, ...data.errors]
+                        break
+                    case 'authinfo':
+                        Object.assign(state.auth, data.authinfo)
+                        state.authinitial = true
+                        break
 
-            if ('errors' in data) {
-                state.errors = [...state.errors, ...data.errors]
-            }
+                    case 'serieslist':
+                    case 'listids':
+                    case 'unsubscribe':
+                    case 'summary':
+                    case 'attendance':
+                    case 'classorder':
+                    case 'ismainserver':
+                    case 'paxlists':
+                    case 'emailresult':
+                    case 'settings':
+                    case 'squareapplicationid':
+                    case 'squareoauthresp':
+                    case 'tokenresult':
+                    case 'driversattr':
+                    case 'allseries':
+                    case 'seriesinfo':
+                    case 'eventresults':
+                    case 'eventresultsid':
+                        (state as any)[key] = data[key]
+                        break
 
-            if ('authinfo' in data) {
-                Object.assign(state.auth, data.authinfo)
-                state.authinitial = true
-            }
-
-            for (const key of ['listids', 'unsubscribe', 'summary', 'attendance', 'classorder', 'ismainserver', 'paxlists',
-                'emailresult', 'settings', 'squareapplicationid', 'squareoauthresp', 'tokenresult', 'driversattr', 'allseries',
-                'seriesinfo', 'eventresults', 'eventresultsid']) {
-                // easy straight assignments/replacements
-                if (key in data) {
-                    state[key] = data[key]
-                }
-            }
-
-            // For more common CRUD operations
-            // data.type in ('get', 'insert', 'update', 'delete')
-            for (const pair of [
-                ['drivers', 'driverid'],
-                ['cars', 'carid'],
-                ['events', 'eventid'],
-                ['paymentitems', 'itemid'],
-                ['paymentaccounts', 'accountid'],
-                ['classes', 'classcode'],
-                ['indexes', 'indexcode'],
-                ['counts', 'eventid']
-            ]) {
-                const [key, idfield] = pair
-                if (key in data) {
-                    if (data.type === 'get') { state[key] = {} }
-                    if (data.type === 'delete') {
-                        data[key].forEach(v => Vue.delete(state[key], v[idfield]))
-                    } else { // get, insert, update
-                        data[key].forEach(v => Vue.set(state[key], v[idfield], v))
-                    }
-                }
-            }
-
-            if ('registered' in data) {
-                // get, insert, delete, eventupdate
-                if (data.type === 'get') { state.registered = {} }
-                if (data.type === 'eventupdate') { Vue.delete(state.registered, data.eventid) }
-                data.registered.forEach((r: Registration) => {
-                    if (!adminOptions) {
-                        // special keying of eventid and special subkey
-                        const subkey = r.session || r.rorder
-                        ensure(state.registered, r.eventid, {})
-                        if (data.type === 'delete') {
-                            Vue.delete(state.registered[r.eventid], subkey)
-                        } else { // get, insert, update
-                            Vue.set(state.registered[r.eventid], subkey, r)
+                    case 'drivers':
+                    case 'cars':
+                    case 'events':
+                    case 'paymentitems':
+                    case 'paymentaccounts':
+                    case 'classes':
+                    case 'indexes':
+                    case 'counts':
+                        // For more common CRUD operations
+                        // data.type in ('get', 'insert', 'update', 'delete')
+                        // store in map based on idfield of object
+                        idfield = type2idfield[key]
+                        if (key in data) {
+                            if (data.type === 'get') { state[key] = {} }
+                            if (data.type === 'delete') {
+                                data[key].forEach(v => Vue.delete(state[key], v[idfield]))
+                            } else { // get, insert, update
+                                data[key].forEach(v => Vue.set(state[key], v[idfield], v))
+                            }
                         }
-                    } else {
-                        ensure(state.registered, r.eventid, [])
-                        findDelete(state.registered[r.eventid], { carid: r.carid, session: r.session })
-                        if (data.type !== 'delete') {
-                            state.registered[r.eventid].push(r)
-                        }
-                    }
-                })
-            }
+                        break
 
-            // special of eventid to array of values
-            for (const pair of [
-                ['payments',     'payid'],
-                ['itemeventmap', 'itemid']
-            ]) {
-                const [key, idfield] = pair
-                if (key in data) {
-                    if (data.type === 'get') { state[key] = {} }
-                    if (data.type === 'eventupdate') { Vue.delete(state[key], data.eventid) }
-                    data[key].forEach(v => {
-                        ensure(state[key], v.eventid, [])
-                        findDelete(state[key][v.eventid], { [idfield]: v[idfield] })
-                        if (data.type !== 'delete') {
-                            state[key][v.eventid].push(v)
-                        }
-                    })
+                    case 'payments':
+                    case 'itemeventmap':
+                        idfield = type2idfield[key]
+                        // special of eventid to array of values
+                        if (data.type === 'get') { state[key] = {} }
+                        if (data.type === 'eventupdate') { Vue.delete(state[key], data.eventid) }
+                        data[key].forEach(v => {
+                            ensure(state[key], v.eventid, [])
+                            findDelete(state[key][v.eventid], { [idfield]: v[idfield] })
+                            if (data.type !== 'delete') {
+                                state[key][v.eventid].push(v)
+                            }
+                        })
+                        break
+
+                    case 'registered':
+                        // get, insert, delete, eventupdate
+                        if (data.type === 'get') { state.registered = {} }
+                        if (data.type === 'eventupdate') { Vue.delete(state.registered, data.eventid) }
+                        data.registered.forEach((r: Registration) => {
+                            if (!adminOptions) {
+                                // special keying of eventid and special subkey
+                                const subkey = r.session || r.rorder
+                                ensure(state.registered, r.eventid, {})
+                                if (data.type === 'delete') {
+                                    Vue.delete(state.registered[r.eventid], subkey)
+                                } else { // get, insert, update
+                                    Vue.set(state.registered[r.eventid], subkey, r)
+                                }
+                            } else {
+                                ensure(state.registered, r.eventid, [])
+                                findDelete(state.registered[r.eventid], { carid: r.carid, session: r.session })
+                                if (data.type !== 'delete') {
+                                    state.registered[r.eventid].push(r)
+                                }
+                            }
+                        })
+                        break
                 }
             }
         }
