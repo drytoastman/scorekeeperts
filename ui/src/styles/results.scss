@@ -1,17 +1,25 @@
+$headerfill: #4682b4;
+$headertext: white;
+$titlesfill: #ccc;
+$titlestext: black;
+
+$liveheaderfill: #29608e;
+$liveheadertext: white;
+$livetitlesfill: #4598dd;
+$livetitlestext: white;
+
+$couldHaveFill: #EDD;
+$couldHaveText: #E77;
+
+$improvedFill: #EEF;
+$improvedText: #99E;
+
+$highlightFill: #DDD;
+$generalBorderColor: #CCC;
+
+
 html, body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-
-    --headerfill: #29608e;
-    --headercolor: white;
-    --titlesfill: #4598dd;
-    --titlescolor: white;
-    // --general-border-color: #a8a8a8;
-    --general-border-color: #ccc;
-    --could-have-background: #EDD;
-    --could-have-color: #E77;
-    --improved-on-background: #EEF;
-    --improved-on-color: #99E;
-    --highlight-background: #DDD;
 }
 
 table.live {
@@ -22,7 +30,7 @@ table.live {
 
     tr, td {
         white-space: nowrap;
-        border: 1px solid var(--general-border-color);
+        border: 1px solid $generalBorderColor;
     }
 
     td.limit {
@@ -31,21 +39,21 @@ table.live {
     }
 
     tr.couldhave td {
-        background: var(--could-have-background);
-        color: var(--could-have-color);
+        background: $couldHaveFill;
+        color: $couldHaveText;
         font-weight: bold;
         font-size: 110%;
     }
 
     tr.improvedon td {
-        background: var(--improved-on-background);
-        color: var(--improved-on-color);
+        background: $improvedFill;
+        color: $improvedText;
         font-weight: bold;
         font-size: 110%;
     }
 
     tr.highlight td {
-        background: var(--highlight-background);
+        background: $highlightFill;
         font-weight: bold;
         font-size: 110%;
     }
@@ -57,16 +65,16 @@ table.live {
     tr.head th {
         text-align: center;
         font-weight: bold;
-        background-color: var(--headerfill);
-        border-color: var(--headerfill);
-        color: var(--headercolor);
+        background-color: $liveheaderfill;
+        border-color: $liveheaderfill;
+        color: $liveheadertext;
     }
     tr.subhead th {
         text-align: center;
         font-weight: bold;
-        background-color: var(--titlesfill);
-        border-color: var(--titlesfill);
-        color: var(--titlescolor);
+        background-color: $livetitlesfill;
+        border-color: $livetitlesfill;
+        color: $livetitlestext;
     }
 }
 
@@ -75,19 +83,19 @@ table.classresults {
     border-collapse: collapse;
 
     tbody tr.mainentrantrow {
-        border-top: 1px solid var(--general-border-color);
+        border-top: 1px solid $generalBorderColor;
     }
     tbody tr:last-child {
-        border-bottom: 1px solid var(--general-border-color);
+        border-bottom: 1px solid $generalBorderColor;
         td {
             margin-bottom: 1rem;
         }
     }
 
     tr.head th {
-        background-color: var(--headerfill);
-        border-color: var(--headerfill);
-        color: var(--headercolor);
+        background-color: $headerfill;
+        border-color: $headerfill;
+        color: $headertext;
         text-align: left;
         font-weight: 500;
         padding-left: 0.6rem;
@@ -95,11 +103,12 @@ table.classresults {
     }
 
     tr.subhead th {
-        background-color: var(--titlesfill);
-        border-color: var(--titlesfill);
-        color: var(--titlescolor);
+        background-color: $titlesfill;
+        border-color: $titlesfill;
+        color: $titlestext;
         text-align: center;
         padding: 0.1rem 0.3rem;
+        font-size: 90%;
     }
 
     tr.missingmin td { // haven't met championship min
@@ -112,10 +121,15 @@ table.classresults {
 
 		&.name {
 			max-width: 10rem;
+            overflow: clip;
+            white-space: nowrap;
 		}
 
 		&.cardesc {
-			max-width: 18rem;
+            max-width: 16rem;
+            overflow: clip;
+            white-space: nowrap;
+            font-size: 80%;
 		}
 
         &.trophy, &.sort, &.bestnet {
@@ -146,11 +160,18 @@ table.classresults {
             }
             &.raw {
                 font-size: 90%;
+                color: #777;
             }
             &.reaction {
                 display: block;
                 font-size: 0.8em;
             }
+        }
+    }
+
+    @media print {
+        .cardesc {
+            display: none;
         }
     }
 }
@@ -162,10 +183,10 @@ table.champ {
 // Borders to separate multiple tables of toptime data in one table
 table.toptimes {
 	td.pos {
-		border-left: 1px solid var(--general-border-color);
+		border-left: 1px solid $generalBorderColor;
 	}
 	td.time {
-		border-right: 1px solid var(--general-border-color);
+		border-right: 1px solid $generalBorderColor;
 		font-weight: bold;
 	}
 }
@@ -173,7 +194,7 @@ table.toptimes {
 // Some extra borders for printout
 table.dialins {
 	td {
-		border-top: 1px solid var(--general-border-color);
+		border-top: 1px solid $generalBorderColor;
 	}
 }
 
@@ -187,7 +208,7 @@ table.challengeround {
         font-size: 0.8rem;
     }
 	tr.winner td {
-	    // background: lighten(adjust-hue($basecolor, 10), 40%);
+	    background: lighten(adjust-hue($liveheaderfill, 10), 40%);
 	}
 	span.dial {
 		font-weight: bold;

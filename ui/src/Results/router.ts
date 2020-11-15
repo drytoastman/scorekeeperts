@@ -1,18 +1,25 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 
-const Announcer   = () => import(/* webpackChunkName: "resultsviews" */ './views/announcer.vue')
-const DataEntry   = () => import(/* webpackChunkName: "resultsviews" */ './views/dataentry.vue')
-const Post        = () => import(/* webpackChunkName: "resultsviews" */ './views/post.vue')
-const ByClass     = () => import(/* webpackChunkName: "resultsviews" */ './views/byclass.vue')
-const EventIndex  = () => import(/* webpackChunkName: "resultsviews" */ './views/eventindex.vue')
-const Series      = () => import(/* webpackChunkName: "resultsviews" */ './views/series.vue')
-const Placeholder = () => import(/* webpackChunkName: "resultsviews" */ './views/placeholder.vue')
+const Announcer      = () => import(/* webpackChunkName: "resultsviews" */ './views/announcer.vue')
+const DataEntry      = () => import(/* webpackChunkName: "resultsviews" */ './views/dataentry.vue')
+const ResultsDisplay = () => import(/* webpackChunkName: "resultsviews" */ './views/resultsdisplay.vue')
+const EventIndex     = () => import(/* webpackChunkName: "resultsviews" */ './views/eventindex.vue')
+const Series         = () => import(/* webpackChunkName: "resultsviews" */ './views/series.vue')
+const Placeholder    = () => import(/* webpackChunkName: "resultsviews" */ './views/placeholder.vue')
 
 function queryProps(route) {
+    function tolist(q) {
+        if (!q)      return undefined
+        if (q.split) return q.split(',')
+        return [q]
+    }
+
     return {
+        type:    route.name,
         eventid: route.params.eventid,
-        query: route.query
+        codes:   tolist(route.query.codes),
+        groups:  tolist(route.query.groups)
     }
 }
 
@@ -21,10 +28,10 @@ const routes = [
     { path: '/:series',                  name: 'series',     component: Series },
     { path: '/:series/champ',            name: 'champ',      component: Placeholder },
     { path: '/:series/:eventid',         name: 'eventindex', component: EventIndex, props: true },
-    { path: '/:series/:eventid/byclass', name: 'byclass',    component: ByClass,    props: queryProps },
-    { path: '/:series/:eventid/bygroup', name: 'bygroup',    component: Placeholder },
-    { path: '/:series/:eventid/post',    name: 'post',       component: Post },
-    { path: '/:series/:eventid/dist',    name: 'dist',       component: Placeholder },
+    { path: '/:series/:eventid/byclass', name: 'byclass',    component: ResultsDisplay, props: queryProps },
+    { path: '/:series/:eventid/bygroup', name: 'bygroup',    component: ResultsDisplay, props: queryProps },
+    { path: '/:series/:eventid/post',    name: 'post',       component: ResultsDisplay, props: queryProps },
+    // { path: '/:series/:eventid/dist',    name: 'dist',       component: Placeholder },
     { path: '/:series/:eventid/tt',      name: 'toptimes',   component: Placeholder },
     { path: '/:series/:eventid/audit',   name: 'audit',      component: Placeholder },
     { path: '/:series/:eventid/grid',    name: 'grid',       component: Placeholder },

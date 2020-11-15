@@ -168,5 +168,18 @@ export const resultsGetters: GetterTree<Api2State, Api2State> = {
         const e = state.seriesinfo.events.filter((e: SeriesEvent) => e.eventid === eventid)
         if (e.length) return e[0]
         return {}
+    },
+
+    classesForGroups: (state) => (groups: number[]) => {
+        const codes = new Set<string>()
+        for (const [code, res] of Object.entries(state.eventresults)) {
+            for (const e of res as any[]) {
+                if (groups.includes(e.rungroup)) {
+                    codes.add(code)
+                    break
+                }
+            }
+        }
+        return [...codes]
     }
 }

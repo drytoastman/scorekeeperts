@@ -48,10 +48,10 @@
             <h3>By RunGroup <template v-if="!hassession">Or Active Class</template></h3>
             <div class='bothgroups'>
                 <div class='groups'>
-                <router-link v-for="ii in groups"  :key="ii" :to="{name: 'bygroup', query: { list: ii }}">Group {{ii}}</router-link>
+                <router-link v-for="ii in groups"  :key="ii" :to="{name: 'bygroup', query: { groups: ii }}">Group {{ii}}</router-link>
                 </div>
                 <div class='classes'>
-                <router-link v-for="cc in classes" :key="cc" :to="{name: 'byclass', query: { list: cc }}">{{cc}}</router-link>
+                <router-link v-for="cc in classes" :key="cc" :to="{name: 'byclass', query: { codes: cc }}">{{cc}}</router-link>
                 </div>
             </div>
         </div>
