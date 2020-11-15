@@ -11,10 +11,7 @@
             <tr class='subhead'>
                 <th class='pos'></th>
                 <th class='trophy'></th>
-                <th class='name'>Name</th>
-                <th class='carnum'>#</th>
-                <th class='cardesc'>Car</th>
-                <th class='caridx'>Idx</th>
+                <th class='entrant'>Entrant</th>
                 <th v-for="ii in runs" :key="ii" class='run'>Run {{ii+1}}</th>
                 <th v-if="event.courses > 1" class='total'>Total</th>
                 <th class='points'>Points</th>
@@ -24,10 +21,14 @@
                 <tr :key="e.carid" class='mainentrantrow'>
                     <td class='pos'     :rowspan="rowspan">{{e.position}}</td>
                     <td class='trophy'  :rowspan="rowspan">{{e.trophy ? 'T' : ''}}</td>
-                    <td class='name'    :rowspan="rowspan">{{e.firstname}} {{e.lastname}}</td>
-                    <td class='carnum'  :rowspan="rowspan">{{e.number}}</td>
-                    <td class='cardesc' :rowspan="rowspan">{{e.year}} {{e.make}} {{e.model}} {{e.color}}</td>
-                    <td class='caridx'  :rowspan="rowspan">{{e.indexstr}}</td>
+                    <td class='entrant'>
+                        <div class='block'>
+                            <span class='num'>#{{e.number}}</span>
+                            <span v-if="e.indexstr" class='idx'>({{e.indexstr}})</span>
+                            <span class='name'>{{e.firstname}} {{e.lastname}}</span>
+                            <span class='desc'>{{e.year}} {{e.make}} {{e.model}} {{e.color}}</span>
+                        </div>
+                    </td>
                     <template v-for="(run, ii) in e.runs ? e.runs[0] : []">
                         <td :key="ii" v-if="!run" class='run'>no data</td>
                         <td :key="ii" v-else :class="runclasses(run)" v-html="rundata(run, e.indexstr.length)"></td>
@@ -63,7 +64,7 @@ export default {
         ...mapGetters(['eventInfo', 'resultsEvent']),
 
         rowspan() { return this.event.courses > 1 ? this.event.courses : undefined },
-        colspan() { return this.event.runs + (this.event.courses > 1 ? 8 : 7) },
+        colspan() { return this.event.runs + (this.event.courses > 1 ? 5 : 4) },
         pluscourses() { return range(1, this.event.courses) },
         runs() { return range(this.event.runs) },
         event() { return this.resultsEvent },

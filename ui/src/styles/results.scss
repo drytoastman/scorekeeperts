@@ -88,7 +88,10 @@ table.classresults {
     tbody tr:last-child {
         border-bottom: 1px solid $generalBorderColor;
         td {
-            margin-bottom: 1rem;
+            padding-bottom: 2rem;
+            @media print {
+                padding-bottom: 3rem;
+            }
         }
     }
 
@@ -115,33 +118,34 @@ table.classresults {
     	color: #ccc;
     }
 
+    .entrant {
+        .block {
+            display: flex;
+            flex-wrap: wrap;
+            column-gap: 5px;
+            .num {
+                font-weight: bold;
+                flex-basis: 2.3rem;
+            }
+            .name {
+                white-space: nowrap;
+            }
+            .desc {
+                color: grey;
+                flex-basis: 100%;
+                font-size: 90%;
+            }
+        }
+    }
+
     td {
         padding: 0.2rem 0.5rem;
-        font-size: 90%;
-
-		&.name {
-			max-width: 10rem;
-            overflow: clip;
-            white-space: nowrap;
-		}
-
-		&.cardesc {
-            max-width: 16rem;
-            overflow: clip;
-            white-space: nowrap;
-            font-size: 80%;
-		}
-
         &.trophy, &.sort, &.bestnet {
             font-weight: bold;
         }
 
         &.run, &.points, &.attend {
             text-align: center;
-        }
-
-        &.carnum {
-            text-align: right;
         }
 
         &.bestnet .net {
@@ -159,19 +163,14 @@ table.classresults {
                 white-space: nowrap;
             }
             &.raw {
+                margin-top: 3px;
                 font-size: 90%;
                 color: #777;
             }
             &.reaction {
                 display: block;
-                font-size: 0.8em;
+                font-size: 80%;
             }
-        }
-    }
-
-    @media print {
-        .cardesc {
-            display: none;
         }
     }
 }
