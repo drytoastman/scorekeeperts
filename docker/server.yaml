@@ -26,23 +26,6 @@ services:
             - certs:/certs
         restart: unless-stopped
 
-    pythonweb:
-        image: drytoastman/scpython:${VERSION}
-        command: webserver.py
-        networks: { net1: {}}
-        depends_on:
-            - db
-        volumes:
-            - socket:/var/run/postgresql
-            - logs:/var/log
-            - webdata:/webdata:ro
-        environment:
-            - IS_MAIN_SERVER=1
-            - SHOWLIVE=0
-            - MAIL_SEND_FROM=mailman@scorekeeper.wwscc.org
-            - MAIL_SEND_DEFAULT_REPLYTO=admin@scorekeeper.wwscc.org
-            - SECRETS_FILE=/webdata/websecrets.json
-
     server:
         image: drytoastman/scserver:${VERSION}
         networks: { net1: {}}
