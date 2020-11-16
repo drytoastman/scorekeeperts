@@ -1,9 +1,9 @@
 import _ from 'lodash'
 
-import { ChampNotice, ChampResults, DecoratedRun, Entrant, EventNotice, EventResults, RunStatus } from '@common/results'
-import { PosPoints } from '@common/series'
-import { SeriesSettings } from '@common/settings'
-import { UUID } from '@common/util'
+import { ChampEntrant, ChampNotice, ChampResults, DecoratedRun, Entrant, EventNotice, EventResults, RunStatus } from '@/common/results'
+import { PosPoints } from '@/common/series'
+import { SeriesSettings } from '@/common/settings'
+import { UUID } from '@/common/util'
 
 const y2k = new Date('2000-01-01')
 
@@ -44,7 +44,7 @@ export function getLastRun(e: Entrant): DecoratedRun|undefined {
     return _.maxBy(runs, 'run')
 }
 
-export function decorateEntrant(e: Entrant) {
+export function decorateEntrant(e: Entrant): void {
     /* Calculate things that apply to just the entrant in question (used by class and toptimes) */
 
     // Always work with the last run by run number (Non Placeholder), then get first and second bestnet
@@ -94,7 +94,7 @@ export function decorateClassResults(settings: SeriesSettings, eventresults: Eve
     let entrantlist: Entrant[]|null = null
 
     // Find the class and entrants for the results
-    for (const [clscode, entrants] of Object.entries(eventresults)) {
+    for (const [, entrants] of Object.entries(eventresults)) {
         for (const e of entrants) {
             if (rungroupfilter && e.rungroup !== rungroupfilter) continue
             if (!carids.includes(e.carid)) continue
@@ -161,7 +161,7 @@ export function decorateClassResults(settings: SeriesSettings, eventresults: Eve
     return [_.orderBy(decoratedlist, 'net'), sortedmarks]
 }
 
-export function decorateChampResults(champresults: ChampResults, markentrants: Entrant[]) {
+export function decorateChampResults(champresults: ChampResults, markentrants: Entrant[]): ChampEntrant[] {
     /* Calculate things for the announcer/info displays */
     const champclass = champresults[markentrants[0].classcode]
     if (!champclass) return []

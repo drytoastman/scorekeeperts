@@ -1,11 +1,11 @@
 import { Car } from '@/common/car'
 import { ClassData } from '@/common/classindex'
+import { decorateClassResults, decorateChampResults, getBestNetRun } from '@/common/decorate'
 import { SeriesEvent } from '@/common/event'
 import { ChampResults, EventResults, Entrant } from '@/common/results'
 import { SeriesSettings } from '@/common/settings'
 import { UUID } from '@/common/util'
 import { ScorekeeperProtocol } from '@/db'
-import { decorateClassResults, decorateChampResults, getBestNetRun } from '@/db/results/decorate'
 
 export class LazyData {
 

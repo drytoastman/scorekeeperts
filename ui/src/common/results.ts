@@ -106,7 +106,7 @@ export interface ExternalResult {
 }
 
 export interface PointsStorage {
-    drop: []
+    drop: UUID[]
     total: number
     events: Event2Points
     usingbest: number

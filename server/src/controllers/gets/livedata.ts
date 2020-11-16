@@ -2,7 +2,7 @@ import _ from 'lodash'
 import { LiveSocketWatch, Run, TopTimesKey } from '@/common/results'
 import { UUID } from '@/common/util'
 import { db } from '@/db'
-import { createTopTimesTable } from '@/db/results/calctoptimes'
+import { createTopTimesTable } from '@/common/toptimes'
 import { getDObj } from '@/common/data'
 import { LazyData } from '../lazydata'
 

@@ -1,9 +1,10 @@
-import _ from 'lodash'
+import orderBy from 'lodash/orderBy'
+import cloneDeep from 'lodash/cloneDeep'
 
-import { EventResults, TopTimeEntry, TopTimesKey, TopTimesTable } from '@common/results'
-import { decorateEntrant } from './decorate'
-import { ClassData } from '@common/classindex'
-import { UUID } from '@common/util'
+import { EventResults, TopTimeEntry, TopTimesKey, TopTimesTable } from '@/common/results'
+import { decorateEntrant } from '@/common/decorate'
+import { ClassData } from '@/common/classindex'
+import { UUID } from '@/common/util'
 
 export function createTopTimesTable(classdata: ClassData, results: EventResults, keys: TopTimesKey[], carid?: UUID): TopTimesTable {
     /*
@@ -75,7 +76,7 @@ export function createTopTimesTable(classdata: ClassData, results: EventResults,
                 // For the selected car, highlight and throw in any old/potential results if available
                 if (carid && e.carid === carid) {
                     current = true
-                    const ecopy = _.cloneDeep(e)  // Make a copy so decorations stay relative to this data
+                    const ecopy = cloneDeep(e)  // Make a copy so decorations stay relative to this data
                     decorateEntrant(ecopy)
                     if (key.course === 0) { // don't do old/potential single course stuff at this point
                         const divisor = key.indexed ? 1.0 : ecopy.indexval
@@ -110,7 +111,7 @@ export function createTopTimesTable(classdata: ClassData, results: EventResults,
         }
 
         // Sort and set 'pos' attribute, then add to the mass table
-        entries = _.orderBy(entries, 'time')
+        entries = orderBy(entries, 'time')
         let pos = 1
         for (const entry of entries) {
             if (entry.classcode) {
