@@ -90,13 +90,16 @@ table.results {
     tbody tr.mainentrantrow {
         border-top: 1px solid $generalBorderColor;
     }
-    tbody tr:last-child {
-        border-bottom: 1px solid $generalBorderColor;
-        td {
-            padding-bottom: 2rem;
-            @media print {
-                padding-bottom: 3rem;
-            }
+    tbody tr:first-child {
+        @media print {
+            border-top: 2px solid black;
+        }
+    }
+
+    tr.endofclass {
+        height: 1rem;
+        @media print {
+            height: 2rem;
         }
     }
 

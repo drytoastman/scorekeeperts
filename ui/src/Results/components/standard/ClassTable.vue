@@ -43,6 +43,7 @@
                     </template>
                 </tr>
             </template>
+            <tr class='endofclass'></tr>
         </tbody>
         </table>
     </div>

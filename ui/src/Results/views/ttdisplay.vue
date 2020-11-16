@@ -1,6 +1,5 @@
 <template>
     <div>
-        <!-- <h2>TopTimesTable with stuff</h2> -->
         <TopTimesTable v-if="seriesinfo.events" :table="tttable"></TopTimesTable>
     </div>
 </template>

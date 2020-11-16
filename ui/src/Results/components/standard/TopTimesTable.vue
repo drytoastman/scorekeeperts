@@ -15,7 +15,7 @@
         <!-- Data rows -->
         <tr v-for="(fullrow, idx) in table.rows" :key="idx">
             <template v-for="(obj, idx1) in fullrow">
-                <td :class="key" v-for="(key, idx2) in table.fields[idx1]" :key="`${obj.time}+${idx2}`">
+                <td :class="key" v-for="key in table.fields[idx1]" :key="`${idx1}+${key}`">
                     {{format(obj, key)}}
                 </td>
             </template>

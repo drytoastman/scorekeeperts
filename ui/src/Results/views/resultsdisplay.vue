@@ -2,48 +2,69 @@
     <div>
         <h2>{{title}}</h2>
         <ClassTable :classcodes="usecodes"></ClassTable>
-        Top Times Table Here
+        <TopTimesTable v-if="seriesinfo.events" :table="tttable"></TopTimesTable>
     </div>
 </template>
 
 <script>
 import orderBy from 'lodash/orderBy'
-import { mapGetters } from 'vuex'
+import { mapGetters, mapState } from 'vuex'
+
 import ClassTable from '../components/standard/ClassTable.vue'
+import TopTimesTable from '../components/standard/TopTimesTable.vue'
+import { createTopTimesTable } from '@/common/toptimes'
+import { ClassData } from '@/common/classindex'
 
 export default {
     name: 'ResultsDisplay',
     components: {
-        ClassTable
+        ClassTable,
+        TopTimesTable
     },
     props: {
-        type:    String,
-        eventid: String,
         codes:   Array,
         groups:  Array
     },
     computed: {
+        ...mapState(['seriesinfo', 'eventresults']),
         ...mapGetters(['classesForGroups', 'resultsClasses']),
+        type() {
+            if (this.codes  && this.codes.length)  return 'bycode'
+            if (this.groups && this.groups.length) return 'bygroup'
+            return 'event'
+        },
+        classdata() {
+            return new ClassData(this.seriesinfo.classes, this.seriesinfo.indexes)
+        },
         usecodes() {
             return orderBy(this.filteredcodes, v => v)
         },
         filteredcodes() {
-            if (this.codes  && this.codes.length)  return this.codes
-            if (this.groups && this.groups.length) return this.classesForGroups(this.groups)
-            return this.resultsClasses
+            switch (this.type) {
+                case 'bycode':  return this.codes
+                case 'bygroup': return this.classesForGroups(this.groups)
+                case 'event':   return this.resultsClasses
+            }
+            return []
         },
         title() {
-            if (this.codes  && this.codes.length)  return `Class ${this.codes.join(', ')}`
-            if (this.groups && this.groups.length) return `Group ${this.groups.join(', ')}`
-            return 'Event Results'
+            switch (this.type) {
+                case 'bycode':  return `Class ${this.codes.join(', ')}`
+                case 'bygroup': return `Group ${this.groups.join(', ')}`
+                case 'event':   return 'Event Results'
+            }
+            return ''
+        },
+        tttable() {
+            if (this.type !== 'event') return {}
+            const keys = []
+            keys.push({ indexed: 1, counted: 1 })
+            keys.push({ indexed: 0, counted: 1 })
+            return createTopTimesTable(this.classdata, this.eventresults, keys)
         }
     }
 }
 </script>
 
 <style lang="scss" scoped>
-h2 {
-    color: #556;
-    text-align: center;
-}
 </style>
