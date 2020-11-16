@@ -2,25 +2,10 @@ import _ from 'lodash'
 import moment from 'moment'
 
 import { SeriesEvent } from '@common/event'
-import { ChampEntrant, ChampResults, Entrant, Event2Points } from '@common/results'
-import { UUID } from '@common/util'
+import { ChampEntrant, ChampResults, Entrant } from '@common/results'
 import { getD, getDList, getDObj } from '@/common/data'
 import { ScorekeeperProtocol } from '..'
 import { dblog } from '@/util/logging'
-
-function calcPoints(event2points: Event2Points, bestof: number) {
-    const drop    = [] as UUID[]
-    const ordered = _.orderBy(Object.entries(event2points), 1, 'desc')
-    let total     = 0
-    ordered.forEach((item, index) => {
-        if (index < bestof) {
-            total += item[1]  // Add to total points
-        } else {
-            drop.push(item[0])  // Otherwise this is a drop event, mark eventid
-        }
-    })
-    return total
-}
 
 function champEventKey(event: SeriesEvent) {
     return `d-${moment(event.date).format('YYYY-MM-DD')}-id-${event.eventid}`
@@ -54,8 +39,18 @@ function champAddEventResults(map: {[key:string]: ChampEntrant}, event: SeriesEv
 }
 
 function champEntrantFinalize(centry: ChampEntrant, bestof: number, events: SeriesEvent[]) {
+    const ordered = _.orderBy(Object.entries(centry.points.events), 1, 'desc')
     centry.points.usingbest = bestof
-    centry.points.total = calcPoints(centry.points.events, bestof)
+    centry.points.total     = 0
+    centry.points.drop      = []
+    ordered.forEach((item, index) => {
+        if (index <  centry.points.usingbest) {
+            centry.points.total += item[1]  // Add to total points
+        } else {
+            centry.points.drop.push(item[0])  // Otherwise this is a drop event, mark eventid
+        }
+    })
+
     centry.missingrequired = events.filter(e => e.champrequire && !(champEventKey(e) in centry.points.events)).map(e => champEventKey(e))
     for (const e of events) {
         if (e.useastiebreak) {

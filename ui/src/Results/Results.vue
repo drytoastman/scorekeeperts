@@ -74,7 +74,7 @@ export default {
             set(value) {
                 this.event = value
                 if (this.event) {
-                    this.updateResults()
+                    this.updateEventResults()
                     this.push('eventindex', { eventid: this.event.eventid })
                 }
             }
@@ -86,8 +86,11 @@ export default {
                 if (error.name !== 'NavigationDuplicated') { throw error }
             })
         },
-        updateResults() {
+        updateEventResults() {
             this.$store.dispatch('getdata', { items: 'eventresults', eventid: this.event.eventid })
+        },
+        updateChampResults() {
+            this.$store.dispatch('getdata', { items: 'champresults' })
         }
     },
     watch: {
@@ -102,9 +105,12 @@ export default {
                 const f = nv.filter(e => e.eventid === this.$route.params.eventid)
                 if (f.length) {
                     this.event = f[0]
-                    this.updateResults()
+                    this.updateEventResults()
                 }
             }
+        },
+        currentSeries() {
+            this.updateChampResults()
         }
     }
 }

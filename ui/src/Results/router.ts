@@ -4,6 +4,7 @@ import VueRouter from 'vue-router'
 const Announcer      = () => import(/* webpackChunkName: "resultsviews" */ './views/announcer.vue')
 const DataEntry      = () => import(/* webpackChunkName: "resultsviews" */ './views/dataentry.vue')
 const ResultsDisplay = () => import(/* webpackChunkName: "resultsviews" */ './views/resultsdisplay.vue')
+const ChampDisplay   = () => import(/* webpackChunkName: "resultsviews" */ './views/champdisplay.vue')
 const EventIndex     = () => import(/* webpackChunkName: "resultsviews" */ './views/eventindex.vue')
 const Series         = () => import(/* webpackChunkName: "resultsviews" */ './views/series.vue')
 const Placeholder    = () => import(/* webpackChunkName: "resultsviews" */ './views/placeholder.vue')
@@ -26,7 +27,7 @@ function queryProps(route) {
 const routes = [
     { path: '/',                         name: 'root',       component: Placeholder },
     { path: '/:series',                  name: 'series',     component: Series },
-    { path: '/:series/champ',            name: 'champ',      component: Placeholder },
+    { path: '/:series/champ',            name: 'champ',      component: ChampDisplay },
     { path: '/:series/:eventid',         name: 'eventindex', component: EventIndex, props: true },
     { path: '/:series/:eventid/byclass', name: 'byclass',    component: ResultsDisplay, props: queryProps },
     { path: '/:series/:eventid/bygroup', name: 'bygroup',    component: ResultsDisplay, props: queryProps },

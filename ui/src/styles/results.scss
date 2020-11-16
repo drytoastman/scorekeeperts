@@ -78,7 +78,7 @@ table.live {
     }
 }
 
-table.classresults {
+table.results {
     margin: 0px auto;
     border-collapse: collapse;
 
@@ -144,7 +144,15 @@ table.classresults {
             font-weight: bold;
         }
 
-        &.run, &.points, &.attend {
+        &.run, &.attend {
+            text-align: center;
+        }
+
+        &.points {
+            text-align: right;
+        }
+
+        &.points.pos {
             text-align: center;
         }
 
@@ -176,7 +184,21 @@ table.classresults {
 }
 
 table.champ {
-    margin-top: 1rem;
+    tr.head {
+        .avg {
+            float: right;
+            margin-right: 1rem;
+        }
+    }
+    .points {
+        font-size: 95%;
+        color: #333;
+    }
+    .total {
+        padding-left: 1rem;
+        padding-right: 1rem;
+        text-align: right;
+    }
 }
 
 // Borders to separate multiple tables of toptime data in one table

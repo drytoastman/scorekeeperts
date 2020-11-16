@@ -3,7 +3,7 @@
         <div class='classlinks' v-if="classcodes.length > 1">
             <a v-for="code in classcodes" :key="code" :href='`#body${code}`'>{{code.replace("_","")}}</a>
         </div>
-        <table class='classresults'>
+        <table class='results'>
         <tbody v-for="(entrants, code) in results" :key="code" :id='`body${code}`'>
             <tr class='head'>
                 <th :colspan='colspan'>{{code}} - {{descrip(code)}}</th>
