@@ -21,7 +21,7 @@
                 <tr :key="e.carid" class='mainentrantrow'>
                     <td class='pos'     :rowspan="rowspan">{{e.position}}</td>
                     <td class='trophy'  :rowspan="rowspan">{{e.trophy ? 'T' : ''}}</td>
-                    <td class='entrant'>
+                    <td class='entrant' :rowspan="rowspan">
                         <div class='block'>
                             <span class='num'>#{{e.number}}</span>
                             <span v-if="e.indexstr" class='idx'>({{e.indexstr}})</span>
