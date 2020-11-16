@@ -7,7 +7,7 @@ volumes:
 networks:
     net1:
 
-# Just need DB and python web for dev, rest is run on dev machine
+# Just need DB for dev, rest is run on dev machine
 services:
     db:
         image: drytoastman/scdb:${VERSION:-latest}
@@ -22,20 +22,4 @@ services:
         environment:
             - TZ=America/Los_Angeles
         stop_grace_period: 2s
-
-    pythonweb:
-        image: drytoastman/scpython:${VERSION:-latest}
-        command: webserver.py
-        networks: { net1: {}}
-        depends_on:
-            - db
-        volumes:
-            - socket:/var/run/postgresql
-        environment:
-            - IS_MAIN_SERVER=1
-            - DEBUG=1
-            - LOG_LEVEL=DEBUG
-            - SUPER_ADMIN_PASSWORD=aaaa
-        ports:
-            - '80:80'
 
