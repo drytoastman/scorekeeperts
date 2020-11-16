@@ -44,7 +44,6 @@ services:
         networks: { net1: {}}
         depends_on:
             - server
-            - pythonweb
         environment:
             - MAIN_SERVER=${MAIN_SERVER:-1}
             - TZ=America/Los_Angeles
