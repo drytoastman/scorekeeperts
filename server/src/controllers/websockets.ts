@@ -105,7 +105,7 @@ tableWatcher.on('runs', (series: string, type: string, row: Run&{classcode:strin
             ws.send(JSON.stringify(await loadResultData(lazy, ws.watch, row)))
         }
     }).catch(error => {
-        console.log(error)
+        controllog.log(error)
     })
 })
 

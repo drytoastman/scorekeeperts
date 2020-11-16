@@ -5,6 +5,7 @@ const Announcer      = () => import(/* webpackChunkName: "resultsviews" */ './vi
 const DataEntry      = () => import(/* webpackChunkName: "resultsviews" */ './views/dataentry.vue')
 const ResultsDisplay = () => import(/* webpackChunkName: "resultsviews" */ './views/resultsdisplay.vue')
 const ChampDisplay   = () => import(/* webpackChunkName: "resultsviews" */ './views/champdisplay.vue')
+const TTDisplay      = () => import(/* webpackChunkName: "resultsviews" */ './views/ttdisplay.vue')
 const EventIndex     = () => import(/* webpackChunkName: "resultsviews" */ './views/eventindex.vue')
 const Series         = () => import(/* webpackChunkName: "resultsviews" */ './views/series.vue')
 const Placeholder    = () => import(/* webpackChunkName: "resultsviews" */ './views/placeholder.vue')
@@ -20,7 +21,8 @@ function queryProps(route) {
         type:    route.name,
         eventid: route.params.eventid,
         codes:   tolist(route.query.codes),
-        groups:  tolist(route.query.groups)
+        groups:  tolist(route.query.groups),
+        counted: route.query.counted
     }
 }
 
@@ -28,12 +30,11 @@ const routes = [
     { path: '/',                         name: 'root',       component: Placeholder },
     { path: '/:series',                  name: 'series',     component: Series },
     { path: '/:series/champ',            name: 'champ',      component: ChampDisplay },
-    { path: '/:series/:eventid',         name: 'eventindex', component: EventIndex, props: true },
+    { path: '/:series/:eventid',         name: 'eventindex', component: EventIndex,     props: true },
     { path: '/:series/:eventid/byclass', name: 'byclass',    component: ResultsDisplay, props: queryProps },
     { path: '/:series/:eventid/bygroup', name: 'bygroup',    component: ResultsDisplay, props: queryProps },
     { path: '/:series/:eventid/post',    name: 'post',       component: ResultsDisplay, props: queryProps },
-    // { path: '/:series/:eventid/dist',    name: 'dist',       component: Placeholder },
-    { path: '/:series/:eventid/tt',      name: 'toptimes',   component: Placeholder },
+    { path: '/:series/:eventid/tt',      name: 'toptimes',   component: TTDisplay,      props: queryProps },
     { path: '/:series/:eventid/audit',   name: 'audit',      component: Placeholder },
     { path: '/:series/:eventid/grid',    name: 'grid',       component: Placeholder },
     { path: '/:series/:eventid/dialins', name: 'dialins',    component: Placeholder },

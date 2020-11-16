@@ -49,14 +49,15 @@ export function createTopTimesTable(classdata: ClassData, results: EventResults,
             title  = `Top ${key.indexed ? 'Indexed ' : ''}Times (${key.counted ? 'Counted' : 'All'} Runs)`
             if (key.course > 0) title += ` Course ${key.course}`
         }
-        if (!cols)   {   cols = ['#',   'Name', 'Class',     'Index',    '',         'Time'] }
-        if (!fields) { fields = ['pos', 'name', 'classcode', 'indexstr', 'indexval', 'time'] }
+        if (!cols || !cols.length)     {   cols = ['#',   'Name', 'Class',     'Index',    '',         'Time'] }
+        if (!fields || !fields.length) { fields = ['pos', 'name', 'classcode', 'indexstr', 'indexval', 'time'] }
         if (cols.length !== fields.length) {
             throw Error(`Top times columns and field arrays are not equal in size (${cols.length}, ${fields.length})`)
         }
 
         let entries: TopTimeEntry[] = []
         for (const classcode in results) {
+            if (classcode === '_eventid') continue
             if (classdata.classlist[classcode].secondruns && key.counted) { continue }
 
             for (const e of results[classcode]) {

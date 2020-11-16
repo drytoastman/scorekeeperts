@@ -110,8 +110,6 @@ export async function loadEventResults(lazy: LazyData, watch: LiveSocketWatch, l
 
     if (watch.next) {
         const nextids = await lazy.nextorder(lastrun.eventid, lastrun.course, lastrun.rungroup, lastrun.carid, classcodefilter)
-        console.log(lastrun)
-
         if (nextids && nextids.length) {
             data.next = await loadEntrantResults(lazy, watch, lastrun.eventid, [nextids[0].carid], lastrun.rungroup)
         }

@@ -16,7 +16,7 @@
             <th>Total</th>
         </tr>
 
-        <tr v-for="e in entrants" :key="e.driverid+code" :class="missingmin">
+        <tr v-for="e in entrants" :key="e.driverid+code" :class="missingmin(e)">
             <td>{{e.position}}</td>
             <td class='name'>{{e.firstname}} {{e.lastname}}</td>
             <td class='attend'>{{e.eventcount}}</td>
