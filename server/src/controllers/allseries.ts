@@ -95,7 +95,6 @@ async function archiveActivity(task: ScorekeeperProtocol, key: string, untilyear
         for (const e of events) {
             try {
                 const results = await task.one('select data from results where name=$1', [e.eventid], r => r.data)
-                const edate = new Date(e.date)
                 for (const [code, entries] of Object.entries(results)) {
                     for (const entrant of entries as Entrant[]) {
                         ids.add(entrant[key])

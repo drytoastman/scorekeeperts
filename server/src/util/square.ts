@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import { ScorekeeperProtocol } from '../db'
+import { differenceInDays } from 'date-fns'
 import SquareConnect, { Money, ApiClient, CurrencyType } from 'square-connect'
 import { v1 as uuidv1 } from 'uuid'
 
@@ -7,10 +7,10 @@ import { PaymentAccount } from '@common/payments'
 import { Payment } from '@common/register'
 import { UUID } from '@common/util'
 
+import { ScorekeeperProtocol } from '../db'
 import { gCache } from './cache'
 import { SQ_APPLICATION_ID, SQ_APPLICATION_SECRET } from '../db/generalrepo'
 import { paymentslog } from './logging'
-import { permittedCrossDomainPolicies } from 'helmet'
 
 function getAClient(mode: string, token?: string): ApiClient {
     const client = new SquareConnect.ApiClient()
@@ -239,16 +239,15 @@ export async function squareoAuthFinish(conn: ScorekeeperProtocol, requestid: st
 }
 
 
-const SECONDS_10_DAYS = 60 * 60 * 24 * 10
 export async function squareoAuthRefresh(conn: ScorekeeperProtocol, account: PaymentAccount) {
     try {
         if (!account.attr.applicationid) {
             throw Error('No square application id to refresh with')
         }
         const secret = await conn.payments.getPaymentAccountSecret(account.accountid)
-        const tillexpire = (new Date(secret.attr.expires).getTime() - new Date().getTime()) / 1000
-        if (tillexpire > SECONDS_10_DAYS) {
-            paymentslog.debug(`no refresh needed for ${account.accountid}, till expire = ${tillexpire} seconds`)
+        const tillexpire = differenceInDays(new Date(secret.attr.expires), new Date())
+        if (tillexpire > 10) {
+            paymentslog.debug(`no refresh needed for ${account.accountid}, expiry in ${tillexpire} days`)
             return
         }
 

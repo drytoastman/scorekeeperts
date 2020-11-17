@@ -1,4 +1,4 @@
-import { UUID, DataValidationRules, isUUIDV, MaxLength, Max, isDate, nonBlank, isPrintable, isNumber } from './util'
+import { UUID, DataValidationRules, isUUIDV, MaxLength, Max, isTimestamp, nonBlank, isPrintable, isNumber, UTCString } from './util'
 
 export interface Car
 {
@@ -14,8 +14,8 @@ export interface Car
         model: string;
         color: string;
     }
-    modified:   Date;
-    created:    Date;
+    modified:   UTCString;
+    created:    UTCString;
 
     eventsrun?: number;
     eventsreg?: number;
@@ -36,8 +36,8 @@ export const CarValidator: DataValidationRules = {
     indexcode:  [], // is in somelist
     number:     [isNumber, Max(1999)],
     useclsmult: [],
-    modified:   [isDate],
-    created:    [isDate],
+    modified:   [],
+    created:    [isTimestamp],
     year:       [isPrintable(true), MaxLength(8)],
     make:       [isPrintable(true), MaxLength(24)],
     model:      [isPrintable(true), MaxLength(24)],

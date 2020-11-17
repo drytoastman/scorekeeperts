@@ -45,6 +45,9 @@
 
 <script>
 import { mapGetters, mapState } from 'vuex'
+import { subDays } from 'date-fns'
+
+import { parseDate, parseTimestampLocal } from '@/common/util'
 import BasicsTemplate from './BasicsTemplate.vue'
 import Limits from './Limits.vue'
 import Other from './Other.vue'
@@ -91,14 +94,10 @@ export default {
         ...mapGetters(['eventUIItems'])
     },
     methods: {
-        subtractDays(date, days) {
-            date.setDate(date.getDate() - days)
-            return date
-        },
-        createDate(date, prevdow, time) {
+        createClosing(date, prevdow, time) {
             let adj = date.getDay() - prevdow
             if (adj <= 0) adj += 7
-            this.subtractDays(date, adj)
+            date = subDays(date, adj)
             date.setHours(time.getHours(), time.getMinutes())
             return date
         },
@@ -112,11 +111,12 @@ export default {
             const events = []
             for (const e of data.namedays) {
                 const emod = cloneDeep(this.eventm)
+                debugger
                 emod.name = e.name
                 emod.date = e.date
                 emod.attr.location = e.location
-                emod.regopened = this.subtractDays(new Date(e.date), data.opendays).toISOString()
-                emod.regclosed = this.createDate(new Date(e.date), data.closeday, new Date(data.closetime)).toISOString()
+                emod.regopened = subDays(parseDate(e.date), data.opendays).toISOString()
+                emod.regclosed = this.createClosing(parseDate(e.date), data.closeday, parseTimestampLocal(data.closetime)).toISOString()
                 emod.items     = this.uiitems.filter(m => m.checked).map(m => m.map)
                 events.push(emod)
             }

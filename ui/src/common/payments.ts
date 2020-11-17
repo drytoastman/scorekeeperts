@@ -1,4 +1,4 @@
-import { DateString } from './util'
+import { UTCString } from './util'
 
 export interface PaymentAccount {
     accountid: string;
@@ -10,7 +10,7 @@ export interface PaymentAccount {
         merchantid?: string;
         applicationid?: string;
     }
-    modified: DateString;
+    modified: UTCString;
 }
 
 export interface PaymentAccountSecret {
@@ -18,9 +18,9 @@ export interface PaymentAccountSecret {
     secret: string;
     attr: {
         refresh: string;
-        expires: DateString;
+        expires: UTCString;
     }
-    modified: DateString;
+    modified: UTCString;
 }
 
 export interface PaymentItem {
@@ -29,7 +29,7 @@ export interface PaymentItem {
     price: number;
     itemtype: number;
     currency: string;
-    modified: DateString;
+    modified: UTCString;
 }
 
 export const ITEMTYPES = [

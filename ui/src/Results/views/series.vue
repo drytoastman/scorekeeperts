@@ -1,6 +1,6 @@
 <template>
     <div>
-		Placeholder series
+        Placeholder series
     </div>
 </template>
 

@@ -1,4 +1,5 @@
-import _ from 'lodash'
+import isEqual from 'lodash/isEqual'
+
 import { Car } from './car'
 import { UUID } from './util'
 
@@ -211,7 +212,7 @@ export function watchDifference(w1: LiveSocketWatch, w2: LiveSocketWatch): strin
     // w1 and w2 assumed to be full instances, nothing missing
     const diffs = [] as string[]
     for (const k of Object.keys(w1)) {
-        if (!_.isEqual(w1[k], w2[k])) {
+        if (!isEqual(w1[k], w2[k])) {
             diffs.push(k)
         }
     }

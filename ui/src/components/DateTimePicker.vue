@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="display" :width="dialogWidth">
+  <v-dialog v-model="display" :width="340">
     <template v-slot:activator="{ on }">
       <v-text-field :disabled="disabled" :label="label" :value="displayedDateTime" :style="fieldstyle" :class="fieldclass" :rules="rules" v-on="on" readonly></v-text-field>
     </template>
@@ -45,7 +45,8 @@
 </template>
 
 <script>
-import { format, parse } from 'date-fns'
+import { format, parse, addMinutes } from 'date-fns'
+import { parseDate, parseTimestampLocal, formatToTimestamp, tzoffset } from '@/common/util'
 
 const VDATE = 'yyyy-MM-dd'
 const VTIME = 'HH:mm'
@@ -57,38 +58,14 @@ export default {
         event: 'input'
     },
     props: {
-        datetimestr: {
-            type: String,
-            default: null
-        },
-        disabled: {
-            type: Boolean
-        },
-        label: {
-            type: String,
-            default: ''
-        },
-        fieldstyle: {
-            type: String,
-            default: ''
-        },
-        fieldclass: {
-            type: String,
-            default: ''
-        },
-        dialogWidth: {
-            type: Number,
-            default: 340
-        },
-        dateOnly: {
-            type: Boolean
-        },
-        timeOnly: {
-            type: Boolean
-        },
-        rules: {
-            type: Array
-        }
+        datetimestr: String,
+        disabled: Boolean,
+        label: String,
+        fieldstyle: String,
+        fieldclass: String,
+        dateOnly: Boolean,
+        timeOnly: Boolean,
+        rules: Array
     },
     data() {
         return {
@@ -98,14 +75,11 @@ export default {
             time: ''
         }
     },
-    mounted() {
-        this.init()
-    },
     computed: {
         displayedDateTime() {
             try {
-                let fmt = 'EEE MMM dd Y hh:mm a z'
-                if (this.dateOnly) fmt = 'EEE MMM dd Y'
+                let fmt = 'EEE MMM dd y hh:mm a z'
+                if (this.dateOnly) fmt = 'EEE MMM dd y'
                 if (this.timeOnly) fmt = 'hh:mm a z'
                 return format(this.combinedDate, fmt).replace(/GMT-8/, 'PST').replace(/GMT-7/, 'PDT')
             } catch (error) {
@@ -114,7 +88,6 @@ export default {
         },
         combinedDate() {
             const def = new Date()
-            def.setTime(0)
             if (this.dateOnly && this.date)      return parse(this.date, VDATE, def)
             else if (this.timeOnly && this.time) return parse(this.time, VTIME, def)
             else if (this.date && this.time)     return parse(this.date + ' ' + this.time, VDATE + ' ' + VTIME, def)
@@ -127,20 +100,17 @@ export default {
     methods: {
         init() {
             if (!this.datetimestr) { return }
-            let full = this.datetimestr
-            let d
-            if (full.indexOf('T') < 0) {
-                d = parse(full, 'yyyy-MM-dd', new Date())
-            } else {
-                if (full.indexOf('Z') < 0) full += '.000Z'
-                d = new Date(full)
-            }
+            const d = (this.datetimestr.length === 10) ? parseDate(this.datetimestr) : parseTimestampLocal(this.datetimestr)
             this.date = format(d, VDATE)
             this.time = format(d, VTIME)
         },
         okHandler() {
             this.resetPicker()
-            this.$emit('input', this.combinedDate.toISOString())
+            if (this.dateOnly) {
+                this.$emit('input', this.date)
+            } else {
+                this.$emit('input', formatToTimestamp(addMinutes(this.combinedDate, tzoffset)))
+            }
         },
         clearHandler() {
             this.resetPicker()

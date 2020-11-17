@@ -1,3 +1,4 @@
+import _ from 'lodash'
 import { IDatabase, IMain, ColumnSet } from 'pg-promise'
 import { v1 as uuidv1 } from 'uuid'
 
@@ -38,7 +39,6 @@ export class EventsRepository {
     async eventList(): Promise<SeriesEvent[]> {
         return this.db.task(async task => {
             const ret: SeriesEvent[] = await task.any('SELECT * FROM events ORDER BY date')
-            // await this.loadItemMap(task, ret)
             return ret
         })
     }
@@ -46,7 +46,6 @@ export class EventsRepository {
     async getEvent(eventid: UUID): Promise<SeriesEvent> {
         return this.db.task(async task => {
             const ret: SeriesEvent = await task.one('SELECT * FROM events WHERE eventid=$1', [eventid])
-            // await this.loadItemMap(task, [ret])
             return ret
         })
     }

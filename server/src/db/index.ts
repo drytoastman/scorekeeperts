@@ -67,7 +67,8 @@ const cn = {
 }
 
 export const pgp = pgpromise(initOptions)
-pgp.pg.types.setTypeParser(pgp.pg.types.builtins.TIMESTAMP, function(stringValue) { return new Date(stringValue + '+0000') })
+pgp.pg.types.setTypeParser(pgp.pg.types.builtins.TIMESTAMP, function(stringValue) { return stringValue })
+pgp.pg.types.setTypeParser(pgp.pg.types.builtins.DATE, function(stringValue) { return stringValue })
 export const db = pgp(cn)
 export const tableWatcher = new TableWatcher(db)
 export const pgdb = pgp(Object.assign(cn, { user: 'postgres' }))

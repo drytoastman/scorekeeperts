@@ -1,12 +1,16 @@
+import { isPast } from 'date-fns'
 import { PaymentItem } from './payments'
-import { DataValidationRules, Length, isUUIDV, isDate, UUID, Range, Min, DateString, VuetifyValidationRule, MaxLength } from './util'
+import {
+    DataValidationRules, Length, isUUIDV, isTimestamp, UUID, Range, Min, DateString,
+    VuetifyValidationRule, MaxLength, UTCString, isDate, parseDate, parseTimestamp
+} from './util'
 
 export interface ItemMap {
     eventid: UUID;
     itemid: string;
     maxcount: number;
     required: boolean;
-    modified?: DateString;
+    modified?: UTCString;
 }
 
 export interface SeriesEvent
@@ -18,8 +22,8 @@ export interface SeriesEvent
     useastiebreak: boolean;
     isexternal: boolean;
     regtype: number;
-    regopened: Date;
-    regclosed: Date;
+    regopened: UTCString;
+    regclosed: UTCString;
     courses: number;
     runs: number;
     countedruns: number;
@@ -37,11 +41,8 @@ export interface SeriesEvent
         location: string;
         paymentreq: boolean;
     }
-    modified: DateString;
-    created: DateString;
-
-    // for insertions only as eventids are linked
-    items?: ItemMap[];
+    modified: UTCString;
+    created: UTCString;
 }
 
 export interface UIItemMap {
@@ -50,10 +51,10 @@ export interface UIItemMap {
     map: ItemMap
 }
 
-export function hasOpened(event: SeriesEvent): boolean { return new Date() > new Date(event.regopened) }
-export function hasClosed(event: SeriesEvent): boolean { return new Date() > new Date(event.regclosed) }
-export function hasFinished(event: SeriesEvent): boolean { return new Date() >= new Date(event.date) }
-export function isOpen(event: SeriesEvent):    boolean { return hasOpened(event) && !hasClosed(event) }
+export function hasOpened(event: SeriesEvent):   boolean { return isPast(parseTimestamp(event.regopened)) }
+export function hasClosed(event: SeriesEvent):   boolean { return isPast(parseTimestamp(event.regclosed)) }
+export function hasFinished(event: SeriesEvent): boolean { return isPast(parseDate(event.date)) }
+export function isOpen(event: SeriesEvent):      boolean { return hasOpened(event) && !hasClosed(event) }
 export function hasSessions(event: SeriesEvent): boolean { return event.regtype > 0 }
 export function getSessions(event: SeriesEvent): string[] {
     switch (event.regtype) {
@@ -77,8 +78,8 @@ export const EventValidator: DataValidationRules = {
     useastiebreak: [],
     isexternal:    [],
     regtype:       [Range(0, 2)],
-    regopened:     [isDate],
-    regclosed:     [isDate],
+    regopened:     [isTimestamp],
+    regclosed:     [isTimestamp],
     courses:       [Range(1, 10)],
     runs:          [Range(1, 50)],
     countedruns:   [Min(0)],
@@ -91,8 +92,8 @@ export const EventValidator: DataValidationRules = {
     ispro:         [],
     ispractice:    [],
     accountid:     [], // is in list
-    modified:      [isDate],
-    created:       [isDate],
+    modified:      [isTimestamp],
+    created:       [isTimestamp],
     location:      [MaxLength(32)],
     notes:         [MaxLength(512)]
 }

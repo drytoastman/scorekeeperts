@@ -119,7 +119,7 @@ export async function ical(req: Request, res: Response) {
             cal.createEvent({
                 start: date,
                 summary: `${e.name} ${e.reg.map(r => r.classcode).join(', ')}`,
-                uid: `SCAL-${driverid}-${e.name.replace(/\W/g, '')}-${date.format('YYYY-MM-DD')}`
+                uid: `SCAL-${driverid}-${e.name.replace(/\W/g, '')}-${e.date}`
             })
         }
 

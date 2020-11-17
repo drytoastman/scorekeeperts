@@ -1,14 +1,14 @@
 import _ from 'lodash'
 import moment from 'moment'
 
-import { SeriesEvent } from '@common/event'
+import { hasFinished, SeriesEvent } from '@common/event'
 import { ChampEntrant, ChampResults, Entrant } from '@common/results'
 import { getD, getDList, getDObj } from '@/common/data'
 import { ScorekeeperProtocol } from '..'
 import { dblog } from '@/util/logging'
 
 function champEventKey(event: SeriesEvent) {
-    return `d-${moment(event.date).format('YYYY-MM-DD')}-id-${event.eventid}`
+    return `d-${event.date}-id-${event.eventid}`
 }
 
 function champAddEventResults(map: {[key:string]: ChampEntrant}, event: SeriesEvent, entrant: Entrant) {
@@ -71,7 +71,6 @@ export async function updatedChampResults(task: ScorekeeperProtocol): Promise<Ch
 */
     dblog.debug('updatedChampResults')
 
-    const now       = new Date()
     const settings  = await task.series.seriesSettings()
     const classdata = await task.clsidx.getClassData()
     const events    = await task.events.eventList()
@@ -82,7 +81,7 @@ export async function updatedChampResults(task: ScorekeeperProtocol): Promise<Ch
 
     for (const event of events) {
         if (event.ispractice) continue
-        if (now >= new Date(event.date)) {
+        if (hasFinished(event)) {
             completed += 1
         }
 

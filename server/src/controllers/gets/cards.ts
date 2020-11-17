@@ -49,7 +49,6 @@ function loadRegData(series: string, eventid: UUID, loadEntrants: boolean): Prom
 
         const settings = await t.series.seriesSettings()
         const event    = await t.events.getEvent(eventid)
-        event.date     = new Date(event.date).toDateString()
         let reg: any[] = [{}]
 
         if (loadEntrants)  {
@@ -131,7 +130,7 @@ async function cardpdf(regData: RegData, series: string, res: Response) {
         const browser = await puppeteer.launch(chromeargs)
         const page    = await browser.newPage()
         await page.setContent(html, { waitUntil: 'load' })
-        const buffer  = await page.pdf({ width: '8in', height: '5in', margin: { top: '5mm', bottom: '3mm', left: '3mm', right: '5mm' } })
+        const buffer  = await page.pdf({ width: '8in', height: '5in', margin: { top: '5mm', bottom: '3mm', left: '3mm', right: '5mm' }})
 
         res.setHeader('Content-Type', 'application/pdf')
         res.setHeader('Content-Disposition', `attachment; filename="${regData.g.event.name}.pdf"`)

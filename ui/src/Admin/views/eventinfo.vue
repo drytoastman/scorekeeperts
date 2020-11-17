@@ -44,7 +44,10 @@
 import Vue from 'vue'
 import { mdiDelete } from '@mdi/js'
 import { format } from 'date-fns'
+import cloneDeep from 'lodash/cloneDeep'
 import { mapState } from 'vuex'
+
+import { parseDate } from '@/common/util'
 import EventSettings from '../components/event/EventSettings.vue'
 import EntrantTable from '../components/EntrantTable.vue'
 import GridOrder from '../components/event/GridOrder.vue'
@@ -82,7 +85,7 @@ export default {
     computed: {
         ...mapState(['events', 'drivers', 'cars', 'registered']),
         event() { return this.events[this.eventid] },
-        fmtdate() { return format(new Date(this.event.date), 'EEE MMM dd Y') }
+        fmtdate() { return format(parseDate(this.event.date), 'EEE MMM dd Y') }
     },
     methods: {
         async carddownload() {

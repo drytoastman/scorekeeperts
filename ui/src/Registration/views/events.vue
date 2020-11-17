@@ -46,7 +46,10 @@
 <script>
 import orderBy from 'lodash/orderBy'
 import filter from 'lodash/filter'
+import { isFuture } from 'date-fns'
 import { mapState, mapGetters } from 'vuex'
+
+import { parseDate } from '@/common/util'
 import { isOpen, hasClosed } from '@/common/event'
 import RegisterEventDisplay from '../components/RegisterEventDisplay.vue'
 import RulesAcknowledegment from '../components/RulesAcknowledgement.vue'
@@ -70,7 +73,7 @@ export default {
         ...mapState(['currentSeries', 'driversattr', 'settings', 'events', 'counts', 'registered', 'paymentitems', 'panelstate']),
         ...mapGetters(['driver', 'membershipfees', 'driverMembership']),
         // events by date, filtering out events that already occured as of today midnight, will still show up day of
-        orderedEvents() { return filter(orderBy(this.events, ['date']), e => (new Date(e.date) - new Date()) > -86400) },
+        orderedEvents() { return filter(orderBy(this.events, ['date']), e => isFuture(parseDate(e.date))) },
 
         panelstate: {
             get: function() { return this.$store.state.panelstate },

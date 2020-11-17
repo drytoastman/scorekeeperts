@@ -1,4 +1,4 @@
-import { DataValidationRules, MaxLength, Length, isUUIDV, isEmailV, isBarcode, isDate, UUID, MinLength } from './util'
+import { DataValidationRules, MaxLength, Length, isUUIDV, isEmailV, isBarcode, isTimestamp, UUID, MinLength, UTCString } from './util'
 
 export interface Driver
 {
@@ -22,8 +22,8 @@ export interface Driver
         ephone: string;
         scca: string;
     }
-    modified: Date;
-    created: Date;
+    modified: UTCString;
+    created: UTCString;
 }
 
 export const DriverValidator: DataValidationRules = {
@@ -43,8 +43,8 @@ export const DriverValidator: DataValidationRules = {
     econtact:   [MaxLength(64)],
     ephone:     [MaxLength(64)],
     scca:       [MaxLength(16)],
-    modified:   [isDate],
-    created:    [isDate]
+    modified:   [isTimestamp],
+    created:    [isTimestamp]
 }
 
 export const RegisterValidator: DataValidationRules = {

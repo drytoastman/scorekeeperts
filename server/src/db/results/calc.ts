@@ -22,7 +22,6 @@ export async function updatedSeriesInfo(task: ScorekeeperProtocol): Promise<Seri
     ret.events.forEach(e => {
         Object.assign(e, e.attr)
         delete e.attr
-        e.date = moment(e.date).format('YYYY-MM-DD')
     })
     return ret
 }

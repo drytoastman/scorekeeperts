@@ -13,6 +13,7 @@
 </template>
 
 <script>
+import { parseDate } from '@/common/util'
 import { format } from 'date-fns'
 
 export default {
@@ -22,7 +23,7 @@ export default {
     },
     methods: {
         format(date) {
-            return format(new Date(date), 'EEE MMM dd Y')
+            return format(parseDate(date), 'EEE MMM dd Y')
         }
     }
 }

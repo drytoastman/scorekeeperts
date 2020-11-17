@@ -46,9 +46,11 @@
 </template>
 
 <script>
+import { format } from 'date-fns'
 import { mapState } from 'vuex'
 import { isOpen, hasClosed, hasOpened } from '@/common/event'
 import EventRegSelections from './EventRegSelections.vue'
+import { parseTimestampLocal } from '@/common/util'
 
 export default {
     components: {
@@ -56,8 +58,7 @@ export default {
     },
     filters: {
         timedate: function(v) {
-            const d = new Date(v)
-            return d.toDateString().slice(0, -4) + ' ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric' })
+            return format(parseTimestampLocal(v), 'ccc MMM dd hh:mm a')
         }
     },
     props: {

@@ -1,9 +1,13 @@
-import _ from 'lodash'
+import cloneDeep from 'lodash/cloneDeep'
+import indexOf from 'lodash/indexOf'
+import maxBy from 'lodash/maxBy'
+import orderBy from 'lodash/orderBy'
+import remove from 'lodash/remove'
 
 import { ChampEntrant, ChampNotice, ChampResults, DecoratedRun, Entrant, EventNotice, EventResults, RunStatus } from '@/common/results'
 import { PosPoints } from '@/common/series'
 import { SeriesSettings } from '@/common/settings'
-import { UUID } from '@/common/util'
+import { parseTimestamp, UUID } from '@/common/util'
 
 const y2k = new Date('2000-01-01')
 
@@ -14,7 +18,7 @@ export function getLastCourse(e: Entrant): number {
     let lasttime = y2k
     for (const c of e.runs) {
         for (const r of c) {
-            const mod = new Date(r.modified)
+            const mod = parseTimestamp(r.modified)
             if (mod > lasttime) {
                 lasttime = mod
                 e.lastcourse = r.course
@@ -41,7 +45,7 @@ export function getLastRun(e: Entrant): DecoratedRun|undefined {
     /* Get the last recorded run on any course */
     const course = getLastCourse(e)
     const runs: DecoratedRun[] = e.runs[course - 1].filter(r => r.status !== RunStatus.PLC)
-    return _.maxBy(runs, 'run')
+    return maxBy(runs, 'run')
 }
 
 export function decorateEntrant(e: Entrant): void {
@@ -115,7 +119,7 @@ export function decorateClassResults(settings: SeriesSettings, eventresults: Eve
     // sumlist.remove(e.net) used to be drivers[e.carid]
 
     // Return a copy so we can decorate in different ways during a single session (new websocket feed)
-    const decoratedlist = _.cloneDeep(entrantlist)
+    const decoratedlist = cloneDeep(entrantlist)
     const notelist = decoratedlist as unknown as EventNotice[]
     const markedlist: Entrant[] = []
 
@@ -131,15 +135,15 @@ export function decorateClassResults(settings: SeriesSettings, eventresults: Eve
         if (e.oldnet) {
             sumlist.push(e.oldnet)
             sumlist.sort()
-            const position = _.indexOf(sumlist, e.oldnet) + 1
+            const position = indexOf(sumlist, e.oldnet) + 1
             e.oldpoints = settings.usepospoints ? ppoints.get(position) : sumlist[0] * 100 / e.oldnet
-            _.remove(sumlist, e.oldnet)
+            remove(sumlist, e.oldnet)
             notelist.push({ firstname:e.firstname, lastname:e.lastname, net:e.oldnet, isold: true, ispotential: false })
         }
         if (e.potnet) {
             sumlist.push(e.potnet)
             sumlist.sort()
-            const position = _.indexOf(sumlist, e.potnet) + 1
+            const position = indexOf(sumlist, e.potnet) + 1
             e.potpoints = settings.usepospoints ? ppoints.get(position) : sumlist[0] * 100 / e.potnet
             notelist.push({ firstname:e.firstname, lastname:e.lastname, net:e.potnet, ispotential: true, isold: false })
         }
@@ -158,14 +162,14 @@ export function decorateClassResults(settings: SeriesSettings, eventresults: Eve
         }
     }
 
-    return [_.orderBy(decoratedlist, 'net'), sortedmarks]
+    return [orderBy(decoratedlist, 'net'), sortedmarks]
 }
 
 export function decorateChampResults(champresults: ChampResults, markentrants: Entrant[]): ChampEntrant[] {
     /* Calculate things for the announcer/info displays */
     const champclass = champresults[markentrants[0].classcode]
     if (!champclass) return []
-    const newlist = _.cloneDeep(champclass)
+    const newlist = cloneDeep(champclass)
     const notelist = newlist as unknown as ChampNotice[]
 
     for (const champe of newlist) {
@@ -193,5 +197,5 @@ export function decorateChampResults(champresults: ChampResults, markentrants: E
         }
     }
 
-    return _.orderBy(newlist, 'points.total', 'desc')
+    return orderBy(newlist, 'points.total', 'desc')
 }

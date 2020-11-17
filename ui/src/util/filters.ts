@@ -1,5 +1,5 @@
 import { VueConstructor } from 'vue'
-import { DateString } from '@/common/util'
+import { DateString, parseDate } from '@/common/util'
 
 export function capitalize(v: string): string {
     if (!v) { return v }
@@ -17,7 +17,7 @@ export function t3(v: number): string {
 }
 
 function dmdy(v: DateString): string {
-    return new Date(v).toDateString()
+    return parseDate(v).toDateString()
 }
 
 function lenlimit(v: string, limit: number) {
