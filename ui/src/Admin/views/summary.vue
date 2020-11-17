@@ -3,7 +3,7 @@
         <div v-if="series">
             <h2>{{series}}</h2>
             <div v-for="e in Object.values(this.$store.state.events)" :key="e.eventid">
-                <span class='date'>{{format(e.date)}}</span> {{e.name}}
+                <span class='date'>{{e.date|dmdy}}</span> {{e.name}}
             </div>
         </div>
         <div v-else>
@@ -13,18 +13,10 @@
 </template>
 
 <script>
-import { parseDate } from '@/common/util'
-import { format } from 'date-fns'
-
 export default {
     name: 'Summary',
     props: {
         series: String
-    },
-    methods: {
-        format(date) {
-            return format(parseDate(date), 'EEE MMM dd Y')
-        }
     }
 }
 </script>

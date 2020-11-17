@@ -46,7 +46,7 @@
 
 <script>
 import { format, parse, addMinutes } from 'date-fns'
-import { parseDate, parseTimestampLocal, formatToTimestamp, tzoffset } from '@/common/util'
+import { parseDate, parseTimestampLocal, formatToTimestamp } from '@/common/util'
 
 const VDATE = 'yyyy-MM-dd'
 const VTIME = 'HH:mm'
@@ -109,7 +109,7 @@ export default {
             if (this.dateOnly) {
                 this.$emit('input', this.date)
             } else {
-                this.$emit('input', formatToTimestamp(addMinutes(this.combinedDate, tzoffset)))
+                this.$emit('input', formatToTimestamp(addMinutes(this.combinedDate, this.combinedDate.getTimezoneOffset())))
             }
         },
         clearHandler() {

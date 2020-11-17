@@ -2,7 +2,7 @@
     <div class='' v-if="event">
         <div class='header inset'>
             <span class='name'>{{event.name}}</span>
-            <span class='date'>{{fmtdate}}</span>
+            <span class='date'>{{event.date|dmdy}}</span>
             <v-select :items="downloads" hide-details solo placeholder="Get Cards" v-model="cardtype" @change="carddownload">
                 <template v-slot:selection="d">
                     <span v-if="d.item.text">{{d.item.text}}</span>
@@ -43,11 +43,8 @@
 <script>
 import Vue from 'vue'
 import { mdiDelete } from '@mdi/js'
-import { format } from 'date-fns'
-import cloneDeep from 'lodash/cloneDeep'
 import { mapState } from 'vuex'
 
-import { parseDate } from '@/common/util'
 import EventSettings from '../components/event/EventSettings.vue'
 import EntrantTable from '../components/EntrantTable.vue'
 import GridOrder from '../components/event/GridOrder.vue'
@@ -84,8 +81,7 @@ export default {
     },
     computed: {
         ...mapState(['events', 'drivers', 'cars', 'registered']),
-        event() { return this.events[this.eventid] },
-        fmtdate() { return format(parseDate(this.event.date), 'EEE MMM dd Y') }
+        event() { return this.events[this.eventid] }
     },
     methods: {
         async carddownload() {

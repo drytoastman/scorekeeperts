@@ -94,12 +94,17 @@ export default {
         ...mapGetters(['eventUIItems'])
     },
     methods: {
-        createClosing(date, prevdow, time) {
-            let adj = date.getDay() - prevdow
-            if (adj <= 0) adj += 7
-            date = subDays(date, adj)
-            date.setHours(time.getHours(), time.getMinutes())
-            return date
+        createOpening(datestring, opendays) {
+            return subDays(parseDate(datestring), opendays).toISOString()
+        },
+        createClosing(datestring, prevdow, timestampstring) {
+            const date     = parseDate(datestring)
+            const adj      = date.getDay() - prevdow
+            const timebase = parseTimestampLocal(timestampstring)
+
+            const ret = subDays(date, adj <= 0 ? adj + 7 : adj)
+            ret.setHours(timebase.getHours(), timebase.getMinutes())
+            return ret.toISOString()
         },
         createEvents() {
             if (!(this.$refs.template.$refs.form.validate() && this.$refs.limits.$refs.form.validate())) {
@@ -115,8 +120,8 @@ export default {
                 emod.name = e.name
                 emod.date = e.date
                 emod.attr.location = e.location
-                emod.regopened = subDays(parseDate(e.date), data.opendays).toISOString()
-                emod.regclosed = this.createClosing(parseDate(e.date), data.closeday, parseTimestampLocal(data.closetime)).toISOString()
+                emod.regopened = this.createOpening(e.date, data.opendays)
+                emod.regclosed = this.createClosing(e.date, data.closeday, data.closetime)
                 emod.items     = this.uiitems.filter(m => m.checked).map(m => m.map)
                 events.push(emod)
             }

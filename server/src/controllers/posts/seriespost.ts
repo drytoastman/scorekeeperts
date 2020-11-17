@@ -111,7 +111,7 @@ export async function seriespost(tx: ScorekeeperProtocol, auth: AuthData, param:
                 break
 
             case 'events':
-                Object.assign(ret, await tx.events.updateEvents(param.type, param.items.events))
+                ret.events = await tx.events.updateEvents(param.type, param.items.events)
                 break
 
             case 'carids':

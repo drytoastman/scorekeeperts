@@ -1,8 +1,8 @@
 import _ from 'lodash'
-import { IDatabase, IMain, ColumnSet } from 'pg-promise'
+import { IMain, ColumnSet } from 'pg-promise'
 import { v1 as uuidv1 } from 'uuid'
 
-import { EventValidator, ItemMap, SeriesEvent } from '@common/event'
+import { EventValidator, SeriesEvent } from '@common/event'
 import { UUID, validateObj } from '@common/util'
 import { cleanAttr } from './helper'
 import { ScorekeeperProtocol } from '.'
@@ -50,7 +50,7 @@ export class EventsRepository {
         })
     }
 
-    async updateEvents(type: string, events: SeriesEvent[]): Promise<{ itemeventmap?: ItemMap[], events: SeriesEvent[]}> {
+    async updateEvents(type: string, events: SeriesEvent[]): Promise<SeriesEvent[]> {
         if (type !== 'delete') {
             events.forEach(e => validateObj(e, EventValidator))
         }
@@ -58,25 +58,9 @@ export class EventsRepository {
         return this.db.tx(async tx => {
 
             if (type === 'insert') {
-                const newevents = [] as SeriesEvent[]
-                let maps = [] as ItemMap[]
-
-                for (const e of events) {
-                    const eres = await tx.one(this.pgp.helpers.insert([e], eventcols) + ' RETURNING *')
-                    if (e.items && e.items.length > 0) {
-                        e.items.forEach(m => { m.eventid = eres.eventid })
-                        maps = [...maps, ...await tx.payments.updateItemMaps('insert', eres.eventid, e.items)]
-                    }
-                    newevents.push(eres)
-                }
-                return {
-                    events: newevents,
-                    itemeventmap: maps
-                }
+                return tx.any(this.pgp.helpers.insert(events, eventcols) + ' RETURNING *')
             } else if ((type === 'update') || (type === 'eventupdate')) {
-                return {
-                    events: await tx.any(this.pgp.helpers.update(events, eventcols) + ' WHERE v.eventid=t.eventid RETURNING *')
-                }
+                return tx.any(this.pgp.helpers.update(events, eventcols) + ' WHERE v.eventid=t.eventid RETURNING *')
             } else if (type === 'delete') {
                 const ret = [] as SeriesEvent[]
                 for (const e of events) {
@@ -92,7 +76,7 @@ export class EventsRepository {
                         throw error
                     }))
                 }
-                return { events: ret }
+                return ret
             }
             throw Error(`Unknown operation type ${JSON.stringify(type)}`)
         })
