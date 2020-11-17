@@ -1,6 +1,6 @@
 <template>
     <div class='paymentwrap'>
-        <div v-if="payments.length" class='paidinfo'>
+        <div v-if="payments.length || locked" class='paidinfo'>
             <div v-for="p in payments" :key="p.payid">{{p.itemname}} {{p.amount|cents2dollars}}</div>
         </div>
         <v-select v-else-if="mycarid" :disabled="busy" :items="entryfees" return-object hide-details solo item-value="itemid" v-model="selection">
@@ -33,7 +33,8 @@ export default {
     props: {
         event: Object,
         session: String,
-        index: Number
+        index: Number,
+        locked: Boolean
     },
     computed: {
         entryfees() {

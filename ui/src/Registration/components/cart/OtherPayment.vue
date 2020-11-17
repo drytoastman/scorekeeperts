@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div v-if="payments.length < map.maxcount">
+        <div v-if="!locked && payments.length < map.maxcount">
             <v-select :items="countlist" hide-details solo :disabled="map.required || busy" v-model="selection">
                 <template v-slot:selection="d">
                     <div v-if="d.item.text">{{d.item.text}}</div>
@@ -24,7 +24,8 @@ export default {
     props: {
         event: Object,
         item: Object,
-        map: Object
+        map: Object,
+        locked: Boolean
     },
     computed: {
         ...mapState(['busyReg']),
