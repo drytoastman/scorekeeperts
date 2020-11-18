@@ -55,7 +55,7 @@ websockets.on('connection', async function connection(ws: SessionWebSocket, req:
 
 
     } else if (pathname === '/api2/live') {
-        if (await db.general.getLocalSetting(IS_MAIN_SERVER) === '1') {
+        if (await db.general.isMainServer()) {
             return ws.close(1002, 'Available onsite only')
         }
         ws.series    = ''

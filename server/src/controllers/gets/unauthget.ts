@@ -34,7 +34,7 @@ export async function unauthgetone(task: ScorekeeperProtocol, auth: AuthData, pa
         case 'listids':             ret.listids             = await task.series.emailListIds(); break
         case 'serieslist':          ret.serieslist          = await task.series.seriesList();   break
         case 'squareapplicationid': ret.squareapplicationid = await task.general.getLocalSetting(SQ_APPLICATION_ID); break
-        case 'ismainserver':        ret.ismainserver        = await task.general.getLocalSetting(IS_MAIN_SERVER) === '1'; break
+        case 'ismainserver':        ret.ismainserver        = await task.general.isMainServer(); break
         case 'paxlists':            ret.paxlists            = (await readdirAsync('public')).filter(f => f.endsWith('.json')); break
         case 'allseries':           ret.allseries           = await task.series.allSeries(); break
         case 'recaptchasitekey':

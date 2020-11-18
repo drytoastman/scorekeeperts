@@ -8,6 +8,7 @@ import { api2, oldapi, websockets, websocketsStartWatching } from './controllers
 import { db, tableWatcher, pgp } from './db'
 import { startCronJobs } from './cron'
 import { accesslog, mainlog } from './util/logging'
+import { startDNSServer } from './util/dns'
 
 const app = express()
 let cookiesessioner
@@ -58,8 +59,13 @@ async function dbWaitAndApiSetup() {
     app.use('/api2', api2)
 
     websocketsStartWatching()
-    if (process.env.NODE_ENV !== 'development') {
-        startCronJobs()
+
+    if (await db.general.isMainServer()) {
+        if (process.env.NODE_ENV !== 'development') {
+            startCronJobs()
+        }
+    } else {
+        startDNSServer()
     }
 }
 

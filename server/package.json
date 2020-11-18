@@ -21,6 +21,7 @@
     "csv-stringify": "^5.5.0",
     "date-fns": "^2.16.1",
     "date-fns-tz": "^1.0.12",
+    "dns2": "^1.4.2",
     "express": "^4.17.1",
     "express-delay": "^0.2.0",
     "express-promise-router": "^4.0.1",
