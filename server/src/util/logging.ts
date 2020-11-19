@@ -62,7 +62,7 @@ const formats = [
 ]
 
 // primary logging
-for (const l of ['main', 'database', 'cron', 'control', 'payments', 'dns']) {
+for (const l of ['main', 'database', 'cron', 'control', 'payments', 'dns', 'sync']) {
     winston.loggers.add(l, {
         format: format.combine(format.label({ label: l }), ...formats),
         transports: transports
@@ -74,6 +74,7 @@ export const cronlog = winston.loggers.get('cron')
 export const controllog = winston.loggers.get('control')
 export const paymentslog = winston.loggers.get('payments')
 export const dnslog = winston.loggers.get('dns')
+export const synclog = winston.loggers.get('sync')
 
 // logging just for access much like nginx access log
 winston.loggers.add('access', {

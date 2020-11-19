@@ -1,4 +1,4 @@
-import { UUID } from '@common/util'
+import { UTCString, UUID } from '@common/util'
 import { IDatabase, IMain, ColumnSet } from 'pg-promise'
 import _ from 'lodash'
 
@@ -8,6 +8,8 @@ export interface MergeServer {
     serverid: UUID
     hostname: string
     address: string
+    lastcheck: UTCString
+    nextcheck: UTCString
     waittime: number
     ctimeout: number
     cfailures: number
