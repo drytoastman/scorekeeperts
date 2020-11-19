@@ -1,26 +1,12 @@
 import { UUID } from '@common/util'
-import { IMain, ColumnSet } from 'pg-promise'
+import { IMain } from 'pg-promise'
 import _ from 'lodash'
-import { ScorekeeperProtocol } from '.'
-import { cleanAttr } from './helper'
+import { ScorekeeperProtocol, TABLES } from '.'
 import { Run } from '@/common/results'
 
-let runcols: ColumnSet|undefined
 
 export class RunsRepository {
     constructor(private db: ScorekeeperProtocol, private pgp: IMain) {
-        if (runcols === undefined) {
-            runcols = new pgp.helpers.ColumnSet([
-                { name: 'eventid',  cnd: true, cast: 'uuid' },
-                { name: 'carid',    cnd: true, cast: 'uuid' },
-                { name: 'rungroup', cnd: true },
-                { name: 'course',   cnd: true },
-                { name: 'run',      cnd: true },
-                'raw', 'cones', 'gates', 'status',
-                { name: 'attr',     cast: 'json', init: (col: any): any => { return cleanAttr(col.value) } },
-                { name: 'modified', cast: 'timestamp', mod: ':raw', init: (): any => { return 'now()' } }
-            ], { table: 'runs' })
-        }
     }
 
     async getRuns(eventid: UUID, carid: UUID): Promise<Run[]> {
@@ -30,9 +16,9 @@ export class RunsRepository {
     async updateRuns(runs: Run[]): Promise<Run[]> {
         const ret = [] as Run[]
         for (const run of runs) {
-            const res = await this.db.oneOrNone(this.pgp.helpers.insert([run], runcols) +
+            const res = await this.db.oneOrNone(this.pgp.helpers.insert([run], TABLES.runs) +
                                     ' ON CONFLICT (eventid,carid,rungroup,course,run) DO UPDATE SET ' +
-                                    this.pgp.helpers.sets(run, runcols) + ' RETURNING *')
+                                    this.pgp.helpers.sets(run, TABLES.runs) + ' RETURNING *')
             if (res) ret.push(res) // null means nothing changed do trigger stopped it
         }
         return ret

@@ -1,25 +1,13 @@
 import _ from 'lodash'
-import { IDatabase, IMain, ColumnSet } from 'pg-promise'
+import { IDatabase, IMain } from 'pg-promise'
 import { v1 as uuidv1 } from 'uuid'
-import { verifyDriverRelationship, cleanAttr } from './helper'
+import { verifyDriverRelationship } from './helper'
 import { UUID, validateObj } from '@common/util'
 import { Car, CarValidator } from '@common/car'
-
-let carcols: ColumnSet|undefined
+import { TABLES } from '.'
 
 export class CarRepository {
     constructor(private db: IDatabase<any>, private pgp: IMain) {
-        if (carcols === undefined) {
-            carcols = new pgp.helpers.ColumnSet([
-                { name: 'carid', cnd: true, cast: 'uuid' },
-                { name: 'driverid', cast: 'uuid' },
-                'classcode', 'indexcode', 'number:value',
-                { name: 'useclsmult', def: false },
-                { name: 'attr',     cast: 'json', init: (col: any): any => { return cleanAttr(col.value) } },
-                { name: 'modified', cast: 'timestamp', mod: ':raw', init: (): any => { return 'now()' } },
-                { name: 'created',  cast: 'timestamp', init: (col: any): any => { return col.exists ? col.value : 'now()' } }
-            ], { table: 'cars' })
-        }
     }
 
     async getCarsbyDriverId(driverid: UUID): Promise<Car[]> {
@@ -66,12 +54,12 @@ export class CarRepository {
                 c.carid = uuidv1()
                 if (verifyid) c.driverid = verifyid
             })
-            return this.db.any(this.pgp.helpers.insert(cars, carcols) + ' RETURNING *')
+            return this.db.any(this.pgp.helpers.insert(cars, TABLES.cars) + ' RETURNING *')
         }
 
         if (verifyid) await verifyDriverRelationship(this.db, cars.map(c => c.carid), verifyid)
 
-        if (type === 'update') return this.db.any(this.pgp.helpers.update(cars, carcols) + ' WHERE v.carid = t.carid RETURNING *')
+        if (type === 'update') return this.db.any(this.pgp.helpers.update(cars, TABLES.cars) + ' WHERE v.carid = t.carid RETURNING *')
         if (type === 'delete') return this.db.any('DELETE from cars WHERE carid in ($1:csv) RETURNING carid', cars.map(c => c.carid))
 
         throw Error(`Unknown operation type ${JSON.stringify(type)}`)

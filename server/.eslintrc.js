@@ -6,6 +6,7 @@ let rules = {
         named: 'never',
         asyncArrow: 'always'
     }],
+    'no-useless-constructor': 'off', // this still fires when using private constructor args to set local
     'no-multi-spaces': 'off', // I like to visually align things
     'no-multiple-empty-lines': 'off',
     'key-spacing': 'off',

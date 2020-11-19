@@ -1,78 +1,15 @@
-import { IDatabase, ColumnSet, IMain } from 'pg-promise'
+import { IDatabase, IMain } from 'pg-promise'
 import _ from 'lodash'
 
-import { verifyDriverRelationship, cleanAttr } from './helper'
+import { verifyDriverRelationship } from './helper'
 import { PaymentAccount, PaymentItem, PaymentAccountSecret } from '@common/payments'
 import { UUID, validateObj } from '@common/util'
 import { Payment, PaymentValidator } from '@common/register'
 import { ItemMap } from '@/common/event'
-
-let paymentcols: ColumnSet|undefined
-let secretcols: ColumnSet|undefined
-let accountcols: ColumnSet|undefined
-let itemcols: ColumnSet|undefined
-let itemmapcols: ColumnSet|undefined
+import { TABLES } from '.'
 
 export class PaymentsRepository {
-    // eslint-disable-next-line no-useless-constructor
     constructor(private db: IDatabase<any>, private pgp: IMain) {
-        if (paymentcols === undefined) {
-            paymentcols = new pgp.helpers.ColumnSet([
-                { name: 'payid',    cnd: true, cast: 'uuid' },
-                { name: 'eventid',  cast: 'uuid' },
-                { name: 'driverid', cast: 'uuid' },
-                { name: 'carid',    cast: 'uuid', def: null },
-                { name: 'session',  def: null },
-                { name: 'txtype' },
-                { name: 'txid' },
-                { name: 'txtime',   cast: 'timestamp' },
-                { name: 'amount' },
-                { name: 'refunded' },
-                { name: 'itemname' },
-                { name: 'accountid' },
-                { name: 'modified', cast: 'timestamp', mod: ':raw', init: (): any => { return 'now()' } }
-            ], { table: 'payments' })
-        }
-
-        if (accountcols === undefined) {
-            accountcols = new pgp.helpers.ColumnSet([
-                { name: 'accountid', cnd: true },
-                { name: 'name' },
-                { name: 'type' },
-                { name: 'attr',     cast: 'json', init: (col: any): any => { return cleanAttr(col.value) } },
-                { name: 'modified', cast: 'timestamp', mod: ':raw', init: (): any => { return 'now()' } }
-            ], { table: 'paymentaccounts' })
-        }
-
-        if (secretcols === undefined) {
-            secretcols = new pgp.helpers.ColumnSet([
-                { name: 'accountid', cnd: true },
-                { name: 'secret' },
-                { name: 'attr',     cast: 'json', init: (col: any): any => { return cleanAttr(col.value) } },
-                { name: 'modified', cast: 'timestamp', mod: ':raw', init: (): any => { return 'now()' } }
-            ], { table: 'paymentsecrets' })
-        }
-
-        if (itemcols === undefined) {
-            itemcols = new pgp.helpers.ColumnSet([
-                { name: 'itemid', cnd: true },
-                { name: 'name' },
-                { name: 'itemtype' },
-                { name: 'price' },
-                { name: 'currency' },
-                { name: 'modified', cast: 'timestamp', mod: ':raw', init: (): any => { return 'now()' } }
-            ], { table: 'paymentitems' })
-        }
-
-        if (itemmapcols === undefined) {
-            itemmapcols = new pgp.helpers.ColumnSet([
-                { name: 'eventid', cnd: true, cast: 'uuid' },
-                { name: 'itemid',  cnd: true },
-                { name: 'maxcount', cast: 'int' },
-                { name: 'required', cast: 'bool' },
-                { name: 'modified', cast: 'timestamp', mod: ':raw', init: (): any => { return 'now()' } }
-            ], { table: 'itemeventmap' })
-        }
     }
 
     async getPaymentAccounts(): Promise<PaymentAccount[]> {
@@ -84,8 +21,8 @@ export class PaymentsRepository {
     }
 
     async updatePaymentItems(type: string, items: PaymentItem[]): Promise<PaymentItem[]> {
-        if (type === 'insert') { return this.db.any(this.pgp.helpers.insert(items, itemcols) + ' RETURNING *') }
-        if (type === 'update') { return this.db.any(this.pgp.helpers.update(items, itemcols) + ' WHERE v.itemid = t.itemid RETURNING *') }
+        if (type === 'insert') { return this.db.any(this.pgp.helpers.insert(items, TABLES.paymentitems) + ' RETURNING *') }
+        if (type === 'update') { return this.db.any(this.pgp.helpers.update(items, TABLES.paymentitems) + ' WHERE v.itemid = t.itemid RETURNING *') }
         if (type === 'delete') {
             const rows = await this.db.any('SELECT DISTINCT e.name,e.date FROM itemeventmap m JOIN events e ON m.eventid=e.eventid ' +
                                            'WHERE m.itemid IN ($1:csv) ORDER BY e.date', [items.map(i => i.itemid)])
@@ -103,14 +40,14 @@ export class PaymentsRepository {
 
     async updateItemMaps(type: string, eventid: UUID, maps: ItemMap[]): Promise<ItemMap[]> {
         if (type === 'insert') {
-            return this.db.any(this.pgp.helpers.insert(maps, itemmapcols) + ' RETURNING *')
+            return this.db.any(this.pgp.helpers.insert(maps, TABLES.itemeventmap) + ' RETURNING *')
 
         } else if (type === 'eventupdate') {
             await this.db.none(`DELETE FROM itemeventmap WHERE eventid=$1 ${maps.length > 0 ? 'AND itemid NOT IN ($2:csv)' : ''}`, [eventid, maps.map(m => m.itemid)])
             for (const itemmap of maps) {
-                await this.db.any(this.pgp.helpers.insert([itemmap], itemmapcols) +
+                await this.db.any(this.pgp.helpers.insert([itemmap], TABLES.itemeventmap) +
                                 ' ON CONFLICT (eventid, itemid) DO UPDATE SET ' +
-                                this.pgp.helpers.sets(itemmap, itemmapcols))
+                                this.pgp.helpers.sets(itemmap, TABLES.itemeventmap))
             }
             return this.db.any('SELECT * FROM itemeventmap WHERE eventid=$1', [eventid])
         }
@@ -123,8 +60,8 @@ export class PaymentsRepository {
     }
 
     async updatePaymentAccounts(type: string, accounts: PaymentAccount[]): Promise<PaymentAccount[]> {
-        if (type === 'insert') { return this.db.any(this.pgp.helpers.insert(accounts, accountcols) + ' RETURNING *') }
-        if (type === 'update') { return this.db.any(this.pgp.helpers.update(accounts, accountcols) + ' WHERE v.accountid = t.accountid RETURNING *') }
+        if (type === 'insert') { return this.db.any(this.pgp.helpers.insert(accounts, TABLES.paymentaccounts) + ' RETURNING *') }
+        if (type === 'update') { return this.db.any(this.pgp.helpers.update(accounts, TABLES.paymentaccounts) + ' WHERE v.accountid = t.accountid RETURNING *') }
         if (type === 'delete') {
             const ids = accounts.map(a => a.accountid)
             const rows = await this.db.any('SELECT name FROM events WHERE accountid in ($1:csv) ORDER BY date', [ids])
@@ -144,8 +81,8 @@ export class PaymentsRepository {
     }
 
     async updatePaymentAccountSecrets(type: string, secrets: PaymentAccountSecret[]): Promise<void> {
-        if (type === 'insert') { await this.db.any(this.pgp.helpers.insert(secrets, secretcols)); return }
-        if (type === 'update') { await this.db.any(this.pgp.helpers.update(secrets, secretcols) + ' WHERE v.accountid = t.accountid RETURNING *'); return }
+        if (type === 'insert') { await this.db.any(this.pgp.helpers.insert(secrets, TABLES.paymentsecrets)); return }
+        if (type === 'update') { await this.db.any(this.pgp.helpers.update(secrets, TABLES.paymentsecrets) + ' WHERE v.accountid = t.accountid RETURNING *'); return }
         if (type === 'delete') { await this.db.any('DELETE from paymentsecrets WHERE accountid in ($1:csv)', secrets.map(s => s.accountid)); return }
         throw Error(`Unknown operation type ${JSON.stringify(type)}`)
     }
@@ -182,8 +119,8 @@ export class PaymentsRepository {
             payments.forEach(p => validateObj(p, PaymentValidator))
         }
 
-        if (type === 'insert') { return this.db.any(this.pgp.helpers.insert(payments, paymentcols) + ' RETURNING *') }
-        if (type === 'update') { return this.db.any(this.pgp.helpers.update(payments, paymentcols) + ' WHERE v.payid = t.payid RETURNING *') }
+        if (type === 'insert') { return this.db.any(this.pgp.helpers.insert(payments, TABLES.payments) + ' RETURNING *') }
+        if (type === 'update') { return this.db.any(this.pgp.helpers.update(payments, TABLES.payments) + ' WHERE v.payid = t.payid RETURNING *') }
         if (type === 'delete') { return this.db.any('DELETE from payments WHERE payid in ($1:csv)', payments.map(p => p.payid)) }
 
         throw Error(`Unknown operation type ${JSON.stringify(type)}`)

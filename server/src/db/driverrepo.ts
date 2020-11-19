@@ -1,34 +1,14 @@
 import bcrypt from 'bcryptjs'
-import { IDatabase, ColumnSet, IMain } from 'pg-promise'
+import { IDatabase, IMain } from 'pg-promise'
 import { v1 as uuidv1 } from 'uuid'
 
 import { UUID, validateObj } from '@common/util'
 import { Driver, DriverValidator } from '@common/driver'
-import { cleanAttr } from './helper'
-
-let drivercols: ColumnSet|undefined
-let unsubcols: ColumnSet|undefined
+import { TABLES } from '.'
 
 export class DriverRepository {
     constructor(private db: IDatabase<any>, private pgp: IMain) {
         this.db = db
-        if (drivercols === undefined) {
-            drivercols = new pgp.helpers.ColumnSet([
-                { name: 'driverid', cnd: true, cast: 'uuid' },
-                'firstname', 'lastname', 'email', 'username',
-                { name: 'barcode', def: '' },
-                { name: 'optoutmail', def: false },
-                { name: 'attr',     cast: 'json', init: (col: any): any => { return cleanAttr(col.value) } },
-                { name: 'modified', cast: 'timestamp', mod: ':raw', init: (): any => { return 'now()' } },
-                { name: 'created',  cast: 'timestamp', init: (col: any): any => { return col.exists ? col.value : 'now()' } }
-            ], { table: 'drivers' })
-        }
-        if (unsubcols === undefined) {
-            unsubcols = new pgp.helpers.ColumnSet([
-                'emaillistid',
-                { name: 'driverid', cast: 'uuid' }
-            ], { table: 'unsubscribe' })
-        }
     }
 
     private filterDrivers(drivers: Driver[]): Driver[] {
@@ -84,7 +64,7 @@ export class DriverRepository {
 
     async updateUnsubscribeList(unsublist: string[], driverid: UUID): Promise<string[]> {
         await this.db.none('DELETE FROM unsubscribe WHERE driverid=$1', [driverid])
-        const rows = await this.db.any(this.pgp.helpers.insert(unsublist.map(v => ({ emaillistid: v, driverid: driverid })), unsubcols) + ' RETURNING emaillistid')
+        const rows = await this.db.any(this.pgp.helpers.insert(unsublist.map(v => ({ emaillistid: v, driverid: driverid })), TABLES.unsubscribe) + ' RETURNING emaillistid')
         return rows.map(r => r.emaillistid)
     }
 
@@ -113,7 +93,7 @@ export class DriverRepository {
 
     async createDriver(data: any): Promise<UUID> {
         data.driverid = uuidv1()
-        await this.db.one(this.pgp.helpers.insert([data], drivercols) + ' RETURNING driverid')
+        await this.db.one(this.pgp.helpers.insert([data], TABLES.drivers) + ' RETURNING driverid')
         await this.changePassword(data.driverid, '', data.password, true)
         return data.driverid
     }
@@ -128,7 +108,7 @@ export class DriverRepository {
         }
 
         if (type === 'update')  {
-            return this.filterDrivers(await this.db.any(this.pgp.helpers.update(drivers, drivercols) + ' WHERE v.driverid = t.driverid RETURNING *'))
+            return this.filterDrivers(await this.db.any(this.pgp.helpers.update(drivers, TABLES.drivers) + ' WHERE v.driverid = t.driverid RETURNING *'))
         } else if (type === 'delete') {
             return this.db.any('DELETE from drivers WHERE driverid in ($1:csv) RETURNING driverid', drivers.map(d => d.driverid))
         }

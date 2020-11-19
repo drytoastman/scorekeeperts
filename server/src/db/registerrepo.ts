@@ -1,23 +1,12 @@
 import { Registration, Payment, RegValidator } from '@common/register'
 import { UUID, validateObj } from '@common/util'
-import { IDatabase, IMain, ColumnSet } from 'pg-promise'
+import { IDatabase, IMain } from 'pg-promise'
 import _ from 'lodash'
 import { verifyDriverRelationship } from './helper'
-
-let regcols: ColumnSet|undefined
+import { TABLES } from '.'
 
 export class RegisterRepository {
-    // eslint-disable-next-line no-useless-constructor
     constructor(private db: IDatabase<any>, private pgp: IMain) {
-        if (regcols === undefined) {
-            regcols = new pgp.helpers.ColumnSet([
-                { name: 'eventid', cnd: true, cast: 'uuid' },
-                { name: 'carid',   cnd: true, cast: 'uuid' },
-                { name: 'session', cnd: true, def: '' },
-                { name: 'rorder',  def: 0 },
-                { name: 'modified', cast: 'timestamp', mod: ':raw', init: (): any => { return 'now()' } }
-            ], { table: 'registered' })
-        }
     }
 
     async getRegistrationbyDriverId(driverid: UUID): Promise<Registration[]> {
@@ -154,7 +143,7 @@ export class RegisterRepository {
                 await this.db.none('UPDATE registered SET rorder=$(rorder),modified=now() WHERE eventid=$(eventid) AND carid=$(carid) AND session=$(session)', u)
             }
             for (const d of todel)   { await this.db.none('DELETE FROM registered WHERE eventid=$(eventid) AND carid=$(carid) AND session=$(session)', d) }
-            for (const i of toadd)   { await this.db.none(this.pgp.helpers.insert(i, regcols)) }
+            for (const i of toadd)   { await this.db.none(this.pgp.helpers.insert(i, TABLES.registered)) }
             for (const p of deadpay) { await this.db.none('UPDATE payments SET carid=$(newcarid), session=$(newsession), modified=now() WHERE payid=$(payid)', p) }
 
             return {

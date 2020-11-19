@@ -6,7 +6,6 @@ import { UUID, validateObj } from '@/common/util'
 import { getD } from '@/common/data'
 
 export class SeriesRepository {
-    // eslint-disable-next-line no-useless-constructor
     constructor(private db: ScorekeeperProtocol, private pgp: IMain) {
     }
 

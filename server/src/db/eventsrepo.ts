@@ -1,39 +1,12 @@
 import _ from 'lodash'
-import { IMain, ColumnSet } from 'pg-promise'
-import { v1 as uuidv1 } from 'uuid'
+import { IMain } from 'pg-promise'
 
 import { EventValidator, SeriesEvent } from '@common/event'
 import { UUID, validateObj } from '@common/util'
-import { cleanAttr } from './helper'
-import { ScorekeeperProtocol } from '.'
-
-let eventcols: ColumnSet|undefined
+import { ScorekeeperProtocol, TABLES } from '.'
 
 export class EventsRepository {
     constructor(private db: ScorekeeperProtocol, private pgp: IMain) {
-        if (eventcols === undefined) {
-            eventcols = new pgp.helpers.ColumnSet([
-                { name: 'eventid', cnd: true, cast: 'uuid', init: (col: any): any => { return col.exists ? col.value : uuidv1() } },
-                { name: 'date', cast: 'date' },
-                { name: 'regopened', cast: 'timestamp' },
-                { name: 'regclosed', cast: 'timestamp' },
-                'name', 'champrequire', 'useastiebreak', 'isexternal', 'ispro', 'ispractice',
-                { name: 'regtype', cast: 'int' },
-                { name: 'courses', cast: 'int' },
-                { name: 'runs', cast: 'int' },
-                { name: 'countedruns', cast: 'int' },
-                { name: 'segments', cast: 'int' },
-                { name: 'perlimit', cast: 'int' },
-                { name: 'totlimit', cast: 'int' },
-                { name: 'sinlimit', cast: 'int' },
-                'conepen', 'gatepen', 'accountid',
-                { name: 'attr',     cast: 'json', init: (col: any): any => { return cleanAttr(col.value) } },
-                { name: 'modified', cast: 'timestamp', mod: ':raw', init: (): any => { return 'now()' } },
-                { name: 'created',  cast: 'timestamp', init: (col: any): any => { return col.exists ? col.value : 'now()' } }
-            ], { table: 'events' })
-        }
-
-
     }
 
     async eventList(): Promise<SeriesEvent[]> {
@@ -58,9 +31,9 @@ export class EventsRepository {
         return this.db.tx(async tx => {
 
             if (type === 'insert') {
-                return tx.any(this.pgp.helpers.insert(events, eventcols) + ' RETURNING *')
+                return tx.any(this.pgp.helpers.insert(events, TABLES.events) + ' RETURNING *')
             } else if ((type === 'update') || (type === 'eventupdate')) {
-                return tx.any(this.pgp.helpers.update(events, eventcols) + ' WHERE v.eventid=t.eventid RETURNING *')
+                return tx.any(this.pgp.helpers.update(events, TABLES.events) + ' WHERE v.eventid=t.eventid RETURNING *')
             } else if (type === 'delete') {
                 const ret = [] as SeriesEvent[]
                 for (const e of events) {

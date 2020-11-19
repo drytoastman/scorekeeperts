@@ -12,6 +12,8 @@ import { RunsRepository } from './runsrepo'
 import { dblog } from '../util/logging'
 import { ChallengeRepository } from './challengerepo'
 import { ResultsRepository } from './results'
+import { MergeServerRepository } from './mergeserverrepo'
+import { createColumnSets } from './tables'
 
 export interface DBExtensions {
     series: SeriesRepository;
@@ -25,6 +27,7 @@ export interface DBExtensions {
     challenge: ChallengeRepository;
     results: ResultsRepository;
     events: EventsRepository;
+    merge: MergeServerRepository;
 }
 
 export type ScorekeeperProtocol = IBaseProtocol<DBExtensions> & DBExtensions;
@@ -40,10 +43,11 @@ const initOptions: IInitOptions<DBExtensions> = {
         obj.cars = new CarRepository(obj, pgp)
         obj.register = new RegisterRepository(obj, pgp)
         obj.payments = new PaymentsRepository(obj, pgp)
-        obj.general = new GeneralRepository(obj)
+        obj.general = new GeneralRepository(obj, pgp)
         obj.runs = new RunsRepository(obj, pgp)
         obj.challenge = new ChallengeRepository(obj, pgp)
         obj.results = new ResultsRepository(obj, pgp)
+        obj.merge = new MergeServerRepository(obj, pgp)
     }
 }
 
@@ -72,3 +76,5 @@ pgp.pg.types.setTypeParser(pgp.pg.types.builtins.DATE, function(stringValue) { r
 export const db = pgp(cn)
 export const tableWatcher = new TableWatcher(db)
 export const pgdb = pgp(Object.assign(cn, { user: 'postgres' }))
+
+export const TABLES = createColumnSets(pgp)

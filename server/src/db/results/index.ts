@@ -22,7 +22,6 @@ import { dblog } from '@/util/logging'
 import { IMain } from 'pg-promise'
 
 export class ResultsRepository {
-    // eslint-disable-next-line no-useless-constructor
     constructor(private db: ScorekeeperProtocol, private pgp: IMain) {
     }
 

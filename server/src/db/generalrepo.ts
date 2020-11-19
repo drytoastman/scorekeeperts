@@ -1,4 +1,4 @@
-import { IDatabase } from 'pg-promise'
+import { IDatabase, IMain } from 'pg-promise'
 import KeyGrip from 'keygrip'
 import bcrypt from 'bcryptjs'
 import crypto from 'crypto'
@@ -25,9 +25,15 @@ const viewable = [
     IS_MAIN_SERVER, SQ_APPLICATION_ID, RECAPTCHA_SITEKEY
 ]
 
+export class SchemaError extends Error {
+    constructor(message: string) {
+        super(message)
+        this.name = 'SchemaError'
+    }
+}
+
 export class GeneralRepository {
-    // eslint-disable-next-line no-useless-constructor
-    constructor(private db: IDatabase<any>) {
+    constructor(private db: IDatabase<any>, pgp: IMain) {
     }
 
     async checkAdminPassword(password: string): Promise<boolean> {
@@ -127,5 +133,11 @@ export class GeneralRepository {
         const rows = await this.db.any('SELECT * from emailfilter WHERE substring(reverse($1),0,length(match)+1)=reverse(match) ORDER BY forder', [email])
         if (rows.length) { return rows[0].drop }
         return null // no vote, different than yes or no vote
+    }
+
+    async getSchemaVersion(): Promise<string> {
+        const res = await this.db.oneOrNone('SELECT version FROM version')
+        if (!res) throw new SchemaError('no schema verison present in database')
+        return res.version
     }
 }
