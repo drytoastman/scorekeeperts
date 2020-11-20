@@ -51,3 +51,11 @@ export function intersect<V>(setA: Set<V>, setB: Set<V>): Set<V> {
     }
     return intersection
 }
+
+export function difference<V>(setA: Set<V>, setB: Set<V>): Set<V> {
+    const difference = new Set<V>(setA)
+    for (const elem of setB) {
+        difference.delete(elem)
+    }
+    return difference
+}

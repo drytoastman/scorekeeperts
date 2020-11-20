@@ -40,6 +40,10 @@ export class MergeServerEntry implements MergeServer {
         }
     }
 
+    constructor(data: MergeServer) {
+        Object.assign(this, data)
+    }
+
     get lastchecktime(): Date {
         return parseTimestamp(this.lastcheck)
     }
@@ -56,9 +60,8 @@ export class MergeServerEntry implements MergeServer {
         this.nextcheck = formatToTimestamp(time)
     }
 
-
-    constructor(data: MergeServer) {
-        Object.assign(this, data)
+    getSeries(): string[] {
+        return Object.keys(this.mergestate)
     }
 
     async runsStart(series: string) {
@@ -78,10 +81,10 @@ export class MergeServerEntry implements MergeServer {
         await db.merge.updateMergeItems(this, ['mergestate'])
     }
 
-    async seriesStatus(self, series, status) {
+    async seriesStatus(series: string, status: string) {
         // Called with current status for the given series while merging with this remote server """
         synclog.debug(`seriesstatus: ${status}`)
-        self.mergestate[series].progress = status
+        this.mergestate[series].progress = status
         await db.merge.updateMergeItems(this, ['mergestate'])
     }
 
@@ -100,10 +103,6 @@ export class MergeServerEntry implements MergeServer {
         delete this.mergestate[series].progress
         delete this.mergestate[series].syncing
         await db.merge.updateMergeItems(this, ['mergestate'])
-    }
-
-    getSeries(): string[] {
-        return Object.keys(this.mergestate)
     }
 
     async serverStart(localseries: string[]) {
@@ -144,9 +143,10 @@ export class MergeServerEntry implements MergeServer {
     }
 
 
-    async updateSeriesFrom(task: ScorekeeperProtocol) {
+
+    async updateSeriesFrom(db: ScorekeeperProtocol) {
         // Update the mergestate dict related to deleted or added series
-        const serieslist   = await task.series.seriesList()
+        const serieslist   = await db.series.seriesList()
         const cachedseries = Object.keys(this.mergestate)
         if (_.isEqual(serieslist, cachedseries)) {
             return
@@ -154,67 +154,75 @@ export class MergeServerEntry implements MergeServer {
 
         for (const deleted in cachedseries.filter(s => !serieslist.includes(s))) delete this.mergestate[deleted]
         for (const added   in serieslist.filter(s => !cachedseries.includes(s))) this.ensureSeriesBase(added)
-        await task.merge.updateMergeItems(this, ['mergestate'])
+        await db.merge.updateMergeItems(this, ['mergestate'])
     }
 
-    async updateCacheFrom(task: ScorekeeperProtocol, expectversion: string, series: string) {
+
+
+    async updateCacheFrom(dbx: ScorekeeperProtocol, series: string, expectversion?: string) {
         this.ensureSeriesBase(series)
         const seriesstate = this.mergestate[series]
 
-        const version = await task.general.getSchemaVersion()
-        if (version !== expectversion) { throw new SchemaError(`Remote schema is ${version}, local is ${expectversion}`) }
-
-        // Do a sanity check on the log tables to see if anyting actually changed since our last check
-        task.series.setSeries(series)
-        const last = await task.one('SELECT MAX(otimes.max) as maxo, MAX(ltimes.max) as maxl FROM ' +
-                    '(SELECT max(otime) FROM serieslog UNION ALL SELECT max(otime) FROM publiclog) AS otimes, ' +
-                    '(SELECT max(ltime) FROM serieslog UNION ALL SELECT max(ltime) FROM publiclog) as ltimes')
-
-        // 1 forces initial check on blank database
-        const lastchange = {
-            obj: last.maxo ? parseTimestamp(last.maxo).getTime() : 1,
-            log: last.maxl ? parseTimestamp(last.maxl).getTime() : 1
-        }
-
-        // If there is no need to recalculate hashes or update local cache, skip out now
-        if (_.isEqual(lastchange, seriesstate.lastchange)) {
-            synclog.debug(`${task} ${series} lastlog time shortcut`)
-            return
-        }
-
-        synclog.debug(`${task} ${series} perform hash computations`)
-        // Something has changed, run through the process of caclulating hashes of the PK,modtime combos for each table and combining them together
-        seriesstate.hashes = {}
-        const totalhash = crypto.createHash('sha1')
-        let hasdata = false
-
-        for (const [table, command] of Object.entries(HASH_COMMANDS)) {
-            const hashrow = await task.one(command)
-            if (!hashrow.sum1) {
-                seriesstate.hashes[table] = ''
-            } else {
-                const tablehash = crypto.createHash('sha1')
-                tablehash.update(new Float64Array([parseInt(hashrow.sum1), parseInt(hashrow.sum9), parseInt(hashrow.sum17), parseInt(hashrow.sum25)]))
-                const digest = tablehash.digest()
-                totalhash.update(digest) // <==== FINISH ME, is this correct
-                seriesstate.hashes[table] = digest.toString('base64')
-                hasdata = true
+        await dbx.task(async task => {
+            if (expectversion) {
+                const version = await task.general.getSchemaVersion()
+                if (version !== expectversion) { throw new SchemaError(`Remote schema is ${version}, local is ${expectversion}`) }
             }
-        }
 
-        // Make note if all blank tables, we can optimize to a download only during merge
-        if (hasdata) {
-            seriesstate.totalhash = totalhash.digest().toString('base64')
-        } else {
-            seriesstate.totalhash = ''
-        }
+            // Do a sanity check on the log tables to see if anyting actually changed since our last check
+            task.series.setSeries(series)
+            const last = await task.one('SELECT MAX(otimes.max) as maxo, MAX(ltimes.max) as maxl FROM ' +
+                        '(SELECT max(otime) FROM serieslog UNION ALL SELECT max(otime) FROM publiclog) AS otimes, ' +
+                        '(SELECT max(ltime) FROM serieslog UNION ALL SELECT max(ltime) FROM publiclog) as ltimes')
 
-        if (lastchange) {
-            seriesstate.lastchange = lastchange
-        }
 
-        await task.merge.updateMergeItems(this, ['mergestate'])
+            // 1 forces initial check on blank database
+            const lastchange = {
+                obj: last.maxo ? parseTimestamp(last.maxo).getTime() : 1,
+                log: last.maxl ? parseTimestamp(last.maxl).getTime() : 1
+            }
+
+            // If there is no need to recalculate hashes or update local cache, skip out now
+            if (_.isEqual(lastchange, seriesstate.lastchange)) {
+                synclog.debug(`${dbx} ${series} lastlog time shortcut`)
+                return
+            }
+
+            synclog.debug(`${dbx} ${series} perform hash computations`)
+            // Something has changed, run through the process of caclulating hashes of the PK,modtime combos for each table and combining them together
+            seriesstate.hashes = {}
+            const totalhash = crypto.createHash('sha1')
+            let hasdata = false
+
+            for (const [table, command] of Object.entries(HASH_COMMANDS)) {
+                const hashrow = await task.one(command)
+                if (!hashrow.sum1) {
+                    seriesstate.hashes[table] = ''
+                } else {
+                    const tablehash = crypto.createHash('sha1')
+                    tablehash.update(new Float64Array([parseInt(hashrow.sum1), parseInt(hashrow.sum9), parseInt(hashrow.sum17), parseInt(hashrow.sum25)]))
+                    const digest = tablehash.digest()
+                    totalhash.update(digest) // <==== FINISH ME, is this correct
+                    seriesstate.hashes[table] = digest.toString('base64')
+                    hasdata = true
+                }
+            }
+
+            // Make note if all blank tables, we can optimize to a download only during merge
+            if (hasdata) {
+                seriesstate.totalhash = totalhash.digest().toString('base64')
+            } else {
+                seriesstate.totalhash = ''
+            }
+
+            if (lastchange) {
+                seriesstate.lastchange = lastchange
+            }
+        })
+
+        await db.merge.updateMergeItems(this, ['mergestate'])
     }
+
 
 
     private async ensureSeriesBase(series: string) {

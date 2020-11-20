@@ -1,9 +1,11 @@
+import _ from 'lodash'
 import fs from 'fs'
 import { db, pgp, ScorekeeperProtocol } from '@/db'
 import { MergeServer } from '@/db/mergeserverrepo'
 import { synclog } from '@/util/logging'
 import { MergeServerEntry } from './mergeserver'
-import { LOCAL_TIMEOUT, REMOTE_TIMEOUT } from './constants'
+import { LOCAL_TIMEOUT, logtablefor, PRIMARY_KEYS, REMOTE_TIMEOUT } from './constants'
+import { formatToTimestamp, parseTimestamp } from '@/common/util'
 
 const dbmap = new Map<any, ScorekeeperProtocol>()
 
@@ -40,11 +42,19 @@ export function getRemoteDB(remote: MergeServer, series: string, password: strin
 }
 
 
-export async function executeSync(localserver: MergeServerEntry, remoteserver: MergeServerEntry, series: string, password: string,
-    execution: (wrap: WrappedDatabaseInfo) => Promise<void>) {
-    await db.tx(async localtx => {
-        await getRemoteDB(remoteserver, series, password).tx(async remotetx => {
-            const wrap = new WrappedDatabaseInfo(localtx, localserver, remotetx, remoteserver, series)
+export async function performSyncWrap(localserver: MergeServerEntry, remoteserver: MergeServerEntry, series: string,
+    execution: (wrap: SyncProcessInfo) => Promise<void>) {
+    await db.task(async localtask => {
+        const password = await localtask.merge.loadPassword(series)
+        const version  = await localtask.general.getSchemaVersion()
+
+        if (!password) {
+            remoteserver.seriesDone(series, `No password for ${series}, skipping`)
+            return
+        }
+
+        await getRemoteDB(remoteserver, series, password).task(async remotetask => {
+            const wrap = new SyncProcessInfo(localtask, localserver, version, remotetask, remoteserver, series)
             await wrap.setTimeouts()
             try {
                 await wrap.getLocks()
@@ -60,20 +70,77 @@ async function asyncwait(ms: number) {
     return new Promise(resolve => { setTimeout(resolve, ms) })
 }
 
-export class WrappedDatabaseInfo {
-    series: string
+export class WrappedSyncInfo {
+    myserver:     MergeServerEntry
+    remoteserver: MergeServerEntry
+    version:      string
+    constructor() { /* */
+    }
+}
+
+export class SyncProcessInfo {
     lock1: ScorekeeperProtocol|undefined
     lock2: ScorekeeperProtocol|undefined
 
-    constructor(private localdb: ScorekeeperProtocol, private localserver: MergeServerEntry,
-                private remotedb: ScorekeeperProtocol, private remoteserver: MergeServerEntry,
-                series: string) {
-        this.series = series
+    constructor(private localtask: ScorekeeperProtocol,   private localserver: MergeServerEntry, private version: string,
+               private remotetask: ScorekeeperProtocol,  private remoteserver: MergeServerEntry, private series: string) {
     }
 
+    async updateRemoteCache() {
+        return this.remoteserver.updateCacheFrom(this.remotetask, this.version, this.series)
+    }
+
+    async updateLocalCache() {
+        return this.localserver.updateCacheFrom(this.localtask, this.version, this.series)
+    }
+
+    async remoteStatus(status: string) {
+        this.remoteserver.seriesStatus(this.series, 'Commit Changes')
+    }
+
+    clearRemoteError() {
+        delete this.remoteserver.mergestate[this.series].error
+    }
+
+    seriesHashDiffers() {
+        return this.remoteserver.mergestate[this.series].totalhash !== this.localserver.mergestate[this.series].totalhash
+    }
+
+    differingTables(): string[] {
+        const ltables = this.localserver.mergestate[this.series].hashes
+        const rtables = this.remoteserver.mergestate[this.series].hashes
+        if (!ltables || !rtables) {
+            throw Error('Unable to find tables hash status')
+        }
+        return [...new Set([...Object.keys(ltables), ...Object.keys(rtables)].filter(table => ltables[table] !== rtables[table]))]
+    }
+
+    async loadLocalPresent(table: string) { return this.loadPresent(this.localtask, table) }
+    async loadRemotePresent(table: string) { return this.loadPresent(this.remotetask, table) }
+    private async loadPresent(task: ScorekeeperProtocol, table: string) {
+        const ret = new Map()
+        for (const row of await task.any('SELECT * FROM $1:sql', [table])) {
+            row.modmsutc = parseTimestamp(row.modified).getTime()
+            ret.set(_.pick(row, PRIMARY_KEYS[table]), row)
+        }
+        return ret
+    }
+
+    async loadLocalDeletedSince(table: string, when: Date) { return this.deletedSince(this.localtask, table, when) }
+    async loadRemoteDeletedSince(table: string, when: Date) { return this.deletedSince(this.localtask, table, when) }
+    private async deletedSince(task: ScorekeeperProtocol, table: string, when: Date) {
+        const ret = new Map()
+        for (const row of await task.any("SELECT otime, olddata FROM $1:sql WHERE action='D' AND tablen=$2 AND otime>$3", [logtablefor(table), table, when])) {
+            const pk = _.pick(row.olddata, PRIMARY_KEYS[table])
+            ret.set(pk, { data: row.olddata, otime: row.otime })
+        }
+        return ret
+    }
+
+
     async setTimeouts() {
-        await this.localdb.none('SET idle_in_transaction_session_timeout=$1', [LOCAL_TIMEOUT * 1000])
-        await this.remotedb.none('SET idle_in_transaction_session_timeout=$1', [REMOTE_TIMEOUT * 1000])
+        await this.localtask.none('SET idle_in_transaction_session_timeout=$1', [LOCAL_TIMEOUT * 1000])
+        await this.remotetask.none('SET idle_in_transaction_session_timeout=$1', [REMOTE_TIMEOUT * 1000])
     }
 
     async getLocks() {
@@ -86,12 +153,12 @@ export class WrappedDatabaseInfo {
             Also sets the series schema path so its all nicely tied away here.
         */
         let tries = 10
-        let cur1  = this.localdb
-        let cur2  = this.remotedb
+        let cur1  = this.localtask
+        let cur2  = this.remotetask
 
         if (this.localserver.serverid >= this.remoteserver.serverid) {
-            cur1 = this.remotedb
-            cur2 = this.localdb
+            cur1 = this.remotetask
+            cur2 = this.localtask
         }
 
         await Promise.all([cur1.series.setSeries(this.series), cur2.series.setSeries(this.series)])
@@ -118,8 +185,8 @@ export class WrappedDatabaseInfo {
 
     async returnLocks() {
         // needed coming from psycopg to make sure it was clear, FINISH ME, check here now
-        await this.remotedb.none('ROLLBACK').catch(error => { synclog.error(error) })
-        await this.localdb.none('ROLLBACK').catch(error => { synclog.error(error) })
+        await this.remotetask.none('ROLLBACK').catch(error => { synclog.error(error) })
+        await this.localtask.none('ROLLBACK').catch(error => { synclog.error(error) })
 
         synclog.debug('Releasing locks')
         // Release locks in opposite order from obtaining to avoid deadlock

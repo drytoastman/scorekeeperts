@@ -42,6 +42,11 @@ export const ADVANCED_UPDATE_TABLES = [
     'events'
 ]
 
+export function logtablefor(table: string) {
+    if (PUBLIC_TABLES.includes(table)) return 'publiclog'
+    return 'serieslog'
+}
+
 function sumpart(idx: number):string  { return `sum(('x' || substring(t.rowhash, ${idx}, 8))::bit(32)::bigint) as sum${idx}` }
 function sums(): string               { return `${sumpart(1)}, ${sumpart(9)}, ${sumpart(17)}, ${sumpart(25)}` }
 function md5col(col: string): string  { return `md5(${col}::text)` }
@@ -56,6 +61,16 @@ function hashcommand(table: string, pklist: string[]): string {
 }
 
 export const HASH_COMMANDS: {[table: string]: string} = {}
+export const PRIMARY_KEYS: {[table: string]: string[]} = {}
 for (const table of [...TABLE_ORDER, ...INTERTWINED_DATA]) {
-    HASH_COMMANDS[table] = hashcommand(table, TABLES[table].columns.filter(c => c.cnd).map(c => c.name))
+    PRIMARY_KEYS[table]  = TABLES[table].columns.filter(c => c.cnd).map(c => c.name)
+    HASH_COMMANDS[table] = hashcommand(table, PRIMARY_KEYS[table])
+}
+
+export const KillSignal = 'KillSignal'
+export class KillSignalError extends Error {
+    constructor() {
+        super('kill signal received')
+        this.name = KillSignal
+    }
 }

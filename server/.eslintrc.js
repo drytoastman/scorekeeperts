@@ -15,8 +15,13 @@ let rules = {
     'no-debugger': 'off',
     'object-curly-spacing': ['warn', 'always', { objectsInObjects: false }],
     quotes: 'warn',
-    indent: ['warn', 4, { SwitchCase: 1, CallExpression: { arguments: 'off' }}]
-
+    indent: ['warn', 4, {
+        SwitchCase: 1,
+        CallExpression: { arguments: 'off' },
+        FunctionDeclaration: { parameters: 'off' },
+        FunctionExpression: { parameters: 'off' },
+        ArrayExpression: 'off'
+    }]
 }
 
 if (process.env.NODE_ENV === 'production') {

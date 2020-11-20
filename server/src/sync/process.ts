@@ -1,39 +1,39 @@
+import _ from 'lodash'
 import { EventEmitter } from 'events'
 import datefns from 'date-fns'
 
 import { db } from '@/db'
-import { PasswordMap } from '@/db/mergeserverrepo'
 import { synclog } from '@/util/logging'
 import { MergeServerEntry } from './mergeserver'
-import { executeSync, WrappedDatabaseInfo } from './dbwrapper'
+import { getRemoteDB, performSyncWrap, SyncProcessInfo } from './dbwrapper'
+import { DefaultMap, difference, intersect } from '@/common/data'
+import { KillSignal, KillSignalError } from './constants'
 
 export const syncwatcher = new EventEmitter()
+export let killsignal = false
 
 export async function runOnce() {
     await db.task(async task => {
         const myserver  = new MergeServerEntry(await task.merge.getLocalMergeServer())
-        const passwords = await task.merge.loadPasswords()
-        const version   = await task.general.getSchemaVersion()
 
         // Check for any quickruns flags and do those first
-        for (const remote of await task.merge.getQuickRuns()) {
+        for (const remote of (await task.merge.getQuickRuns()).map(d => new MergeServerEntry(d))) {
             synclog.debug(`quickrun ${remote.hostname}`)
-            await mergeRuns(myserver, new MergeServerEntry(remote), passwords)
+            await mergeRuns(myserver, remote)
         }
 
-        // Recheck our current series list and hash values
+        // Recheck our local series list and hash values
         await myserver.updateSeriesFrom(task)
         for (const series in myserver.getSeries()) {
-            await myserver.updateCacheFrom(task, version, series)
+            await myserver.updateCacheFrom(task, series)
         }
 
         // Check if there are any timeouts for servers to merge with
-        for (const remotedata of await task.merge.getActive()) {
-            const remote = new MergeServerEntry(remotedata)
+        for (const remote of (await task.merge.getActive()).map(d => new MergeServerEntry(d))) {
             if (datefns.isPast(remote.nextchecktime)) { // FINISH ME, timezone issue?!
                 try {
                     await remote.serverStart(Object.keys(myserver.mergestate))
-                    mergeWith(myserver, remote, passwords)
+                    await mergeWith(myserver, remote)
                     await remote.serverDone()
                 } catch (e) {
                     synclog.error(`Caught exception merging with ${remote}: ${e}`)
@@ -42,6 +42,8 @@ export async function runOnce() {
                 }
             }
         }
+
+        killsignal = true // placeholder for typesript warning
     }).catch(error => {
         synclog.error(`Caught exception in main loop: ${error}`)
         syncwatcher.emit('exception', 'runonce', { exception: error })
@@ -52,17 +54,16 @@ export async function runOnce() {
 
 
 
-async function mergeRuns(myserver: MergeServerEntry, remoteserver: MergeServerEntry, passwords: PasswordMap) {
+async function mergeRuns(myserver: MergeServerEntry, remoteserver: MergeServerEntry) {
     //  During ProSolos we want to do quick merge of just the runs table back and forth between data entry machines """
     let error
-    const series   = remoteserver.quickruns as string
-    const password = passwords.get(series) as string
-    if (!series || !password) return
+    const series = remoteserver.quickruns as string
+    if (!series) return
 
     try {
         remoteserver.runsStart(series)
-        await executeSync(myserver, remoteserver, series, password, async (wrap) => {
-            mergeTables(wrap, new Set(['runs']))
+        await performSyncWrap(myserver, remoteserver, series, async (wrap) => {
+            mergeTables(wrap, ['runs'])
         })
     } catch (e) {
         error = e
@@ -74,244 +75,251 @@ async function mergeRuns(myserver: MergeServerEntry, remoteserver: MergeServerEn
 }
 
 
-async function mergeWith(myserver: MergeServerEntry, remoteserver: MergeServerEntry, passwords: PasswordMap) {
-}
+async function mergeWith(myserver: MergeServerEntry, remoteserver: MergeServerEntry) {
+    // Run a merge process with the specified remote server
+    // First connect to the remote server with nulluser just to update the list of active series
+    synclog.debug(`checking ${remoteserver}`)
+    remoteserver.updateSeriesFrom(getRemoteDB(remoteserver, 'nulluser', 'nulluser'))
 
-/*
-    def mergeWith(self, local, localdb, remote, passwords):
-        """ Run a merge process with the specified remote server """
-        # First connect to the remote server with nulluser just to update the list of active series
-        log.debug("checking %s", remote)
-        with DataInterface.connectRemote(server=remote, user='nulluser', password='nulluser') as remotedb:
-            remote.updateSeriesFrom(remotedb)
-
-        # Now, for each active series in the remote database, check if we have the password to connect
-        for series in remote.mergestate.keys():
-            error = None
-            if series not in passwords:
-                remote.seriesDone(series, "No password for %s, skipping" % (series,))
+    // Now, for each active series in the remote database, check if we have the password to connect
+    for (const series in remoteserver.mergestate) {
+        let error
+        try {
+            if (killsignal) throw new KillSignalError()
+            if (!(series in myserver.mergestate)) {
+                synclog.error('series was not created in local database yet')
                 continue
+            }
 
-            try:
-                assert not this.signalled, "Quit signal received"
-                assert series in local.mergestate, "series was not created in local database yet"
+            //  Mark this series as the one we are actively merging with remote and make the series/password connection
+            remoteserver.seriesStart(series)
+            await performSyncWrap(myserver, remoteserver, series, async (wrap) => {
+                wrap.updateRemoteCache()
 
-                # Mark this series as the one we are actively merging with remote and make the series/password connection
-                remote.seriesStart(series)
-                with DataInterface.connectRemote(server=remote, user=series, password=passwords[series]) as remotedb:
-                    remote.updateCacheFrom(remotedb, series)
+                // If the totalhash of our local copy differs from the remote copy, we need to actually do something
+                if (wrap.seriesHashDiffers()) {
+                    synclog.debug(`Need to merge ${series}`)
+                    mergeTables(wrap, wrap.differingTables())
+                    wrap.remoteStatus('Commit Changes')
+                }
+            })
 
-                    # If the totalhash of our local copy differs from the remote copy, we need to actually do something
-                    if remote.mergestate[series]['totalhash'] != local.mergestate[series]['totalhash']:
-                        log.debug("Need to merge %s:", series)
-
-                        # Obtain a merge lock on both sides, find which tables different and run mergeTables()
-                        with DataInterface.mergelocks(local, localdb, remote, remotedb, series):
-                            ltables = local.mergestate[series]['hashes']
-                            rtables = remote.mergestate[series]['hashes']
-                            this.mergeTables(local=local, localdb=localdb, remote=remote, remotedb=remotedb, series=series,
-                                tables=set([k for k in set(ltables)|set(rtables) if ltables.get(k) != rtables.get(k)]))
-                            remote.seriesStatus(series, "Commit Changes")
-
-            except Exception as e:
-                error = str(e)
-                log.warning("Merge with %s/%s failed: %s", remote.hostname, series, e, exc_info=e)
-                this.listener and this.listener("exception", "mergewith", localdb=localdb, remote=remote, exception=e)
-
-            finally:
-                remote.seriesDone(series, error)
-
-
-
-                mergeTables(wrap, tables=set(['runs']))
-*/
-
-async function mergeTables(wrap: WrappedDatabaseInfo, tables: Set<string>) {
+        } catch (e) {
+            error = e.toString()
+            synclog.warning(`Merge with ${remoteserver.hostname}/${series} failed: ${e}`)
+            syncwatcher.emit('exception', 'mergewith', { remote: remoteserver, exception: e })
+            if (e.name === KillSignal) throw e
+        } finally {
+            remoteserver.seriesDone(series, error)
+        }
+    }
 }
 
-/*
-    def mergeTables(self, **kwargs): # local, localdb, remote, remotedb, series, tables
-        """ Outer loop to rerun mergeTables and rerun, if for some reason we are still not up to date """
-        try:
-            count = 0
-            watcher = DBWatcher(**kwargs)
-            watcher.start()
-            tables = kwargs['tables']
-            for ii in range(5):
-                if len(tables) <= 0:
-                    break
-                tables = this._mergeTablesInternal(watcher=watcher, **kwargs)
-                if tables:
-                    log.warning("unfinished tables = %s", tables)
-            else:
-                log.error("Ran merge tables 5 times and not complete.")
 
-            # Rescan the tables to verify we are at the same state, do this in context of DBWatcher for slow connections
-            series   = kwargs['series']
-            localdb  = kwargs['localdb']
-            remotedb = kwargs['remotedb']
-            kwargs['remote'].updateCacheFrom(remotedb, series)
-            kwargs['local'].updateCacheFrom(localdb, series)
-            kwargs['remote'].mergestate[series].pop('error', None)
+async function mergeTables(wrap: SyncProcessInfo, tables: string[]) {
+    // Outer loop to rerun mergeTables and rerun, if for some reason we are still not up to date
+    let watcher
+    try {
+        const count = 0
+        // watcher = DBWatcher(wrap)  FINISH ME, do we still need to track blocking the frontend apps?
+        // watcher.start()
 
-            # Just in case, we have anything still hanging, commit now
-            remotedb.commit()
-            localdb.commit()
-        finally:
-            if watcher:
-                watcher.stop()
+        let mtables = [...tables]
+        let ii
+        for (ii = 0; ii < 5; ii++) {
+            if (mtables.length <= 0) {
+                break
+            }
+            mtables = await mergeTablesInternal(wrap, mtables, watcher)
+            if (mtables.length) {
+                synclog.warning(`unfinished tables = ${mtables}`)
+            }
+        }
+        if (ii === 5) {
+            synclog.error('Ran merge tables 5 times and not complete.')
+        }
 
+        // Rescan the tables to verify we are at the same state, do this in context of DBWatcher for slow connections
+        wrap.clearRemoteError()
+        wrap.updateRemoteCache()
+        wrap.updateLocalCache()
+    } finally {
+        // if (watcher) watcher.stop()
+    }
+}
 
+function minmodtime(objs: Map<any, any>): Date {
+    let ret = 0
+    for (const o of objs.values()) {
+        if (o.modmsutc < ret) ret = o.modmsutc
+    }
+    return new Date(ret)
+}
 
-    def _mergeTablesInternal(self, local, localdb, remote, remotedb, series, tables, watcher):
-        """ The core function for actually finding the real differences and applying them locally or remotely """
-        localinsert = defaultdict(list)
-        localupdate = defaultdict(list)
-        localdelete = defaultdict(list)
-        localundelete = defaultdict(list)
+async function mergeTablesInternal(wrap: SyncProcessInfo, tables: string[], watcher: any): Promise<string[]> {
+    //  The core function for actually finding the real differences and applying them locally or remotely """
+    const localinsert   = new DefaultMap(() => [])
+    const localupdate   = new DefaultMap(() => [])
+    const localdelete   = new DefaultMap(() => [])
+    const localundelete = new DefaultMap(() => [])
 
-        remoteinsert = defaultdict(list)
-        remoteupdate = defaultdict(list)
-        remotedelete = defaultdict(list)
-        remoteundelete = defaultdict(list)
+    const remoteinsert   = new DefaultMap(() => [])
+    const remoteupdate   = new DefaultMap(() => [])
+    const remotedelete   = new DefaultMap(() => [])
+    const remoteundelete = new DefaultMap(() => [])
 
-        for t in tables:
+    for (const t of tables) {
+        if (killsignal) throw new KillSignalError()
+        wrap.remoteStatus(`Analysis ${t}`)
+        syncwatcher.emit('analysis', t, { wrap, watcher })
+
+        // Load data from both databases, load it all in one go to be more efficient in updates later
+        // watcher.local() blah blah
+        const [localobj, remoteobj] = await Promise.all([
+                                    await wrap.loadLocalPresent(t),
+                                    await wrap.loadRemotePresent(t)])
+        // watcher.off()
+
+        let l = new Set([...Object.keys(localobj)])
+        let r = new Set([...Object.keys(remoteobj)])
+
+        // Keys in both databases
+        for (const pk in intersect(l, r)) {
+            if (localobj[pk].modmsutc === remoteobj[pk].modmsutc) {
+                // Same keys, same modification time, filter out now, no need to further process
+                delete localobj[pk]
+                delete remoteobj[pk]
+                continue
+            }
+            if (localobj[pk].modmsutc > remoteobj[pk].modmsutc) {
+                remoteupdate[t].append(localobj[pk])
+            } else {
+                localupdate[t].append(remoteobj[pk])
+            }
+        }
+
+        // Recalc as we probably removed alot of stuff in the previous step
+        l = new Set([...Object.keys(localobj)])
+        r = new Set([...Object.keys(remoteobj)])
+
+        // Only need to know about things deleted so far back in time based on mod times in other database
+        // watcher.local()
+        const [ldeleted, rdeleted] = await Promise.all([
+                                    wrap.loadLocalDeletedSince(t, minmodtime(remoteobj)),
+                                    wrap.loadRemoteDeletedSince(t, minmodtime(localobj))])
+        // watcher.off()
+
+        // pk only in local database
+        for (const pk of difference(l, r)) {
+            if (rdeleted.has(pk)) {
+                localdelete[t].push(rdeleted[pk])
+            } else {
+                remoteinsert[t].push(localobj[pk])
+            }
+        }
+
+        // pk only in remote database
+        for (const pk of difference(r, l)) {
+            if (ldeleted.has(pk)) {
+                remotedelete[t].push(ldeleted[pk])
+            } else {
+                localinsert[t].push(remoteobj[pk])
+            }
+        }
+
+        synclog.debug(`${t}  local ${localinsert[t].length}, ${localupdate[t].length}, ${localdelete[t].length}`)
+        synclog.debug(`${t} remote ${remoteinsert[t].length}, ${remoteupdate[t].length}, ${remotedelete[t].length}`)
+    }
+
+    // Have to insert data starting from the top of any foreign key links
+    // And then update/delete from the bottom of the same links
+    /*
+    unfinished = set()
+
+    // Insert order first (top down)
+    for (const t of TABLE_ORDER) {
+        if localinsert[t] or remoteinsert[t]:
             assert not this.signalled, "Quit signal received"
-            remote.seriesStatus(series, "Analysis {}".format(t))
-            this.listener and this.listener("analysis", t, localdb=localdb, remotedb=remotedb, watcher=watcher)
+            remote.seriesStatus(series, "Insert {}".format(t))
+            this.listener and this.listener("insert", t, localdb=localdb, remotedb=remotedb, watcher=watcher)
 
-            # Load data from both databases, load it all in one go to be more efficient in updates later
             watcher.local()
-            localobj  = PresentObject.loadPresent(localdb, t)
+            if not DataInterface.insert(localdb,  localinsert[t]):
+                unfinished.add(t)
             watcher.remote()
-            remoteobj = PresentObject.loadPresent(remotedb, t)
+            if not DataInterface.insert(remotedb, remoteinsert[t]):
+                unfinished.add(t)
             watcher.off()
+    }
 
-            l = set(localobj.keys())
-            r = set(remoteobj.keys())
 
-            # Keys in both databases
-            for pk in l & r:
-                if localobj[pk].modified == remoteobj[pk].modified:
-                    # Same keys, same modification time, filter out now, no need to further process
-                    del localobj[pk]
-                    del remoteobj[pk]
-                    continue
-                if localobj[pk].modified > remoteobj[pk].modified:
-                    remoteupdate[t].append(localobj[pk])
-                else:
-                    localupdate[t].append(remoteobj[pk])
+    // Update/delete order next (bottom up)
+    synclog.debug("Performing updates/deletes")
+    for (const t of reversed(TABLE_ORDER)) {
+        if localupdate[t] or remoteupdate[t]:
+            assert not this.signalled, "Quit signal received"
+            remote.seriesStatus(series, "Update {}".format(t))
+            this.listener and this.listener("update", t, localdb=localdb, remotedb=remotedb, watcher=watcher)
 
-            # Recalc as we probably removed alot of stuff in the previous step
-            l = set(localobj.keys())
-            r = set(remoteobj.keys())
-
-            # Only need to know about things deleted so far back in time based on mod times in other database
-            watcher.local()
-            ldeleted = DeletedObject.deletedSince( localdb, t,  PresentObject.minmodtime(remoteobj))
-            watcher.remote()
-            rdeleted = DeletedObject.deletedSince(remotedb, t,  PresentObject.minmodtime(localobj))
-            watcher.off()
-
-            # pk only in local database
-            for pk in l - r:
-                if pk in rdeleted:
-                    localdelete[t].append(rdeleted[pk])
-                else:
-                    remoteinsert[t].append(localobj[pk])
-
-            # pk only in remote database
-            for pk in r - l:
-                if pk in ldeleted:
-                    remotedelete[t].append(ldeleted[pk])
-                else:
-                    localinsert[t].append(remoteobj[pk])
-
-            log.debug("{}  local {} {} {}".format(t,  len(localinsert[t]),  len(localupdate[t]),  len(localdelete[t])))
-            log.debug("{} remote {} {} {}".format(t, len(remoteinsert[t]), len(remoteupdate[t]), len(remotedelete[t])))
-
-        # Have to insert data starting from the top of any foreign key links
-        # And then update/delete from the bottom of the same links
-        unfinished = set()
-
-        # Insert order first (top down)
-        for t in DataInterface.TABLE_ORDER:
-            if localinsert[t] or remoteinsert[t]:
-                assert not this.signalled, "Quit signal received"
-                remote.seriesStatus(series, "Insert {}".format(t))
-                this.listener and this.listener("insert", t, localdb=localdb, remotedb=remotedb, watcher=watcher)
-
+            if t in DataInterface.ADVANCED_UPDATE_TABLES:
+                this.advancedMerge(localdb, remotedb, t, localupdate[t], remoteupdate[t], watcher)
+            else:
                 watcher.local()
-                if not DataInterface.insert(localdb,  localinsert[t]):
+                if not DataInterface.update(localdb,  localupdate[t]):
                     unfinished.add(t)
                 watcher.remote()
-                if not DataInterface.insert(remotedb, remoteinsert[t]):
+                if not DataInterface.update(remotedb, remoteupdate[t]):
                     unfinished.add(t)
                 watcher.off()
 
+        if localdelete[t] or remotedelete[t]:
+            remote.seriesStatus(series, "Delete {}".format(t))
+            this.listener and this.listener("delete", t, localdb=localdb, remotedb=remotedb, watcher=watcher)
+            remoteundelete[t].extend(DataInterface.delete(localdb,  localdelete[t]))
+            localundelete[t].extend(DataInterface.delete(remotedb, remotedelete[t]))
+    }
 
-        # Update/delete order next (bottom up)
-        log.debug("Performing updates/deletes")
-        for t in reversed(DataInterface.TABLE_ORDER):
-            if localupdate[t] or remoteupdate[t]:
-                assert not this.signalled, "Quit signal received"
-                remote.seriesStatus(series, "Update {}".format(t))
-                this.listener and this.listener("update", t, localdb=localdb, remotedb=remotedb, watcher=watcher)
-
-                if t in DataInterface.ADVANCED_UPDATE_TABLES:
-                    this.advancedMerge(localdb, remotedb, t, localupdate[t], remoteupdate[t], watcher)
-                else:
-                    watcher.local()
-                    if not DataInterface.update(localdb,  localupdate[t]):
-                        unfinished.add(t)
-                    watcher.remote()
-                    if not DataInterface.update(remotedb, remoteupdate[t]):
-                        unfinished.add(t)
-                    watcher.off()
-
-            if localdelete[t] or remotedelete[t]:
-                remote.seriesStatus(series, "Delete {}".format(t))
-                this.listener and this.listener("delete", t, localdb=localdb, remotedb=remotedb, watcher=watcher)
-                remoteundelete[t].extend(DataInterface.delete(localdb,  localdelete[t]))
-                localundelete[t].extend(DataInterface.delete(remotedb, remotedelete[t]))
-
-        # If we have foreign key violations trying to delete, we need to readd those back to the opposite site and redo the merge
-        # The only time this should ever occur is with the drivers table as its shared between series
-        for t in remoteundelete:
-            if remoteundelete[t]:
-                log.warning("Remote undelete requests for {}: {}".format(t, len(remoteundelete[t])))
-                remote.seriesStatus(series, "R-undelete {}".format(t))
-                unfinished.add(t)
-                DataInterface.insert(remotedb, remoteundelete[t])
-        for t in localundelete:
-            if localundelete[t]:
-                log.warning("Local udelete requests for {}: {}".format(t, len(remoteundelete[t])))
-                remote.seriesStatus(series, "L-undelete {}".format(t))
-                unfinished.add(t)
-                DataInterface.insert(localdb, localundelete[t])
+    // If we have foreign key violations trying to delete, we need to readd those back to the opposite site and redo the merge
+    // The only time this should ever occur is with the drivers table as its shared between series
+    for t in remoteundelete:
+        if remoteundelete[t]:
+            log.warning("Remote undelete requests for {}: {}".format(t, len(remoteundelete[t])))
+            remote.seriesStatus(series, "R-undelete {}".format(t))
+            unfinished.add(t)
+            DataInterface.insert(remotedb, remoteundelete[t])
+    for t in localundelete:
+        if localundelete[t]:
+            log.warning("Local udelete requests for {}: {}".format(t, len(remoteundelete[t])))
+            remote.seriesStatus(series, "L-undelete {}".format(t))
+            unfinished.add(t)
+            DataInterface.insert(localdb, localundelete[t])
 
 
-        # Special tables that need insert and update done without commits in between for constraints
-        for t in DataInterface.INTERTWINED_DATA:
-            assert not this.signalled, "Quit signal received"
-            this.listener and this.listener("ins/up", t, localdb=localdb, remotedb=remotedb, watcher=watcher)
+    # Special tables that need insert and update done without commits in between for constraints
+    for t in DataInterface.INTERTWINED_DATA:
+        assert not this.signalled, "Quit signal received"
+        this.listener and this.listener("ins/up", t, localdb=localdb, remotedb=remotedb, watcher=watcher)
 
-            remote.seriesStatus(series, "Ins/Up {}".format(t))
-            watcher.local()
-            if localinsert[t]: DataInterface.insert(localdb,  localinsert[t], commit=False)
-            if localupdate[t]: DataInterface.update(localdb,  localupdate[t])
+        remote.seriesStatus(series, "Ins/Up {}".format(t))
+        watcher.local()
+        if localinsert[t]: DataInterface.insert(localdb,  localinsert[t], commit=False)
+        if localupdate[t]: DataInterface.update(localdb,  localupdate[t])
 
-            watcher.remote()
-            if remoteinsert[t]: DataInterface.insert(remotedb,  remoteinsert[t], commit=False)
-            if remoteupdate[t]: DataInterface.update(remotedb,  remoteupdate[t])
+        watcher.remote()
+        if remoteinsert[t]: DataInterface.insert(remotedb,  remoteinsert[t], commit=False)
+        if remoteupdate[t]: DataInterface.update(remotedb,  remoteupdate[t])
 
-            watcher.off()
+        watcher.off()
 
 
-        return unfinished
+    return unfinished
+    */
+    return []
+}
 
 
 
+/*
     def advancedMerge(self, localdb, remotedb, table, remoteobj, localobj, watcher):
         when   = PresentObject.mincreatetime(localobj, remoteobj)
         local  = { l.pk:l for l in localobj  }

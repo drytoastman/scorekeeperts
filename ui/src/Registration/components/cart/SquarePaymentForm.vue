@@ -1,6 +1,6 @@
 <template>
     <div style='width: 100%'>
-        <div v-if="!account.attr.applicationid" class='errors'>
+        <div v-if="!applicationid" class='errors'>
             No Square Application Id was found!
         </div>
         <div v-else>
@@ -49,14 +49,18 @@ export default {
     },
     computed: {
         squareURL() {
+            if (!this.account.attr) return undefined
             const infix = this.account.attr.mode === 'sandbox' ? 'sandbox' : ''
             return `https://js.squareup${infix}.com/v2/paymentform`
+        },
+        applicationid() {
+            return this.account.attr?.applicationid
         }
     },
     methods: {
         createSquareForm() {
             return new SqPaymentForm({
-                applicationId: this.account.attr.applicationid,
+                applicationId: this.applicationid,
                 inputClass: 'sq-input',
                 autoBuild: false,
                 inputStyles: [{
@@ -108,7 +112,9 @@ export default {
         },
 
         async loadSquare() {
-            if (this.account.attr.applicationid) {
+            if (this.applicationid && this.squareURL) {
+                console.log(this.applicationid)
+                console.log(this.squareURL)
                 try {
                     this.timeout = false
                     this.formloaded = false

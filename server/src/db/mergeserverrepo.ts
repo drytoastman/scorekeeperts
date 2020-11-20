@@ -18,8 +18,6 @@ export interface MergeServer {
     quickruns: string|null
 }
 
-export type PasswordMap = Map<String, String>
-
 const LOCALID = '00000000-0000-0000-0000-000000000000'
 
 export class MergeServerRepository {
@@ -49,11 +47,7 @@ export class MergeServerRepository {
         return this.db.none(stmt, server)
     }
 
-    async loadPasswords(): Promise<PasswordMap> {
-        const ret = new Map()
-        for (const row of await this.db.any('SELECT * FROM localcache')) {
-            ret.set(row.name, row.data)
-        }
-        return ret
+    async loadPassword(series: string): Promise<string> {
+        return (await this.db.one('SELECT data FROM localcache WHERE name=$1', [series])).data
     }
 }
