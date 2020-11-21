@@ -7,8 +7,9 @@ import { synclog } from '@/util/logging'
 import { MergeServerEntry } from './mergeserver'
 import { getRemoteDB, performSyncWrap, SyncProcessInfo } from './dbwrapper'
 import { DefaultMap, difference, intersect } from '@/common/data'
-import { ADVANCED_UPDATE_TABLES, DBObject, KillSignal, KillSignalError, logtablefor, TABLE_ORDER } from './constants'
+import { ADVANCED_UPDATE_TABLES, TABLE_ORDER } from './constants'
 import { parseTimestamp } from '@/common/util'
+import { DBObject, DeletedObject, KillSignal, KillSignalError } from './types'
 
 export const syncwatcher = new EventEmitter()
 export let killsignal = false
@@ -150,7 +151,7 @@ async function mergeTables(wrap: SyncProcessInfo, tables: string[]) {
         // watcher = DBWatcher(wrap)  FINISH ME, do we still need to track blocking the frontend apps?
         // watcher.start()
 
-        let mtables = [...tables]
+        let mtables = [...tables] // copy table
         let ii
         for (ii = 0; ii < 5; ii++) {
             if (mtables.length <= 0) {
@@ -179,12 +180,12 @@ async function mergeTablesInternal(wrap: SyncProcessInfo, tables: string[], watc
     //  The core function for actually finding the real differences and applying them locally or remotely """
     const localinsert   = new DefaultMap(() => [] as DBObject[])
     const localupdate   = new DefaultMap(() => [] as DBObject[])
-    const localdelete   = new DefaultMap(() => [] as DBObject[])
+    const localdelete   = new DefaultMap(() => [] as DeletedObject[])
     const localundelete = new DefaultMap(() => [] as DBObject[])
 
     const remoteinsert   = new DefaultMap(() => [] as DBObject[])
     const remoteupdate   = new DefaultMap(() => [] as DBObject[])
-    const remotedelete   = new DefaultMap(() => [] as DBObject[])
+    const remotedelete   = new DefaultMap(() => [] as DeletedObject[])
     const remoteundelete = new DefaultMap(() => [] as DBObject[])
 
     for (const t of tables) {
@@ -199,27 +200,28 @@ async function mergeTablesInternal(wrap: SyncProcessInfo, tables: string[], watc
                                     await wrap.loadRemote(t)])
         // watcher.off()
 
-        let l = new Set([...localobj.keys()])
-        let r = new Set([...remoteobj.keys()])
+        let l = new Set(localobj.keys())
+        let r = new Set(remoteobj.keys())
 
         // Keys in both databases
         for (const pk of intersect(l, r)) {
-            if (localobj.get(pk).modmsutc === remoteobj.get(pk).modmsutc) {
+            const [lo, ro] = [localobj.get(pk) as DBObject, remoteobj.get(pk) as DBObject]
+            if (lo.modmsutc === ro.modmsutc) {
                 // Same keys, same modification time, filter out now, no need to further process
                 localobj.delete(pk)
                 remoteobj.delete(pk)
                 continue
             }
-            if (localobj.get(pk).modmsutc > remoteobj.get(pk).modmsutc) {
-                remoteupdate.get(t).push(localobj.get(pk))
+            if (lo.modmsutc > ro.modmsutc) {
+                remoteupdate.getD(t).push(lo)
             } else {
-                localupdate.get(t).push(remoteobj.get(pk))
+                localupdate.getD(t).push(lo)
             }
         }
 
         // Recalc as we probably removed alot of stuff in the previous step
-        l = new Set([...localobj.keys()])
-        r = new Set([...remoteobj.keys()])
+        l = new Set(localobj.keys())
+        r = new Set(remoteobj.keys())
 
         // Only need to know about things deleted so far back in time based on mod times in other database
         // watcher.local()
@@ -231,23 +233,23 @@ async function mergeTablesInternal(wrap: SyncProcessInfo, tables: string[], watc
         // pk only in local database
         for (const pk of difference(l, r)) {
             if (rdeleted.has(pk)) {
-                localdelete.get(t).push(rdeleted.get(pk))
+                localdelete.getD(t).push(rdeleted.get(pk) as DeletedObject)
             } else {
-                remoteinsert.get(t).push(localobj.get(pk))
+                remoteinsert.getD(t).push(localobj.get(pk) as DBObject)
             }
         }
 
         // pk only in remote database
         for (const pk of difference(r, l)) {
             if (ldeleted.has(pk)) {
-                remotedelete.get(t).push(ldeleted.get(pk))
+                remotedelete.getD(t).push(ldeleted.get(pk) as DeletedObject)
             } else {
-                localinsert.get(t).push(remoteobj.get(pk))
+                localinsert.getD(t).push(remoteobj.get(pk) as DBObject)
             }
         }
 
-        synclog.debug(`${t}  local ${localinsert.get(t).length}, ${localupdate.get(t).length}, ${localdelete.get(t).length}`)
-        synclog.debug(`${t} remote ${remoteinsert.get(t).length}, ${remoteupdate.get(t).length}, ${remotedelete.get(t).length}`)
+        synclog.debug(`${t}  local ${localinsert.getD(t).length}, ${localupdate.getD(t).length}, ${localdelete.getD(t).length}`)
+        synclog.debug(`${t} remote ${remoteinsert.getD(t).length}, ${remoteupdate.getD(t).length}, ${remotedelete.getD(t).length}`)
     }
 
     // Have to insert data starting from the top of any foreign key links
@@ -256,13 +258,13 @@ async function mergeTablesInternal(wrap: SyncProcessInfo, tables: string[], watc
 
     // Insert order first (top down)
     for (const t of TABLE_ORDER) {
-        if (localinsert.get(t).length || remoteinsert.get(t).length) {
+        if (localinsert.getD(t).length || remoteinsert.getD(t).length) {
             if (killsignal) throw new KillSignalError()
             wrap.remoteStatus(`Insert ${t}`)
             syncwatcher.emit('insert', { table: t, wrap, watcher })
 
             // watcher.local()
-            const [ul, ur] = await Promise.all([wrap.insertLocal(t, localinsert.get(t)), wrap.insertRemote(t, remoteinsert.get(t))])
+            const [ul, ur] = await Promise.all([wrap.insertLocal(t, localinsert.getD(t)), wrap.insertRemote(t, remoteinsert.getD(t))])
             if (!ul || !ur) unfinished.add(t)
             // watcher.off()
         }
@@ -275,27 +277,27 @@ async function mergeTablesInternal(wrap: SyncProcessInfo, tables: string[], watc
         const t = TABLE_ORDER[ii]
         if (killsignal) throw new KillSignalError()
 
-        if (localupdate.get(t).length || remoteupdate.get(t).length) {
+        if (localupdate.getD(t).length || remoteupdate.getD(t).length) {
             wrap.remoteStatus(`Update ${t}`)
             syncwatcher.emit('update', { table: t, wrap, watcher })
 
             if (ADVANCED_UPDATE_TABLES.includes(t)) {
-                advancedMerge(wrap, t, localupdate.get(t), remoteupdate.get(t))
+                advancedMerge(wrap, t, localupdate.getD(t), remoteupdate.getD(t))
             } else {
                 // watcher.local()
-                const [ul, ur] = await Promise.all([wrap.updateLocal(t, localupdate.get(t)), wrap.updateRemote(t, remoteupdate.get(t))])
+                const [ul, ur] = await Promise.all([wrap.updateLocal(t, localupdate.getD(t)), wrap.updateRemote(t, remoteupdate.getD(t))])
                 if (!ul || !ur) unfinished.add(t)
                 // watcher.off()
             }
         }
 
-        if (localdelete.get(t).length || remotedelete.get(t).length) {
+        if (localdelete.getD(t).length || remotedelete.getD(t).length) {
             wrap.remoteStatus(`Delete ${t}`)
             syncwatcher.emit('delete', { table: t, wrap, watcher })
 
-            const [local, remote] = await Promise.all([wrap.deleteLocal(t, localdelete.get(t)), wrap.deleteRemote(t, remotedelete.get(t))])
-            remoteundelete.get(t).push([...local])
-            localundelete.get(t).push([...remote])
+            const [local, remote] = await Promise.all([wrap.deleteLocal(t, localdelete.getD(t)), wrap.deleteRemote(t, remotedelete.getD(t))])
+            remoteundelete.getD(t).push(...local)
+            localundelete.getD(t).push(...remote)
         }
     }
 
@@ -305,21 +307,21 @@ async function mergeTablesInternal(wrap: SyncProcessInfo, tables: string[], watc
     await Promise.all([
         async () => {
             for (const t in remoteundelete) {
-                if (remoteundelete.get(t).length) {
-                    synclog.warning(`Remote undelete requests for ${t}: ${remoteundelete.get(t).length}`)
+                if (remoteundelete.getD(t).length) {
+                    synclog.warning(`Remote undelete requests for ${t}: ${remoteundelete.getD(t).length}`)
                     wrap.remoteStatus(`R-undelete ${t}`)
                     unfinished.add(t)
-                    await wrap.insertRemote(t, remoteinsert.get(t))
+                    await wrap.insertRemote(t, remoteinsert.getD(t))
                 }
             }
         },
         async () => {
             for (const t in localundelete) {
-                if (localundelete.get(t).length) {
-                    synclog.warning(`Local udelete requests for ${t}: ${localundelete.get(t).length}`)
+                if (localundelete.getD(t).length) {
+                    synclog.warning(`Local udelete requests for ${t}: ${localundelete.getD(t).length}`)
                     wrap.remoteStatus(`L-undelete ${t}`)
                     unfinished.add(t)
-                    await wrap.insertLocal(t, localinsert.get(t))
+                    await wrap.insertLocal(t, localinsert.getD(t))
                 }
             }
         }
@@ -331,7 +333,6 @@ async function mergeTablesInternal(wrap: SyncProcessInfo, tables: string[], watc
 
 async function advancedMerge(wrap: SyncProcessInfo, table: string, localobj: DBObject[], remoteobj: DBObject[]) {
 
-
     const local = new Map()
     const remote = new Map()
     const pkset = new Set()
@@ -342,8 +343,8 @@ async function advancedMerge(wrap: SyncProcessInfo, table: string, localobj: DBO
     const when      = mincreatetime(localobj, remoteobj)
 
     // watcher.local()
-    wrap.logLocal(loggedobj,  pkset, table, when)
-    wrap.logRemote(loggedobj, pkset, table, when)
+    wrap.loggedLocal(loggedobj,  pkset, table, when)
+    wrap.loggedRemote(loggedobj, pkset, table, when)
     // watcher.off()
 
     // Create update objects and then update where needed

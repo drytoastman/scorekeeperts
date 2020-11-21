@@ -1,4 +1,3 @@
-import { UTCString } from '@/common/util'
 import { TABLES } from '@/db'
 
 export const LOCAL_TIMEOUT  = 5
@@ -45,6 +44,10 @@ export function logtablefor(table: string) {
     return 'serieslog'
 }
 
+export async function asyncwait(ms: number) {
+    return new Promise(resolve => { setTimeout(resolve, ms) })
+}
+
 function sumpart(idx: number):string  { return `sum(('x' || substring(t.rowhash, ${idx}, 8))::bit(32)::bigint) as sum${idx}` }
 function sums(): string               { return `${sumpart(1)}, ${sumpart(9)}, ${sumpart(17)}, ${sumpart(25)}` }
 function md5col(col: string): string  { return `md5(${col}::text)` }
@@ -63,18 +66,4 @@ export const PRIMARY_KEYS: {[table: string]: string[]} = {}
 for (const table of TABLE_ORDER) {
     PRIMARY_KEYS[table]  = TABLES[table].columns.filter(c => c.cnd).map(c => c.name)
     HASH_COMMANDS[table] = hashcommand(table, PRIMARY_KEYS[table])
-}
-
-export const KillSignal = 'KillSignal'
-export class KillSignalError extends Error {
-    constructor() {
-        super('kill signal received')
-        this.name = KillSignal
-    }
-}
-
-export type DBObject = {
-    [key: string]: any,
-    created?: UTCString,
-    modified: UTCString
 }
