@@ -14,6 +14,7 @@ let rules = {
     'padded-blocks': 'off',
     'no-debugger': 'off',
     'object-curly-spacing': ['warn', 'always', { objectsInObjects: false }],
+    'comma-spacing': 'warn',
     quotes: 'warn',
     indent: ['warn', 4, {
         SwitchCase: 1,

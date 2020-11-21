@@ -1,3 +1,4 @@
+import { UTCString } from '@/common/util'
 import { TABLES } from '@/db'
 
 export const LOCAL_TIMEOUT  = 5
@@ -20,16 +21,13 @@ export const TABLE_ORDER = [
     'registered',
     'payments',
     'runs',
+    'classorder',
+    'runorder',
     'challenges',
     'challengerounds',
     'challengestaging',
     'challengeruns',
     'externalresults'
-]
-
-export const INTERTWINED_DATA = [
-    'classorder',
-    'runorder'
 ]
 
 export const PUBLIC_TABLES = [
@@ -62,7 +60,7 @@ function hashcommand(table: string, pklist: string[]): string {
 
 export const HASH_COMMANDS: {[table: string]: string} = {}
 export const PRIMARY_KEYS: {[table: string]: string[]} = {}
-for (const table of [...TABLE_ORDER, ...INTERTWINED_DATA]) {
+for (const table of TABLE_ORDER) {
     PRIMARY_KEYS[table]  = TABLES[table].columns.filter(c => c.cnd).map(c => c.name)
     HASH_COMMANDS[table] = hashcommand(table, PRIMARY_KEYS[table])
 }
@@ -73,4 +71,10 @@ export class KillSignalError extends Error {
         super('kill signal received')
         this.name = KillSignal
     }
+}
+
+export type DBObject = {
+    [key: string]: any,
+    created?: UTCString,
+    modified: UTCString
 }

@@ -4,7 +4,7 @@ import { db, pgp, ScorekeeperProtocol } from '@/db'
 import { MergeServer } from '@/db/mergeserverrepo'
 import { synclog } from '@/util/logging'
 import { MergeServerEntry } from './mergeserver'
-import { LOCAL_TIMEOUT, logtablefor, PRIMARY_KEYS, REMOTE_TIMEOUT } from './constants'
+import { DBObject, LOCAL_TIMEOUT, logtablefor, PRIMARY_KEYS, REMOTE_TIMEOUT } from './constants'
 import { formatToTimestamp, parseTimestamp } from '@/common/util'
 
 const dbmap = new Map<any, ScorekeeperProtocol>()
@@ -115,19 +115,24 @@ export class SyncProcessInfo {
         return [...new Set([...Object.keys(ltables), ...Object.keys(rtables)].filter(table => ltables[table] !== rtables[table]))]
     }
 
-    async loadLocalPresent(table: string) { return this.loadPresent(this.localtask, table) }
-    async loadRemotePresent(table: string) { return this.loadPresent(this.remotetask, table) }
-    private async loadPresent(task: ScorekeeperProtocol, table: string) {
-        const ret = new Map()
+    async loadLocal(table: string)  { return this.load(this.localtask, table) }
+    async loadRemote(table: string) { return this.load(this.remotetask, table) }
+    private async load(task: ScorekeeperProtocol, table: string) {
+        const ret = new Map<any, DBObject>()
         for (const row of await task.any('SELECT * FROM $1:sql', [table])) {
-            row.modmsutc = parseTimestamp(row.modified).getTime()
             ret.set(_.pick(row, PRIMARY_KEYS[table]), row)
         }
         return ret
     }
 
-    async loadLocalDeletedSince(table: string, when: Date) { return this.deletedSince(this.localtask, table, when) }
-    async loadRemoteDeletedSince(table: string, when: Date) { return this.deletedSince(this.localtask, table, when) }
+    async logLocal(loggedobj,  pkset, table, when) { return this.log(this.localtask, loggedobj, pkset, table, when) }
+    async logRemote(loggedobj, pkset, table, when) { return this.log(this.remotetask, loggedobj, pkset, table, when) }
+    async log(task: ScorekeeperProtocol, loggedobj: DBObject, pkset: Set<any>, table: string, when: Date) {
+        return null
+    }
+
+    async deletedSinceLocal(table: string, when: Date)  { return this.deletedSince(this.localtask, table, when) }
+    async deletedSinceRemote(table: string, when: Date) { return this.deletedSince(this.localtask, table, when) }
     private async deletedSince(task: ScorekeeperProtocol, table: string, when: Date) {
         const ret = new Map()
         for (const row of await task.any("SELECT otime, olddata FROM $1:sql WHERE action='D' AND tablen=$2 AND otime>$3", [logtablefor(table), table, when])) {
@@ -135,6 +140,25 @@ export class SyncProcessInfo {
             ret.set(pk, { data: row.olddata, otime: row.otime })
         }
         return ret
+    }
+
+
+    async insertLocal(table: string, objs: any[])  { return this.insert(this.localtask, table, objs) }
+    async insertRemote(table: string, objs: any[]) { return this.insert(this.remotetask, table, objs) }
+    private async insert(task: ScorekeeperProtocol, table: string, objs: any[]) {
+        return false
+    }
+
+    async updateLocal(table: string, objs: any[])  { return this.update(this.localtask, table, objs) }
+    async updateRemote(table: string, objs: any[]) { return this.update(this.remotetask, table, objs) }
+    private async update(task: ScorekeeperProtocol, table: string, objs: any[]) {
+        return false
+    }
+
+    async deleteLocal(table: string, objs: any[])  { return this.delete(this.localtask, table, objs) }
+    async deleteRemote(table: string, objs: any[]) { return this.delete(this.remotetask, table, objs) }
+    private async delete(task: ScorekeeperProtocol, table: string, objs: any[]) {
+        return []
     }
 
 

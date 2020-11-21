@@ -7,10 +7,36 @@ import { synclog } from '@/util/logging'
 import { MergeServerEntry } from './mergeserver'
 import { getRemoteDB, performSyncWrap, SyncProcessInfo } from './dbwrapper'
 import { DefaultMap, difference, intersect } from '@/common/data'
-import { KillSignal, KillSignalError } from './constants'
+import { ADVANCED_UPDATE_TABLES, DBObject, KillSignal, KillSignalError, logtablefor, TABLE_ORDER } from './constants'
+import { parseTimestamp } from '@/common/util'
 
 export const syncwatcher = new EventEmitter()
 export let killsignal = false
+
+
+function minmodtime(objs: Map<any, any>): Date {
+    let ret = 0
+    let ms
+    for (const o of objs.values()) {
+        ms = parseTimestamp(o.modified)
+        if (ms < ret) ret = ms
+    }
+    return new Date(ret)
+}
+
+function mincreatetime(objs: DBObject[], objs2: DBObject[]): Date {
+    let ret = 0
+    let ms
+    for (const o of objs)  {
+        ms = parseTimestamp(o.created || '0')
+        if (ms < ret) ret = ms
+    }
+    for (const o of objs2) {
+        ms = parseTimestamp(o.created || '0')
+        if (ms < ret) ret = ms
+    }
+    return new Date(ret)
+}
 
 export async function runOnce() {
     await db.task(async task => {
@@ -24,7 +50,7 @@ export async function runOnce() {
 
         // Recheck our local series list and hash values
         await myserver.updateSeriesFrom(task)
-        for (const series in myserver.getSeries()) {
+        for (const series of myserver.getSeries()) {
             await myserver.updateCacheFrom(task, series)
         }
 
@@ -148,25 +174,18 @@ async function mergeTables(wrap: SyncProcessInfo, tables: string[]) {
     }
 }
 
-function minmodtime(objs: Map<any, any>): Date {
-    let ret = 0
-    for (const o of objs.values()) {
-        if (o.modmsutc < ret) ret = o.modmsutc
-    }
-    return new Date(ret)
-}
 
 async function mergeTablesInternal(wrap: SyncProcessInfo, tables: string[], watcher: any): Promise<string[]> {
     //  The core function for actually finding the real differences and applying them locally or remotely """
-    const localinsert   = new DefaultMap(() => [])
-    const localupdate   = new DefaultMap(() => [])
-    const localdelete   = new DefaultMap(() => [])
-    const localundelete = new DefaultMap(() => [])
+    const localinsert   = new DefaultMap(() => [] as DBObject[])
+    const localupdate   = new DefaultMap(() => [] as DBObject[])
+    const localdelete   = new DefaultMap(() => [] as DBObject[])
+    const localundelete = new DefaultMap(() => [] as DBObject[])
 
-    const remoteinsert   = new DefaultMap(() => [])
-    const remoteupdate   = new DefaultMap(() => [])
-    const remotedelete   = new DefaultMap(() => [])
-    const remoteundelete = new DefaultMap(() => [])
+    const remoteinsert   = new DefaultMap(() => [] as DBObject[])
+    const remoteupdate   = new DefaultMap(() => [] as DBObject[])
+    const remotedelete   = new DefaultMap(() => [] as DBObject[])
+    const remoteundelete = new DefaultMap(() => [] as DBObject[])
 
     for (const t of tables) {
         if (killsignal) throw new KillSignalError()
@@ -176,183 +195,177 @@ async function mergeTablesInternal(wrap: SyncProcessInfo, tables: string[], watc
         // Load data from both databases, load it all in one go to be more efficient in updates later
         // watcher.local() blah blah
         const [localobj, remoteobj] = await Promise.all([
-                                    await wrap.loadLocalPresent(t),
-                                    await wrap.loadRemotePresent(t)])
+                                    await wrap.loadLocal(t),
+                                    await wrap.loadRemote(t)])
         // watcher.off()
 
-        let l = new Set([...Object.keys(localobj)])
-        let r = new Set([...Object.keys(remoteobj)])
+        let l = new Set([...localobj.keys()])
+        let r = new Set([...remoteobj.keys()])
 
         // Keys in both databases
-        for (const pk in intersect(l, r)) {
-            if (localobj[pk].modmsutc === remoteobj[pk].modmsutc) {
+        for (const pk of intersect(l, r)) {
+            if (localobj.get(pk).modmsutc === remoteobj.get(pk).modmsutc) {
                 // Same keys, same modification time, filter out now, no need to further process
-                delete localobj[pk]
-                delete remoteobj[pk]
+                localobj.delete(pk)
+                remoteobj.delete(pk)
                 continue
             }
-            if (localobj[pk].modmsutc > remoteobj[pk].modmsutc) {
-                remoteupdate[t].append(localobj[pk])
+            if (localobj.get(pk).modmsutc > remoteobj.get(pk).modmsutc) {
+                remoteupdate.get(t).push(localobj.get(pk))
             } else {
-                localupdate[t].append(remoteobj[pk])
+                localupdate.get(t).push(remoteobj.get(pk))
             }
         }
 
         // Recalc as we probably removed alot of stuff in the previous step
-        l = new Set([...Object.keys(localobj)])
-        r = new Set([...Object.keys(remoteobj)])
+        l = new Set([...localobj.keys()])
+        r = new Set([...remoteobj.keys()])
 
         // Only need to know about things deleted so far back in time based on mod times in other database
         // watcher.local()
         const [ldeleted, rdeleted] = await Promise.all([
-                                    wrap.loadLocalDeletedSince(t, minmodtime(remoteobj)),
-                                    wrap.loadRemoteDeletedSince(t, minmodtime(localobj))])
+                                    wrap.deletedSinceLocal(t, minmodtime(remoteobj)),
+                                    wrap.deletedSinceRemote(t, minmodtime(localobj))])
         // watcher.off()
 
         // pk only in local database
         for (const pk of difference(l, r)) {
             if (rdeleted.has(pk)) {
-                localdelete[t].push(rdeleted[pk])
+                localdelete.get(t).push(rdeleted.get(pk))
             } else {
-                remoteinsert[t].push(localobj[pk])
+                remoteinsert.get(t).push(localobj.get(pk))
             }
         }
 
         // pk only in remote database
         for (const pk of difference(r, l)) {
             if (ldeleted.has(pk)) {
-                remotedelete[t].push(ldeleted[pk])
+                remotedelete.get(t).push(ldeleted.get(pk))
             } else {
-                localinsert[t].push(remoteobj[pk])
+                localinsert.get(t).push(remoteobj.get(pk))
             }
         }
 
-        synclog.debug(`${t}  local ${localinsert[t].length}, ${localupdate[t].length}, ${localdelete[t].length}`)
-        synclog.debug(`${t} remote ${remoteinsert[t].length}, ${remoteupdate[t].length}, ${remotedelete[t].length}`)
+        synclog.debug(`${t}  local ${localinsert.get(t).length}, ${localupdate.get(t).length}, ${localdelete.get(t).length}`)
+        synclog.debug(`${t} remote ${remoteinsert.get(t).length}, ${remoteupdate.get(t).length}, ${remotedelete.get(t).length}`)
     }
 
     // Have to insert data starting from the top of any foreign key links
     // And then update/delete from the bottom of the same links
-    /*
-    unfinished = set()
+    const unfinished = new Set<string>()
 
     // Insert order first (top down)
     for (const t of TABLE_ORDER) {
-        if localinsert[t] or remoteinsert[t]:
-            assert not this.signalled, "Quit signal received"
-            remote.seriesStatus(series, "Insert {}".format(t))
-            this.listener and this.listener("insert", t, localdb=localdb, remotedb=remotedb, watcher=watcher)
+        if (localinsert.get(t).length || remoteinsert.get(t).length) {
+            if (killsignal) throw new KillSignalError()
+            wrap.remoteStatus(`Insert ${t}`)
+            syncwatcher.emit('insert', { table: t, wrap, watcher })
 
-            watcher.local()
-            if not DataInterface.insert(localdb,  localinsert[t]):
-                unfinished.add(t)
-            watcher.remote()
-            if not DataInterface.insert(remotedb, remoteinsert[t]):
-                unfinished.add(t)
-            watcher.off()
+            // watcher.local()
+            const [ul, ur] = await Promise.all([wrap.insertLocal(t, localinsert.get(t)), wrap.insertRemote(t, remoteinsert.get(t))])
+            if (!ul || !ur) unfinished.add(t)
+            // watcher.off()
+        }
     }
 
 
     // Update/delete order next (bottom up)
-    synclog.debug("Performing updates/deletes")
-    for (const t of reversed(TABLE_ORDER)) {
-        if localupdate[t] or remoteupdate[t]:
-            assert not this.signalled, "Quit signal received"
-            remote.seriesStatus(series, "Update {}".format(t))
-            this.listener and this.listener("update", t, localdb=localdb, remotedb=remotedb, watcher=watcher)
+    synclog.debug('Performing updates/deletes')
+    for (let ii = TABLE_ORDER.length; ii >= 0; ii++) {
+        const t = TABLE_ORDER[ii]
+        if (killsignal) throw new KillSignalError()
 
-            if t in DataInterface.ADVANCED_UPDATE_TABLES:
-                this.advancedMerge(localdb, remotedb, t, localupdate[t], remoteupdate[t], watcher)
-            else:
-                watcher.local()
-                if not DataInterface.update(localdb,  localupdate[t]):
-                    unfinished.add(t)
-                watcher.remote()
-                if not DataInterface.update(remotedb, remoteupdate[t]):
-                    unfinished.add(t)
-                watcher.off()
+        if (localupdate.get(t).length || remoteupdate.get(t).length) {
+            wrap.remoteStatus(`Update ${t}`)
+            syncwatcher.emit('update', { table: t, wrap, watcher })
 
-        if localdelete[t] or remotedelete[t]:
-            remote.seriesStatus(series, "Delete {}".format(t))
-            this.listener and this.listener("delete", t, localdb=localdb, remotedb=remotedb, watcher=watcher)
-            remoteundelete[t].extend(DataInterface.delete(localdb,  localdelete[t]))
-            localundelete[t].extend(DataInterface.delete(remotedb, remotedelete[t]))
+            if (ADVANCED_UPDATE_TABLES.includes(t)) {
+                advancedMerge(wrap, t, localupdate.get(t), remoteupdate.get(t))
+            } else {
+                // watcher.local()
+                const [ul, ur] = await Promise.all([wrap.updateLocal(t, localupdate.get(t)), wrap.updateRemote(t, remoteupdate.get(t))])
+                if (!ul || !ur) unfinished.add(t)
+                // watcher.off()
+            }
+        }
+
+        if (localdelete.get(t).length || remotedelete.get(t).length) {
+            wrap.remoteStatus(`Delete ${t}`)
+            syncwatcher.emit('delete', { table: t, wrap, watcher })
+
+            const [local, remote] = await Promise.all([wrap.deleteLocal(t, localdelete.get(t)), wrap.deleteRemote(t, remotedelete.get(t))])
+            remoteundelete.get(t).push([...local])
+            localundelete.get(t).push([...remote])
+        }
     }
 
     // If we have foreign key violations trying to delete, we need to readd those back to the opposite site and redo the merge
     // The only time this should ever occur is with the drivers table as its shared between series
-    for t in remoteundelete:
-        if remoteundelete[t]:
-            log.warning("Remote undelete requests for {}: {}".format(t, len(remoteundelete[t])))
-            remote.seriesStatus(series, "R-undelete {}".format(t))
-            unfinished.add(t)
-            DataInterface.insert(remotedb, remoteundelete[t])
-    for t in localundelete:
-        if localundelete[t]:
-            log.warning("Local udelete requests for {}: {}".format(t, len(remoteundelete[t])))
-            remote.seriesStatus(series, "L-undelete {}".format(t))
-            unfinished.add(t)
-            DataInterface.insert(localdb, localundelete[t])
+    // execute single file on each database connection, but in parallel on different connections
+    await Promise.all([
+        async () => {
+            for (const t in remoteundelete) {
+                if (remoteundelete.get(t).length) {
+                    synclog.warning(`Remote undelete requests for ${t}: ${remoteundelete.get(t).length}`)
+                    wrap.remoteStatus(`R-undelete ${t}`)
+                    unfinished.add(t)
+                    await wrap.insertRemote(t, remoteinsert.get(t))
+                }
+            }
+        },
+        async () => {
+            for (const t in localundelete) {
+                if (localundelete.get(t).length) {
+                    synclog.warning(`Local udelete requests for ${t}: ${localundelete.get(t).length}`)
+                    wrap.remoteStatus(`L-undelete ${t}`)
+                    unfinished.add(t)
+                    await wrap.insertLocal(t, localinsert.get(t))
+                }
+            }
+        }
+    ])
 
-
-    # Special tables that need insert and update done without commits in between for constraints
-    for t in DataInterface.INTERTWINED_DATA:
-        assert not this.signalled, "Quit signal received"
-        this.listener and this.listener("ins/up", t, localdb=localdb, remotedb=remotedb, watcher=watcher)
-
-        remote.seriesStatus(series, "Ins/Up {}".format(t))
-        watcher.local()
-        if localinsert[t]: DataInterface.insert(localdb,  localinsert[t], commit=False)
-        if localupdate[t]: DataInterface.update(localdb,  localupdate[t])
-
-        watcher.remote()
-        if remoteinsert[t]: DataInterface.insert(remotedb,  remoteinsert[t], commit=False)
-        if remoteupdate[t]: DataInterface.update(remotedb,  remoteupdate[t])
-
-        watcher.off()
-
-
-    return unfinished
-    */
-    return []
+    return [...unfinished]
 }
 
 
+async function advancedMerge(wrap: SyncProcessInfo, table: string, localobj: DBObject[], remoteobj: DBObject[]) {
 
-/*
-    def advancedMerge(self, localdb, remotedb, table, remoteobj, localobj, watcher):
-        when   = PresentObject.mincreatetime(localobj, remoteobj)
-        local  = { l.pk:l for l in localobj  }
-        remote = { r.pk:r for r in remoteobj }
-        pkset  = local.keys() | remote.keys()
 
-        loggedobj = dict()
-        logtable  = DataInterface.logtablefor(table)
+    const local = new Map()
+    const remote = new Map()
+    const pkset = new Set()
+    for (const o of localobj)  { local.set(o.pk, o);  pkset.add(o.pk) }
+    for (const o of remoteobj) { remote.set(o.pk, o); pkset.add(o.pk) }
 
-        watcher.local()
-        LoggedObject.loadFrom(loggedobj, localdb,  pkset, logtable, table, when)
-        watcher.remote()
-        LoggedObject.loadFrom(loggedobj, remotedb, pkset, logtable, table, when)
-        watcher.off()
+    const loggedobj = new Map()
+    const when      = mincreatetime(localobj, remoteobj)
 
-        # Create update objects and then update where needed
-        toupdatel = []
-        toupdater = []
-        for lo in loggedobj.values():
-            if not lo:
-                continue
-            if lo.pk in local:
-                update,both = lo.finalize(local[lo.pk])
-                toupdater.append(update)
-                if both: toupdatel.append(update)
-            else:
-                update,both = lo.finalize(remote[lo.pk])
-                toupdatel.append(update)
-                if both: toupdater.append(update)
+    // watcher.local()
+    wrap.logLocal(loggedobj,  pkset, table, when)
+    wrap.logRemote(loggedobj, pkset, table, when)
+    // watcher.off()
 
-        watcher.local()
-        DataInterface.update(localdb, toupdatel)
-        watcher.remote()
-        DataInterface.update(remotedb, toupdater)
-        watcher.off()
-*/
+    // Create update objects and then update where needed
+    const toupdatel = [] as DBObject[]
+    const toupdater = [] as DBObject[]
+    for (const lo of loggedobj.values()) {
+        if (!lo) {
+            continue
+        }
+        if (local.has(lo.pk)) {
+            const [update, both] = lo.finalize(local[lo.pk])
+            toupdater.push(update)
+            if (both) toupdatel.push(update)
+        } else {
+            const [update, both] = lo.finalize(remote[lo.pk])
+            toupdatel.push(update)
+            if (both) toupdater.push(update)
+        }
+    }
+
+    // watcher.local()
+    await wrap.updateLocal(table, toupdatel)
+    await wrap.updateRemote(table, toupdater)
+    // watcher.off()
+}
