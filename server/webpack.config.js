@@ -12,9 +12,9 @@ const {
 module.exports = {
     entry: './src/index.ts',
     mode: NODE_ENV,
-    target: 'node',
+    target: 'node14.15',
     plugins: [
-        new webpack.IgnorePlugin(/^pg-native$/),
+        new webpack.IgnorePlugin({ resourceRegExp: /^pg-native$/ }),
         new webpack.DefinePlugin({ 'global.GENTLY': false }),
         new webpack.ContextReplacementPlugin(/nunjucks|express|any-promise/),
         new CopyPlugin({
