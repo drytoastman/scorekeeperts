@@ -1,16 +1,20 @@
-/* eslint-disable array-bracket-spacing */
 import fs from 'fs'
 import moment from 'moment'
 import winston, { format } from 'winston'
 import util from 'util'
 
-const transports = [
-    new winston.transports.Console({ level: (process.env.NODE_ENV === 'development') ? 'silly' : 'warn' }),
-    new winston.transports.File({ level: 'verbose', filename: '/var/log/server.log' })
-]
-const atransports = [
-    new winston.transports.Console({ level: 'silly', silent: true }) // turn on when needed
-]
+const atransports = [new winston.transports.Console({ level: 'silly', silent: true })] // turn on when needed
+const transports  = [] as any[]
+
+if (process.env.NODE_ENV === 'test') {
+    transports.push(new winston.transports.Console({ level: 'silly' }))
+} else {
+    transports.push(
+        new winston.transports.Console({ level: (process.env.NODE_ENV === 'development') ? 'silly' : 'warn' }),
+        new winston.transports.File({ level: 'verbose', filename: '/var/log/server.log' })
+    )
+}
+
 
 // rotate our logs
 export async function rotateLogs() {
@@ -40,9 +44,6 @@ export async function rotateLogs() {
             cronlog.warn(`Unable to rotate/reopen ${t.name}: ${error}`)
         }
     }
-
-    // FINISH ME: helper while we still have python, remove later
-    rotate('scweb')
 }
 
 const singleline = format.printf(({ level, message, label, timestamp, stack }) => {

@@ -19,22 +19,35 @@ if [ -z $UI_TIME_ZONE ]; then
 UI_TIME_ZONE=US/Pacific
 fi
 
-echo "
-ssl = on
-ssl_ca_file = '/certs/root.cert'
-ssl_cert_file = '/certs/server.cert'
-ssl_key_file = '/certs/server.key'
+if [ $TESTING ]; then
+    echo "
+        ssl = on
+        ssl_ca_file = '/certs/root.cert'
+        ssl_cert_file = '/certs/server.cert'
+        ssl_key_file = '/certs/server.key'
 
-log_destination = stderr
-log_line_prefix = '%t %a '
-log_timezone=$UI_TIME_ZONE
-log_statement = none
-log_min_duration_statement = 1000
-logging_collector = on
-log_directory = '/var/log'
-log_filename = 'db.log'
-log_truncate_on_rotation = off
-" >> postgresql.conf
+        log_destination = stderr
+        log_line_prefix = '%t %a '
+        log_statement = all
+    " >> postgresql.conf
+else
+    echo "
+    ssl = on
+    ssl_ca_file = '/certs/root.cert'
+    ssl_cert_file = '/certs/server.cert'
+    ssl_key_file = '/certs/server.key'
+
+    log_destination = stderr
+    log_line_prefix = '%t %a '
+    log_timezone=$UI_TIME_ZONE
+    log_statement = none
+    log_min_duration_statement = 1000
+    logging_collector = on
+    log_directory = '/var/log'
+    log_filename = 'db.log'
+    log_truncate_on_rotation = off
+    " >> postgresql.conf
+fi
 
 cp /docker-entrypoint-initdb.d/series.template series.sql
 psql -U postgres -d scorekeeper -c "INSERT INTO version (id, version) VALUES (1, $TEMPLATE_SCHEMA_VERSION)"

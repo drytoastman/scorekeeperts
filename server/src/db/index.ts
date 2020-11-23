@@ -75,6 +75,6 @@ pgp.pg.types.setTypeParser(pgp.pg.types.builtins.TIMESTAMP, function(stringValue
 pgp.pg.types.setTypeParser(pgp.pg.types.builtins.DATE, function(stringValue) { return stringValue })
 export const db = pgp(cn)
 export const tableWatcher = new TableWatcher(db)
-export const pgdb = pgp(Object.assign(cn, { user: 'postgres' }))
+export const pgdb = pgp(Object.assign({}, cn, { user: 'postgres' }))
 
 export const TABLES = createColumnSets(pgp)

@@ -1,0 +1,23 @@
+version: '3.2'
+services:
+    db1:
+        image: drytoastman/scdb:${VERSION:-latest}
+        ports: ['127.0.0.1:7001:6432']
+        stop_grace_period: 2s
+        environment: [TESTING=1]
+    db2:
+        image: drytoastman/scdb:${VERSION:-latest}
+        ports: ['127.0.0.1:7002:6432']
+        stop_grace_period: 2s
+        environment: [TESTING=1]
+    db3:
+        image: drytoastman/scdb:${VERSION:-latest}
+        ports: ['127.0.0.1:7003:6432']
+        stop_grace_period: 2s
+        environment: [TESTING=1]
+    db4:
+        image: drytoastman/scdb:${VERSION:-latest}
+        ports: ['127.0.0.1:7004:6432']
+        stop_grace_period: 2s
+        environment: [TESTING=1]
+

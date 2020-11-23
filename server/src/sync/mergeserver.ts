@@ -3,7 +3,7 @@ import crypto from 'crypto'
 import datefns from 'date-fns'
 
 import { formatToTimestamp, parseTimestamp, UTCString, UUID } from '@/common/util'
-import { db, ScorekeeperProtocol } from '@/db'
+import { ScorekeeperProtocol } from '@/db'
 import { MergeServer } from '@/db/mergeserverrepo'
 import { synclog } from '@/util/logging'
 import { SchemaError } from '@/db/generalrepo'
@@ -40,7 +40,7 @@ export class MergeServerEntry implements MergeServer {
         }
     }
 
-    constructor(data: MergeServer) {
+    constructor(data: MergeServer, private localdb: ScorekeeperProtocol) {
         Object.assign(this, data)
     }
 
@@ -71,21 +71,21 @@ export class MergeServerEntry implements MergeServer {
     async runsDone(series: string, error: string|undefined) {
         await this.seriesDone(series, error)
         this.quickruns = null
-        await db.merge.updateMergeItems(this, ['quickruns'])
+        await this.localdb.merge.updateMergeItems(this, ['quickruns'])
     }
 
     async seriesStart(series: string) {
         // Called when we start merging a given series with this remote server
         delete this.mergestate[series].error
         this.mergestate[series].syncing = true
-        await db.merge.updateMergeItems(this, ['mergestate'])
+        await this.localdb.merge.updateMergeItems(this, ['mergestate'])
     }
 
     async seriesStatus(series: string, status: string) {
         // Called with current status for the given series while merging with this remote server """
         synclog.debug(`seriesstatus: ${status}`)
         this.mergestate[series].progress = status
-        await db.merge.updateMergeItems(this, ['mergestate'])
+        await this.localdb.merge.updateMergeItems(this, ['mergestate'])
     }
 
     async seriesDone(series: string, error: string|undefined) {
@@ -102,7 +102,7 @@ export class MergeServerEntry implements MergeServer {
         }
         delete this.mergestate[series].progress
         delete this.mergestate[series].syncing
-        await db.merge.updateMergeItems(this, ['mergestate'])
+        await this.localdb.merge.updateMergeItems(this, ['mergestate'])
     }
 
     async serverStart(localseries: string[]) {
@@ -112,7 +112,7 @@ export class MergeServerEntry implements MergeServer {
                 this.ensureSeriesBase(series)
             }
         }
-        await db.merge.updateMergeItems(this, ['mergestate'])
+        await this.localdb.merge.updateMergeItems(this, ['mergestate'])
     }
 
     async serverError(error: string) {
@@ -122,16 +122,16 @@ export class MergeServerEntry implements MergeServer {
         }
         if (this.hoststate === ONESHOT) {
             this.hoststate = INACTIVE
-            await db.merge.updateMergeItems(this, ['hoststate']) //  hoststate ownership is shared with frontend
+            await this.localdb.merge.updateMergeItems(this, ['hoststate']) //  hoststate ownership is shared with frontend
         }
-        await db.merge.updateMergeItems(this, ['mergestate'])
+        await this.localdb.merge.updateMergeItems(this, ['mergestate'])
     }
 
     async serverDone() {
         // Called when the merge with the remote server completes without any exceptions
         if (this.hoststate === ONESHOT) {
             this.hoststate = INACTIVE
-            await db.merge.updateMergeItems(this, ['hoststate']) // hoststate ownership is shared with frontend
+            await this.localdb.merge.updateMergeItems(this, ['hoststate']) // hoststate ownership is shared with frontend
         }
         this.lastchecktime = new Date()
         if ([ACTIVE, ONESHOT].includes(this.hoststate)) {
@@ -139,14 +139,14 @@ export class MergeServerEntry implements MergeServer {
         } else {
             this.nextchecktime = new Date(0)
         }
-        await db.merge.updateMergeItems(this, ['lastcheck', 'nextcheck', 'mergestate']) // nextcheck ownership is shared with frontend
+        await this.localdb.merge.updateMergeItems(this, ['lastcheck', 'nextcheck', 'mergestate']) // nextcheck ownership is shared with frontend
     }
 
 
 
-    async updateSeriesFrom(db: ScorekeeperProtocol) {
+    async updateSeriesFrom(targetdb: ScorekeeperProtocol) {
         // Update the mergestate dict related to deleted or added series
-        const serieslist   = await db.series.seriesList()
+        const serieslist   = await targetdb.series.seriesList()
         const cachedseries = Object.keys(this.mergestate)
         if (_.isEqual(serieslist, cachedseries)) {
             return
@@ -154,16 +154,16 @@ export class MergeServerEntry implements MergeServer {
 
         for (const deleted in cachedseries.filter(s => !serieslist.includes(s))) delete this.mergestate[deleted]
         for (const added   in serieslist.filter(s => !cachedseries.includes(s))) this.ensureSeriesBase(added)
-        await db.merge.updateMergeItems(this, ['mergestate'])
+        await this.localdb.merge.updateMergeItems(this, ['mergestate'])
     }
 
 
 
-    async updateCacheFrom(dbx: ScorekeeperProtocol, series: string, expectversion?: string) {
+    async updateCacheFrom(targetdb: ScorekeeperProtocol, series: string, expectversion?: string) {
         this.ensureSeriesBase(series)
         const seriesstate = this.mergestate[series]
 
-        await dbx.task(async task => {
+        await targetdb.task(async task => {
             if (expectversion) {
                 const version = await task.general.getSchemaVersion()
                 if (version !== expectversion) { throw new SchemaError(`Remote schema is ${version}, local is ${expectversion}`) }
@@ -184,11 +184,11 @@ export class MergeServerEntry implements MergeServer {
 
             // If there is no need to recalculate hashes or update local cache, skip out now
             if (_.isEqual(lastchange, seriesstate.lastchange)) {
-                synclog.debug(`${dbx} ${series} lastlog time shortcut`)
+                synclog.debug(`${targetdb} ${series} lastlog time shortcut`)
                 return
             }
 
-            synclog.debug(`${dbx} ${series} perform hash computations`)
+            synclog.debug(`${targetdb} ${series} perform hash computations`)
             // Something has changed, run through the process of caclulating hashes of the PK,modtime combos for each table and combining them together
             seriesstate.hashes = {}
             const totalhash = crypto.createHash('sha1')
@@ -220,7 +220,7 @@ export class MergeServerEntry implements MergeServer {
             }
         })
 
-        await db.merge.updateMergeItems(this, ['mergestate'])
+        await this.localdb.merge.updateMergeItems(this, ['mergestate'])
     }
 
 

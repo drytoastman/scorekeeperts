@@ -2,7 +2,7 @@ import _ from 'lodash'
 import { EventEmitter } from 'events'
 import datefns from 'date-fns'
 
-import { db } from '@/db'
+import { ScorekeeperProtocol } from '@/db'
 import { synclog } from '@/util/logging'
 import { MergeServerEntry } from './mergeserver'
 import { getRemoteDB, performSyncWrap, SyncProcessInfo } from './dbwrapper'
@@ -39,12 +39,12 @@ function mincreatetime(objs: DBObject[], objs2: DBObject[]): Date {
     return new Date(ret)
 }
 
-export async function runOnce() {
+export async function runOnce(db: ScorekeeperProtocol) {
     await db.task(async task => {
-        const myserver  = new MergeServerEntry(await task.merge.getLocalMergeServer())
+        const myserver  = new MergeServerEntry(await task.merge.getLocalMergeServer(), task)
 
         // Check for any quickruns flags and do those first
-        for (const remote of (await task.merge.getQuickRuns()).map(d => new MergeServerEntry(d))) {
+        for (const remote of (await task.merge.getQuickRuns()).map(d => new MergeServerEntry(d, task))) {
             synclog.debug(`quickrun ${remote.hostname}`)
             await mergeRuns(myserver, remote)
         }
@@ -56,7 +56,7 @@ export async function runOnce() {
         }
 
         // Check if there are any timeouts for servers to merge with
-        for (const remote of (await task.merge.getActive()).map(d => new MergeServerEntry(d))) {
+        for (const remote of (await task.merge.getActive()).map(d => new MergeServerEntry(d, task))) {
             if (datefns.isPast(remote.nextchecktime)) { // FINISH ME, timezone issue?!
                 try {
                     await remote.serverStart(Object.keys(myserver.mergestate))

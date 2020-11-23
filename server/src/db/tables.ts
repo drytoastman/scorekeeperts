@@ -127,8 +127,8 @@ export function createColumnSets(pgp: IMain) {
         runs: new pgp.helpers.ColumnSet([
             { name: 'eventid',  cnd: true, cast: 'uuid' },
             { name: 'carid',    cnd: true, cast: 'uuid' },
-            { name: 'rungroup', cnd: true },
             { name: 'course',   cnd: true },
+            { name: 'rungroup', cnd: true },
             { name: 'run',      cnd: true },
             'raw', 'cones', 'gates', 'status', attr, modified
         ], { table: 'runs' }),
