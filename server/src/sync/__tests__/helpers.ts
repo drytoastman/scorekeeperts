@@ -1,6 +1,8 @@
 import { v1 as uuidv1 } from 'uuid'
+import { diff as odiff } from 'deep-object-diff'
+import util from 'util'
 
-import { ScorekeeperProtocol, pgp, db as dbx } from '@/db'
+import { ScorekeeperProtocol, pgp, db as dbx, ScorekeeperProtocolDB } from '@/db'
 import { runOnce } from '../process'
 import { ACTIVE } from '../mergeserver'
 import { synclog } from '@/util/logging'
@@ -13,8 +15,15 @@ export const testids = {
     eventid1:  '00000000-0000-0000-0000-000000000010',
     accountid: 'paypalid',
     itemid:    '00000000-0000-0000-0000-000000000051',
-    series:    'testseries'
+    series:    'testseries',
+    newdriverid: '00000000-0000-0000-0000-000000000142',
+    newcarid:    '00000000-0000-0000-0000-000000000143'
 }
+
+export const DB1 = 7001
+export const DB2 = 7002
+export const DB3 = 7003
+export const DB4 = 7004
 
 const RESET = `
 DROP SCHEMA IF EXISTS $(series:raw) CASCADE;
@@ -54,13 +63,13 @@ INSERT INTO mergeservers(serverid, hostname, address, ctimeout) VALUES ('0000000
 `
 const ims = 'INSERT INTO mergeservers(serverid, hostname, address, ctimeout, hoststate) VALUES ($1, $2, $3, $4, $5)'
 
-const dbmap = new Map<number, ScorekeeperProtocol>()
-export function getTestDB(port: number): ScorekeeperProtocol {
+const dbmap = new Map<number, ScorekeeperProtocolDB>()
+export function getTestDB(port: number): ScorekeeperProtocolDB {
     if (!dbmap.has(port)) {
         synclog.warn(`opening port ${port}`)
         dbmap.set(port, pgp(Object.assign({}, dbx.$cn, { user: 'postgres', port: port })))
     }
-    return dbmap.get(port) as ScorekeeperProtocol
+    return dbmap.get(port) as ScorekeeperProtocolDB
 }
 
 async function resetImpl(p1: number, ports: number[], serverids: string[]) {
@@ -93,7 +102,7 @@ export async function doSync(port: number, hosts?: string[]) {
     await runOnce(db)
 }
 
-export async function verifyObject(tasks: ScorekeeperProtocol[], sql: string, args: any) {
+export async function verifyObjectsSame(tasks: ScorekeeperProtocol[], sql: string, args: any) {
     const base = await tasks[0].one(sql, args)
     for (let ii = 1; ii < tasks.length; ii++) {
         const other = await tasks[ii].oneOrNone(sql, args)
@@ -101,10 +110,37 @@ export async function verifyObject(tasks: ScorekeeperProtocol[], sql: string, ar
     }
 }
 
-export async function verifyObjectIs(tasks: ScorekeeperProtocol[], sql: string, args: any, expected: any) {
-    for (let ii = 0; ii < tasks.length; ii++) {
-        const val = await tasks[ii].oneOrNone(sql, args)
-        expect(val).toEqual(expected)
+export async function verifyObjectsAre(tasks: ScorekeeperProtocol[], sql: string, args: any, expected: any) {
+    for (const t of tasks) {
+        expect(await t.oneOrNone(sql, args)).toEqual(expected)
+    }
+}
+
+expect.extend({
+    toBeAttrLike(received: any, like: any) {
+        for (const key in like) {
+            if (key === 'attr') continue
+            if (received[key] !== like[key]) return { message: () => `${key}: ${received[key]} != ${like[key]}`, pass: false }
+        }
+        for (const key in like.attr) {
+            if (received.attr[key] !== like.attr[key]) return { message: () => `attr.${key}: ${received.attr[key]} != ${like.attr[key]}`, pass: false }
+        }
+        return { message: () => `${received} same as ${like}`, pass: true }
+    }
+})
+
+export async function verifyObjectsLike(tasks: ScorekeeperProtocol[], sql: string, args: any, like: any) {
+    for (const t of tasks) {
+        (expect(await t.oneOrNone(sql, args)) as any).toBeAttrLike(like)
+    }
+}
+
+export async function verifyUpdateLogChanges(tasks: ScorekeeperProtocol[], table: string) {
+    for (const t of tasks) {
+        for (const row of await t.any("SELECT * from publiclog where tablen=$1 and action='U'", [table])) {
+            const diff = odiff(row.olddata, row.newdata)
+            expect(Object.keys(diff)).not.toEqual(['modified']) // not just modified that changed though trigger should catch that
+        }
     }
 }
 
@@ -113,7 +149,7 @@ export async function with2DB(port1: number, port2: number, series: string, exec
         return getTestDB(port2).task(async task2 => {
             await task1.series.setSeries(series)
             await task2.series.setSeries(series)
-            return execution(task1, task2)
+            return await execution(task1, task2)
         })
     })
 }

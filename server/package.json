@@ -8,7 +8,7 @@
     "dev": "concurrently npm:bwatch npm:server",
     "build": "webpack",
     "debug": "tsc && ts-node rewritepaths.ts && copyfiles -u 1 src/templates/* src/public/* src/sync/__tests__/*.sql tsbuild",
-    "test": "jest"
+    "test": "jest --runInBand"
   },
   "dependencies": {
     "@google-cloud/storage": "^5.5.0",
@@ -21,6 +21,7 @@
     "cron": "^1.8.2",
     "csv-stringify": "^5.5.3",
     "date-fns": "^2.16.1",
+    "deep-object-diff": "^1.1.0",
     "dns2": "^1.4.2",
     "express": "^4.17.1",
     "express-delay": "^0.2.0",

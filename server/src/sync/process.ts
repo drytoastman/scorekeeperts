@@ -10,7 +10,7 @@ import { getRemoteDB, performSyncWrap, SyncProcessInfo } from './dbwrapper'
 import { DefaultMap, difference, intersect } from '@/common/data'
 import { ADVANCED_UPDATE_TABLES, TABLE_ORDER } from './constants'
 import { parseTimestamp } from '@/common/util'
-import { DBObject, DeletedObject, KillSignal, KillSignalError, TableName } from './types'
+import { DBObject, DeletedObject, getPKHash, KillSignal, KillSignalError, LoggedObject, PrimaryKeyHash, TableName } from './types'
 
 export const syncwatcher = new EventEmitter()
 export let killsignal = false
@@ -325,22 +325,23 @@ async function mergeTablesInternal(wrap: SyncProcessInfo, tables: string[], watc
 
 async function advancedMerge(wrap: SyncProcessInfo, table: string, localobj: DBObject[], remoteobj: DBObject[]) {
 
-}
-
-async function XadvancedMerge(wrap: SyncProcessInfo, table: string, localobj: DBObject[], remoteobj: DBObject[]) {
-
-    const local = new Map()
-    const remote = new Map()
-    const pkset = new Set()
-    for (const o of localobj)  { local.set(o.pk, o);  pkset.add(o.pk) }
-    for (const o of remoteobj) { remote.set(o.pk, o); pkset.add(o.pk) }
-
-    const loggedobj = new Map()
-    const when      = mincreatetime(localobj, remoteobj)
+    const local = new Map<PrimaryKeyHash, DBObject>()
+    const remote = new Map<PrimaryKeyHash, DBObject>()
+    const pkset = new Set<PrimaryKeyHash>()
+    for (const o of localobj)  {
+        const pk = getPKHash(table, o)
+        local.set(pk, o)
+        pkset.add(pk)
+    }
+    for (const o of remoteobj) {
+        const pk = getPKHash(table, o)
+        remote.set(pk, o)
+        pkset.add(pk)
+    }
 
     // watcher.local()
-    wrap.loggedLocal(loggedobj,  pkset, table, when)
-    wrap.loggedRemote(loggedobj, pkset, table, when)
+    const when = mincreatetime(localobj, remoteobj)
+    const loggedobj = await wrap.loggedObjects(pkset, table, when)
     // watcher.off()
 
     // Create update objects and then update where needed
@@ -350,14 +351,14 @@ async function XadvancedMerge(wrap: SyncProcessInfo, table: string, localobj: DB
         if (!lo) {
             continue
         }
-        if (local.has(lo.pk)) {
-            const [update, both] = lo.finalize(local[lo.pk])
-            toupdater.push(update)
-            if (both) toupdatel.push(update)
+        if (local.has(lo.pkhash)) {
+            const res = lo.finalize(local.get(lo.pkhash)!)
+            toupdater.push(res.obj)
+            if (res.both) toupdatel.push(res.obj)
         } else {
-            const [update, both] = lo.finalize(remote[lo.pk])
-            toupdatel.push(update)
-            if (both) toupdater.push(update)
+            const res = lo.finalize(remote.get(lo.pkhash)!)
+            toupdatel.push(res.obj)
+            if (res.both) toupdater.push(res.obj)
         }
     }
 

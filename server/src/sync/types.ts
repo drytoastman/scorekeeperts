@@ -1,5 +1,6 @@
 import _ from 'lodash'
 import { addSeconds } from 'date-fns'
+import util from 'util'
 
 import { formatToTimestamp, UTCString } from '@/common/util'
 import { PRIMARY_KEYS } from './constants'
@@ -55,17 +56,24 @@ class InsertObject {
 }
 
 class UpdateObject {
-    odiff
-    adiff
-    deletedAttr
-    constructor(time, diff) {
+    otime: Date
+    odiff: any
+    adiff: any
+    deletedAttr: string[]
+    constructor(otime, diff) {
+        this.otime = otime
+        this.odiff = diff.odiff
+        this.adiff = diff.adiff
+        this.deletedAttr = diff.deletedAttr
     }
 }
 
+/*
 class PresentObject {
-    constructor(table, pk, data) {
+    constructor(table, pkhash, data) {
     }
 }
+*/
 
 function dbObjectDiff(olddata: DBObject, newdata: DBObject) {
     const odiff = {}
@@ -91,19 +99,15 @@ function dbObjectDiff(olddata: DBObject, newdata: DBObject) {
     return { odiff, adiff, deletedAttr }
 }
 
-function dbObjectIsSame(olddata: DBObject, newdata: DBObject) {
-    const res = dbObjectDiff(olddata, newdata)
-    return _.isEmpty(res.odiff) && _.isEmpty(res.adiff) && _.isEmpty(res.deletedAttr)
-}
-
-
 export class LoggedObject {
     // An object loaded from the log data insert and following updates across multiple machines
     initA: InsertObject
     initB: InsertObject
     updates = [] as UpdateObject[]
+    pkhash: PrimaryKeyHash
 
-    constructor(private table: string, private pk: PrimaryKey) {
+    constructor(private table: string, pkhash: PrimaryKeyHash) {
+        this.pkhash = pkhash
     }
 
     insert(otime: Date, ltime: Date, newdata: DBObject) {
@@ -137,7 +141,7 @@ export class LoggedObject {
         // And rebuild the object with all of the updates
         for (const uobj of _.orderBy(this.updates, 'otime')) {
             Object.assign(data, uobj.odiff)
-            data.attr.update(uobj.adiff)
+            Object.assign(data.attr, uobj.adiff)
             for (const key of uobj.deletedAttr) {
                 delete data.attr[key]
             }
@@ -145,36 +149,11 @@ export class LoggedObject {
 
         // Pick modified time based on object that didn't change or the final modtime + epsilon
         let both = false
-        if (!_.isEqual(last.data, data)) {
+        if (!_.isEqual(last, data)) {
             both = true
             data.modified = formatToTimestamp(addSeconds(new Date(data.modified), 1))
         }
 
-        return [new PresentObject(this.table, this.pk, data), both]
-    }
-}
-
-async function loadLoggedFrom(task: ScorekeeperProtocol, objmap: Map<PrimaryKey, LoggedObject>, pkset, src, table, when) {
-
-    for (const obj of await task.any('SELECT * FROM $1:sql WHERE tablen=$2 and otime>=$3 ORDER BY otime', [src, table, when])) {
-        if (obj.action === 'I') {
-            const pk = getPK(table, obj.newdata)
-            if (!objmap.has(pk) && !pkset.has(pk)) { objmap.set(pk, new LoggedObject(table, pk)) }
-            if (objmap.has(pk)) {
-                objmap.get(pk)?.insert(obj.otime, obj.ltime, obj.newdata)
-            }
-        } else if (obj.action === 'U') {
-            const pk = getPK(table, obj.newdata)
-            if (objmap.has(pk)) {
-                objmap.get(pk)?.update(obj.otime, obj.olddata, obj.newdata)
-            }
-        } else if (obj.action === 'D') {
-            const pk = getPK(table, obj.olddata)
-            if (objmap.has(pk)) {
-                throw Error('LoggedObject delete is invalid')
-            }
-        } else {
-            synclog.warning('How did we get here?')
-        }
+        return { obj: data, both: both }
     }
 }

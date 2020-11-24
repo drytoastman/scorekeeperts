@@ -127,16 +127,45 @@ export class SyncProcessInfo {
     private async load(task: ScorekeeperProtocol, table: string) {
         const ret = new Map<PrimaryKeyHash, DBObject>()
         for (const row of await task.any('SELECT * FROM $1:raw', [table])) {
+            row.modmsutc = parseTimestamp(row.modified).getTime()
             ret.set(getPKHash(table, row), row)
         }
         return ret
     }
 
-    async loggedLocal(loggedobj,  pkset, table, when) { return this.logged(this.localtask, loggedobj, pkset, table, when) }
+    async loggedObjects(watchset: Set<PrimaryKeyHash>, table: string, when: Date) {
+        const objmap = new Map<PrimaryKeyHash, LoggedObject>()
+        const src    = logtablefor(table)
+
+        for (const task of [this.localtask, this.remotetask]) {
+            for (const obj of await task.any('SELECT * FROM $1:raw WHERE tablen=$2 and otime>=$3 ORDER BY otime', [src, table, when])) {
+
+                if (obj.action === 'I') {
+                    const pkhash = getPKHash(table, obj.newdata)
+                    if (!objmap.has(pkhash) && watchset.has(pkhash)) objmap.set(pkhash, new LoggedObject(table, pkhash))
+                    if (objmap.has(pkhash))                          objmap.get(pkhash)?.insert(obj.otime, obj.ltime, obj.newdata)
+                } else if (obj.action === 'U') {
+                    const pkhash = getPKHash(table, obj.newdata)
+                    if (objmap.has(pkhash))                            objmap.get(pkhash)?.update(obj.otime, obj.olddata, obj.newdata)
+                } else if (obj.action === 'D') {
+                    if (objmap.has(getPKHash(table, obj.olddata))) {
+                        throw Error('LoggedObject delete is invalid')
+                    }
+                } else {
+                    synclog.warning('How did we get here?')
+                }
+            }
+        }
+        return objmap
+        // return this.logged(this.localtask, loggedobj, pkset, table, when)
+    }
+
+    /*
     async loggedRemote(loggedobj, pkset, table, when) { return this.logged(this.remotetask, loggedobj, pkset, table, when) }
     async logged(task: ScorekeeperProtocol, loggedobj: DBObject, pkset: Set<any>, table: string, when: Date) {
         return new Map<PrimaryKey, LoggedObject>()
     }
+    */
 
     async deletedSince(table: string, localwhen: Date, remotewhen: Date)  {
         return Promise.all([

@@ -31,7 +31,7 @@ export interface DBExtensions {
 }
 
 export type ScorekeeperProtocol = IBaseProtocol<DBExtensions> & DBExtensions;
-type ScorekeeperProtocolDB = IDatabase<DBExtensions> & DBExtensions;
+export type ScorekeeperProtocolDB = IDatabase<DBExtensions> & DBExtensions;
 
 const initOptions: IInitOptions<DBExtensions> = {
     extend(obj: ScorekeeperProtocolDB) {
