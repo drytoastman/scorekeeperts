@@ -7,6 +7,8 @@ import { ScorekeeperProtocol } from '@/db'
 import { synclog } from '@/util/logging'
 
 export type PrimaryKey = any[]
+export type PrimaryKeyHash = string
+export type TableName = string
 
 export type DBObject = {
     [key: string]: any
@@ -33,6 +35,11 @@ export function getPK(table: string, obj: DBObject): PrimaryKey {
         ret.push(obj[key])
     }
     return ret
+}
+
+export function getPKHash(table: string, obj: DBObject): PrimaryKeyHash {
+    const pk = getPK(table, obj)
+    return pk.join(';')
 }
 
 

@@ -78,3 +78,4 @@ export const tableWatcher = new TableWatcher(db)
 export const pgdb = pgp(Object.assign({}, cn, { user: 'postgres' }))
 
 export const TABLES = createColumnSets(pgp)
+export const SYNCTABLES = createColumnSets(pgp, true)

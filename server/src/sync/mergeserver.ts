@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import crypto from 'crypto'
-import datefns from 'date-fns'
+import { addSeconds } from 'date-fns'
 
 import { formatToTimestamp, parseTimestamp, UTCString, UUID } from '@/common/util'
 import { ScorekeeperProtocol } from '@/db'
@@ -9,9 +9,9 @@ import { synclog } from '@/util/logging'
 import { SchemaError } from '@/db/generalrepo'
 import { HASH_COMMANDS } from './constants'
 
-const ONESHOT  = '1'
-const INACTIVE = 'I'
-const ACTIVE   = 'A'
+export const ONESHOT  = '1'
+export const INACTIVE = 'I'
+export const ACTIVE   = 'A'
 
 export class MergeServerEntry implements MergeServer {
     serverid: UUID
@@ -40,8 +40,11 @@ export class MergeServerEntry implements MergeServer {
         }
     }
 
+    display: string
+
     constructor(data: MergeServer, private localdb: ScorekeeperProtocol) {
         Object.assign(this, data)
+        this.display = this.address || this.hostname
     }
 
     get lastchecktime(): Date {
@@ -135,7 +138,7 @@ export class MergeServerEntry implements MergeServer {
         }
         this.lastchecktime = new Date()
         if ([ACTIVE, ONESHOT].includes(this.hoststate)) {
-            this.nextchecktime = datefns.addSeconds(this.lastchecktime, this.waittime + (Math.random() * 5))
+            this.nextchecktime = addSeconds(this.lastchecktime, this.waittime + (Math.random() * 5))
         } else {
             this.nextchecktime = new Date(0)
         }
@@ -152,8 +155,8 @@ export class MergeServerEntry implements MergeServer {
             return
         }
 
-        for (const deleted in cachedseries.filter(s => !serieslist.includes(s))) delete this.mergestate[deleted]
-        for (const added   in serieslist.filter(s => !cachedseries.includes(s))) this.ensureSeriesBase(added)
+        for (const deleted of cachedseries.filter(s => !serieslist.includes(s))) delete this.mergestate[deleted]
+        for (const added   of serieslist.filter(s => !cachedseries.includes(s))) this.ensureSeriesBase(added)
         await this.localdb.merge.updateMergeItems(this, ['mergestate'])
     }
 
@@ -170,7 +173,7 @@ export class MergeServerEntry implements MergeServer {
             }
 
             // Do a sanity check on the log tables to see if anyting actually changed since our last check
-            task.series.setSeries(series)
+            await task.series.setSeries(series)
             const last = await task.one('SELECT MAX(otimes.max) as maxo, MAX(ltimes.max) as maxl FROM ' +
                         '(SELECT max(otime) FROM serieslog UNION ALL SELECT max(otime) FROM publiclog) AS otimes, ' +
                         '(SELECT max(ltime) FROM serieslog UNION ALL SELECT max(ltime) FROM publiclog) as ltimes')
@@ -184,11 +187,11 @@ export class MergeServerEntry implements MergeServer {
 
             // If there is no need to recalculate hashes or update local cache, skip out now
             if (_.isEqual(lastchange, seriesstate.lastchange)) {
-                synclog.debug(`${targetdb} ${series} lastlog time shortcut`)
+                synclog.debug(`${this.display} ${series} lastlog time shortcut`)
                 return
             }
 
-            synclog.debug(`${targetdb} ${series} perform hash computations`)
+            synclog.debug(`${this.display} ${series} perform hash computations`)
             // Something has changed, run through the process of caclulating hashes of the PK,modtime combos for each table and combining them together
             seriesstate.hashes = {}
             const totalhash = crypto.createHash('sha1')
@@ -225,7 +228,7 @@ export class MergeServerEntry implements MergeServer {
 
 
 
-    private async ensureSeriesBase(series: string) {
+    private ensureSeriesBase(series: string) {
         // Make sure that some required structure is present in a series state object
         if (!(series in this.mergestate)) {
             this.mergestate[series] = {}

@@ -1,14 +1,17 @@
+/* eslint-disable lines-between-class-members */
 import _ from 'lodash'
 import fs from 'fs'
-import { db, pgp, ScorekeeperProtocol } from '@/db'
+import util from 'util'
+
+import { pgp, ScorekeeperProtocol, SYNCTABLES } from '@/db'
 import { MergeServer } from '@/db/mergeserverrepo'
 import { synclog } from '@/util/logging'
 import { MergeServerEntry } from './mergeserver'
-import { asyncwait, LOCAL_TIMEOUT, logtablefor, REMOTE_TIMEOUT } from './constants'
+import { asyncwait, LOCAL_TIMEOUT, logtablefor, PRIMARY_SETS, REMOTE_TIMEOUT } from './constants'
 import { parseTimestamp } from '@/common/util'
-import { DBObject, DeletedObject, getPK, LoggedObject, PrimaryKey } from './types'
+import { DBObject, DeletedObject, getPKHash, LoggedObject, PrimaryKey, PrimaryKeyHash } from './types'
 
-const dbmap = new Map<any, ScorekeeperProtocol>()
+const dbmap = new Map<string, ScorekeeperProtocol>()
 
 export class SyncError extends Error {
     constructor(message: string) {
@@ -19,60 +22,62 @@ export class SyncError extends Error {
 
 
 export function getRemoteDB(remote: MergeServer, series: string, password: string): ScorekeeperProtocol {
+    let address = remote.address
+    let port    = 54329
+
+    if (address && address.indexOf(':') > 0) {
+        const parts = remote.address.split(':')
+        address = parts[0]
+        port    = parseInt(parts[1])
+    }
+
     const cn = {
-        host: remote.address || remote.hostname,
-        port: 54239,
+        host: address || remote.hostname,
+        port: port,
         database: 'scorekeeper',
         user: series,
         password: password,
-        application_name: 'syncremote',
-        ssl: {
-            ca: fs.readFileSync('/certs/root.crt').toString(),
-            key: fs.readFileSync('/certs/server.cert').toString(),
+        application_name: 'syncremote'
+    } as any
+
+    if (port === 54329) {
+        cn.ssl =  {
+            ca: fs.readFileSync('/certs/root.cert').toString(),
+            key: fs.readFileSync('/certs/server.key').toString(),
             cert: fs.readFileSync('/certs/server.cert').toString(),
             rejectUnauthorized: true
             // checkServerIdentity ?
         }
     }
 
-    if (!dbmap.has(cn)) {
-        dbmap.set(cn, pgp(cn))
+    const key = [cn.host, cn.port, cn.user, cn.password].join(';')
+    if (!dbmap.has(key)) {
+        dbmap.set(key, pgp(cn))
     }
-
-    return dbmap.get(cn) as ScorekeeperProtocol
+    return dbmap.get(key) as ScorekeeperProtocol
 }
 
 
-export async function performSyncWrap(localserver: MergeServerEntry, remoteserver: MergeServerEntry, series: string,
+export async function performSyncWrap(roottask: ScorekeeperProtocol, localserver: MergeServerEntry, remoteserver: MergeServerEntry, series: string,
     execution: (wrap: SyncProcessInfo) => Promise<void>) {
-    await db.task(async localtask => {
-        const password = await localtask.merge.loadPassword(series)
-        const version  = await localtask.general.getSchemaVersion()
+    const password = await roottask.merge.loadPassword(series)
+    const version  = await roottask.general.getSchemaVersion()
 
-        if (!password) {
-            remoteserver.seriesDone(series, `No password for ${series}, skipping`)
-            return
-        }
-
-        await getRemoteDB(remoteserver, series, password).task(async remotetask => {
-            const wrap = new SyncProcessInfo(localtask, localserver, version, remotetask, remoteserver, series)
-            await wrap.setTimeouts()
-            try {
-                await wrap.getLocks()
-                await execution(wrap)
-            } finally {
-                await wrap.returnLocks()
-            }
-        })
-    })
-}
-
-export class WrappedSyncInfo {
-    myserver:     MergeServerEntry
-    remoteserver: MergeServerEntry
-    version:      string
-    constructor() { /* */
+    if (!password) {
+        remoteserver.seriesDone(series, `No password for ${series}, skipping`)
+        return
     }
+
+    await getRemoteDB(remoteserver, series, password).task(async remotetask => {
+        const wrap = new SyncProcessInfo(roottask, localserver, version, remotetask, remoteserver, series)
+        await wrap.setTimeouts()
+        try {
+            await wrap.getLocks()
+            await execution(wrap)
+        } finally {
+            await wrap.returnLocks()
+        }
+    })
 }
 
 export class SyncProcessInfo {
@@ -84,14 +89,15 @@ export class SyncProcessInfo {
     }
 
     async updateRemoteCache() {
-        return this.remoteserver.updateCacheFrom(this.remotetask, this.version, this.series)
+        return this.remoteserver.updateCacheFrom(this.remotetask, this.series, this.version)
     }
 
     async updateLocalCache() {
-        return this.localserver.updateCacheFrom(this.localtask, this.version, this.series)
+        return this.localserver.updateCacheFrom(this.localtask, this.series, this.version)
     }
 
     async remoteStatus(status: string) {
+        synclog.debug(status)
         this.remoteserver.seriesStatus(this.series, 'Commit Changes')
     }
 
@@ -112,12 +118,16 @@ export class SyncProcessInfo {
         return [...new Set([...Object.keys(ltables), ...Object.keys(rtables)].filter(table => ltables[table] !== rtables[table]))]
     }
 
-    async loadLocal(table: string)  { return this.load(this.localtask, table) }
-    async loadRemote(table: string) { return this.load(this.remotetask, table) }
+    async loadAll(table: string)  {
+        return Promise.all([
+            this.load(this.localtask, table),
+            this.load(this.remotetask, table)
+        ])
+    }
     private async load(task: ScorekeeperProtocol, table: string) {
-        const ret = new Map<PrimaryKey, DBObject>()
-        for (const row of await task.any('SELECT * FROM $1:sql', [table])) {
-            ret.set(getPK(table, row), row)
+        const ret = new Map<PrimaryKeyHash, DBObject>()
+        for (const row of await task.any('SELECT * FROM $1:raw', [table])) {
+            ret.set(getPKHash(table, row), row)
         }
         return ret
     }
@@ -128,32 +138,59 @@ export class SyncProcessInfo {
         return new Map<PrimaryKey, LoggedObject>()
     }
 
-    async deletedSinceLocal(table: string, when: Date)  { return this.deletedSince(this.localtask, table, when) }
-    async deletedSinceRemote(table: string, when: Date) { return this.deletedSince(this.localtask, table, when) }
-    private async deletedSince(task: ScorekeeperProtocol, table: string, when: Date) {
-        const ret = new Map<PrimaryKey, DeletedObject>()
-        for (const row of await task.any("SELECT otime, olddata FROM $1:sql WHERE action='D' AND tablen=$2 AND otime>$3", [logtablefor(table), table, when])) {
-            ret.set(getPK(table, row), { data: row.olddata, otime: parseTimestamp(row.otime) })
+    async deletedSince(table: string, localwhen: Date, remotewhen: Date)  {
+        return Promise.all([
+            this.deleted(this.localtask, table, localwhen),
+            this.deleted(this.remotetask, table, remotewhen)
+        ])
+    }
+    private async deleted(task: ScorekeeperProtocol, table: string, when: Date) {
+        const ret = new Map<PrimaryKeyHash, DeletedObject>()
+        for (const row of await task.any("SELECT otime, olddata FROM $1:raw WHERE action='D' AND tablen=$2 AND otime>$3", [logtablefor(table), table, when])) {
+            ret.set(getPKHash(table, row.olddata), { data: row.olddata, otime: parseTimestamp(row.otime) })
         }
         return ret
     }
 
 
-    async insertLocal(table: string, objs: DBObject[])  { return this.insert(this.localtask, table, objs) }
-    async insertRemote(table: string, objs: DBObject[]) { return this.insert(this.remotetask, table, objs) }
+    async insertAll(table: string, localobjs: DBObject[], remoteobjs: DBObject[])  {
+        return Promise.all([
+            this.insert(this.localtask, table, localobjs),
+            this.insert(this.remotetask, table, remoteobjs)
+        ])
+    }
     private async insert(task: ScorekeeperProtocol, table: string, objs: DBObject[]) {
-        return false
+        if (objs.length) {
+            await task.any(pgp.helpers.insert(objs, SYNCTABLES[table]))
+        }
+        return true
     }
 
-    async updateLocal(table: string, objs: DBObject[])  { return this.update(this.localtask, table, objs) }
-    async updateRemote(table: string, objs: DBObject[]) { return this.update(this.remotetask, table, objs) }
+
+    async updateAll(table: string, localobjs: DBObject[], remoteobjs: DBObject[])  {
+        return Promise.all([
+            this.update(this.localtask, table, localobjs),
+            this.update(this.remotetask, table, remoteobjs)
+        ])
+    }
     private async update(task: ScorekeeperProtocol, table: string, objs: DBObject[]) {
-        return false
+        if (objs.length) {
+            await task.none(pgp.helpers.update(objs, SYNCTABLES[table]))
+        }
+        return true
     }
 
-    async deleteLocal(table: string, objs: DeletedObject[])  { return this.delete(this.localtask, table, objs) }
-    async deleteRemote(table: string, objs: DeletedObject[]) { return this.delete(this.remotetask, table, objs) }
-    private async delete(task: ScorekeeperProtocol, table: string, objs: DeletedObject[]): Promise<DBObject[]> {
+
+    async deleteAll(table: string, localobjs: DeletedObject[], remoteobjs: DeletedObject[]) {
+        return Promise.all([
+            this.delete(this.localtask, table, localobjs.map(o => o.data)),
+            this.delete(this.remotetask, table, remoteobjs.map(o => o.data))
+        ])
+    }
+    private async delete(task: ScorekeeperProtocol, table: string, objs: DBObject[]): Promise<DBObject[]> {
+        for (const obj of objs) {
+            await task.none(`DELETE FROM ${table} WHERE ${PRIMARY_SETS[table]}`, obj)
+        }
         return []
     }
 
@@ -184,9 +221,11 @@ export class SyncProcessInfo {
         await Promise.all([cur1.series.setSeries(this.series), cur2.series.setSeries(this.series)])
 
         while (tries > 0) {
-            if ((await cur1.one('SELECT pg_try_advisory_lock(42) as lock')).lock) {
+            const stat1 = await cur1.one('SELECT pg_try_advisory_lock(42) as lock')
+            if (stat1.lock) {
                 this.lock1 = cur1
-                if ((await cur2.one('SELECT pg_try_advisory_lock(42)')).lock) {
+                const stat2 = await cur2.one('SELECT pg_try_advisory_lock(42) as lock')
+                if (stat2.lock) {
                     this.lock2 = cur2
                     synclog.debug('Acquired both locks')
                     return

@@ -1,4 +1,4 @@
-import { TABLES } from '@/db'
+import { SYNCTABLES } from '@/db'
 
 export const LOCAL_TIMEOUT  = 5
 export const PEER_TIMEOUT   = 8
@@ -63,7 +63,10 @@ function hashcommand(table: string, pklist: string[]): string {
 
 export const HASH_COMMANDS: {[table: string]: string} = {}
 export const PRIMARY_KEYS: {[table: string]: string[]} = {}
+export const PRIMARY_SETS: {[table: string]: string} = {}
 for (const table of TABLE_ORDER) {
-    PRIMARY_KEYS[table]  = TABLES[table].columns.filter(c => c.cnd).map(c => c.name)
+    PRIMARY_KEYS[table]  = SYNCTABLES[table].columns.filter(c => c.cnd).map(c => c.name)
     HASH_COMMANDS[table] = hashcommand(table, PRIMARY_KEYS[table])
+
+    PRIMARY_SETS[table] = PRIMARY_KEYS[table].map(key => `${key}=$(${key})`).join(' AND ')
 }

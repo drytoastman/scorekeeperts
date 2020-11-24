@@ -1,23 +1,32 @@
+import { v1 as uuidv1 } from 'uuid'
+
 import { ScorekeeperProtocol, pgp, db as dbx } from '@/db'
 import { runOnce } from '../process'
+import { ACTIVE } from '../mergeserver'
+import { synclog } from '@/util/logging'
 
-const testids = {
+export const testids = {
     driverid1: '00000000-0000-0000-0000-000000000001',
     carid1:    '00000000-0000-0000-0000-000000000002',
     carid2:    '00000000-0000-0000-0000-000000000003',
     carid3:    '00000000-0000-0000-0000-000000000004',
     eventid1:  '00000000-0000-0000-0000-000000000010',
+    accountid: 'paypalid',
+    itemid:    '00000000-0000-0000-0000-000000000051',
     series:    'testseries'
 }
 
-const SQL = `
+const RESET = `
 DROP SCHEMA IF EXISTS $(series:raw) CASCADE;
 DELETE FROM drivers;
+DELETE FROM mergeservers;
 DELETE FROM publiclog;
 
 SELECT verify_user($(series), $(series));
 SELECT verify_series($(series));
+`
 
+const BASE = `
 SET search_path=$(series),'public';
 
 INSERT INTO indexlist (indexcode, descrip, value) VALUES ('',   '', 1.000);
@@ -40,19 +49,35 @@ INSERT INTO runs (eventid, carid, course, rungroup, run, raw, status, attr) VALU
 INSERT INTO runs (eventid, carid, course, rungroup, run, raw, status, attr) VALUES ($(eventid1), $(carid1), 1, 1, 2, 2.0, 'OK', '{}');
 INSERT INTO runs (eventid, carid, course, rungroup, run, raw, status, attr) VALUES ($(eventid1), $(carid1), 1, 1, 3, 3.0, 'OK', '{}');
 INSERT INTO runs (eventid, carid, course, rungroup, run, raw, status, attr) VALUES ($(eventid1), $(carid1), 1, 1, 4, 4.0, 'OK', '{}');
+
+INSERT INTO mergeservers(serverid, hostname, address, ctimeout) VALUES ('00000000-0000-0000-0000-000000000000', 'localhost', '127.0.0.1', 10)
 `
+const ims = 'INSERT INTO mergeservers(serverid, hostname, address, ctimeout, hoststate) VALUES ($1, $2, $3, $4, $5)'
 
 const dbmap = new Map<number, ScorekeeperProtocol>()
 export function getTestDB(port: number): ScorekeeperProtocol {
     if (!dbmap.has(port)) {
+        synclog.warn(`opening port ${port}`)
         dbmap.set(port, pgp(Object.assign({}, dbx.$cn, { user: 'postgres', port: port })))
     }
     return dbmap.get(port) as ScorekeeperProtocol
 }
 
+async function resetImpl(p1: number, ports: number[], serverids: string[]) {
+    const d = getTestDB(p1)
+    await d.any(p1 === ports[0] ? RESET + BASE : RESET, testids)
+    for (let ii = 0; ii < ports.length; ii++) {
+        if (ports[ii] !== p1) {
+            await d.none(ims, [serverids[ii], `server${ports[ii]}`, `127.0.0.1:${ports[ii]}`, 5, ACTIVE])
+        }
+    }
+}
+
 export async function resetData(ports: number[]) {
     try {
-        await Promise.all(ports.map(p => getTestDB(p).none(SQL, testids)))
+        const serverids = ports.map(p1 => uuidv1())
+        await Promise.all(ports.map(p1 => resetImpl(p1, ports, serverids)))
+        await runOnce(getTestDB(ports[0]))
     } catch (error) {
         console.error(error)
     }
@@ -61,21 +86,34 @@ export async function resetData(ports: number[]) {
 export async function doSync(port: number, hosts?: string[]) {
     const db = getTestDB(port)
     if (hosts) {
-        db.none("UPDATE mergeservers SET lastcheck='epoch', nextcheck='epoch' WHERE hostname in ($1:csv)", [hosts])
+        await db.none("UPDATE mergeservers SET lastcheck='epoch', nextcheck='epoch' WHERE hostname in ($1:csv)", [hosts])
     } else {
-        db.none("UPDATE mergeservers SET lastcheck='epoch', nextcheck='epoch'")
+        await db.none("UPDATE mergeservers SET lastcheck='epoch', nextcheck='epoch'")
     }
-    runOnce(db)
+    await runOnce(db)
 }
 
-async function verifyObject(ports: number[], pid: any, coltuple: any, attrtuple: any, sql: string) {
-    const objs = {}
-    for (const port of ports) {
-        objs[port] = await getTestDB(port).one(sql, pid)
+export async function verifyObject(tasks: ScorekeeperProtocol[], sql: string, args: any) {
+    const base = await tasks[0].one(sql, args)
+    for (let ii = 1; ii < tasks.length; ii++) {
+        const other = await tasks[ii].oneOrNone(sql, args)
+        expect(base).toEqual(other)
     }
-    expect(objs[ports[0]]).toEqual(objs[ports[1]]) // only two ports for now
 }
 
-export async function verifyAccount(ports: number[], accountid: string, coltuple?: any) {
-    return verifyObject(ports, accountid, coltuple, [], 'SELECT * FROM paymentaccounts WHERE accountid=$1')
+export async function verifyObjectIs(tasks: ScorekeeperProtocol[], sql: string, args: any, expected: any) {
+    for (let ii = 0; ii < tasks.length; ii++) {
+        const val = await tasks[ii].oneOrNone(sql, args)
+        expect(val).toEqual(expected)
+    }
+}
+
+export async function with2DB(port1: number, port2: number, series: string, execution: (task1: ScorekeeperProtocol, task2: ScorekeeperProtocol) => Promise<void>) {
+    return getTestDB(port1).task(async task1 => {
+        return getTestDB(port2).task(async task2 => {
+            await task1.series.setSeries(series)
+            await task2.series.setSeries(series)
+            return execution(task1, task2)
+        })
+    })
 }

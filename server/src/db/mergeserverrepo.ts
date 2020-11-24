@@ -42,7 +42,7 @@ export class MergeServerRepository {
 
     async updateMergeItems(server: MergeServer, items: string[]) {
         // Record select changes in the mergeservers table so we don't overwrite frontend stuff
-        const args = items.map(item => `${item}=$(${item})`).join(' ')
+        const args = items.map(item => `${item}=$(${item})`).join(', ')
         const stmt = `UPDATE mergeservers SET ${args} WHERE serverid=$(serverid)`
         return this.db.none(stmt, server)
     }

@@ -2,11 +2,14 @@ import { IMain } from 'pg-promise'
 import { v1 as uuidv1 } from 'uuid'
 import { cleanAttr } from './helper'
 
-const created  = { name: 'created',  cast: 'timestamp',              init: (col: any): any => { return col.exists ? col.value : 'now()' } }
-const modified = { name: 'modified', cast: 'timestamp', mod: ':raw', init: (): any         => { return 'now()' } }
-const attr     = { name: 'attr',     cast: 'json',                   init: (col: any): any => { return cleanAttr(col.value) } }
+export function createColumnSets(pgp: IMain, keepModified = false) {
+    const created       = { name: 'created',  cast: 'timestamp',              init: (col: any): any => { return col.exists ? col.value : 'now()' } }
+    const resetmodified = { name: 'modified', cast: 'timestamp', mod: ':raw', init: (): any         => { return 'now()' } }
+    const keepmodified  = { name: 'modified', cast: 'timestamp' }
+    const attr          = { name: 'attr',     cast: 'json',                   init: (col: any): any => { return cleanAttr(col.value) } }
 
-export function createColumnSets(pgp: IMain) {
+    const modified = keepModified ? keepmodified : resetmodified
+
     return {
         drivers: new pgp.helpers.ColumnSet([
             { name: 'driverid', cnd: true, cast: 'uuid' },
