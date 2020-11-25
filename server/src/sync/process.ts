@@ -1,16 +1,17 @@
 import { isPast } from 'date-fns'
 import { EventEmitter } from 'events'
-import _ from 'lodash'
-import util from 'util'
 
+import { DefaultMap, difference, intersect } from '@/common/data'
+import { parseTimestamp } from '@/common/util'
 import { ScorekeeperProtocol } from '@/db'
 import { synclog } from '@/util/logging'
-import { MergeServerEntry } from './mergeserver'
-import { getRemoteDB, performSyncWrap, SyncProcessInfo } from './dbwrapper'
-import { DefaultMap, difference, intersect } from '@/common/data'
+
+import { getRemoteDB } from './connections'
 import { ADVANCED_UPDATE_TABLES, TABLE_ORDER } from './constants'
-import { parseTimestamp } from '@/common/util'
-import { DBObject, DeletedObject, getPKHash, KillSignal, KillSignalError, LoggedObject, PrimaryKeyHash, TableName } from './types'
+import { performSyncWrap, SyncProcessInfo } from './dbwrapper'
+import { MergeServerEntry } from './mergeserver'
+import { DBObject, DeletedObject, getPKHash, KillSignalError, PrimaryKeyHash, SyncErrors, TableName } from './types'
+
 
 export const syncwatcher = new EventEmitter()
 export let killsignal = false
@@ -136,7 +137,7 @@ async function mergeWith(roottask: ScorekeeperProtocol, myserver: MergeServerEnt
             error = e.toString()
             synclog.warn(`Merge with ${remoteserver.display}/${series} failed: ${e}`)
             syncwatcher.emit('exception', 'mergewith', { remote: remoteserver, exception: e })
-            if (e.name === KillSignal) throw e
+            if (e.name === SyncErrors.KillSignal) throw e
         } finally {
             await remoteserver.seriesDone(series, error)
         }
@@ -161,7 +162,6 @@ async function mergeTables(wrap: SyncProcessInfo, tables: string[]) {
             mtables = await mergeTablesInternal(wrap, mtables, watcher)
             if (mtables.length) {
                 synclog.warn(`unfinished tables = ${mtables}`)
-                break
             }
         }
         if (ii === 5) {
@@ -202,6 +202,10 @@ async function mergeTablesInternal(wrap: SyncProcessInfo, tables: string[], watc
 
         // Load data from both databases, load it all in one go to be more efficient in updates later
         // watcher.local() blah blah
+        if (t === 'drivers') {
+            console.log('here')
+        }
+
         const [localobj, remoteobj] = await wrap.loadAll(t)
         const [ldeleted, rdeleted]  = await wrap.deletedSince(t, minmodtime(remoteobj), minmodtime(localobj))
         // watcher.off()
@@ -212,16 +216,18 @@ async function mergeTablesInternal(wrap: SyncProcessInfo, tables: string[], watc
         // Keys in both databases
         for (const pk of intersect(l, r)) {
             const [lo, ro] = [localobj.get(pk) as DBObject, remoteobj.get(pk) as DBObject]
-            if (lo.modmsutc === ro.modmsutc) {
+            const lmod = parseTimestamp(lo.modified).getTime()
+            const rmod = parseTimestamp(ro.modified).getTime()
+
+            if (lmod === rmod) {
                 // Same keys, same modification time, filter out now, no need to further process
                 localobj.delete(pk)
                 remoteobj.delete(pk)
                 continue
-            }
-            if (lo.modmsutc > ro.modmsutc) {
+            } else if (lmod > rmod) {
                 remoteupdate.getD(t).push(lo)
             } else {
-                localupdate.getD(t).push(lo)
+                localupdate.getD(t).push(ro)
             }
         }
 
@@ -299,48 +305,29 @@ async function mergeTablesInternal(wrap: SyncProcessInfo, tables: string[], watc
     // If we have foreign key violations trying to delete, we need to readd those back to the opposite site and redo the merge
     // The only time this should ever occur is with the drivers table as its shared between series
     // execute single file on each database connection, but in parallel on different connections
-    await Promise.all([
-        async () => {
-            for (const t in remoteundelete) {
-                if (remoteundelete.getD(t).length) {
-                    synclog.warn(`Remote undelete requests for ${t}: ${remoteundelete.getD(t).length}`)
-                    await checkpoint('R-undelete', t)
-                    // await wrap.insertRemote(t, remoteinsert.getD(t))
-                }
-            }
-        },
-        async () => {
-            for (const t in localundelete) {
-                if (localundelete.getD(t).length) {
-                    synclog.warn(`Local udelete requests for ${t}: ${localundelete.getD(t).length}`)
-                    await checkpoint('L-undelete', t)
-                    // await wrap.insertLocal(t, localinsert.getD(t))
-                }
-            }
-        }
-    ])
+    wrap.undeleteAll(localundelete, remoteundelete)
 
     return [...unfinished]
 }
 
-async function advancedMerge(wrap: SyncProcessInfo, table: string, localobj: DBObject[], remoteobj: DBObject[]) {
+async function advancedMerge(wrap: SyncProcessInfo, table: string, localupdate: DBObject[], remoteupdate: DBObject[]) {
 
-    const local = new Map<PrimaryKeyHash, DBObject>()
-    const remote = new Map<PrimaryKeyHash, DBObject>()
-    const pkset = new Set<PrimaryKeyHash>()
-    for (const o of localobj)  {
+    const localup  = new Map<PrimaryKeyHash, DBObject>()
+    const remoteup = new Map<PrimaryKeyHash, DBObject>()
+    const pkset    = new Set<PrimaryKeyHash>()
+    for (const o of localupdate)  {
         const pk = getPKHash(table, o)
-        local.set(pk, o)
+        localup.set(pk, o)
         pkset.add(pk)
     }
-    for (const o of remoteobj) {
+    for (const o of remoteupdate) {
         const pk = getPKHash(table, o)
-        remote.set(pk, o)
+        remoteup.set(pk, o)
         pkset.add(pk)
     }
 
     // watcher.local()
-    const when = mincreatetime(localobj, remoteobj)
+    const when = mincreatetime(localupdate, remoteupdate)
     const loggedobj = await wrap.loggedObjects(pkset, table, when)
     // watcher.off()
 
@@ -351,14 +338,14 @@ async function advancedMerge(wrap: SyncProcessInfo, table: string, localobj: DBO
         if (!lo) {
             continue
         }
-        if (local.has(lo.pkhash)) {
-            const res = lo.finalize(local.get(lo.pkhash)!)
-            toupdater.push(res.obj)
-            if (res.both) toupdatel.push(res.obj)
-        } else {
-            const res = lo.finalize(remote.get(lo.pkhash)!)
+        if (localup.has(lo.pkhash)) {
+            const res = lo.finalize(localup.get(lo.pkhash)!)
             toupdatel.push(res.obj)
             if (res.both) toupdater.push(res.obj)
+        } else {
+            const res = lo.finalize(remoteup.get(lo.pkhash)!)
+            toupdater.push(res.obj)
+            if (res.both) toupdatel.push(res.obj)
         }
     }
 

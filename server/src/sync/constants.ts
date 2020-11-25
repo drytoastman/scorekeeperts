@@ -1,5 +1,6 @@
 import { SYNCTABLES } from '@/db'
 
+export const FOREIGN_KEY_CONSTRAINT = '23503'
 export const LOCAL_TIMEOUT  = 5
 export const PEER_TIMEOUT   = 8
 export const REMOTE_TIMEOUT = 60

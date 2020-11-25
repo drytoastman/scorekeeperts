@@ -14,6 +14,27 @@
             "program": "${workspaceFolder}/server/src/index.ts",
             "outFiles": ["${workspaceFolder}/server/tsbuild/**"],
             "skipFiles": ["<node_internals>/**"],
-        }
+        },
+        {
+            "type": "node",
+            "request": "attach",
+            "name": "Attach",
+            "port": 9229
+        },
+        {
+            "name": "Debug Jest Tests",
+            "cwd": "${workspaceFolder}/server",
+            "type": "node",
+            "request": "launch",
+            "runtimeArgs": [
+              "--inspect-brk",
+              "${workspaceRoot}/server/node_modules/jest/bin/jest.js",
+              "--runInBand",
+              "--testTimeout=1000000"
+            ],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "port": 9229
+          }
     ]
 }

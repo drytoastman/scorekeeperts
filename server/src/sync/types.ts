@@ -1,13 +1,12 @@
+import { addMilliseconds } from 'date-fns'
 import _ from 'lodash'
-import { addSeconds } from 'date-fns'
 import util from 'util'
 
-import { formatToTimestamp, UTCString } from '@/common/util'
+import { formatToMsTimestamp, UTCString } from '@/common/util'
 import { PRIMARY_KEYS } from './constants'
-import { ScorekeeperProtocol } from '@/db'
 import { synclog } from '@/util/logging'
 
-export type PrimaryKey = any[]
+
 export type PrimaryKeyHash = string
 export type TableName = string
 
@@ -19,28 +18,33 @@ export type DBObject = {
 
 export type DeletedObject = {
     data: DBObject
-    otime: Date
+    deletedat: Date
 }
 
-export const KillSignal = 'KillSignal'
+export enum SyncErrors  {
+    KillSignal = 'KillSignal',
+    SyncError  = 'SyncError'
+}
 export class KillSignalError extends Error {
     constructor() {
         super('kill signal received')
-        this.name = KillSignal
+        this.name = SyncErrors.KillSignal
+    }
+}
+export class SyncError extends Error {
+    constructor(message: string) {
+        super(message)
+        this.name = SyncErrors.SyncError
     }
 }
 
-export function getPK(table: string, obj: DBObject): PrimaryKey {
+
+export function getPKHash(table: string, obj: DBObject): PrimaryKeyHash {
     const ret = [] as any[]
     for (const key of PRIMARY_KEYS[table]) {
         ret.push(obj[key])
     }
-    return ret
-}
-
-export function getPKHash(table: string, obj: DBObject): PrimaryKeyHash {
-    const pk = getPK(table, obj)
-    return pk.join(';')
+    return ret.join(';')
 }
 
 
@@ -68,19 +72,13 @@ class UpdateObject {
     }
 }
 
-/*
-class PresentObject {
-    constructor(table, pkhash, data) {
-    }
-}
-*/
 
 function dbObjectDiff(olddata: DBObject, newdata: DBObject) {
     const odiff = {}
     const adiff = {}
     const deletedAttr = [] as string[]
     for (const key in newdata) {
-        if (key === 'attr') continue
+        if ((key === 'attr') || (key[0] === '_')) continue
         if (newdata[key] !== olddata[key]) {
             odiff[key] = newdata[key]
         }
@@ -98,6 +96,12 @@ function dbObjectDiff(olddata: DBObject, newdata: DBObject) {
 
     return { odiff, adiff, deletedAttr }
 }
+
+function dbObjectSame(left: DBObject, right: DBObject) {
+    const d = dbObjectDiff(left, right)
+    return _.isEmpty(d.odiff) && _.isEmpty(d.adiff) && d.deletedAttr.length === 0
+}
+
 
 export class LoggedObject {
     // An object loaded from the log data insert and following updates across multiple machines
@@ -149,9 +153,11 @@ export class LoggedObject {
 
         // Pick modified time based on object that didn't change or the final modtime + epsilon
         let both = false
-        if (!_.isEqual(last, data)) {
+        if (!dbObjectSame(last, data)) {
+            synclog.error(util.inspect(last))
+            synclog.error(util.inspect(data))
             both = true
-            data.modified = formatToTimestamp(addSeconds(new Date(data.modified), 1))
+            data.modified = formatToMsTimestamp(addMilliseconds(new Date(data.modified), 1))
         }
 
         return { obj: data, both: both }

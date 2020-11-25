@@ -2,23 +2,26 @@ import { IMain } from 'pg-promise'
 import { v1 as uuidv1 } from 'uuid'
 import { cleanAttr } from './helper'
 
-export function createColumnSets(pgp: IMain, keepModified = false) {
+export function createColumnSets(pgp: IMain, syncversion = false) {
     const created       = { name: 'created',  cast: 'timestamp',              init: (col: any): any => { return col.exists ? col.value : 'now()' } }
     const resetmodified = { name: 'modified', cast: 'timestamp', mod: ':raw', init: (): any         => { return 'now()' } }
     const keepmodified  = { name: 'modified', cast: 'timestamp' }
     const attr          = { name: 'attr',     cast: 'json',                   init: (col: any): any => { return cleanAttr(col.value) } }
+    const modified      = syncversion ? keepmodified : resetmodified
+    const drivercols    = [
+        { name: 'driverid', cnd: true, cast: 'uuid' },
+        'firstname', 'lastname', 'email', 'username',
+        { name: 'barcode', def: '' },
+        { name: 'optoutmail', def: false },
+        attr, created, modified
+    ]
 
-    const modified = keepModified ? keepmodified : resetmodified
+    if (syncversion) {
+        drivercols.push('password')
+    }
 
     return {
-        drivers: new pgp.helpers.ColumnSet([
-            { name: 'driverid', cnd: true, cast: 'uuid' },
-            'firstname', 'lastname', 'email', 'username',
-            { name: 'barcode', def: '' },
-            { name: 'optoutmail', def: false },
-            attr, created, modified
-        ], { table: 'drivers' }),
-
+        drivers: new pgp.helpers.ColumnSet(drivercols, { table: 'drivers' }),
 
         weekendmembers: new pgp.helpers.ColumnSet([
             { name: 'uniqueid', cnd: true, cast: 'uuid' },

@@ -1,8 +1,5 @@
-import util from 'util'
-
-import { DB1, DB2, doSync, getTestDB, resetData, testids, verifyObjectsAre, verifyObjectsLike, verifyObjectsSame, verifyUpdateLogChanges, with2DB } from './helpers'
-import { asyncwait } from '../constants'
 import { pgp } from '@/db'
+import { DB1, DB2, doSync, getTestDB, resetData, testids, timingpause, verifyObjectsAre, verifyObjectsLike, verifyUpdateLogChanges, with2DB } from './helpers'
 
 beforeEach(async () => {
     await resetData([DB1, DB2])
@@ -23,7 +20,8 @@ describe('driver sync tests', () => {
                 firstname: 'newfirst',
                 lastname: 'newlast',
                 email: 'newemail',
-                created: '1970-01-01 00:00:00',
+                password: testids.password,
+                created: '1970-01-01T00:00:00',
                 attr: {
                     address: '123', zip: '98222'
                 }
@@ -31,23 +29,20 @@ describe('driver sync tests', () => {
 
             // Modify firstname and address on A
             await task1.none('UPDATE drivers SET firstname=$1,attr=$2:json,modified=now() where driverid=$3', ['newfirst', { address: '123' }, testids.driverid1])
-            await asyncwait(250)
+            await timingpause()
 
             // Modify lastname and zip on B, insert some spurious log data that isn't relavant to us
             await task2.none('UPDATE drivers SET lastname=$1,attr=$2:json,modified=now() where driverid=$3', ['newlast', { zip: '98111' }, testids.driverid1])
             await task2.none('INSERT INTO publiclog (usern, app, tablen, action, otime, ltime, olddata, newdata) ' +
                              "VALUES ('x', 'y', 'drivers', 'I', now(), now(), '{}', $1:json)", [cruft1])
-            await asyncwait(50)
             await task2.none('INSERT INTO publiclog (usern, app, tablen, action, otime, ltime, olddata, newdata) ' +
                              "VALUES ('x', 'y', 'drivers', 'U', now(), now(), $1:json, $2:json)", [cruft1, cruft2])
-            await asyncwait(50)
             await task2.none('INSERT INTO publiclog (usern, app, tablen, action, otime, ltime, olddata, newdata) ' +
                              "VALUES ('x', 'y', 'drivers', 'D', now(), now(), $1:json, '{}')", [cruft2])
-            await asyncwait(250)
+            await timingpause()
 
             // Modify email and zip on A
             await task1.none('UPDATE drivers SET email=$1,attr=$2:json,modified=now() where driverid=$3', ['newemail', { address: '123', zip: '98222' }, testids.driverid1])
-            await asyncwait(250)
             await doSync(DB1)
 
             await verifyUpdateLogChanges([task1, task2], 'drivers')
@@ -55,8 +50,6 @@ describe('driver sync tests', () => {
 
             // Remove zip
             await task1.none('UPDATE drivers SET attr=$1:json,modified=now() where driverid=$2', [{ address: '123' }, testids.driverid1])
-            await asyncwait(500)
-
             await doSync(DB1)
 
             expected.attr.zip = undefined
@@ -70,7 +63,6 @@ describe('driver sync tests', () => {
             await task2.none('DELETE FROM runs WHERE carid in (SELECT carid FROM cars WHERE driverid=$1)', [testids.driverid1])
             await task2.none('DELETE FROM cars WHERE driverid=$1', [testids.driverid1])
             await task2.none('DELETE FROM drivers WHERE driverid=$1', [testids.driverid1])
-            // await asyncwait(200)
 
             await doSync(DB1)
             await verifyUpdateLogChanges([task1, task2], 'drivers')

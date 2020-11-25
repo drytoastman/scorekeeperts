@@ -6,9 +6,11 @@ import { ScorekeeperProtocol, pgp, db as dbx, ScorekeeperProtocolDB } from '@/db
 import { runOnce } from '../process'
 import { ACTIVE } from '../mergeserver'
 import { synclog } from '@/util/logging'
+import { asyncwait } from '../constants'
 
 export const testids = {
     driverid1: '00000000-0000-0000-0000-000000000001',
+    password:  '$2b$12$g0z0JiGEuCudjhUF.5aawOlho3fpnPqKrV1EALTd1Cl/ThQQpFi2K',
     carid1:    '00000000-0000-0000-0000-000000000002',
     carid2:    '00000000-0000-0000-0000-000000000003',
     carid3:    '00000000-0000-0000-0000-000000000004',
@@ -46,7 +48,7 @@ INSERT INTO classlist (classcode, descrip, indexcode, caridxrestrict, classmulti
 INSERT INTO classlist (classcode, descrip, indexcode, caridxrestrict, classmultiplier, carindexed, usecarflag, eventtrophy, champtrophy, secondruns, countedruns, modified) VALUES ('c4', '', '', '', 1.0, 't', 'f', 't', 't', 'f', 0, now());
 INSERT INTO classlist (classcode, descrip, indexcode, caridxrestrict, classmultiplier, carindexed, usecarflag, eventtrophy, champtrophy, secondruns, countedruns, modified) VALUES ('c5', '', '', '', 1.0, 't', 'f', 't', 't', 'f', 0, now());
 
-INSERT INTO drivers (driverid, firstname, lastname, email, username, password, created) VALUES ($(driverid1), 'first', 'last', 'email', 'username', '$2b$12$g0z0JiGEuCudjhUF.5aawOlho3fpnPqKrV1EALTd1Cl/ThQQpFi2K', '1970-01-01T00:00:00');
+INSERT INTO drivers (driverid, firstname, lastname, email, username, password, created) VALUES ($(driverid1), 'first', 'last', 'email', 'username', $(password), '1970-01-01T00:00:00');
 INSERT INTO cars    (carid, driverid, classcode, indexcode, number, useclsmult, attr, modified) VALUES ($(carid1), $(driverid1), 'c1', 'i1', 1, 'f', '{}', now());
 INSERT INTO cars    (carid, driverid, classcode, indexcode, number, useclsmult, attr, modified) VALUES ($(carid2), $(driverid1), 'c1', 'i1', 1, 'f', '{}', now());
 INSERT INTO cars    (carid, driverid, classcode, indexcode, number, useclsmult, attr, modified) VALUES ($(carid3), $(driverid1), 'c1', 'i1', 1, 'f', '{}', now());
@@ -66,26 +68,39 @@ const ims = 'INSERT INTO mergeservers(serverid, hostname, address, ctimeout, hos
 const dbmap = new Map<number, ScorekeeperProtocolDB>()
 export function getTestDB(port: number): ScorekeeperProtocolDB {
     if (!dbmap.has(port)) {
-        synclog.warn(`opening port ${port}`)
         dbmap.set(port, pgp(Object.assign({}, dbx.$cn, { user: 'postgres', port: port })))
     }
     return dbmap.get(port) as ScorekeeperProtocolDB
 }
 
-async function resetImpl(p1: number, ports: number[], serverids: string[]) {
-    const d = getTestDB(p1)
-    await d.any(p1 === ports[0] ? RESET + BASE : RESET, testids)
-    for (let ii = 0; ii < ports.length; ii++) {
-        if (ports[ii] !== p1) {
-            await d.none(ims, [serverids[ii], `server${ports[ii]}`, `127.0.0.1:${ports[ii]}`, 5, ACTIVE])
-        }
-    }
+export async function with2DB(port1: number, port2: number, series: string, execution: (task1: ScorekeeperProtocol, task2: ScorekeeperProtocol) => Promise<void>) {
+    return getTestDB(port1).task(async task1 => {
+        return getTestDB(port2).task(async task2 => {
+            await task1.series.setSeries(series)
+            await task2.series.setSeries(series)
+            return await execution(task1, task2)
+        })
+    })
 }
+
+export async function timingpause() {
+    // need change in mod times in database, add a 10ms break here
+    return asyncwait(10)
+}
+
 
 export async function resetData(ports: number[]) {
     try {
         const serverids = ports.map(p1 => uuidv1())
-        await Promise.all(ports.map(p1 => resetImpl(p1, ports, serverids)))
+        await Promise.all(ports.map(async (p1: number) => {
+            const d = getTestDB(p1)
+            await d.any(p1 === ports[0] ? RESET + BASE : RESET, testids)
+            for (let ii = 0; ii < ports.length; ii++) {
+                if (ports[ii] !== p1) {
+                    await d.none(ims, [serverids[ii], `server${ports[ii]}`, `127.0.0.1:${ports[ii]}`, 5, ACTIVE])
+                }
+            }
+        }))
         await runOnce(getTestDB(ports[0]))
     } catch (error) {
         console.error(error)
@@ -102,19 +117,8 @@ export async function doSync(port: number, hosts?: string[]) {
     await runOnce(db)
 }
 
-export async function verifyObjectsSame(tasks: ScorekeeperProtocol[], sql: string, args: any) {
-    const base = await tasks[0].one(sql, args)
-    for (let ii = 1; ii < tasks.length; ii++) {
-        const other = await tasks[ii].oneOrNone(sql, args)
-        expect(base).toEqual(other)
-    }
-}
 
-export async function verifyObjectsAre(tasks: ScorekeeperProtocol[], sql: string, args: any, expected: any) {
-    for (const t of tasks) {
-        expect(await t.oneOrNone(sql, args)).toEqual(expected)
-    }
-}
+/** Verification helpers **/
 
 expect.extend({
     toBeAttrLike(received: any, like: any) {
@@ -129,27 +133,58 @@ expect.extend({
     }
 })
 
-export async function verifyObjectsLike(tasks: ScorekeeperProtocol[], sql: string, args: any, like: any) {
-    for (const t of tasks) {
-        (expect(await t.oneOrNone(sql, args)) as any).toBeAttrLike(like)
-    }
-}
-
-export async function verifyUpdateLogChanges(tasks: ScorekeeperProtocol[], table: string) {
-    for (const t of tasks) {
-        for (const row of await t.any("SELECT * from publiclog where tablen=$1 and action='U'", [table])) {
-            const diff = odiff(row.olddata, row.newdata)
-            expect(Object.keys(diff)).not.toEqual(['modified']) // not just modified that changed though trigger should catch that
+declare global {
+    namespace jest {
+        interface Matchers<R, T = {}> {
+            toBeAttrLike<E = any>(expected: E): R;
         }
     }
 }
 
-export async function with2DB(port1: number, port2: number, series: string, execution: (task1: ScorekeeperProtocol, task2: ScorekeeperProtocol) => Promise<void>) {
-    return getTestDB(port1).task(async task1 => {
-        return getTestDB(port2).task(async task2 => {
-            await task1.series.setSeries(series)
-            await task2.series.setSeries(series)
-            return await execution(task1, task2)
-        })
-    })
+/**
+ * Object are the same on all databases, don't check actual value
+ */
+export async function verifyObjectsSame(tasks: ScorekeeperProtocol[], sql: string, args: any) {
+    const base = await tasks[0].one(sql, args)
+    for (let ii = 1; ii < tasks.length; ii++) {
+        const other = await tasks[ii].oneOrNone(sql, args)
+        expect(base).toEqual(other)
+    }
+}
+
+/**
+ * Object are the same on all databases and are equal to expected value
+ */
+export async function verifyObjectsAre(tasks: ScorekeeperProtocol[], sql: string, args: any, expected: any) {
+    for (const t of tasks) {
+        expect(await t.oneOrNone(sql, args)).toEqual(expected)
+    }
+}
+
+/**
+ * Objects on all databases have the given property values
+ */
+export async function verifyObjectsLike(tasks: ScorekeeperProtocol[], sql: string, args: any, like: any) {
+    for (const t of tasks) {
+        expect(await t.oneOrNone(sql, args)).toBeAttrLike(like)
+    }
+}
+
+/**
+ * There should never be a log entry with only the modified value as the change
+ */
+export async function verifyUpdateLogChanges(tasks: ScorekeeperProtocol[], table: string) {
+    for (const t of tasks) {
+        for (const row of await t.any("SELECT * from publiclog where tablen=$1 and action='U'", [table])) {
+            const diff = odiff(row.olddata, row.newdata)
+            try {
+                expect(Object.keys(diff)).not.toEqual(['modified']) // not just modified that changed though trigger should catch that
+            } catch (error) {
+                synclog.error(util.inspect(row))
+                // synclog.error(util.inspect(row.newdata))
+                synclog.error(util.inspect(diff))
+                throw error
+            }
+        }
+    }
 }

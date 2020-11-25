@@ -71,7 +71,9 @@ const cn = {
 }
 
 export const pgp = pgpromise(initOptions)
-pgp.pg.types.setTypeParser(pgp.pg.types.builtins.TIMESTAMP, function(stringValue) { return stringValue })
+// Date have to store as strings in JSON anyhow (which is how we serve all the data), so don't bother parsing
+// keeps the date parsing in the UI more straight forward as well (no timezones)
+pgp.pg.types.setTypeParser(pgp.pg.types.builtins.TIMESTAMP, function(stringValue) { return stringValue.replace(' ', 'T') })
 pgp.pg.types.setTypeParser(pgp.pg.types.builtins.DATE, function(stringValue) { return stringValue })
 export const db = pgp(cn)
 export const tableWatcher = new TableWatcher(db)

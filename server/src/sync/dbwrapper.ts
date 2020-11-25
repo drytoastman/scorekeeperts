@@ -1,63 +1,13 @@
-/* eslint-disable lines-between-class-members */
-import _ from 'lodash'
-import fs from 'fs'
-import util from 'util'
-
-import { pgp, ScorekeeperProtocol, SYNCTABLES } from '@/db'
-import { MergeServer } from '@/db/mergeserverrepo'
-import { synclog } from '@/util/logging'
-import { MergeServerEntry } from './mergeserver'
-import { asyncwait, LOCAL_TIMEOUT, logtablefor, PRIMARY_SETS, REMOTE_TIMEOUT } from './constants'
 import { parseTimestamp } from '@/common/util'
-import { DBObject, DeletedObject, getPKHash, LoggedObject, PrimaryKey, PrimaryKeyHash } from './types'
-
-const dbmap = new Map<string, ScorekeeperProtocol>()
-
-export class SyncError extends Error {
-    constructor(message: string) {
-        super(message)
-        this.name = 'SyncError'
-    }
-}
+import { pgp, ScorekeeperProtocol, SYNCTABLES } from '@/db'
+import { synclog } from '@/util/logging'
+import { getRemoteDB } from './connections'
+import { asyncwait, FOREIGN_KEY_CONSTRAINT, LOCAL_TIMEOUT, logtablefor, PRIMARY_SETS, REMOTE_TIMEOUT } from './constants'
+import { MergeServerEntry } from './mergeserver'
+import { DBObject, DeletedObject, getPKHash, LoggedObject, PrimaryKeyHash, SyncError, TableName } from './types'
 
 
-export function getRemoteDB(remote: MergeServer, series: string, password: string): ScorekeeperProtocol {
-    let address = remote.address
-    let port    = 54329
-
-    if (address && address.indexOf(':') > 0) {
-        const parts = remote.address.split(':')
-        address = parts[0]
-        port    = parseInt(parts[1])
-    }
-
-    const cn = {
-        host: address || remote.hostname,
-        port: port,
-        database: 'scorekeeper',
-        user: series,
-        password: password,
-        application_name: 'syncremote'
-    } as any
-
-    if (port === 54329) {
-        cn.ssl =  {
-            ca: fs.readFileSync('/certs/root.cert').toString(),
-            key: fs.readFileSync('/certs/server.key').toString(),
-            cert: fs.readFileSync('/certs/server.cert').toString(),
-            rejectUnauthorized: true
-            // checkServerIdentity ?
-        }
-    }
-
-    const key = [cn.host, cn.port, cn.user, cn.password].join(';')
-    if (!dbmap.has(key)) {
-        dbmap.set(key, pgp(cn))
-    }
-    return dbmap.get(key) as ScorekeeperProtocol
-}
-
-
+/* eslint-disable lines-between-class-members */
 export async function performSyncWrap(roottask: ScorekeeperProtocol, localserver: MergeServerEntry, remoteserver: MergeServerEntry, series: string,
     execution: (wrap: SyncProcessInfo) => Promise<void>) {
     const password = await roottask.merge.loadPassword(series)
@@ -127,7 +77,6 @@ export class SyncProcessInfo {
     private async load(task: ScorekeeperProtocol, table: string) {
         const ret = new Map<PrimaryKeyHash, DBObject>()
         for (const row of await task.any('SELECT * FROM $1:raw', [table])) {
-            row.modmsutc = parseTimestamp(row.modified).getTime()
             ret.set(getPKHash(table, row), row)
         }
         return ret
@@ -157,15 +106,8 @@ export class SyncProcessInfo {
             }
         }
         return objmap
-        // return this.logged(this.localtask, loggedobj, pkset, table, when)
     }
 
-    /*
-    async loggedRemote(loggedobj, pkset, table, when) { return this.logged(this.remotetask, loggedobj, pkset, table, when) }
-    async logged(task: ScorekeeperProtocol, loggedobj: DBObject, pkset: Set<any>, table: string, when: Date) {
-        return new Map<PrimaryKey, LoggedObject>()
-    }
-    */
 
     async deletedSince(table: string, localwhen: Date, remotewhen: Date)  {
         return Promise.all([
@@ -176,7 +118,7 @@ export class SyncProcessInfo {
     private async deleted(task: ScorekeeperProtocol, table: string, when: Date) {
         const ret = new Map<PrimaryKeyHash, DeletedObject>()
         for (const row of await task.any("SELECT otime, olddata FROM $1:raw WHERE action='D' AND tablen=$2 AND otime>$3", [logtablefor(table), table, when])) {
-            ret.set(getPKHash(table, row.olddata), { data: row.olddata, otime: parseTimestamp(row.otime) })
+            ret.set(getPKHash(table, row.olddata), { data: row.olddata, deletedat: parseTimestamp(row.otime) })
         }
         return ret
     }
@@ -190,7 +132,12 @@ export class SyncProcessInfo {
     }
     private async insert(task: ScorekeeperProtocol, table: string, objs: DBObject[]) {
         if (objs.length) {
-            await task.any(pgp.helpers.insert(objs, SYNCTABLES[table]))
+            try {
+                await task.any(pgp.helpers.insert(objs, SYNCTABLES[table]))
+            } catch (error) {
+                if (error.code === FOREIGN_KEY_CONSTRAINT) return false
+                throw error
+            }
         }
         return true
     }
@@ -204,7 +151,12 @@ export class SyncProcessInfo {
     }
     private async update(task: ScorekeeperProtocol, table: string, objs: DBObject[]) {
         if (objs.length) {
-            await task.none(pgp.helpers.update(objs, SYNCTABLES[table]))
+            try {
+                await task.none(pgp.helpers.update(objs, SYNCTABLES[table]))
+            } catch (error) {
+                if (error.code === FOREIGN_KEY_CONSTRAINT) return false
+                throw error
+            }
         }
         return true
     }
@@ -212,15 +164,43 @@ export class SyncProcessInfo {
 
     async deleteAll(table: string, localobjs: DeletedObject[], remoteobjs: DeletedObject[]) {
         return Promise.all([
-            this.delete(this.localtask, table, localobjs.map(o => o.data)),
-            this.delete(this.remotetask, table, remoteobjs.map(o => o.data))
+            this.delete(this.localtask, table, localobjs),
+            this.delete(this.remotetask, table, remoteobjs)
         ])
     }
-    private async delete(task: ScorekeeperProtocol, table: string, objs: DBObject[]): Promise<DBObject[]> {
+    private async delete(task: ScorekeeperProtocol, table: string, objs: DeletedObject[]): Promise<DBObject[]> {
+        const logtable = logtablefor(table)
+        const undelete = [] as DBObject[]
         for (const obj of objs) {
-            await task.none(`DELETE FROM ${table} WHERE ${PRIMARY_SETS[table]}`, obj)
+            try {
+                if (!obj.deletedat) throw Error('deleteobj without deletedat value')
+                await task.none(`DELETE FROM ${table} WHERE ${PRIMARY_SETS[table]}`, obj.data)
+                await task.none('UPDATE $1:raw SET otime=$2 WHERE otime=CURRENT_TIMESTAMP', [logtable, obj.deletedat])
+            } catch (error) {
+                if (error.code === FOREIGN_KEY_CONSTRAINT) {
+                    synclog.warn(`adding ${getPKHash(table, obj.data)} to undelete`)
+                    undelete.push(obj.data)
+                } else {
+                    throw error
+                }
+            }
         }
-        return []
+        return undelete
+    }
+
+    async undeleteAll(localmap: Map<TableName, DBObject[]>, remotemap: Map<TableName, DBObject[]>) {
+        return Promise.all([
+            this.undelete(this.localtask, localmap),
+            this.undelete(this.remotetask, remotemap)
+        ])
+    }
+    private async undelete(task: ScorekeeperProtocol, tablemap: Map<TableName, DBObject[]>): Promise<void> {
+        for (const [table, objs] of tablemap.entries()) {
+            if (objs.length) {
+                synclog.warn(`undelete requests for ${table}: ${objs.length}`)
+                await task.any(pgp.helpers.insert(objs, SYNCTABLES[table]))
+            }
+        }
     }
 
 

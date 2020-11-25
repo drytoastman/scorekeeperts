@@ -7,11 +7,14 @@ export type UTCString = string;
 export type VuetifyValidationRule  = (value: any) => string | boolean
 export type VuetifyValidationRules = VuetifyValidationRule[]
 
-export const tzoffset = new Date().getTimezoneOffset()
 export function parseDate(date: DateString):          Date { return parse(date, 'yyyy-MM-dd', new Date()) }
 export function parseTimestamp(timestamp: UTCString): Date { return new Date(timestamp) }
-export function parseTimestampLocal(timestamp: UTCString): Date {  return subMinutes(parseTimestamp(timestamp), tzoffset) }
-export function formatToTimestamp(val: Date): string       { return format(val, 'yyyy-MM-dd HH:mm:ss') }
+export function formatToTimestamp(val: Date): string       { return format(val, "yyyy-MM-dd'T'HH:mm:ss") }
+export function formatToMsTimestamp(val: Date): string     { return format(val, "yyyy-MM-dd'T'HH:mm:ss.SSSSSS") }
+export function parseTimestampLocal(timestamp: UTCString): Date {
+    const t = parseTimestamp(timestamp)
+    return subMinutes(t, t.getTimezoneOffset())
+}
 
 export interface DataValidationRules {
     [key: string]: VuetifyValidationRules;
