@@ -1,6 +1,7 @@
 import fs from 'fs'
 import { pgp, ScorekeeperProtocolDB } from '@/db'
 import { MergeServer } from '@/db/mergeserverrepo'
+import { PEER_TIMEOUT, REMOTE_TIMEOUT } from './constants'
 
 const dbmap = new Map<string, ScorekeeperProtocolDB>()
 
@@ -20,7 +21,8 @@ export function getRemoteDB(remote: MergeServer, series: string, password: strin
         database: 'scorekeeper',
         user: series,
         password: password,
-        application_name: 'syncremote'
+        application_name: 'syncremote',
+        idle_in_transaction_session_timeout: address ? PEER_TIMEOUT : REMOTE_TIMEOUT
     } as any
 
     if (port === 54329) {

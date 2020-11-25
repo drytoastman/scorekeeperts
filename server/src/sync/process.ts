@@ -7,15 +7,13 @@ import { ScorekeeperProtocol } from '@/db'
 import { synclog } from '@/util/logging'
 
 import { getRemoteDB } from './connections'
-import { ADVANCED_UPDATE_TABLES, INTERTWINED_DATA, TABLE_ORDER } from './constants'
+import { ADVANCED_UPDATE_TABLES, INTERTWINED_DATA, LOCAL_TIMEOUT, TABLE_ORDER } from './constants'
 import { performSyncWrap, SyncProcessInfo } from './dbwrapper'
 import { MergeServerEntry } from './mergeserver'
 import { DBObject, DeletedObject, getPKHash, KillSignalError, PrimaryKeyHash, SyncError, SyncErrors, TableName } from './types'
 
-
 export const syncwatcher = new EventEmitter()
 export let killsignal = false
-
 
 function minmodtime(objs: Map<any, any>): Date {
     let ret = 0
@@ -44,6 +42,8 @@ function mincreatetime(objs: DBObject[], objs2: DBObject[]): Date {
 export async function runOnce(rootdb: ScorekeeperProtocol) {
     killsignal = false
     await rootdb.task(async roottask => {
+        await roottask.none('SET idle_in_transaction_session_timeout=$1', [LOCAL_TIMEOUT])
+
         let myserver: MergeServerEntry
         try {
             myserver = new MergeServerEntry(await roottask.merge.getLocalMergeServer(), roottask)
@@ -72,7 +72,7 @@ export async function runOnce(rootdb: ScorekeeperProtocol) {
                     await remote.serverDone()
                 } catch (e) {
                     synclog.error(`Caught exception merging with ${remote.display}: ${e}`)
-                    syncwatcher.emit('exception', 'mergeloop', { remote: remote, exception: e })
+                    syncwatcher.emit('exception', { label: 'mergeloop', remote: remote, exception: e })
                     await remote.serverError(e.toString())
                 }
             }
@@ -80,7 +80,7 @@ export async function runOnce(rootdb: ScorekeeperProtocol) {
 
     }).catch(error => {
         synclog.error(`Caught exception in main loop: ${error}`)
-        syncwatcher.emit('exception', 'runonce', { exception: error })
+        syncwatcher.emit('exception', { label: 'runonce', exception: error })
         throw error
     })
 
@@ -103,7 +103,7 @@ async function mergeRuns(roottask: ScorekeeperProtocol, myserver: MergeServerEnt
     } catch (e) {
         error = e
         synclog.warn(`Quick runs with ${remoteserver.hostname}/${series} failed: ${e}`)
-        syncwatcher.emit('exception', 'mergruns', { remote: remoteserver, exception: e })
+        syncwatcher.emit('exception', { label: 'mergruns', remote: remoteserver, exception: e })
     } finally {
         remoteserver.runsDone(series, error)
     }
@@ -142,7 +142,7 @@ async function mergeWith(roottask: ScorekeeperProtocol, myserver: MergeServerEnt
         } catch (e) {
             error = e.toString()
             synclog.warn(`Merge with ${remoteserver.display}/${series} failed: ${e}`)
-            syncwatcher.emit('exception', 'mergewith', { remote: remoteserver, exception: e })
+            syncwatcher.emit('exception', { label: 'mergewith', remote: remoteserver, exception: e })
             if (e.name === SyncErrors.KillSignal) throw e
         } finally {
             await remoteserver.seriesDone(series, error)
@@ -153,43 +153,34 @@ async function mergeWith(roottask: ScorekeeperProtocol, myserver: MergeServerEnt
 
 async function mergeTables(wrap: SyncProcessInfo, tables: string[]) {
     // Outer loop to rerun mergeTables and rerun, if for some reason we are still not up to date
-    let watcher
-    try {
-        const count = 0
-        // watcher = DBWatcher(wrap)  FINISH ME, do we still need to track blocking the frontend apps?
-        // watcher.start()
-
-        let mtables = [...tables] // copy table
-        let ii
-        for (ii = 0; ii < 5; ii++) {
-            if (mtables.length <= 0) {
-                break
-            }
-            mtables = await mergeTablesInternal(wrap, mtables, watcher)
-            if (mtables.length) {
-                synclog.warn(`unfinished tables = ${mtables}`)
-            }
+    let mtables = [...tables] // copy table
+    let ii
+    for (ii = 0; ii < 5; ii++) {
+        if (mtables.length <= 0) {
+            break
         }
-        if (ii === 5) {
-            synclog.error('Ran merge tables 5 times and not complete.')
+        mtables = await mergeTablesInternal(wrap, mtables)
+        if (mtables.length) {
+            synclog.warn(`unfinished tables = ${mtables}`)
         }
-
-        // Rescan the tables to verify we are at the same state, do this in context of DBWatcher for slow connections
-        wrap.clearRemoteError()
-        await wrap.updateRemoteCache()
-        await wrap.updateLocalCache()
-    } finally {
-        // if (watcher) watcher.stop()
     }
+    if (ii === 5) {
+        synclog.error('Ran merge tables 5 times and not complete.')
+    }
+
+    // Rescan the tables to verify we are at the same state
+    wrap.clearRemoteError()
+    await wrap.updateRemoteCache()
+    await wrap.updateLocalCache()
 }
 
 
-async function mergeTablesInternal(wrap: SyncProcessInfo, tables: string[], watcher: any): Promise<string[]> {
+async function mergeTablesInternal(wrap: SyncProcessInfo, tables: string[]): Promise<string[]> {
 
-    const checkpoint = async (type, table) => {
+    const checkpoint = async (type: string, table: string) => {
         if (killsignal) throw new KillSignalError()
         await wrap.remoteStatus(`${type} ${table}`)
-        syncwatcher.emit(type, { table: table, wrap, watcher })
+        syncwatcher.emit(type, { table, wrap })
     }
 
     const localinsert   = new DefaultMap<TableName, DBObject[]>(() => [])
@@ -207,10 +198,8 @@ async function mergeTablesInternal(wrap: SyncProcessInfo, tables: string[], watc
         await checkpoint('analysis', t)
 
         // Load data from both databases, load it all in one go to be more efficient in updates later
-        // watcher.local() blah blah
         const [localobj, remoteobj] = await wrap.loadAll(t)
         const [ldeleted, rdeleted]  = await wrap.deletedSince(t, minmodtime(remoteobj), minmodtime(localobj))
-        // watcher.off()
 
         let l = new Set(localobj.keys())
         let r = new Set(remoteobj.keys())
@@ -268,10 +257,8 @@ async function mergeTablesInternal(wrap: SyncProcessInfo, tables: string[], watc
         if (localinsert.getD(t).length || remoteinsert.getD(t).length) {
             await checkpoint('insert', t)
 
-            // watcher.local()
             const complete = await wrap.insertAll(t, localinsert.getD(t), remoteinsert.getD(t))
             if (complete.some(v => !v)) unfinished.add(t)
-            // watcher.off()
         }
     }
 
@@ -287,10 +274,8 @@ async function mergeTablesInternal(wrap: SyncProcessInfo, tables: string[], watc
             if (ADVANCED_UPDATE_TABLES.includes(t)) {
                 await advancedMerge(wrap, t, localupdate.getD(t), remoteupdate.getD(t))
             } else {
-                // watcher.local()
                 const complete = await wrap.updateAll(t, localupdate.getD(t), remoteupdate.getD(t))
                 if (complete.some(v => !v)) unfinished.add(t)
-                // watcher.off()
             }
         }
 
@@ -334,10 +319,8 @@ async function advancedMerge(wrap: SyncProcessInfo, table: string, localupdate: 
         pkset.add(pk)
     }
 
-    // watcher.local()
     const when = mincreatetime(localupdate, remoteupdate)
     const loggedobj = await wrap.loggedObjects(pkset, table, when)
-    // watcher.off()
 
     // Create update objects and then update where needed
     const toupdatel = [] as DBObject[]
@@ -357,7 +340,5 @@ async function advancedMerge(wrap: SyncProcessInfo, table: string, localupdate: 
         }
     }
 
-    // watcher.local()
     await wrap.updateAll(table, toupdatel, toupdater)
-    // watcher.off()
 }

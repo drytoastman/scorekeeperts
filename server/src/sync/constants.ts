@@ -1,11 +1,9 @@
 import { pgp, SYNCTABLES } from '@/db'
 
 export const FOREIGN_KEY_CONSTRAINT = '23503'
-export const LOCAL_TIMEOUT  = 5
-export const PEER_TIMEOUT   = 8
-export const REMOTE_TIMEOUT = 60
-export const APP_TIME_LIMIT = 3.0
-export const WEB_TIME_LIMIT = 5.0
+export const LOCAL_TIMEOUT  = 5000
+export const PEER_TIMEOUT   = 8000
+export const REMOTE_TIMEOUT = 60000
 
 export const TABLE_ORDER = [
     'drivers',

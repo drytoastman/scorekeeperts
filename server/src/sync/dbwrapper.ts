@@ -3,7 +3,7 @@ import { parseTimestamp } from '@/common/util'
 import { pgp, ScorekeeperProtocol, SYNCTABLES } from '@/db'
 import { synclog } from '@/util/logging'
 import { getRemoteDB } from './connections'
-import { asyncwait, FOREIGN_KEY_CONSTRAINT, LOCAL_TIMEOUT, logtablefor, PRIMARY_TVEQ, PRIMARY_SETS, REMOTE_TIMEOUT } from './constants'
+import { asyncwait, FOREIGN_KEY_CONSTRAINT, logtablefor, PRIMARY_TVEQ, PRIMARY_SETS } from './constants'
 import { MergeServerEntry } from './mergeserver'
 import { DBObject, DeletedObject, getPKHash, LoggedObject, PrimaryKeyHash, SyncError, TableName } from './types'
 
@@ -21,7 +21,6 @@ export async function performSyncWrap(roottask: ScorekeeperProtocol, localserver
 
     await getRemoteDB(remoteserver, series, password).task(async remotetask => {
         const wrap = new SyncProcessInfo(roottask, localserver, version, remotetask, remoteserver, series)
-        await wrap.setTimeouts()
         try {
             await wrap.getLocks()
             await execution(wrap)
@@ -215,11 +214,6 @@ export class SyncProcessInfo {
             if (ins.length) await task.none(pgp.helpers.insert(ins, SYNCTABLES[table]))
             if (up.length)  await task.none(pgp.helpers.update(up, SYNCTABLES[table]) + PRIMARY_TVEQ[table])
         })
-    }
-
-    async setTimeouts() {
-        await this.localtask.none('SET idle_in_transaction_session_timeout=$1', [LOCAL_TIMEOUT * 1000])
-        await this.remotetask.none('SET idle_in_transaction_session_timeout=$1', [REMOTE_TIMEOUT * 1000])
     }
 
     async getLocks() {
