@@ -7,7 +7,7 @@ import { ScorekeeperProtocol } from '@/db'
 import { synclog } from '@/util/logging'
 
 import { getRemoteDB } from './connections'
-import { ADVANCED_UPDATE_TABLES, TABLE_ORDER } from './constants'
+import { ADVANCED_UPDATE_TABLES, INTERTWINED_DATA, TABLE_ORDER } from './constants'
 import { performSyncWrap, SyncProcessInfo } from './dbwrapper'
 import { MergeServerEntry } from './mergeserver'
 import { DBObject, DeletedObject, getPKHash, KillSignalError, PrimaryKeyHash, SyncError, SyncErrors, TableName } from './types'
@@ -308,6 +308,12 @@ async function mergeTablesInternal(wrap: SyncProcessInfo, tables: string[], watc
     // The only time this should ever occur is with the drivers table as its shared between series
     // execute single file on each database connection, but in parallel on different connections
     wrap.undeleteAll(localundelete, remoteundelete)
+
+    // Special tables that need insert and update done without commits in between for constraints
+    for (const t of INTERTWINED_DATA) {
+        await checkpoint('intertwined', t)
+        await wrap.insUpAll(t, localinsert.getD(t), localupdate.getD(t), remoteinsert.getD(t), remoteupdate.getD(t))
+    }
 
     return [...unfinished]
 }

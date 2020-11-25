@@ -82,6 +82,7 @@ describe('driver sync tests', () => {
 
             try {
                 await task.none('UPDATE cars SET driverid=$1 WHERE driverid=$2', [testids.driverid1, testids.newdriverid])
+                throw Error('Invalid update did not throw error')
             } catch (error) {
                 expect(error.message).toMatch(/Updating without changing modification time/)
             }

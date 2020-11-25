@@ -1,8 +1,9 @@
+import util from 'util'
 import { parseTimestamp } from '@/common/util'
 import { pgp, ScorekeeperProtocol, SYNCTABLES } from '@/db'
 import { synclog } from '@/util/logging'
 import { getRemoteDB } from './connections'
-import { asyncwait, FOREIGN_KEY_CONSTRAINT, LOCAL_TIMEOUT, logtablefor, PRIMARY_SETS, REMOTE_TIMEOUT } from './constants'
+import { asyncwait, FOREIGN_KEY_CONSTRAINT, LOCAL_TIMEOUT, logtablefor, PRIMARY_TVEQ, PRIMARY_SETS, REMOTE_TIMEOUT } from './constants'
 import { MergeServerEntry } from './mergeserver'
 import { DBObject, DeletedObject, getPKHash, LoggedObject, PrimaryKeyHash, SyncError, TableName } from './types'
 
@@ -132,7 +133,7 @@ export class SyncProcessInfo {
     private async insert(task: ScorekeeperProtocol, table: string, objs: DBObject[]) {
         if (objs.length) {
             try {
-                await task.any(pgp.helpers.insert(objs, SYNCTABLES[table]))
+                await task.none(pgp.helpers.insert(objs, SYNCTABLES[table]))
             } catch (error) {
                 if (error.code === FOREIGN_KEY_CONSTRAINT) return false
                 throw error
@@ -151,7 +152,7 @@ export class SyncProcessInfo {
     private async update(task: ScorekeeperProtocol, table: string, objs: DBObject[]) {
         if (objs.length) {
             try {
-                await task.none(pgp.helpers.update(objs, SYNCTABLES[table]))
+                await task.none(pgp.helpers.update(objs, SYNCTABLES[table]) + PRIMARY_TVEQ[table])
             } catch (error) {
                 if (error.code === FOREIGN_KEY_CONSTRAINT) return false
                 throw error
@@ -202,6 +203,19 @@ export class SyncProcessInfo {
         }
     }
 
+
+    async insUpAll(table: string, localins: DBObject[], localup: DBObject[], remoteins: DBObject[], remoteup: DBObject[])  {
+        return Promise.all([
+            this.insup(this.localtask, table, localins, localup),
+            this.insup(this.remotetask, table, remoteins, remoteup)
+        ])
+    }
+    private async insup(task: ScorekeeperProtocol, table: string, ins: DBObject[], up: DBObject[]) {
+        return task.tx(async tx => {
+            if (ins.length) await task.none(pgp.helpers.insert(ins, SYNCTABLES[table]))
+            if (up.length)  await task.none(pgp.helpers.update(up, SYNCTABLES[table]) + PRIMARY_TVEQ[table])
+        })
+    }
 
     async setTimeouts() {
         await this.localtask.none('SET idle_in_transaction_session_timeout=$1', [LOCAL_TIMEOUT * 1000])

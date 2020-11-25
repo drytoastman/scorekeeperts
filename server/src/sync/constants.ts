@@ -1,4 +1,4 @@
-import { SYNCTABLES } from '@/db'
+import { pgp, SYNCTABLES } from '@/db'
 
 export const FOREIGN_KEY_CONSTRAINT = '23503'
 export const LOCAL_TIMEOUT  = 5
@@ -21,13 +21,16 @@ export const TABLE_ORDER = [
     'registered',
     'payments',
     'runs',
-    'classorder',
     'runorder',
     'challenges',
     'challengerounds',
     'challengestaging',
     'challengeruns',
     'externalresults'
+]
+
+export const INTERTWINED_DATA = [
+    'classorder'
 ]
 
 export const PUBLIC_TABLES = [
@@ -65,9 +68,11 @@ function hashcommand(table: string, pklist: string[]): string {
 export const HASH_COMMANDS: {[table: string]: string} = {}
 export const PRIMARY_KEYS: {[table: string]: string[]} = {}
 export const PRIMARY_SETS: {[table: string]: string} = {}
-for (const table of TABLE_ORDER) {
+export const PRIMARY_TVEQ: {[table: string]: string} = {}
+for (const table of [...TABLE_ORDER, ...INTERTWINED_DATA]) {
     PRIMARY_KEYS[table]  = SYNCTABLES[table].columns.filter(c => c.cnd).map(c => c.name)
     HASH_COMMANDS[table] = hashcommand(table, PRIMARY_KEYS[table])
 
-    PRIMARY_SETS[table] = PRIMARY_KEYS[table].map(key => `${key}=$(${key})`).join(' AND ')
+    PRIMARY_SETS[table]  = PRIMARY_KEYS[table].map(key => `${key}=$(${key})`).join(' AND ')
+    PRIMARY_TVEQ[table] = ' WHERE ' + PRIMARY_KEYS[table].map(key => `t.${key}=v.${key}`).join(' AND ')
 }

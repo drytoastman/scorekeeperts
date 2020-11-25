@@ -1,5 +1,6 @@
-import { v1 as uuidv1 } from 'uuid'
 import { diff as odiff } from 'deep-object-diff'
+import _ from 'lodash'
+import { v1 as uuidv1 } from 'uuid'
 
 import { ScorekeeperProtocol, pgp, db as dbx, ScorekeeperProtocolDB } from '@/db'
 import { runOnce } from '../process'
@@ -115,6 +116,9 @@ export async function doSync(port: number, hosts?: string[]) {
         await db.none("UPDATE mergeservers SET lastcheck='epoch', nextcheck='epoch'")
     }
     await runOnce(db)
+    for (const row of await db.many('select mergestate->$1 as state from mergeservers', [testids.series])) {
+        expect(row.state.error).toBeUndefined()
+    }
 }
 
 
@@ -124,7 +128,7 @@ expect.extend({
     toBeAttrLike(received: any, like: any) {
         for (const key in like) {
             if (key === 'attr') continue
-            if (received[key] !== like[key]) return { message: () => `${key}: ${received[key]} != ${like[key]}`, pass: false }
+            if (!_.isEqual(received[key], like[key])) return { message: () => `${key}: ${received[key]} != ${like[key]}`, pass: false }
         }
         for (const key in like.attr) {
             if (received.attr[key] !== like.attr[key]) return { message: () => `attr.${key}: ${received.attr[key]} != ${like.attr[key]}`, pass: false }
