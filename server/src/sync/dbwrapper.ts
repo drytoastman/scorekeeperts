@@ -47,8 +47,7 @@ export class SyncProcessInfo {
     }
 
     async remoteStatus(status: string) {
-        synclog.debug(status)
-        this.remoteserver.seriesStatus(this.series, 'Commit Changes')
+        this.remoteserver.seriesStatus(this.series, status)
     }
 
     clearRemoteError() {

@@ -1,11 +1,9 @@
 import { v1 as uuidv1 } from 'uuid'
 import { diff as odiff } from 'deep-object-diff'
-import util from 'util'
 
 import { ScorekeeperProtocol, pgp, db as dbx, ScorekeeperProtocolDB } from '@/db'
 import { runOnce } from '../process'
 import { ACTIVE } from '../mergeserver'
-import { synclog } from '@/util/logging'
 import { asyncwait } from '../constants'
 
 export const testids = {
@@ -18,6 +16,7 @@ export const testids = {
     accountid: 'paypalid',
     itemid:    '00000000-0000-0000-0000-000000000051',
     series:    'testseries',
+    seriespassword: 'testseries',
     newdriverid: '00000000-0000-0000-0000-000000000142',
     newcarid:    '00000000-0000-0000-0000-000000000143'
 }
@@ -27,13 +26,14 @@ export const DB2 = 7002
 export const DB3 = 7003
 export const DB4 = 7004
 
-const RESET = `
+export const RESET = `
 DROP SCHEMA IF EXISTS $(series:raw) CASCADE;
+DELETE FROM weekendmembers;
 DELETE FROM drivers;
 DELETE FROM mergeservers;
 DELETE FROM publiclog;
 
-SELECT verify_user($(series), $(series));
+SELECT verify_user($(series), $(seriespassword));
 SELECT verify_series($(series));
 `
 
@@ -177,14 +177,7 @@ export async function verifyUpdateLogChanges(tasks: ScorekeeperProtocol[], table
     for (const t of tasks) {
         for (const row of await t.any("SELECT * from publiclog where tablen=$1 and action='U'", [table])) {
             const diff = odiff(row.olddata, row.newdata)
-            try {
-                expect(Object.keys(diff)).not.toEqual(['modified']) // not just modified that changed though trigger should catch that
-            } catch (error) {
-                synclog.error(util.inspect(row))
-                // synclog.error(util.inspect(row.newdata))
-                synclog.error(util.inspect(diff))
-                throw error
-            }
+            expect(Object.keys(diff)).not.toEqual(['modified']) // not just modified that changed though trigger should catch that
         }
     }
 }

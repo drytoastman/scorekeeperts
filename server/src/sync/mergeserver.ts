@@ -96,7 +96,6 @@ export class MergeServerEntry implements MergeServer {
         if (!error) {
             delete this.mergestate[series].error
         } else {
-            synclog.info(`series ${series} reported ${error}`)
             if (error.includes('password authentication failed')) {
                 this.mergestate[series].error = 'Password Incorrect'
             } else {
@@ -110,7 +109,7 @@ export class MergeServerEntry implements MergeServer {
 
     async serverStart(localseries: string[]) {
         // Called when we start a merge process with this remote server
-        for (const series in localseries) {
+        for (const series of localseries) {
             if (!(series in this.mergestate)) {
                 this.ensureSeriesBase(series)
             }

@@ -28,8 +28,8 @@ export function getRemoteDB(remote: MergeServer, series: string, password: strin
             ca: fs.readFileSync('/certs/root.cert').toString(),
             key: fs.readFileSync('/certs/server.key').toString(),
             cert: fs.readFileSync('/certs/server.cert').toString(),
-            rejectUnauthorized: true
-            // checkServerIdentity ?
+            rejectUnauthorized: false
+            // checkServerIdentity: (hostname, cert) => {}
         }
     }
 

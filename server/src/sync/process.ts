@@ -10,7 +10,7 @@ import { getRemoteDB } from './connections'
 import { ADVANCED_UPDATE_TABLES, TABLE_ORDER } from './constants'
 import { performSyncWrap, SyncProcessInfo } from './dbwrapper'
 import { MergeServerEntry } from './mergeserver'
-import { DBObject, DeletedObject, getPKHash, KillSignalError, PrimaryKeyHash, SyncErrors, TableName } from './types'
+import { DBObject, DeletedObject, getPKHash, KillSignalError, PrimaryKeyHash, SyncError, SyncErrors, TableName } from './types'
 
 
 export const syncwatcher = new EventEmitter()
@@ -44,7 +44,12 @@ function mincreatetime(objs: DBObject[], objs2: DBObject[]): Date {
 export async function runOnce(rootdb: ScorekeeperProtocol) {
     killsignal = false
     await rootdb.task(async roottask => {
-        const myserver = new MergeServerEntry(await roottask.merge.getLocalMergeServer(), roottask)
+        let myserver: MergeServerEntry
+        try {
+            myserver = new MergeServerEntry(await roottask.merge.getLocalMergeServer(), roottask)
+        } catch (error) {
+            throw new SyncError('Unable to load local server info: ' + error.message)
+        }
 
         // Check for any quickruns flags and do those first
         for (const remote of (await roottask.merge.getQuickRuns()).map(d => new MergeServerEntry(d, roottask))) {
@@ -66,7 +71,7 @@ export async function runOnce(rootdb: ScorekeeperProtocol) {
                     await mergeWith(roottask, myserver, remote)
                     await remote.serverDone()
                 } catch (e) {
-                    synclog.error(`Caught exception merging with ${remote}: ${e}`)
+                    synclog.error(`Caught exception merging with ${remote.display}: ${e}`)
                     syncwatcher.emit('exception', 'mergeloop', { remote: remote, exception: e })
                     await remote.serverError(e.toString())
                 }
@@ -76,6 +81,7 @@ export async function runOnce(rootdb: ScorekeeperProtocol) {
     }).catch(error => {
         synclog.error(`Caught exception in main loop: ${error}`)
         syncwatcher.emit('exception', 'runonce', { exception: error })
+        throw error
     })
 
     synclog.debug('Runonce exiting')
@@ -116,7 +122,7 @@ async function mergeWith(roottask: ScorekeeperProtocol, myserver: MergeServerEnt
         try {
             if (killsignal) throw new KillSignalError()
             if (!(series in myserver.mergestate)) {
-                synclog.error('series was not created in local database yet')
+                synclog.debug(`${series} is not created in local database yet`)
                 continue
             }
 
@@ -202,10 +208,6 @@ async function mergeTablesInternal(wrap: SyncProcessInfo, tables: string[], watc
 
         // Load data from both databases, load it all in one go to be more efficient in updates later
         // watcher.local() blah blah
-        if (t === 'drivers') {
-            console.log('here')
-        }
-
         const [localobj, remoteobj] = await wrap.loadAll(t)
         const [ldeleted, rdeleted]  = await wrap.deletedSince(t, minmodtime(remoteobj), minmodtime(localobj))
         // watcher.off()
