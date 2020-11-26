@@ -8,6 +8,7 @@ import { MAIL_SEND_USER, MAIL_SEND_PASS, MAIL_SEND_HOST, MAIL_SEND_FROM, MAIL_SE
 import { cronlog } from '../util/logging'
 
 export async function sendQueuedEmail() {
+    let smtp: nodemailer.Transporter
     await db.task(async t => {
         const settings = await t.general.getLocalSettingsObj()
         const user    = settings[MAIL_SEND_USER]
@@ -20,7 +21,7 @@ export async function sendQueuedEmail() {
             throw Error(`Unable to create smtp mailer with (${user}, ${pass}, ${host})`)
         }
 
-        const smtp = nodemailer.createTransport({
+        smtp = nodemailer.createTransport({
             host: host,
             port: 587,
             secure: false, // will still run STARTTLS, just after connect
@@ -48,6 +49,8 @@ export async function sendQueuedEmail() {
         }
     }).catch(error => {
         cronlog.error(error)
+    }).finally(() => {
+        if (smtp) smtp.close()
     })
 }
 
@@ -84,7 +87,7 @@ export async function checkMailmanErrors() {
         cronlog.debug('checkmail: %d messsages', messages.length)
 
         for (const item of messages) {
-            var all = _.find(item.parts, { which: '' })
+            const all = _.find(item.parts, { which: '' })
             if (!all) continue
             if (await processMessage(t, all.body)) {
                 await (connection as any).deleteMessage(item.attributes.uid) // missing stuff from their types file
