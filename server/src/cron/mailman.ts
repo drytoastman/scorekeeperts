@@ -7,8 +7,12 @@ import { db, ScorekeeperProtocol } from '../db'
 import { MAIL_SEND_USER, MAIL_SEND_PASS, MAIL_SEND_HOST, MAIL_SEND_FROM, MAIL_SEND_REPLYTO } from '../db/generalrepo'
 import { cronlog } from '../util/logging'
 
+let sendingQueued = false
 export async function sendQueuedEmail() {
     let smtp: nodemailer.Transporter
+    if (sendingQueued) return
+    sendingQueued = true
+
     await db.task(async t => {
         const settings = await t.general.getLocalSettingsObj()
         const user    = settings[MAIL_SEND_USER]
@@ -28,7 +32,8 @@ export async function sendQueuedEmail() {
             auth: {
                 user: user,
                 pass: pass
-            }
+            },
+            pool: true
         })
 
         while (true) {
@@ -51,21 +56,23 @@ export async function sendQueuedEmail() {
         cronlog.error(error)
     }).finally(() => {
         if (smtp) smtp.close()
+        sendingQueued = false
     })
 }
 
 /**
  * This is only checking the mailman account for delivery failure notices
  */
+let checkingMail = false
 export async function checkMailmanErrors() {
+    if (checkingMail) return
+    checkingMail = true
 
     await db.task(async t => {
         const settings = await t.general.getLocalSettingsObj()
         const user    = settings[MAIL_SEND_USER]
         const pass    = settings[MAIL_SEND_PASS]
         const host    = settings[MAIL_SEND_HOST]
-        // const from    = settings[MAIL_SEND_FROM]
-        // const replyto = settings[MAIL_SEND_REPLYTO]
 
         if (!user || !pass || !host) {
             throw Error(`Unable to create iamp receiver with (${user}, ${pass}, ${host})`)
@@ -97,6 +104,8 @@ export async function checkMailmanErrors() {
 
     }).catch(error => {
         cronlog.error(error)
+    }).finally(() => {
+        checkingMail = false
     })
 }
 
