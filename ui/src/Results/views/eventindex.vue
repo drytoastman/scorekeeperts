@@ -5,7 +5,7 @@
             <span class='date'>{{event.date|dmdy}}</span>
         </div>
         <div class='list'>
-            <h3>Results</h3>
+            <div class='stitle'>Results</div>
             <router-link :to="{name: 'post'}">Event Results</router-link>
             <!-- PAX Dist, Net Dist, does anyone care -->
             <template v-if='!hassession'>
@@ -18,7 +18,7 @@
         </div>
 
         <div class='list'>
-            <h3>Top Times Lists</h3>
+            <div class='stitle'>Top Times Lists</div>
             <template v-if="event.ispro">
                 <router-link :to="{name: 'toptimes', query: { indexed: 0 }}">Unindexed</router-link>
                 <router-link :to="{name: 'toptimes', query: { indexed: 1 }}">Indexed</router-link>
@@ -36,7 +36,7 @@
         </div>
 
         <div class='list' v-if="event.ispro">
-            <h3>ProSolo</h3>
+            <div class='stitle'>ProSolo</div>
             <template v-if="active">
                 <router-link :to="{name: 'grid', query: { order: 'number' }}">Grid By Number</router-link>
                 <router-link :to="{name: 'grid', query: { order: 'position' }}">Grid By Standings</router-link>
@@ -49,7 +49,7 @@
         </div>
 
         <div class='classwrap'>
-            <h3>By RunGroup <template v-if="!hassession">Or Active Class</template></h3>
+            <div class='stitle'>By RunGroup <template v-if="!hassession">Or Active Class</template></div>
             <div class='bothgroups'>
                 <div class='groups'>
                 <router-link v-for="ii in groups"  :key="ii" :to="{name: 'bygroup', query: { groups: ii }}">Group {{ii}}</router-link>
@@ -95,7 +95,7 @@ export default {
 }
 .etitle {
     grid-column: 1/span 3;
-    text-align: left;
+    color: var(--headerColor);
     .name {
         font-size: 140%;
         font-weight: bold;
@@ -104,6 +104,10 @@ export default {
     .date {
         font-size: 120%;
     }
+}
+.stitle {
+    color: var(--headerColor);
+    font-size: 120%;
 }
 .list {
     display: flex;

@@ -16,7 +16,7 @@ export default {
         TopTimesTable
     },
     props: {
-        counted: String
+        counted: Number
     },
     computed: {
         ...mapState(['seriesinfo', 'eventresults']),

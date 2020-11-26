@@ -61,7 +61,7 @@ export default {
         classcodes: Array
     },
     computed: {
-        ...mapState(['eventresults']),
+        ...mapState(['eventresults', 'seriesinfo']),
         ...mapGetters(['eventInfo', 'resultsEvent']),
 
         rowspan() { return this.event.courses > 1 ? this.event.courses : undefined },
@@ -69,7 +69,12 @@ export default {
         pluscourses() { return range(1, this.event.courses) },
         runs() { return range(this.event.runs) },
         event() { return this.resultsEvent },
-        results() { return pick(this.eventresults, this.classcodes) }
+        results()  { return pick(this.eventresults, this.classcodes) },
+        classmap() {
+            const ret = {}
+            for (const cls of this.seriesinfo.classes) ret[cls.classcode] = cls
+            return ret
+        }
     },
     methods: {
         runclasses(run) {
@@ -91,7 +96,7 @@ export default {
             return data.join('')
         },
         descrip(classcode) {
-            return `class info for ${classcode}`
+            return this.classmap[classcode].descrip
         }
     }
 }

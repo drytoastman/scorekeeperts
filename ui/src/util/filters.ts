@@ -16,7 +16,7 @@ export function t3(v: number): string {
     return v.toFixed(3)
 }
 
-function dmdy(v: DateString): string {
+export function dmdy(v: DateString): string {
     return parseDate(v).toDateString()
 }
 
