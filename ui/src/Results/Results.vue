@@ -11,7 +11,6 @@
         </v-app-bar>
 
         <v-main>
-             <!-- {{$route.name}} {{$route.params}} -->
             <router-view/>
         </v-main>
         <SnackBar></SnackBar>
@@ -38,7 +37,9 @@ export default {
         return  {
             cone,
             year: undefined,
-            event: undefined
+            event: undefined,
+            dividerEntry: { name: 'divider' },
+            champEntry: { name: 'Championship' }
         }
     },
     computed: {
@@ -47,7 +48,10 @@ export default {
 
         yearlist()   { return orderBy([...this.yearGroups.keys()], v => v, 'desc') },
         serieslist() { return orderBy(this.yearGroups.getD(this.year), v => v) },
-        eventlist()  { return this.seriesinfo.events ? orderBy(this.seriesinfo.events, 'date') : [] },
+        eventlist()  {
+            const e = this.seriesinfo.events ? orderBy(this.seriesinfo.events, 'date') : []
+            return e.concat(this.dividerEntry, this.champEntry)
+        },
 
         selectedYear: {
             get() { return this.year },
@@ -74,8 +78,12 @@ export default {
             set(value) {
                 this.event = value
                 if (this.event) {
-                    this.updateEventResults()
-                    this.push('eventindex', { eventid: this.event.eventid })
+                    if (this.event.name === 'Championship') {
+                        this.push('champ')
+                    } else {
+                        this.updateEventResults()
+                        this.push('eventindex', { eventid: this.event.eventid })
+                    }
                 }
             }
         }
@@ -98,6 +106,9 @@ export default {
         '$route'() {
             if (this.$route.params.series) {
                 this.year = seriesYear(this.$route.params.series)
+            }
+            if (this.$route.name === 'champ') {
+                this.event = this.champEntry
             }
         },
         eventlist(nv) {

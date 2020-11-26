@@ -55,7 +55,7 @@ export default {
             return sum / this.events.length
         },
         missingmin(e) {
-            return (e.eventcount < this.seriesinfo.settings?.minevents || e.missingrequired.length > 0) ? 'missingmin' : ''
+            return (e.eventcount < this.seriesinfo.settings?.minevents || e.missingrequired?.length > 0) ? 'missingmin' : ''
         },
         eventkey(entrant, event)   {
             const key = `d-${event.date}-id-${event.eventid}`

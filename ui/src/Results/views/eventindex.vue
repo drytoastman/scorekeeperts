@@ -1,5 +1,9 @@
 <template>
     <div class='mainwrap'>
+        <div class='etitle'>
+            <span class='name'>{{event.name}}</span>
+            <span class='date'>{{event.date|dmdy}}</span>
+        </div>
         <div class='list'>
             <h3>Results</h3>
             <router-link :to="{name: 'post'}">Event Results</router-link>
@@ -87,6 +91,19 @@ export default {
 .mainwrap {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
+    row-gap: 1rem;
+}
+.etitle {
+    grid-column: 1/span 3;
+    text-align: left;
+    .name {
+        font-size: 140%;
+        font-weight: bold;
+        margin-right: 1rem;
+    }
+    .date {
+        font-size: 120%;
+    }
 }
 .list {
     display: flex;

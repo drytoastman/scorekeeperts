@@ -5,7 +5,8 @@
         </template>
         <v-list>
             <template v-for="(item, index) in items">
-                <v-list-item :key="index" :disabled="item === value" @click="$emit('input', item)">
+                <v-divider v-if="item.name === 'divider'" :key="item.name || item"></v-divider>
+                <v-list-item v-else :key="index" :disabled="item === value" @click="$emit('input', item)">
                     {{ item.name || item }}
                 </v-list-item>
             </template>
@@ -35,3 +36,9 @@ export default {
     }
 }
 </script>
+
+<style lang="scss" scoped>
+.theme--light.v-divider {
+    border-color: rgba(0, 0, 0, 0.22);
+}
+</style>
