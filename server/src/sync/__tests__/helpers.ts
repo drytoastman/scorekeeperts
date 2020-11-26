@@ -36,6 +36,7 @@ DELETE FROM publiclog;
 
 SELECT verify_user($(series), $(seriespassword));
 SELECT verify_series($(series));
+INSERT INTO mergeservers(serverid, hostname, address, ctimeout) VALUES ('00000000-0000-0000-0000-000000000000', 'localhost', '127.0.0.1', 10);
 `
 
 const BASE = `
@@ -61,9 +62,8 @@ INSERT INTO runs (eventid, carid, course, rungroup, run, raw, status, attr) VALU
 INSERT INTO runs (eventid, carid, course, rungroup, run, raw, status, attr) VALUES ($(eventid1), $(carid1), 1, 1, 2, 2.0, 'OK', '{}');
 INSERT INTO runs (eventid, carid, course, rungroup, run, raw, status, attr) VALUES ($(eventid1), $(carid1), 1, 1, 3, 3.0, 'OK', '{}');
 INSERT INTO runs (eventid, carid, course, rungroup, run, raw, status, attr) VALUES ($(eventid1), $(carid1), 1, 1, 4, 4.0, 'OK', '{}');
-
-INSERT INTO mergeservers(serverid, hostname, address, ctimeout) VALUES ('00000000-0000-0000-0000-000000000000', 'localhost', '127.0.0.1', 10)
 `
+
 const ims = 'INSERT INTO mergeservers(serverid, hostname, address, ctimeout, hoststate) VALUES ($1, $2, $3, $4, $5)'
 
 const dbmap = new Map<number, ScorekeeperProtocolDB>()
@@ -84,11 +84,31 @@ export async function with2DB(port1: number, port2: number, series: string, exec
     })
 }
 
+export async function with4DB(port1: number, port2: number, port3: number, port4: number, series: string,
+                execution: (task1: ScorekeeperProtocol, task2: ScorekeeperProtocol, task3: ScorekeeperProtocol, task4: ScorekeeperProtocol) => Promise<void>) {
+    return getTestDB(port1).task(async task1 => {
+        return getTestDB(port2).task(async task2 => {
+            return getTestDB(port3).task(async task3 => {
+                return getTestDB(port4).task(async task4 => {
+                    await task1.series.setSeries(series)
+                    await task2.series.setSeries(series)
+                    await task3.series.setSeries(series)
+                    await task4.series.setSeries(series)
+                    return await execution(task1, task2, task3, task4)
+                })
+            })
+        })
+    })
+}
+
 export async function timingpause() {
     // need change in mod times in database, add a 10ms break here
     return asyncwait(10)
 }
 
+function serverName(port: number) {
+    return `server${port}`
+}
 
 export async function resetData(ports: number[]) {
     try {
@@ -98,7 +118,7 @@ export async function resetData(ports: number[]) {
             await d.any(p1 === ports[0] ? RESET + BASE : RESET, testids)
             for (let ii = 0; ii < ports.length; ii++) {
                 if (ports[ii] !== p1) {
-                    await d.none(ims, [serverids[ii], `server${ports[ii]}`, `127.0.0.1:${ports[ii]}`, 5, ACTIVE])
+                    await d.none(ims, [serverids[ii], serverName(ports[ii]), `127.0.0.1:${ports[ii]}`, 5, ACTIVE])
                 }
             }
         }))
@@ -108,10 +128,10 @@ export async function resetData(ports: number[]) {
     }
 }
 
-export async function doSync(port: number, hosts?: string[]) {
+export async function doSync(port: number, remotes?: number[]) {
     const db = getTestDB(port)
-    if (hosts) {
-        await db.none("UPDATE mergeservers SET lastcheck='epoch', nextcheck='epoch' WHERE hostname in ($1:csv)", [hosts])
+    if (remotes) {
+        await db.none("UPDATE mergeservers SET lastcheck='epoch', nextcheck='epoch' WHERE hostname in ($1:csv)", [remotes.map(p => serverName(p))])
     } else {
         await db.none("UPDATE mergeservers SET lastcheck='epoch', nextcheck='epoch'")
     }
