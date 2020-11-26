@@ -3,7 +3,7 @@ import { v1 as uuidv1 } from 'uuid'
 
 import { pgp } from '@/db'
 import { ONESHOT } from '../mergeserver'
-import { runOnce } from '../process'
+import { runSyncOnce } from '../process'
 import { DB1, getTestDB, RESET, testids } from './helpers'
 
 afterAll(async () => {
@@ -26,7 +26,7 @@ test('test series download if environment available', async () => {
         await task.none("INSERT INTO mergeservers(serverid, hostname, address, ctimeout) VALUES ('00000000-0000-0000-0000-000000000000', 'localhost', '127.0.0.1', 10)")
         await task.none("INSERT INTO mergeservers(serverid, hostname, address, ctimeout, hoststate) VALUES ($1, $2, '', $3, $4)", [uuidv1(), hostname, 10, ONESHOT])
 
-        await runOnce(syncdb)
+        await runSyncOnce(syncdb)
         await task.none('DROP SCHEMA IF EXISTS $1:raw CASCADE', [series])
 
         const res = await task.one('select mergestate->$1 as state from mergeservers where hostname=$2', [series, hostname])

@@ -3,45 +3,27 @@ import { EventEmitter } from 'events'
 
 import { DefaultMap, difference, intersect } from '@/common/data'
 import { parseTimestamp } from '@/common/util'
-import { ScorekeeperProtocol } from '@/db'
+import { db, ScorekeeperProtocol, ScorekeeperProtocolDB } from '@/db'
 import { synclog } from '@/util/logging'
 
 import { getRemoteDB } from './connections'
 import { ADVANCED_UPDATE_TABLES, INTERTWINED_DATA, LOCAL_TIMEOUT, TABLE_ORDER } from './constants'
 import { performSyncWrap, SyncProcessInfo } from './dbwrapper'
 import { MergeServerEntry } from './mergeserver'
-import { DBObject, DeletedObject, getPKHash, KillSignalError, PrimaryKeyHash, SyncError, SyncErrors, TableName } from './types'
+import { DBObject, DeletedObject, getPKHash, KillSignalError, mincreatetime, minmodtime, PrimaryKeyHash, SyncError, SyncErrors, TableName } from './types'
 
-export const syncwatcher = new EventEmitter()
-export let killsignal = false
+export const syncwatcher  = new EventEmitter()
+export let syncKillSignal = false
+let syncIsActive = false
 
-function minmodtime(objs: Map<any, any>): Date {
-    let ret = 0
-    let ms
-    for (const o of objs.values()) {
-        ms = parseTimestamp(o.modified)
-        if (ms < ret) ret = ms
+export async function runSyncOnce(rootdb?: ScorekeeperProtocolDB) {
+    if (syncIsActive) {
+        throw new SyncError('Request to sync but there is already an active sync ocurring on the database')
     }
-    return new Date(ret)
-}
+    syncIsActive   = true
+    syncKillSignal = false
 
-function mincreatetime(objs: DBObject[], objs2: DBObject[]): Date {
-    let ret = 0
-    let ms
-    for (const o of objs)  {
-        ms = parseTimestamp(o.created || '0')
-        if (ms < ret) ret = ms
-    }
-    for (const o of objs2) {
-        ms = parseTimestamp(o.created || '0')
-        if (ms < ret) ret = ms
-    }
-    return new Date(ret)
-}
-
-export async function runOnce(rootdb: ScorekeeperProtocol) {
-    killsignal = false
-    await rootdb.task(async roottask => {
+    await (rootdb || db).task(async roottask => {
         await roottask.none('SET idle_in_transaction_session_timeout=$1', [LOCAL_TIMEOUT])
 
         let myserver: MergeServerEntry
@@ -82,9 +64,11 @@ export async function runOnce(rootdb: ScorekeeperProtocol) {
         synclog.error(`Caught exception in main loop: ${error}`)
         syncwatcher.emit('exception', { label: 'runonce', exception: error })
         throw error
+    }).finally(() => {
+        syncIsActive = false
     })
 
-    synclog.debug('Runonce exiting')
+    // synclog.debug('Runonce exiting')
 }
 
 
@@ -120,7 +104,7 @@ async function mergeWith(roottask: ScorekeeperProtocol, myserver: MergeServerEnt
     for (const series in remoteserver.mergestate) {
         let error
         try {
-            if (killsignal) throw new KillSignalError()
+            if (syncKillSignal) throw new KillSignalError()
             if (!(series in myserver.mergestate)) {
                 synclog.debug(`${series} is not created in local database yet`)
                 continue
@@ -178,7 +162,7 @@ async function mergeTables(wrap: SyncProcessInfo, tables: string[]) {
 async function mergeTablesInternal(wrap: SyncProcessInfo, tables: string[]): Promise<string[]> {
 
     const checkpoint = async (type: string, table: string) => {
-        if (killsignal) throw new KillSignalError()
+        if (syncKillSignal) throw new KillSignalError()
         await wrap.remoteStatus(`${type} ${table}`)
         syncwatcher.emit(type, { table, wrap })
     }

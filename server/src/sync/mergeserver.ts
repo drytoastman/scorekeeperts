@@ -186,7 +186,7 @@ export class MergeServerEntry implements MergeServer {
 
             // If there is no need to recalculate hashes or update local cache, skip out now
             if (_.isEqual(lastchange, seriesstate.lastchange)) {
-                synclog.debug(`${this.display} ${series} lastlog time shortcut`)
+                // synclog.debug(`${this.display} ${series} lastlog time shortcut`)
                 return
             }
 

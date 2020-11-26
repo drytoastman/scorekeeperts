@@ -3,7 +3,7 @@ import _ from 'lodash'
 import { v1 as uuidv1 } from 'uuid'
 
 import { ScorekeeperProtocol, pgp, db as dbx, ScorekeeperProtocolDB } from '@/db'
-import { runOnce } from '../process'
+import { runSyncOnce } from '../process'
 import { ACTIVE } from '../mergeserver'
 import { asyncwait } from '../constants'
 
@@ -122,7 +122,7 @@ export async function resetData(ports: number[]) {
                 }
             }
         }))
-        await runOnce(getTestDB(ports[0]))
+        await runSyncOnce(getTestDB(ports[0]))
     } catch (error) {
         console.error(error)
     }
@@ -135,7 +135,7 @@ export async function doSync(port: number, remotes?: number[]) {
     } else {
         await db.none("UPDATE mergeservers SET lastcheck='epoch', nextcheck='epoch'")
     }
-    await runOnce(db)
+    await runSyncOnce(db)
     for (const row of await db.many('select mergestate->$1 as state from mergeservers', [testids.series])) {
         expect(row.state.error).toBeUndefined()
     }

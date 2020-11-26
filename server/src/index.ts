@@ -6,7 +6,7 @@ import promiseRetry from 'promise-retry'
 
 import { api2, oldapi, websockets, websocketsStartWatching } from './controllers'
 import { db, tableWatcher, pgp } from './db'
-import { startCronJobs } from './cron'
+import { CRON_MAIN_SERVER, CRON_SYNC_SERVER, startCronJobs } from './cron'
 import { accesslog, mainlog } from './util/logging'
 import { startDNSServer } from './util/dns'
 
@@ -59,12 +59,12 @@ async function dbWaitAndApiSetup() {
     app.use('/api2', api2)
 
     websocketsStartWatching()
-
     if (await db.general.isMainServer()) {
         if (process.env.NODE_ENV !== 'development') {
-            startCronJobs()
+            startCronJobs(CRON_MAIN_SERVER)
         }
     } else {
+        startCronJobs(CRON_SYNC_SERVER)
         startDNSServer()
     }
 }

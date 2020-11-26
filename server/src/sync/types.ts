@@ -2,7 +2,7 @@ import { addMilliseconds } from 'date-fns'
 import _ from 'lodash'
 import util from 'util'
 
-import { formatToMsTimestamp, UTCString } from '@/common/util'
+import { formatToMsTimestamp, parseTimestamp, UTCString } from '@/common/util'
 import { PRIMARY_KEYS } from './constants'
 import { synclog } from '@/util/logging'
 
@@ -45,6 +45,30 @@ export function getPKHash(table: string, obj: DBObject): PrimaryKeyHash {
         ret.push(obj[key])
     }
     return ret.join(';')
+}
+
+export function minmodtime(objs: Map<any, any>): Date {
+    let ret = 0
+    let ms
+    for (const o of objs.values()) {
+        ms = parseTimestamp(o.modified)
+        if (ms < ret) ret = ms
+    }
+    return new Date(ret)
+}
+
+export function mincreatetime(objs: DBObject[], objs2: DBObject[]): Date {
+    let ret = 0
+    let ms
+    for (const o of objs)  {
+        ms = parseTimestamp(o.created || '0')
+        if (ms < ret) ret = ms
+    }
+    for (const o of objs2) {
+        ms = parseTimestamp(o.created || '0')
+        if (ms < ret) ret = ms
+    }
+    return new Date(ret)
 }
 
 

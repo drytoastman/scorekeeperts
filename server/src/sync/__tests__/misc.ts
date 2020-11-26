@@ -31,4 +31,16 @@ describe('testing misc', () => {
             await verifyObjectsAre([task1, task2], 'SELECT * FROM paymentitems WHERE itemid=$1', testids.itemid, null)
         })
     })
+
+    test('double sync should fault', async () => {
+        try {
+            // use allSettled so the both finish before moving on
+            for (const p of await Promise.allSettled([doSync(DB1), doSync(DB1)])) {
+                if (p.status === 'rejected') throw p.reason
+            }
+            throw new Error('double sync did not throw error')
+        } catch (error) {
+            expect(error.message).toMatch(/Request to sync but there is already an active sync ocurring on the database/)
+        }
+    })
 })
