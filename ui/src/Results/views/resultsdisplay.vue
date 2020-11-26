@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class='header' v-if="type === 'event'">
+        <div class='eventheader' v-if="type === 'event'">
             <div v-if="settings.resultsheader" v-html="processedHeader">
             </div>
             <div v-else>
@@ -109,7 +109,7 @@ export default {
 </script>
 
 <style lang="scss">
-.header {
+.eventheader {
     .eventname {
         color: var(--headerColor);
         display: flex;
@@ -145,7 +145,9 @@ export default {
     text-align: center;
     margin-bottom: 0.5rem;
 }
+</style>
 
+<style lang="scss" scoped>
 .stitle {
     text-align: center;
     color: var(--headerColor);
