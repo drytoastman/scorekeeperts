@@ -116,7 +116,6 @@ export default {
             const events = []
             for (const e of data.namedays) {
                 const emod = cloneDeep(this.eventm)
-                debugger
                 emod.name = e.name
                 emod.date = e.date
                 emod.attr.location = e.location

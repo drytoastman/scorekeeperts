@@ -4,7 +4,7 @@ let rules = {
     'space-before-function-paren': ['warn', 'never'],
     'no-multi-spaces': 'off',
     'no-multiple-empty-lines': 'off',
-    'no-debugger': 'off',
+    'no-debugger': 'warn',
     'key-spacing': 'off',
     'spaced-comment': 'off',
     indent: ['warn', 4, { SwitchCase: 1 }],
