@@ -3,12 +3,15 @@ os: linux
 node_js: 14
 services: [docker]
 install:
-  - cd server && npm install
+  - cd server && npm install && cd -
+  - cd ui && npm install && cd -
 script:
-  - cd docker && docker-compose -f testing.yaml up
-  - cd server && npm test
+  - cd docker && docker-compose -f testing.yaml up -d && cd -
+  - cd server && npm build && cd -
+  - cd ui && npm build && cd -
+  - cd server && npm test && cd -
 after_success:
   - |
     if [ ! -z "$TRAVIS_TAG" ]; then
-      cd docker && bash build.sh ${TRAVIS_TAG}
+      cd docker && bash build.sh ${TRAVIS_TAG} && cd -
     fi
