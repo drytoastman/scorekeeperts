@@ -8,6 +8,7 @@
                 <ResultsMenu v-model="selectedSeries" :depend="selectedYear"   :items="serieslist" placeholder="Select Series"></ResultsMenu>
                 <ResultsMenu v-model="selectedEvent"  :depend="selectedSeries" :items="eventlist"  placeholder="Select Event"></ResultsMenu>
             </div>
+            <v-progress-linear :active="!!gettingData" indeterminate absolute bottom color="blue accent-4"></v-progress-linear>
         </v-app-bar>
 
         <v-main>
@@ -43,22 +44,25 @@ export default {
         }
     },
     computed: {
-        ...mapState(['currentSeries', 'seriesinfo']),
+        ...mapState(['currentSeries', 'seriesinfo', 'gettingData']),
         ...mapGetters(['yearGroups']),
 
         yearlist()   { return orderBy([...this.yearGroups.keys()], v => v, 'desc') },
         serieslist() { return orderBy(this.yearGroups.getD(this.year), v => v) },
         eventlist()  {
             const e = this.seriesinfo.events ? orderBy(this.seriesinfo.events, 'date') : []
-            return e.concat(this.dividerEntry, this.champEntry)
+            if (e.length) e.push(this.dividerEntry)
+            e.push(this.champEntry)
+            return e
         },
 
         selectedYear: {
             get() { return this.year },
             set(value) {
                 this.year = value
+                this.selectedEvent = undefined
                 this.$store.commit('changeSeries', '')
-                this.push(name, {})
+                this.push('root', {})
             }
         },
 

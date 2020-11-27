@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class='eventheader' v-if="type === 'event'">
+        <div class='eventheader' v-if="type === 'event' && event.date">
             <div v-if="settings.resultsheader" v-html="processedHeader">
             </div>
             <div v-else>
@@ -73,7 +73,7 @@ export default {
         filteredcodes() {
             switch (this.type) {
                 case 'bycode':  return this.codes
-                case 'bygroup': return this.classesForGroups(this.groups)
+                case 'bygroup': return this.classesForGroups(this.groups.map(s => parseInt(s)))
                 case 'event':   return this.resultsClasses
             }
             return []
