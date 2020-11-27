@@ -2,6 +2,7 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 
 const Announcer      = () => import(/* webpackChunkName: "resultsviews" */ './views/announcer.vue')
+const User           = () => import(/* webpackChunkName: "resultsviews" */ './views/user.vue')
 const DataEntry      = () => import(/* webpackChunkName: "resultsviews" */ './views/dataentry.vue')
 const ResultsDisplay = () => import(/* webpackChunkName: "resultsviews" */ './views/resultsdisplay.vue')
 const ChampDisplay   = () => import(/* webpackChunkName: "resultsviews" */ './views/champdisplay.vue')
@@ -43,7 +44,7 @@ const routes = [
     // live paths
     { path: '/:series/:eventid/announcer', name: 'announcer', component: Announcer },
     { path: '/:series/:eventid/dataentry', name: 'dataentry', component: DataEntry },
-    { path: '/:series/:eventid/live',      name: 'live',      component: Placeholder }
+    { path: '/:series/:eventid/user',      name: 'user',      component: User }
 ]
 
 declare const VUE_BASE: string

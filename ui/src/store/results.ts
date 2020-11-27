@@ -48,6 +48,12 @@ export const resultsMutations: MutationTree<Api2State> = {
         }
     },
 
+    processNoClassData(state: Api2State) {
+        state.live.prev = { nodata: 'nodata' }
+        state.live.last = { nodata: 'nodata' }
+        state.live.next = { nodata: 'nodata' }
+    },
+
     processLastClass(state: Api2State, data: any) {
         if (!data) {
             state.live.lastclass = undefined
@@ -141,7 +147,7 @@ export const resultsActions: ActionTree<Api2State, any> = {
         }
 
         axios.get(API2.ROOT, { params: p, withCredentials: true }).then(res => {
-            context.commit('processLiveData', res.data)
+            context.commit(res.data.last ? 'processLiveData' : 'processNoClassData', res.data)
         }).catch(error => {
             context.commit('addErrors', [error.toString()])
         })

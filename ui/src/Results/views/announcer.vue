@@ -12,33 +12,33 @@
                     <v-tab>By Class</v-tab>
 
                     <v-tab-item>
-                        <template v-if="!isEmpty(prev)">
+                        <template v-if="!isEmpty(prev) && !prev.nodata">
                             <EntrantTable :entrant="prev.entrant"></EntrantTable>
                             <ClassTable       :cls="prev.class"></ClassTable>
                             <ChampTable     :champ="prev.champ"></ChampTable>
                         </template>
                         <template v-else>
-                            Waiting for data...
+                            {{ nodatamsg(prev) }}
                         </template>
                     </v-tab-item>
                     <v-tab-item>
-                        <template v-if="!isEmpty(last)">
+                        <template v-if="!isEmpty(last) && !last.nodata">
                             <EntrantTable :entrant="last.entrant"></EntrantTable>
                             <ClassTable       :cls="last.class"></ClassTable>
                             <ChampTable     :champ="last.champ"></ChampTable>
                         </template>
                         <template v-else>
-                            Waiting for data...
+                            {{ nodatamsg(last) }}
                         </template>
                     </v-tab-item>
                     <v-tab-item>
-                        <template v-if="!isEmpty(next)">
+                        <template v-if="!isEmpty(next) && !next.nodata">
                             <EntrantTable :entrant="next.entrant"></EntrantTable>
                             <ClassTable       :cls="next.class"></ClassTable>
                             <ChampTable     :champ="next.champ"></ChampTable>
                         </template>
                         <template v-else>
-                            Waiting for data...
+                            {{ nodatamsg(next) }}
                         </template>
                     </v-tab-item>
                     <v-tab-item>
@@ -48,11 +48,8 @@
                             <ClassTable       :cls="lastclass.class"></ClassTable>
                             <ChampTable     :champ="lastclass.champ"></ChampTable>
                         </template>
-                        <template v-else-if="!isEmpty(lastclass)">
-                            No class data yet
-                        </template>
                         <template v-else>
-                            Waiting for data...
+                            {{ nodatamsg(lastclass) }}
                         </template>
                     </v-tab-item>
                 </v-tabs>
@@ -122,6 +119,12 @@ export default {
             set(nv) { this.$store.dispatch('setClass', nv) }
         }
     },
+    methods: {
+        nodatamsg(data) {
+            if (data.nodata) return 'No class data yet'
+            return 'Waiting for data'
+        }
+    },
     watch: {
         last() { this.selectedTab = 1 }
     },
@@ -133,7 +136,6 @@ export default {
             class:    true,
             champ:    true,
             next:     true,
-            classcode: '',
             top: {
                 net:  { 0: true },
                 raw:  { 0: true }

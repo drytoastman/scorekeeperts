@@ -12,8 +12,8 @@
                 <router-link :to="{name: 'champ'}">Championship</router-link>
             </template>
             <template v-if="active && !ismainserver">
-                <router-link :to="{name: 'announcer'}">Announcer</router-link>
-                <router-link :to="{name: 'live'}">Live</router-link>
+                <router-link :to="{name: 'announcer'}">Announcer Panel</router-link>
+                <router-link :to="{name: 'user'}">Live User Panel</router-link>
             </template>
         </div>
 

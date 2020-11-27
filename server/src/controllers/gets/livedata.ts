@@ -66,7 +66,7 @@ export async function loadResultData(lazy: LazyData, watch: LiveSocketWatch, row
         const opp  = await lazy.lastRun(row.eventid, back, row.classcode, row.course === 1 ? 2 : 1)
         data = await loadEventResults(lazy, watch, row, opp ? opp.carid : undefined, row.classcode)
     } else {
-        data = await loadEventResults(lazy, watch, row)
+        data = await loadEventResults(lazy, watch, row, undefined, watch.classcode)
     }
 
     data.timestamp = row.modified

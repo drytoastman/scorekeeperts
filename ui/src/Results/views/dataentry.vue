@@ -12,21 +12,22 @@
 </template>
 
 <script>
-import { mapState } from 'vuex'
 import isEmpty from 'lodash/isEmpty'
 import ClassTable from '../components/live/ClassTable.vue'
 import ChampTable from '../components/live/ChampTable.vue'
 import EntrantTable from '../components/live/EntrantTable.vue'
 
 export default {
-    name: 'AnnouncerPanel',
+    name: 'DataEntry',
     components: {
         ClassTable,
         ChampTable,
         EntrantTable
     },
     data() { return { isEmpty } },
-    computed: { ...mapState(['last']) },
+    computed: {
+        last() { return this.$store.state.live.last }
+    },
     mounted() {
         this.$store.dispatch('setWatch', {
             entrant:  true,
