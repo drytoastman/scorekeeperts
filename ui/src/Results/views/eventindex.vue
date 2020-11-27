@@ -12,8 +12,13 @@
                 <router-link :to="{name: 'champ'}">Championship</router-link>
             </template>
             <template v-if="active && !ismainserver">
-                <router-link :to="{name: 'announcer'}">Announcer Panel</router-link>
-                <router-link :to="{name: 'user'}">Live User Panel</router-link>
+                <template v-if="event.ispro">
+                    <router-link :to="{name: 'propanel'}">Announcer Panel</router-link>
+                </template>
+                <template v-else>
+                    <router-link :to="{name: 'announcer'}">Announcer Panel</router-link>
+                    <router-link :to="{name: 'user'}">Live User Panel</router-link>
+                </template>
             </template>
         </div>
 

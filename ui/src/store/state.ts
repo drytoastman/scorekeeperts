@@ -94,6 +94,13 @@ export class Api2State {
         prev: {},
         last: {},
         next: {},
+        left: {},
+        leftorder: {},
+        lefttimer: {},
+        right: {},
+        rightorder: {},
+        righttimer: {},
+
         lastclass: { nodata: 'no data' } as  any|undefined,
         topnet: {},
         topraw: {},

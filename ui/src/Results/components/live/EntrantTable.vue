@@ -1,5 +1,5 @@
 <template>
-    <table class='live'>
+    <table class='live' v-if="entrant">
         <tbody>
             <tr class='head'>
                 <th colspan='5'>{{entrant.firstname}} {{entrant.lastname}} - Course {{entrant.lastcourse}}</th>
@@ -12,7 +12,7 @@
                 <th width='35%'>Net</th>
             </tr>
 
-            <tr v-for="r in entrant.runs[0]" :key="r.run" :class="rowclass(r)">
+            <tr v-for="r in runs" :key="r.run" :class="rowclass(r)">
                 <td>{{r.run}}</td>
                 <td>{{r.raw|t3}} <span class='change' v-html="impval(r.rawimp)"></span></td>
                 <td>{{r.cones}}</td>
@@ -33,6 +33,11 @@ export default {
     data() {
         return {
             colspan: 6
+        }
+    },
+    computed: {
+        runs() {
+            return this.entrant.runs ? this.entrant.runs[0] : []
         }
     },
     methods: {

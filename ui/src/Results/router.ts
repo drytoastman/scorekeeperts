@@ -2,6 +2,7 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 
 const Announcer      = () => import(/* webpackChunkName: "resultsviews" */ './views/announcer.vue')
+const ProPanel       = () => import(/* webpackChunkName: "resultsviews" */ './views/propanel.vue')
 const User           = () => import(/* webpackChunkName: "resultsviews" */ './views/user.vue')
 const DataEntry      = () => import(/* webpackChunkName: "resultsviews" */ './views/dataentry.vue')
 const ResultsDisplay = () => import(/* webpackChunkName: "resultsviews" */ './views/resultsdisplay.vue')
@@ -43,6 +44,7 @@ const routes = [
 
     // live paths
     { path: '/:series/:eventid/announcer', name: 'announcer', component: Announcer },
+    { path: '/:series/:eventid/propanel',  name: 'propanel',  component: ProPanel },
     { path: '/:series/:eventid/dataentry', name: 'dataentry', component: DataEntry },
     { path: '/:series/:eventid/user',      name: 'user',      component: User }
 ]

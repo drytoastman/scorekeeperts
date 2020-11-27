@@ -33,15 +33,30 @@ export const resultsMutations: MutationTree<Api2State> = {
             if (data.last.entrant?.classcode === state.live.getclass) {
                 state.live.lastclass = data.last
             }
+            if (data.last.entrant.lastcourse > 1) {
+                state.live.right = data.last
+            } else {
+                state.live.left = data.last
+            }
         }
         if (data.next)     { state.live.next     = data.next }
         if (data.timer)    { state.live.timer    = data.timer }
-        if (data.runorder) { state.live.runorder = data.runorder }
+        if (data.runorder) {
+            state.live.runorder = data.runorder
+            if (data.last?.entrant.lastcourse > 1) {
+                state.live.rightorder = data.runorder
+            } else {
+                state.live.leftorder = data.runorder
+            }
+        }
+        if (data.protimer) {
+            state.live.lefttimer  = data.protimer.left
+            state.live.righttimer = data.protimer.right
+        }
         if (data.top) {
             if (data.top.net) { state.live.topnet = data.top.net[0] }
             if (data.top.raw) { state.live.topraw = data.top.raw[0] }
         }
-
         if (data.classes) {
             state.classes = {}
             data.classes.forEach(v => Vue.set(state.classes, v.classcode, v))
