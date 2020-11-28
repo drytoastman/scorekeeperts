@@ -84,11 +84,11 @@ tableWatcher.on('timertimes', (series: string, type: string, row: any) => {
     websockets.getLiveItem('timer').forEach(ws => ws.send(msg))
 })
 
-tableWatcher.on('localeventstream', (series: string) => {
-    const rx = websockets.getLive(series, 'protimer')
+tableWatcher.on('localeventstream', async (series: string) => {
+    const rx = websockets.getLiveItem('protimer')
     if (rx.length > 0) {
-        const msg = generateProTimer()
-        rx.forEach(ws => ws.send(msg))
+        const msg = await generateProTimer()
+        rx.forEach(ws => ws.send(JSON.stringify(msg)))
     }
 })
 

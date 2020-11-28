@@ -1,4 +1,4 @@
-import { UUID } from '@common/util'
+import { UTCString, UUID } from '@common/util'
 import { IMain } from 'pg-promise'
 import _ from 'lodash'
 import { ScorekeeperProtocol, TABLES } from '.'
@@ -24,7 +24,7 @@ export class RunsRepository {
         return ret
     }
 
-    async getLastRun(eventid: UUID, earliest: Date, classcodefilter?: string, coursefilter?: number): Promise<Run&{classcode:string}|undefined> {
+    async getLastRun(eventid: UUID, earliest: UTCString, classcodefilter?: string, coursefilter?: number): Promise<Run&{classcode:string}|undefined> {
         // Search through serieslog rather than tables so that we can pick up deletes as well as regular insert/update
         const args = { earliest, eventid, classcodefilter, coursefilter }
 

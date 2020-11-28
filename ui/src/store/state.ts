@@ -96,10 +96,10 @@ export class Api2State {
         next: {},
         left: {},
         leftorder: {},
-        lefttimer: {},
+        lefttimer: [],
         right: {},
         rightorder: {},
-        righttimer: {},
+        righttimer: [],
 
         lastclass: { nodata: 'no data' } as  any|undefined,
         topnet: {},

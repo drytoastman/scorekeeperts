@@ -7,6 +7,7 @@ import { AuthData } from '../auth'
 import { generateProTimer, loadResultData } from './livedata'
 import { LazyData } from '../lazydata'
 import { LiveSocketWatch, watchNonTimers } from '@/common/results'
+import { EPOCH } from '@/common/util'
 
 const readdirAsync = util.promisify(fs.readdir)
 
@@ -68,10 +69,10 @@ export async function unauthgetone(task: ScorekeeperProtocol, auth: AuthData, pa
                 break
             case 'live':
                 watch = JSON.parse(param.watch)
-                if (watch.protimer) ret.protimer = await generateProTimer()
-                if (watch.timer)    ret.timer    = await task.series.getLastTimer()
+                if (watch.protimer) Object.assign(ret, await generateProTimer())
+                if (watch.timer)    ret.timer = await task.series.getLastTimer()
                 if (watchNonTimers(watch)) {
-                    run = await task.runs.getLastRun(param.eventid, new Date(0), watch.classcode)
+                    run = await task.runs.getLastRun(param.eventid, EPOCH, watch.classcode)
                     if (!run) break
                     Object.assign(ret, await loadResultData(new LazyData(task), watch, run))
                 }

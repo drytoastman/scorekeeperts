@@ -42,7 +42,7 @@
                         </template>
                     </v-tab-item>
                     <v-tab-item>
-                        <v-select :items="classcodes" v-model="selectedClass"></v-select>
+                        <ClassSelector v-model="selectedClass" :classcodes="classcodes"></ClassSelector>
                         <template v-if="!isEmpty(lastclass) && !lastclass.nodata">
                             <EntrantTable :entrant="lastclass.entrant"></EntrantTable>
                             <ClassTable       :cls="lastclass.class"></ClassTable>
@@ -76,7 +76,6 @@
 
 
 <script>
-import { mapState } from 'vuex'
 import isEmpty from 'lodash/isEmpty'
 
 import TimerBox from '../components/live/TimerBox.vue'
@@ -85,6 +84,7 @@ import ClassTable from '../components/live/ClassTable.vue'
 import ChampTable from '../components/live/ChampTable.vue'
 import EntrantTable from '../components/live/EntrantTable.vue'
 import TopTimesTable from '../components/live/TopTimesTable.vue'
+import ClassSelector from '../components/live/ClassSelector.vue'
 
 export default {
     name: 'AnnouncerPanel',
@@ -94,7 +94,8 @@ export default {
         ClassTable,
         ChampTable,
         EntrantTable,
-        TopTimesTable
+        TopTimesTable,
+        ClassSelector
     },
     data() {
         return {
@@ -104,7 +105,6 @@ export default {
         }
     },
     computed: {
-        ...mapState(['classes']),  // mapstate doesn't really work with sub value with dot notation
         prev()      { return this.$store.state.live.prev },
         last()      { return this.$store.state.live.last },
         next()      { return this.$store.state.live.next },
@@ -113,7 +113,6 @@ export default {
         timer()     { return this.$store.state.live.timer },
         topraw()    { return this.$store.state.live.topraw },
         topnet()    { return this.$store.state.live.topnet },
-        classcodes() { return Object.values(this.classes).map(c => c.classcode).sort() },
         selectedClass: {
             get() { return this.$store.state.live.getclass },
             set(nv) { this.$store.dispatch('setClass', nv) }
@@ -121,7 +120,7 @@ export default {
     },
     methods: {
         nodatamsg(data) {
-            if (data.nodata) return 'No class data yet'
+            if (data && data.nodata) return 'No class data yet'
             return 'Waiting for data'
         }
     },

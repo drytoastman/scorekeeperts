@@ -6,6 +6,7 @@ export type DateString = string;
 export type UTCString = string;
 export type VuetifyValidationRule  = (value: any) => string | boolean
 export type VuetifyValidationRules = VuetifyValidationRule[]
+export const EPOCH = '1970-01-01T00:00:00'
 
 export function parseDate(date: DateString):          Date { return parse(date, 'yyyy-MM-dd', new Date()) }
 export function parseTimestamp(timestamp: UTCString): Date { return new Date(timestamp) }

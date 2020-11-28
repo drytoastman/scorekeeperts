@@ -1,7 +1,7 @@
 <template>
-    <table class='live' v-if="timedata">
+    <table class='live' v-if="timerdata">
         <tbody>
-            <tr v-for="(row, idx) of timedata" :key="idx">
+            <tr v-for="(row, idx) of entries" :key="idx">
                 <td :class='`reaction ${row.status}`'>{{row.reaction|t3}}</td>
                 <td :class='`sixty ${row.status}`'>{{row.sixty|t3}}</td>
                 <td :class='`raw ${row.status}`'>{{row.raw|t3}}</td>
@@ -17,7 +17,16 @@
 export default {
     name: 'ProTimerBox',
     props: {
-        timedata: Object
+        timerdata: Array
+    },
+    computed: {
+        entries() {
+            const ret = [...this.timerdata]
+            while (ret.length < 3) {
+                ret.unshift({})
+            }
+            return ret
+        }
     }
 }
 </script>

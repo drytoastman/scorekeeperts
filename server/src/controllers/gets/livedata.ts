@@ -1,13 +1,13 @@
 import _ from 'lodash'
 import { subSeconds } from 'date-fns'
 import { LiveSocketWatch, Run, TopTimesKey } from '@/common/results'
-import { parseTimestamp, UUID } from '@/common/util'
+import { formatToMsTimestamp, parseTimestamp, UUID } from '@/common/util'
 import { db } from '@/db'
 import { createTopTimesTable } from '@/common/toptimes'
 import { getDObj } from '@/common/data'
 import { LazyData } from '../lazydata'
 
-export async function generateProTimer(): Promise<string> {
+export async function generateProTimer(): Promise<any> {
     const limit  = 30
     const events = await db.any('SELECT * FROM localeventstream ORDER BY time DESC LIMIT $1', [limit])
 
@@ -48,12 +48,12 @@ export async function generateProTimer(): Promise<string> {
         }
     }
 
-    return JSON.stringify({
+    return {
         protimer: {
             left:  record[0].slice(-3),
             right: record[1].slice(-3)
         }
-    })
+    }
 }
 
 
@@ -62,7 +62,7 @@ export async function loadResultData(lazy: LazyData, watch: LiveSocketWatch, row
     let data
     if (event.ispro) {
         // Get both this row entrant and the last run on the opposite course with the same classcode
-        const back = subSeconds(parseTimestamp(row.modified), -60)
+        const back = formatToMsTimestamp(subSeconds(parseTimestamp(row.modified), 60))
         const opp  = await lazy.lastRun(row.eventid, back, row.classcode, row.course === 1 ? 2 : 1)
         data = await loadEventResults(lazy, watch, row, opp ? opp.carid : undefined, row.classcode)
     } else {

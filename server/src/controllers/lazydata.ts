@@ -4,7 +4,7 @@ import { decorateClassResults, decorateChampResults, getBestNetRun } from '@/com
 import { SeriesEvent } from '@/common/event'
 import { ChampResults, EventResults, Entrant } from '@/common/results'
 import { SeriesSettings } from '@/common/settings'
-import { UUID } from '@/common/util'
+import { UTCString, UUID } from '@/common/util'
 import { ScorekeeperProtocol } from '@/db'
 
 export class LazyData {
@@ -36,7 +36,7 @@ export class LazyData {
         return this._cars.get(carid) as Car
     }
 
-    async lastRun(eventid: UUID, earliest: Date, classcodefilter?: string, coursefilter?: number) {
+    async lastRun(eventid: UUID, earliest: UTCString, classcodefilter?: string, coursefilter?: number) {
         return this.task.runs.getLastRun(eventid, earliest, classcodefilter, coursefilter)
     }
 

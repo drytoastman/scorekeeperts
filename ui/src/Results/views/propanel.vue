@@ -24,7 +24,7 @@
                         </template>
                     </v-tab-item>
                     <v-tab-item>
-                        <v-select :items="classcodes" v-model="selectedClass"></v-select>
+                        <ClassSelector v-model="selectedClass" :classcodes="classcodes"></ClassSelector>
                         <template v-if="!isEmpty(lastclass) && !lastclass.nodata">
                             <ClassTable       :cls="lastclass.class"></ClassTable>
                             <ChampTable     :champ="lastclass.champ"></ChampTable>
@@ -53,7 +53,6 @@
 
 
 <script>
-import { mapState } from 'vuex'
 import isEmpty from 'lodash/isEmpty'
 
 import ProTimerBox from '../components/live/ProTimerBox.vue'
@@ -62,6 +61,7 @@ import ClassTable from '../components/live/ClassTable.vue'
 import ChampTable from '../components/live/ChampTable.vue'
 import EntrantTable from '../components/live/EntrantTable.vue'
 import TopTimesTable from '../components/live/TopTimesTable.vue'
+import ClassSelector from '../components/live/ClassSelector.vue'
 
 export default {
     name: 'ProPanel',
@@ -71,7 +71,8 @@ export default {
         ClassTable,
         ChampTable,
         EntrantTable,
-        TopTimesTable
+        TopTimesTable,
+        ClassSelector
     },
     data() {
         return {
@@ -81,7 +82,6 @@ export default {
         }
     },
     computed: {
-        ...mapState(['classes']),  // mapstate doesn't really work with sub value with dot notation
         last()       { return this.$store.state.live.last },
         lastclass()  { return this.$store.state.live.lastclass },
         leftentrant()  { return this.$store.state.live.left?.entrant },
@@ -92,7 +92,6 @@ export default {
         righttimer() { return this.$store.state.live.righttimer },
         topraw()     { return this.$store.state.live.topraw },
         topnet()     { return this.$store.state.live.topnet },
-        classcodes() { return Object.values(this.classes).map(c => c.classcode).sort() },
         selectedClass: {
             get() { return this.$store.state.live.getclass },
             set(nv) { this.$store.dispatch('setClass', nv) }
@@ -100,7 +99,7 @@ export default {
     },
     methods: {
         nodatamsg(data) {
-            if (data.nodata) return 'No class data yet'
+            if (data && data.nodata) return 'No class data yet'
             return 'Waiting for data'
         }
     },
@@ -124,18 +123,10 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-    .outer {
-        display: flex;
-        width: 100%;
-        font-size: 0.95rem;
-    }
-    .colleft {
-        flex: 0.5;
-    }
-    .colcenter {
-        flex: 0.7;
-    }
-    .colright {
-        flex: 0.5;
-    }
+.outer {
+    display: grid;
+    width: 100%;
+    font-size: 0.95rem;
+    grid-template-columns: repeat(3, 1fr);
+}
 </style>

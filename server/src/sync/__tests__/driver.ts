@@ -1,3 +1,4 @@
+import { EPOCH } from '@/common/util'
 import { pgp } from '@/db'
 import { DB1, DB2, doSync, getTestDB, resetData, testids, timingpause, verifyObjectsAre, verifyObjectsLike, verifyUpdateLogChanges, with2DB } from './helpers'
 
@@ -21,7 +22,7 @@ describe('driver sync tests', () => {
                 lastname: 'newlast',
                 email: 'newemail',
                 password: testids.password,
-                created: '1970-01-01T00:00:00',
+                created: EPOCH,
                 attr: {
                     address: '123', zip: '98222'
                 }

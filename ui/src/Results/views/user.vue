@@ -1,9 +1,6 @@
 <template>
     <div class='userpanel'>
-        <div class='selector'>
-            <div class='text'>Filter Class: </div>
-            <v-select :items="classcodes" v-model="selectedClass" outlined dense hide-details></v-select>
-        </div>
+        <ClassSelector v-model="selectedClass"></ClassSelector>
         <v-tabs color="secondary" v-model="selectedTab">
             <v-tab>Prev</v-tab>
             <v-tab>Last</v-tab>
@@ -53,13 +50,13 @@
 
 
 <script>
-import { mapState } from 'vuex'
 import isEmpty from 'lodash/isEmpty'
 
 import ClassTable from '../components/live/ClassTable.vue'
 import ChampTable from '../components/live/ChampTable.vue'
 import EntrantTable from '../components/live/EntrantTable.vue'
 import TopTimesTable from '../components/live/TopTimesTable.vue'
+import ClassSelector from '../components/live/ClassSelector.vue'
 
 export default {
     name: 'UserPanel',
@@ -67,7 +64,8 @@ export default {
         ClassTable,
         ChampTable,
         EntrantTable,
-        TopTimesTable
+        TopTimesTable,
+        ClassSelector
     },
     data() {
         return {
@@ -87,13 +85,11 @@ export default {
         }
     },
     computed: {
-        ...mapState(['classes']),  // mapstate doesn't really work with sub value with dot notation
         prev()      { return this.$store.state.live.prev },
         last()      { return this.$store.state.live.last },
         next()      { return this.$store.state.live.next },
         topraw()    { return this.$store.state.live.topraw },
         topnet()    { return this.$store.state.live.topnet },
-        classcodes() { return [{ text: 'All', value: '' }, ...Object.values(this.classes).map(c => c.classcode).sort()] },
         selectedClass: {
             get() { return this.watch.classcode },
             set(nv) {
@@ -104,7 +100,7 @@ export default {
     },
     methods: {
         nodatamsg(data) {
-            if (data.nodata) return 'No class data yet'
+            if (data && data.nodata) return 'No class data yet'
             return 'Waiting for data'
         }
     },
@@ -118,21 +114,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.selector {
-    display: flex;
-    align-items: baseline;
-    column-gap: 1rem;
-    margin-top: 0.5rem;
-    margin-left: 0.5rem;
-    margin-right: 0.5rem;
-    .text {
-        text-align: right;
-        font-weight: bold;
-    }
-    .v-select {
-        flex: 0.5;
-    }
-}
 .userpanel {
     width: 100%;
     font-size: 0.95rem;
