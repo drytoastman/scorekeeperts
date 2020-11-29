@@ -7,6 +7,7 @@ import { runSyncOnce } from '@/sync/process'
 
 export const CRON_MAIN_SERVER = 0x01
 export const CRON_SYNC_SERVER = 0x02
+const jobs: CronJob[] = []
 
 export function startCronJobs(modeflags: number) {  // times in local time zone
     cronlog.info('scheduling cron jobs')
@@ -18,15 +19,25 @@ export function startCronJobs(modeflags: number) {  // times in local time zone
     */
 
     if (modeflags & CRON_MAIN_SERVER) {
-        new CronJob('0    0  4    * * *', oauthrefresh).start()
-        new CronJob('0    0  1,13 * * *', backupNow).start()
-        new CronJob('*/15 *  *    * * *', sendQueuedEmail).start()
-        new CronJob('0    0  */4  * * *', checkMailmanErrors).start()
-        new CronJob('30  59  23   * * *', rotatedLogUpload).start()
+        jobs.push(new CronJob('0    0  4    * * *', oauthrefresh))
+        jobs.push(new CronJob('0    0  1,13 * * *', backupNow))
+        jobs.push(new CronJob('*/15 *  *    * * *', sendQueuedEmail))
+        jobs.push(new CronJob('0    0  */4  * * *', checkMailmanErrors))
+        jobs.push(new CronJob('30  59  23   * * *', rotatedLogUpload))
     }
 
     if (modeflags & CRON_SYNC_SERVER) {
-        new CronJob('*/10 *  *    * * *', runSyncOnce).start()
+        jobs.push(new CronJob('*/10 *  *    * * *', runSyncOnce))
+    }
+
+    for (const j of jobs) {
+        j.start()
+    }
+}
+
+export function stopCronJobs() {
+    for (const j of jobs) {
+        j.stop()
     }
 }
 

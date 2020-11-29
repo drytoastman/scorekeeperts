@@ -67,12 +67,14 @@ export async function startDNSServer() {
     udpserver.on('listening', () => { dnslog.info('UDP DNS Server listening') })
     udpserver.on('error', error => dnslog.error(error))
     udpserver.listen(DNSPORT)
+    udpserver.unref(udpserver)
 
 
     const tcpserver = dns.createTCPServer(resolver)
     tcpserver.on('listening', () => { dnslog.info('TCP DNS Server listening') })
     tcpserver.on('error', error => dnslog.error(error))
     tcpserver.listen(DNSPORT)
+    tcpserver.unref()
 
     /*
     setInterval(() => {

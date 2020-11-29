@@ -6,7 +6,7 @@ import promiseRetry from 'promise-retry'
 
 import { api2, oldapi, websockets, websocketsStartWatching } from './controllers'
 import { db, tableWatcher, pgp } from './db'
-import { CRON_MAIN_SERVER, CRON_SYNC_SERVER, startCronJobs } from './cron'
+import { CRON_MAIN_SERVER, CRON_SYNC_SERVER, startCronJobs, stopCronJobs } from './cron'
 import { accesslog, mainlog } from './util/logging'
 import { startDNSServer } from './util/dns'
 
@@ -90,9 +90,10 @@ server.on('upgrade', function upgrade(request, socket, head) {
 
 process.on('SIGTERM', () => {
     mainlog.warn('terminating')
+    tableWatcher.shutdown()
+    pgp.end()
+    stopCronJobs()
     server.close(() => {
-        tableWatcher.shutdown()
-        pgp.end()
         process.exitCode = 0
     })
 })

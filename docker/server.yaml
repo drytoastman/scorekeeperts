@@ -1,7 +1,6 @@
 version: '3.2'
 volumes:
     database:
-    socket:
     logs:
     certs: { external: { name: "certs" }}
     webdata:
@@ -21,7 +20,6 @@ services:
             - TZ=America/Los_Angeles
         volumes:
             - database:/var/lib/postgresql/data
-            - socket:/var/run/postgresql
             - logs:/var/log
             - certs:/certs
         restart: unless-stopped
