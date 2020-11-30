@@ -11,6 +11,7 @@ networks:
 services:
     db:
         image: drytoastman/scdb:${VERSION:-latest}
+        container_name: db
         networks: { net1: {}}
         ports:
             - '127.0.0.1:6432:6432'

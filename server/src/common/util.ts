@@ -1,21 +1,16 @@
 import _V from './validataorimport'
-import { format, parse, subMinutes } from 'date-fns'
+import { parse } from 'date-fns'
 
 export type UUID = string;
 export type DateString = string;
 export type UTCString = string;
 export type VuetifyValidationRule  = (value: any) => string | boolean
 export type VuetifyValidationRules = VuetifyValidationRule[]
-export const EPOCH = '1970-01-01T00:00:00'
+export const EPOCH = '1970-01-01T00:00:00Z'
 
 export function parseDate(date: DateString):          Date { return parse(date, 'yyyy-MM-dd', new Date()) }
 export function parseTimestamp(timestamp: UTCString): Date { return new Date(timestamp) }
-export function formatToTimestamp(val: Date): string       { return format(val, "yyyy-MM-dd'T'HH:mm:ss") }
-export function formatToMsTimestamp(val: Date): string     { return format(val, "yyyy-MM-dd'T'HH:mm:ss.SSSSSS") }
-export function parseTimestampLocal(timestamp: UTCString): Date {
-    const t = parseTimestamp(timestamp)
-    return subMinutes(t, t.getTimezoneOffset())
-}
+export function formatToTimestamp(val: Date): string       { return val.toISOString() }
 
 export interface DataValidationRules {
     [key: string]: VuetifyValidationRules;

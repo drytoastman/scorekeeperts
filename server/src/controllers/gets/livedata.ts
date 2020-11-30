@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import { subSeconds } from 'date-fns'
 import { LiveSocketWatch, Run, TopTimesKey } from '@/common/results'
-import { formatToMsTimestamp, parseTimestamp, UUID } from '@/common/util'
+import { formatToTimestamp, parseTimestamp, UUID } from '@/common/util'
 import { db } from '@/db'
 import { createTopTimesTable } from '@/common/toptimes'
 import { getDObj } from '@/common/data'
@@ -62,7 +62,7 @@ export async function loadResultData(lazy: LazyData, watch: LiveSocketWatch, row
     let data
     if (event.ispro) {
         // Get both this row entrant and the last run on the opposite course with the same classcode
-        const back = formatToMsTimestamp(subSeconds(parseTimestamp(row.modified), 60))
+        const back = formatToTimestamp(subSeconds(parseTimestamp(row.modified), 60))
         const opp  = await lazy.lastRun(row.eventid, back, row.classcode, row.course === 1 ? 2 : 1)
         data = await loadEventResults(lazy, watch, row, opp ? opp.carid : undefined, row.classcode)
     } else {

@@ -1,16 +1,15 @@
 import fs from 'fs'
 import { pgp, ScorekeeperProtocolDB } from '@/db'
-import { MergeServer } from '@/db/mergeserverrepo'
 import { PEER_TIMEOUT, REMOTE_TIMEOUT } from './constants'
 
 const dbmap = new Map<string, ScorekeeperProtocolDB>()
 
-export function getRemoteDB(remote: MergeServer, series: string, password: string): ScorekeeperProtocolDB {
+export function getRemoteDB(remote: { address?: string, hostname: string }, series: string, password: string): ScorekeeperProtocolDB {
     let address = remote.address
     let port    = 54329
 
     if (address && address.indexOf(':') > 0) {
-        const parts = remote.address.split(':')
+        const parts = address.split(':')
         address = parts[0]
         port    = parseInt(parts[1])
     }

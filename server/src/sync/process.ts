@@ -47,7 +47,7 @@ export async function runSyncOnce(rootdb?: ScorekeeperProtocolDB) {
 
         // Check if there are any timeouts for servers to merge with
         for (const remote of (await roottask.merge.getActive()).map(d => new MergeServerEntry(d, roottask))) {
-            if (isPast(remote.nextchecktime)) { // FINISH ME, timezone issue?!
+            if (isPast(remote.nextchecktime)) {
                 try {
                     await remote.serverStart(Object.keys(myserver.mergestate))
                     await mergeWith(roottask, myserver, remote)

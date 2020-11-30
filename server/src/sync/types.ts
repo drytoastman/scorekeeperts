@@ -1,11 +1,8 @@
 import { addMilliseconds } from 'date-fns'
 import _ from 'lodash'
-import util from 'util'
 
-import { formatToMsTimestamp, parseTimestamp, UTCString } from '@/common/util'
+import { formatToTimestamp, parseTimestamp, UTCString } from '@/common/util'
 import { PRIMARY_KEYS } from './constants'
-import { synclog } from '@/util/logging'
-
 
 export type PrimaryKeyHash = string
 export type TableName = string
@@ -178,10 +175,8 @@ export class LoggedObject {
         // Pick modified time based on object that didn't change or the final modtime + epsilon
         let both = false
         if (!dbObjectSame(last, data)) {
-            synclog.error(util.inspect(last))
-            synclog.error(util.inspect(data))
             both = true
-            data.modified = formatToMsTimestamp(addMilliseconds(new Date(data.modified), 1))
+            data.modified = formatToTimestamp(addMilliseconds(new Date(data.modified), 1))
         }
 
         return { obj: data, both: both }

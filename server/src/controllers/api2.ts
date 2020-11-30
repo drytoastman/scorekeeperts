@@ -3,6 +3,7 @@ import { Router, Request, Response } from 'express'
 import delay from 'express-delay'
 import icalgen from 'ical-generator'
 import moment from 'moment'
+import util from 'util'
 
 import { db } from '@/db'
 import { controllog } from '@/util/logging'
@@ -19,6 +20,7 @@ import { seriesadmin } from './posts/seriesadmin'
 import { AUTHTYPE_DRIVER, AUTHTYPE_NONE, AUTHTYPE_SERIES } from '@/common/auth'
 import { unauthget } from './gets/unauthget'
 import { allSeriesSummary } from './allseries'
+import { getRemoteDB } from '@/sync/connections'
 
 export const api2 = Router()
 
@@ -77,7 +79,11 @@ export async function apiget(req: Request, res: Response) {
         if (error.authtype) {
             res.status(401).json({ error: error.message, authtype: error.authtype })
         } else {
-            controllog.error(error)
+            if (error.query) {
+                controllog.error(util.inspect(error))
+            } else {
+                controllog.error(error)
+            }
             const match = error.message.match(/relation "(.*)" does not exist/)
             const msg = (match) ? `Invalid series ${param.series} (${match[1]} does not exist)` : error.message
             res.status(500).json({ error: msg })
@@ -130,6 +136,31 @@ export async function ical(req: Request, res: Response) {
     }
 }
 
+export async function remotelist(req: Request, res: Response) {
+    if (await db.general.isMainServer()) {
+        res.status(403).send('Not available on main server')
+    }
+    try {
+        const list = await getRemoteDB({ hostname: req.query.host as string }, 'nulluser', 'nulluser').series.seriesList()
+        return res.send(list.join(','))
+    } catch (error) {
+        return res.status(500).send(error.message)
+    }
+}
+
+export async function remotecheck(req: Request, res: Response) {
+    if (await db.general.isMainServer()) {
+        res.status(403).send('Not available on main server')
+    }
+    try {
+        const list = await getRemoteDB({ hostname: req.query.host as string }, req.query.series as string, req.query.password as string).series.seriesSettings()
+        return res.send('accepted')
+    } catch (error) {
+        return res.status(500).send(error.message)
+    }
+}
+
+
 
 // items where we don't care about being pre authenticated
 api2.post('/login', login)
@@ -141,6 +172,8 @@ api2.post('/serieslogin', serieslogin)
 api2.post('/adminlogin',  adminlogin)
 api2.get('/adminlogout',  adminlogout)
 api2.get('/ical/:driverid', ical)
+api2.get('/remotelist', remotelist)
+api2.get('/remotecheck', remotecheck)
 
 // Authenticated items
 api2.get('/', apiget)

@@ -114,6 +114,11 @@ tableWatcher.on('runs', (series: string, type: string, row: Run&{classcode:strin
 for (const tbl of ['events', 'itemeventmap', 'paymentitems', 'paymentaccounts']) {
     tableWatcher.on(tbl, (series, type, row) => {
         try {
+            for (const key of ['modified', 'created', 'regclosed', 'regopened']) {
+                if (key in row) {
+                    row[key] += 'Z' // force readers to see it as UTC
+                }
+            }
             const msg = JSON.stringify({ type: type, series: series, [tbl]: [row] })
             websockets.getUpdatesAllAuth(series).forEach(ws => ws.send(msg))
         } catch (error) {

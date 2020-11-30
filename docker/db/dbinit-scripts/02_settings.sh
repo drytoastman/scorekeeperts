@@ -50,4 +50,10 @@ else
 fi
 
 cp /docker-entrypoint-initdb.d/series.template series.sql
-psql -U postgres -d scorekeeper -c "INSERT INTO version (id, version) VALUES (1, $TEMPLATE_SCHEMA_VERSION)"
+
+KEYGRIP=`dd if=/dev/urandom bs=32 count=1 | base64`
+psql -U postgres -d scorekeeper -c "
+    INSERT INTO version (id, version) VALUES (1, $TEMPLATE_SCHEMA_VERSION);
+    INSERT INTO localsettings (key, value) VALUES ('KEYGRIP', '$KEYGRIP');
+    INSERT INTO localsettings (key, value) VALUES ('IS_MAIN_SERVER', '0');
+"

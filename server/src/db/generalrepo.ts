@@ -54,8 +54,8 @@ export class GeneralRepository {
     }
 
     async getLocalSetting(key: string): Promise<string> {
-        const row = await this.db.one('SELECT value FROM localsettings WHERE key=$1', [key])
-        return row.value
+        const row = await this.db.oneOrNone('SELECT value FROM localsettings WHERE key=$1', [key])
+        return row ? row.value : ''
     }
 
     async setLocalSetting(key: string, value: string): Promise<null> {
