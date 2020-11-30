@@ -45,8 +45,8 @@
 </template>
 
 <script>
-import { format, parse, addMinutes } from 'date-fns'
-import { parseDate, parseTimestampLocal, formatToTimestamp } from '@/common/util'
+import { format, parse } from 'date-fns'
+import { parseDate, parseTimestamp, formatToTimestamp } from '@/common/util'
 
 const VDATE = 'yyyy-MM-dd'
 const VTIME = 'HH:mm'
@@ -100,7 +100,7 @@ export default {
     methods: {
         init() {
             if (!this.datetimestr) { return }
-            const d = (this.datetimestr.length === 10) ? parseDate(this.datetimestr) : parseTimestampLocal(this.datetimestr)
+            const d = (this.datetimestr.length === 10) ? parseDate(this.datetimestr) : parseTimestamp(this.datetimestr)
             this.date = format(d, VDATE)
             this.time = format(d, VTIME)
         },
@@ -109,7 +109,7 @@ export default {
             if (this.dateOnly) {
                 this.$emit('input', this.date)
             } else {
-                this.$emit('input', formatToTimestamp(addMinutes(this.combinedDate, this.combinedDate.getTimezoneOffset())))
+                this.$emit('input', formatToTimestamp(this.combinedDate))
             }
         },
         clearHandler() {

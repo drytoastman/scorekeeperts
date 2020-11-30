@@ -47,7 +47,7 @@
 import { mapGetters, mapState } from 'vuex'
 import { subDays } from 'date-fns'
 
-import { parseDate, parseTimestampLocal } from '@/common/util'
+import { parseDate, parseTimestamp } from '@/common/util'
 import BasicsTemplate from './BasicsTemplate.vue'
 import Limits from './Limits.vue'
 import Other from './Other.vue'
@@ -100,7 +100,7 @@ export default {
         createClosing(datestring, prevdow, timestampstring) {
             const date     = parseDate(datestring)
             const adj      = date.getDay() - prevdow
-            const timebase = parseTimestampLocal(timestampstring)
+            const timebase = parseTimestamp(timestampstring)
 
             const ret = subDays(date, adj <= 0 ? adj + 7 : adj)
             ret.setHours(timebase.getHours(), timebase.getMinutes())
