@@ -43,13 +43,9 @@
         <div class='list' v-if="event.ispro">
             <div class='stitle'>ProSolo</div>
             <template v-if="active">
-                <router-link :to="{name: 'grid', query: { order: 'number' }}">Grid By Number</router-link>
-                <router-link :to="{name: 'grid', query: { order: 'position' }}">Grid By Standings</router-link>
+                <router-link :to="{name: 'grid'}">Grid</router-link>
             </template>
-
-            <router-link :to="{name: 'dialins', query: { order: 'net' }}">Dialins By Net Time</router-link>
-            <router-link :to="{name: 'dialins', query: { order: 'prodiff' }}">Dialins By Class Diff</router-link>
-
+            <router-link :to="{name: 'dialins'}">Dialins</router-link>
             <router-link v-for="c in challenges" :key="c.challengeid" :to="{name: 'bracket', params: { challengeid: c.challengeid }}">{{c.name}}</router-link>
         </div>
 

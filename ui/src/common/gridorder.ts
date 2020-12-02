@@ -4,6 +4,7 @@ import { ClassOrder } from './classindex'
 import { Car } from './car'
 import { Driver } from './driver'
 import { UUID } from './util'
+import { EventResults } from './results'
 
 interface Entrant {
     car: Car|undefined
@@ -49,7 +50,18 @@ class GridReport {
                 this.groupmap[e.car.classcode].duals.push(e)
             }
         }
-        this.order('number')
+        this.order('car.number')
+    }
+
+    applyResults(eventresults: EventResults) {
+        for (const code in this.groupmap) {
+            for (const key of ['firsts', 'duals']) {
+                for (const e of this.groupmap[code][key] || []) {
+                    e.net = eventresults[code].find(r => r.carid === e.car.carid)?.net
+                }
+            }
+        }
+        this.order('net')
     }
 
     order(key: string) {
@@ -119,11 +131,14 @@ export function createGridReport(classorders: ClassOrder[], classcodes: string[]
 }
 
 
-export function gridTables(classorders: ClassOrder[], classcodes: string[], cars: Car[], drivermap: {[key: string]: Driver}):
+export function gridTables(classorders: ClassOrder[], classcodes: string[], cars: Car[], drivermap: {[key: string]: Driver}, eventresults?: EventResults):
                     {[idx: string]: { firsts: Entrant[][], duals: Entrant[][] }} {
     const report = createGridReport(classorders, classcodes, cars, drivermap)
-    const tables = {}
+    if (eventresults) {
+        report.applyResults(eventresults)
+    }
 
+    const tables = {}
     for (const idx in report.groups) {
         tables[idx] = {
             firsts: report.table(parseInt(idx), 'firsts'),

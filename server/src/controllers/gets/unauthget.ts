@@ -73,7 +73,8 @@ export async function unauthgetone(task: ScorekeeperProtocol, auth: AuthData, pa
                                     (await task.clsidx.classOrder()).filter(c => c.eventid === param.eventid),
                                     (await task.clsidx.classList()).map(c => c.classcode),
                                     await task.register.getRegisteredCars(param.eventid),
-                                    await task.drivers.getDriverMap())
+                                    await task.drivers.getDriverMap(),
+                                    param.order === 'position' ? await task.results.getEventResults(param.eventid) : undefined)
                 break
 
             case 'live':

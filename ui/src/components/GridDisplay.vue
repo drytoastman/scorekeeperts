@@ -5,9 +5,10 @@
             <template v-for="(row,rowidx) of table">
                 <tr :key="rowidx">
                     <template v-for="(e,idx) of row">
-                        <th :key="idx">{{(rowidx*2)+idx+1}}</th>
+                        <th class='grid' :key="idx">{{(rowidx*2)+idx+1}}</th>
                         <td class='code' :key="idx+1000">{{e.car ? e.car.classcode : ''}}</td>
                         <td class='num'  :key="idx+2000">{{e.car ? e.car.number : ''}}</td>
+                        <td class='net'  :key="idx+4000" v-if="shownet">{{e.net|t3}}</td>
                         <td class='name' :key="idx+3000"><span v-if="e.driver">{{e.driver.firstname}} {{e.driver.lastname}}</span></td>
                     </template>
                 </tr>
@@ -21,7 +22,8 @@ export default {
     name: 'GridDisplay',
     props: {
         table: Array,
-        grid: Number
+        grid: Number,
+        shownet: Boolean
     },
     data() {
         return {
@@ -43,18 +45,13 @@ th, td {
     font-size: 90%;
 }
 th {
-    width: 4%;
     background: #eee;
 }
-td.code {
-    width: 8%;
-}
-td.num {
-    width: 7%;
-}
-td.name {
-    width: 30%;
-}
+.grid { width: 3rem; }
+.code { width: 3rem; }
+.num  { width: 3rem; }
+.net  { width: 4rem; }
+.name { min-width: 9rem; }
 .grouphead {
     font-size: 120%;
     font-weight: bold;

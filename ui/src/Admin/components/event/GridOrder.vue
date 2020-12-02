@@ -14,6 +14,10 @@
             <v-btn color='secondary' dark class='updatebutton' @click='update'>Update</v-btn>
         </div>
         <div v-if="report.groups">
+            <div class='links'>
+                <a :href='`/results/${currentSeries}/${eventid}/grid`' target="_blank">Results Page Report</a>
+            </div>
+
             <div class='checks'>
                 <template v-for="(_,idx) in report.groups">
                     <v-checkbox dense hide-details :key=idx v-model=checks[idx] :label="`Group ${idx}`"></v-checkbox>
@@ -53,7 +57,7 @@ export default {
         }
     },
     computed: {
-        ...mapState(['classes', 'classorder', 'drivers', 'cars', 'registered']),
+        ...mapState(['currentSeries', 'classes', 'classorder', 'drivers', 'cars', 'registered']),
         newdata() { return [this.classes, this.classorder, this.cars, this.registered] }
     },
     methods: {
@@ -105,6 +109,13 @@ export default {
     column-gap: 1rem;
     row-gap: 1rem;
     height: 50vh;
+}
+.links {
+    display: flex;
+    * {
+        flex: 1;
+        text-align: center;
+    }
 }
 .checks {
     display: flex;

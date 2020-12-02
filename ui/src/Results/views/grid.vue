@@ -1,9 +1,10 @@
 <template>
     <div>
-        <template v-for="[idx, tables] in Object.entries(gridtables)">
+        <v-switch v-model="shownet" inset label="Order By Net"></v-switch>
+        <template v-for="[idx, tables] in Object.entries(shownet ? byposition : bynumber)">
             <div v-if="tables.firsts.length" :key="idx" class='gridview'>
-                <GridDisplay :table="tables.firsts" :grid='parseInt(idx)'></GridDisplay>
-                <GridDisplay :table="tables.duals"  :grid='parseInt(idx)+100'></GridDisplay>
+                <GridDisplay :table="tables.firsts" :grid='parseInt(idx)' :shownet=shownet></GridDisplay>
+                <GridDisplay :table="tables.duals"  :grid='parseInt(idx)+100' :shownet=shownet></GridDisplay>
             </div>
         </template>
     </div>
@@ -18,18 +19,22 @@ export default {
         GridDisplay
     },
     props: {
-        query: Object,
         eventid: String
     },
     data()  {
         return {
-            gridtables: {}
+            bynumber: {},
+            byposition: {},
+            shownet: false
         }
     },
     methods: {
         getdata() {
             this.$store.dispatch('getdata', { items: 'gridtables', eventid: this.eventid }).then(res => {
-                if (res) this.gridtables = res.gridtables
+                if (res) this.bynumber = res.gridtables
+            })
+            this.$store.dispatch('getdata', { items: 'gridtables', eventid: this.eventid, order: 'position' }).then(res => {
+                if (res) this.byposition = res.gridtables
             })
         }
     },
@@ -48,5 +53,10 @@ export default {
 }
 ::v-deep .griddisplay {
     margin-bottom: 1rem;
+}
+@media print {
+    .v-input--switch {
+        display: none;
+    }
 }
 </style>
