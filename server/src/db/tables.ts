@@ -155,7 +155,7 @@ export function createColumnSets(pgp: IMain, syncversion = false) {
         challengerounds: new pgp.helpers.ColumnSet([
             { name: 'challengeid', cnd: true, cast: 'uuid' },
             { name: 'round', cnd: true },
-            'swappedstart', 'carid1', 'car1dial', 'car2id', 'car2dial', modified
+            'swappedstart', 'car1id', 'car1dial', 'car2id', 'car2dial', modified
         ], { table: 'challengerounds' }),
 
         challengeruns: new pgp.helpers.ColumnSet([
@@ -177,7 +177,7 @@ export function createColumnSets(pgp: IMain, syncversion = false) {
             { name: 'classcode', cnd: true },
             { name: 'driverid',  cnd: true, cast: 'uuid' },
             'net', modified
-        ], { table: 'eventresults' }),
+        ], { table: 'externalresults' }),
 
 
         runorder: new pgp.helpers.ColumnSet([
