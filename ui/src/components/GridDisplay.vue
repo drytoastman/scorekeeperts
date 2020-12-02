@@ -1,14 +1,14 @@
 <template>
     <div v-if="table.length > 0">
         <div class='grouphead'>Group {{grid}}</div>
-        <table>
+        <table class='griddisplay'>
             <template v-for="(row,rowidx) of table">
                 <tr :key="rowidx">
                     <template v-for="(e,idx) of row">
                         <th :key="idx">{{(rowidx*2)+idx+1}}</th>
-                        <td :key="idx+1000">{{e.car ? e.car.classcode : ''}}</td>
-                        <td :key="idx+2000">{{e.car ? e.car.number : ''}}</td>
-                        <td :key="idx+3000"><span v-if="e.driver">{{e.driver.firstname}} {{e.driver.lastname}}</span></td>
+                        <td class='code' :key="idx+1000">{{e.car ? e.car.classcode : ''}}</td>
+                        <td class='num'  :key="idx+2000">{{e.car ? e.car.number : ''}}</td>
+                        <td class='name' :key="idx+3000"><span v-if="e.driver">{{e.driver.firstname}} {{e.driver.lastname}}</span></td>
                     </template>
                 </tr>
             </template>
@@ -37,13 +37,23 @@ table {
     border-collapse: collapse;
     width: 100%;
 }
-th {
-    background: lightgray;
-}
 th, td {
     border: 1px solid rgb(210,210,210);
-    padding: 0.2rem;
+    padding: 2px 6px;
     font-size: 90%;
+}
+th {
+    width: 4%;
+    background: #eee;
+}
+td.code {
+    width: 8%;
+}
+td.num {
+    width: 7%;
+}
+td.name {
+    width: 30%;
 }
 .grouphead {
     font-size: 120%;

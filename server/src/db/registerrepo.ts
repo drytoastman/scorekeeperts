@@ -4,6 +4,7 @@ import { IDatabase, IMain } from 'pg-promise'
 import _ from 'lodash'
 import { verifyDriverRelationship } from './helper'
 import { TABLES } from '.'
+import { Car } from '@/common/car'
 
 export class RegisterRepository {
     constructor(private db: IDatabase<any>, private pgp: IMain) {
@@ -15,6 +16,10 @@ export class RegisterRepository {
 
     async getAllRegistration(eventid?: UUID): Promise<Registration[]> {
         return this.db.any('SELECT * FROM registered ' + (eventid ? 'WHERE eventid=$1 ' : ''), [eventid])
+    }
+
+    async getRegisteredCars(eventid: UUID): Promise<Car[]> {
+        return this.db.any('SELECT * FROM cars c JOIN registered r ON r.carid=c.carid WHERE r.eventid=$1', [eventid])
     }
 
     async getFullEventRegistration(eventid: UUID, paymentRequired: boolean): Promise<any[]> {

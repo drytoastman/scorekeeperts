@@ -22,6 +22,14 @@ export class DriverRepository {
         return this.filterDrivers(await this.db.any('SELECT * FROM drivers'))
     }
 
+    async getDriverMap(): Promise<{[driverid: string]: Driver}> {
+        const ret = {}
+        for (const d of await this.getAllDrivers()) {
+            ret[d.driverid] = d
+        }
+        return ret
+    }
+
     async getDriversBrief(): Promise<any[]> {
         return this.db.any('SELECT driverid,firstname,lastname,email FROM drivers ORDER BY lower(firstname),lower(lastname)')
     }

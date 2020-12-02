@@ -67,6 +67,7 @@ class GridReport {
         const classes = this.groups[group]
 
         for (let ii = 0; ii < classes.length; ii++) {
+            if (!classes[ii][key]) continue
             for (const e of classes[ii][key] as Entrant[]) {
                 row.push(e)
                 if (row.length >= 2) {
@@ -115,4 +116,20 @@ export function createGridReport(classorders: ClassOrder[], classcodes: string[]
 
     report.addEntrants(cars.map(c => ({ car: c, driver: drivermap[c.driverid] })))
     return report
+}
+
+
+export function gridTables(classorders: ClassOrder[], classcodes: string[], cars: Car[], drivermap: {[key: string]: Driver}):
+                    {[idx: string]: { firsts: Entrant[][], duals: Entrant[][] }} {
+    const report = createGridReport(classorders, classcodes, cars, drivermap)
+    const tables = {}
+
+    for (const idx in report.groups) {
+        tables[idx] = {
+            firsts: report.table(parseInt(idx), 'firsts'),
+            duals:  report.table(parseInt(idx), 'duals')
+        }
+    }
+
+    return tables
 }

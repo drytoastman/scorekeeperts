@@ -11,6 +11,7 @@ const TTDisplay      = () => import(/* webpackChunkName: "resultsviews" */ './vi
 const EventIndex     = () => import(/* webpackChunkName: "resultsviews" */ './views/eventindex.vue')
 const Series         = () => import(/* webpackChunkName: "resultsviews" */ './views/series.vue')
 const Placeholder    = () => import(/* webpackChunkName: "resultsviews" */ './views/placeholder.vue')
+const Grid           = () => import(/* webpackChunkName: "resultsviews" */ './views/grid.vue')
 
 function queryProps(route) {
     function tolist(q) {
@@ -38,7 +39,7 @@ const routes = [
     { path: '/:series/:eventid/post',    name: 'post',       component: ResultsDisplay, props: queryProps },
     { path: '/:series/:eventid/tt',      name: 'toptimes',   component: TTDisplay,      props: queryProps },
     { path: '/:series/:eventid/audit',   name: 'audit',      component: Placeholder },
-    { path: '/:series/:eventid/grid',    name: 'grid',       component: Placeholder },
+    { path: '/:series/:eventid/grid',    name: 'grid',       component: Grid,           props: true },
     { path: '/:series/:eventid/dialins', name: 'dialins',    component: Placeholder },
     { path: '/:series/:eventid/bracket/:challengeid', name: 'bracket', component: Placeholder },
 

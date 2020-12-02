@@ -8,6 +8,7 @@ import { generateProTimer, loadResultData } from './livedata'
 import { LazyData } from '../lazydata'
 import { LiveSocketWatch, watchNonTimers } from '@/common/results'
 import { EPOCH } from '@/common/util'
+import { gridTables } from '@/common/gridorder'
 
 const readdirAsync = util.promisify(fs.readdir)
 
@@ -67,6 +68,14 @@ export async function unauthgetone(task: ScorekeeperProtocol, auth: AuthData, pa
             case 'eventresults':
                 ret.eventresults = Object.assign(await task.results.getEventResults(param.eventid), { _eventid: param.eventid })
                 break
+            case 'gridtables':
+                ret.gridtables = gridTables(
+                                    (await task.clsidx.classOrder()).filter(c => c.eventid === param.eventid),
+                                    (await task.clsidx.classList()).map(c => c.classcode),
+                                    await task.register.getRegisteredCars(param.eventid),
+                                    await task.drivers.getDriverMap())
+                break
+
             case 'live':
                 watch = JSON.parse(param.watch)
                 if (watch.protimer) Object.assign(ret, await generateProTimer())
