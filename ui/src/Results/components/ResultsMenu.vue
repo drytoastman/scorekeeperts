@@ -6,7 +6,7 @@
         <v-list>
             <template v-for="(item, index) in items">
                 <v-divider v-if="item && item.name === 'divider'" :key="index"></v-divider>
-                <v-list-item v-else-if="item" :key="index" :disabled="item === value" @click="$emit('input', item)">
+                <v-list-item v-else-if="item" :key="index" @click="$emit('input', item)">
                     {{ item.name || item }}
                 </v-list-item>
             </template>
