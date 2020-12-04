@@ -223,25 +223,3 @@ table.dialins {
 		border-top: 1px solid $generalBorderColor;
 	}
 }
-
-// Special table for challenge report
-table.challengeround {
-    margin: 1px;
-    td {
-        white-space: nowrap;
-    }
-    tr.head th {
-        font-size: 0.8rem;
-    }
-	tr.winner td {
-	    background: lighten(adjust-hue($liveheaderfill, 10), 40%);
-	}
-	span.dial {
-		font-weight: bold;
-        float: right;
-	}
-	td.result {
-	    text-align: center;
-	    font-size: 1.2em;
-	}
-}

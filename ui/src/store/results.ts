@@ -9,6 +9,7 @@ import { UUID } from '@/common/util'
 import ReconnectingWebSocket from 'reconnecting-websocket'
 import { ActionContext, ActionTree, GetterTree, MutationTree } from 'vuex'
 import { API2, Api2State } from './state'
+import { Challenge } from '@/common/challenge'
 
 
 export const resultsMutations: MutationTree<Api2State> = {
@@ -187,6 +188,13 @@ export const resultsGetters: GetterTree<Api2State, Api2State> = {
     eventInfo: (state) => (eventid: UUID) => {
         if (!state.seriesinfo.events) return {}
         const e = state.seriesinfo.events.filter((e: SeriesEvent) => e.eventid === eventid)
+        if (e.length) return e[0]
+        return {}
+    },
+
+    challengeInfo: (state) => (challengeid: UUID) => {
+        if (!state.seriesinfo.challenges) return {}
+        const e = state.seriesinfo.challenges.filter((c: Challenge) => c.challengeid === challengeid)
         if (e.length) return e[0]
         return {}
     },

@@ -68,6 +68,9 @@ export async function unauthgetone(task: ScorekeeperProtocol, auth: AuthData, pa
             case 'eventresults':
                 ret.eventresults = Object.assign(await task.results.getEventResults(param.eventid), { _eventid: param.eventid })
                 break
+            case 'challengeresults':
+                ret.challengeresults = await task.results.getChallengeResults(param.challengeid)
+                break
             case 'gridtables':
                 ret.gridtables = gridTables(
                                     (await task.clsidx.classOrder()).filter(c => c.eventid === param.eventid),
