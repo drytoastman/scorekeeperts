@@ -1,6 +1,6 @@
 <template>
     <v-app fluid>
-        <v-app-bar dark color="primary">
+        <v-app-bar v-if="!$route.query.gui" dark color="primary">
             <v-img :src=cone max-height=40 max-width=40></v-img>
             <div class='header'>Scorekeeper Results</div>
             <div class='menus'>
@@ -45,7 +45,7 @@ export default {
     },
     computed: {
         ...mapState(['currentSeries', 'seriesinfo', 'gettingData']),
-        ...mapGetters(['yearGroups']),
+        ...mapGetters(['yearGroups', 'challengeInfo']),
 
         yearlist()   { return orderBy([...this.yearGroups.keys()], v => v, 'desc') },
         serieslist() { return orderBy(this.yearGroups.getD(this.year), v => v) },
@@ -116,11 +116,14 @@ export default {
             }
         },
         eventlist(nv) {
-            if (nv.length && !this.event && this.$route.params.eventid) {
-                const f = nv.filter(e => e.eventid === this.$route.params.eventid)
-                if (f.length) {
-                    this.event = f[0]
-                    this.updateEventResults()
+            if (nv.length && !this.event && (this.$route.params.eventid || this.$route.params.challengeid)) {
+                const eid = this.$route.params.challengeid ? this.challengeInfo(this.$route.params.challengeid).eventid : this.$route.params.eventid
+                if (eid) {
+                    const f = nv.filter(e => e.eventid === eid)
+                    if (f.length) {
+                        this.event = f[0]
+                        this.updateEventResults()
+                    }
                 }
             }
         },

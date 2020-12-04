@@ -4,14 +4,14 @@
         <SingleRound :round="dialogRound"></SingleRound>
     </v-dialog>
 
-    <h3>{{challenge.name}}</h3>
+    <div class='title' v-if="!$route.query.gui">{{challenge.name}}</div>
 
     <div class="bracket" v-if="Object.keys(results).length">
         <ul v-for="(column, idx) in roundlist" :key="column[0][0]" :class="'round column-'+idx">
             <template v-for="[rndnum,rnd] in column">
                 <li       :key="rndnum+6000" class="bspacer"></li>
                 <EDisplay :key="rndnum+1000" :rndnum=rndnum top :winner="rnd.winner === 1" :entrant="rnd.e1"></EDisplay>
-                <li       :key="rndnum+2000" class="runoff bspacer" @click="or(rndnum)"></li>
+                <li       :key="rndnum+2000" class="runoff bspacer" :onclick="`openround(${rndnum})`"></li>
                 <EDisplay :key="rndnum+3000" :rndnum=rndnum     :winner="rnd.winner === 2" :entrant="rnd.e2"></EDisplay>
                 <li       :key="rndnum+4000" class="bspacer"></li>
             </template>
@@ -29,7 +29,7 @@
         <ul class="round">
             <li class="bspacer"></li>
             <EDisplay :rndnum=99 :winner="results[99].winner===1" top :entrant="results[99].e1"></EDisplay>
-            <li class="runoff bspacer" @click="or(99)"></li>
+            <li class="runoff bspacer" onclick="openround(99)"></li>
             <EDisplay :rndnum=99 :winner="results[99].winner===2"     :entrant="results[99].e2"></EDisplay>
             <li class="bspacer"></li>
         </ul>
@@ -108,6 +108,9 @@ export default {
         challengeid(nv) { if (nv) this.getdata() }
     },
     mounted() {
+        window.openround = e => { // hacky way to let the JavaFX GUI still modify behavior in a webpack environmnt
+            this.or(e)
+        }
         this.getdata()
     }
 }
