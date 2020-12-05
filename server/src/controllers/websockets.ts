@@ -5,11 +5,10 @@ import { controllog } from '../util/logging'
 import { AuthData } from './auth'
 import { AUTHTYPE_DRIVER, AUTHTYPE_SERIES } from '@/common/auth'
 import { SessionMessage, SessionWebSocket, TrackingServer } from './types'
-import { Run, watchDifference, watchNonTimers } from '@/common/results'
+import { Run, watchNonTimers } from '@/common/results'
 import { SeriesStatus } from '@/common/series'
 import { generateProTimer, loadResultData } from './gets/livedata'
 import { LazyData } from './lazydata'
-import { IS_MAIN_SERVER } from '@/db/generalrepo'
 
 
 export function websocketsStartWatching() {
@@ -55,9 +54,6 @@ websockets.on('connection', async function connection(ws: SessionWebSocket, req:
 
 
     } else if (pathname === '/api2/live') {
-        if (await db.general.isMainServer()) {
-            return ws.close(1002, 'Available onsite only')
-        }
         ws.series    = ''
         ws.eventid   = ''
         ws.watch     = {} as any
@@ -65,6 +61,10 @@ websockets.on('connection', async function connection(ws: SessionWebSocket, req:
         ws.onclose   = ()  => websockets.clearLive(ws)
         websockets.addLive(ws)
 
+        // must be done after onmessage is set so any socket receives are processed
+        if (await db.general.isMainServer()) {
+            ws.close(1002, 'Available onsite only')
+        }
     } else {
         return ws.close(1002, 'Unknown endpoint')
     }
@@ -101,6 +101,7 @@ tableWatcher.on('runs', (series: string, type: string, row: Run&{classcode:strin
 
         for (const ws of rx) {
             if (row.eventid !== ws.eventid) continue
+            if (ws.watch.course && ws.watch.course !== row.course) continue
             if (!watchNonTimers(ws.watch))  continue
             ws.send(JSON.stringify(await loadResultData(lazy, ws.watch, row)))
         }

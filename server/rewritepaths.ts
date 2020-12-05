@@ -15,9 +15,10 @@ const convert = (modulePath: string, outFile: string): string => {
         if (modulePath.startsWith(prefix)) {
             const modulePathRel = modulePath.substring(prefix.length)
             const moduleSrc = resolve(outPath, aliaspath, modulePathRel)
-            const rel = relative(dirname(outFile), moduleSrc).replace(/\\/g, '/')
+            let rel = relative(dirname(outFile), moduleSrc).replace(/\\/g, '/')
+            if (rel[0] !== '.') rel = './' + rel
 
-            console.log(`\treplacing '${modulePath}' ==> '${rel}`)
+            console.log(`\treplacing '${modulePath}' ==> '${rel}'`)
             return rel
         }
     }

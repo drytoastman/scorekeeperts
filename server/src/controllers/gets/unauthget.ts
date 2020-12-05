@@ -85,7 +85,7 @@ export async function unauthgetone(task: ScorekeeperProtocol, auth: AuthData, pa
                 if (watch.protimer) Object.assign(ret, await generateProTimer())
                 if (watch.timer)    ret.timer = await task.series.getLastTimer()
                 if (watchNonTimers(watch)) {
-                    run = await task.runs.getLastRun(param.eventid, EPOCH, watch.classcode)
+                    run = await task.runs.getLastRun(param.eventid, EPOCH, watch.classcode, watch.course)
                     if (!run) break
                     Object.assign(ret, await loadResultData(new LazyData(task), watch, run))
                 }

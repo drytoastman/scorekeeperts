@@ -82,6 +82,7 @@ export default {
         }
     },
     computed: {
+        classcodes() { return this.$store.state.classcodes },
         last()       { return this.$store.state.live.last },
         lastclass()  { return this.$store.state.live.lastclass },
         leftentrant()  { return this.$store.state.live.left?.entrant },

@@ -32,15 +32,16 @@ export default {
         this.$store.dispatch('setWatch', {
             entrant:  true,
             class:    true,
-            champ:    true
+            champ:    true,
+            course:   parseInt(this.$route.query.course)
         })
     }
 }
 </script>
 
 <style lang="scss" scoped>
-.res {
-    font-size: 90%;
-    margin-bottom: 1rem;
+::v-deep .live {
+    font-size: 80%;
+    margin-bottom: 0.5rem;
 }
 </style>

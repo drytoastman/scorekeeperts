@@ -192,12 +192,14 @@ export class LiveSocketWatch {
     class    = false
     champ    = false
     next     = false
-    classcode:string|undefined = ''
     runorder = false
     top = {
         net: new CourseWatch(),
         raw: new CourseWatch()
     }
+
+    classcode: string|undefined = ''
+    course:    number|undefined = 0
 
     timer    = false
     protimer = false

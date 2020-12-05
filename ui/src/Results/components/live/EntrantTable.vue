@@ -37,7 +37,7 @@ export default {
     },
     computed: {
         runs() {
-            return this.entrant.runs ? this.entrant.runs[0] : []
+            return this.entrant.runs ? this.entrant.runs[this.entrant.lastcourse - 1] : []
         }
     },
     methods: {
