@@ -6,7 +6,8 @@ module.exports = {
         '@common/(.*)$': '<rootDir>/src/common/$1'
     },
     testPathIgnorePatterns: [
-        '<rootDir>/src/sync/__tests__/helpers.ts'
+        'helpers.ts',
+        '<rootDir>/tsbuild/*'
     ],
     reporters: ['<rootDir>/scripts/jestreporter.js']
 }

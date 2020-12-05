@@ -9,7 +9,7 @@ export type VuetifyValidationRules = VuetifyValidationRule[]
 export const EPOCH = '1970-01-01T00:00:00Z'
 
 export function parseDate(date: DateString):          Date { return parse(date, 'yyyy-MM-dd', new Date()) }
-export function parseTimestamp(timestamp: UTCString): Date { return new Date(timestamp) }
+export function parseTimestamp(timestamp: UTCString): Date { if (timestamp.slice(-1) !== 'Z') { timestamp += 'Z' } return new Date(timestamp) }
 export function formatToTimestamp(val: Date): string       { return val.toISOString() }
 
 export interface DataValidationRules {

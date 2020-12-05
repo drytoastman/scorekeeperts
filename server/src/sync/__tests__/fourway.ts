@@ -10,7 +10,7 @@ afterAll(async () => {
 })
 
 describe('4 way syncing', () => {
-    test('runorder reorder', async () => {
+    test('modifications on different machines at same time', async () => {
 
         await with4DB(DB1, DB2, DB3, DB4, testids.series, async (task1, task2, task3, task4) => {
             // Modify firstname and address on A, sync A to B

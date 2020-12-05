@@ -176,7 +176,7 @@ export class LoggedObject {
         let both = false
         if (!dbObjectSame(last, data)) {
             both = true
-            data.modified = formatToTimestamp(addMilliseconds(new Date(data.modified), 1))
+            data.modified = formatToTimestamp(addMilliseconds(parseTimestamp(data.modified), 1))
         }
 
         return { obj: data, both: both }
