@@ -1,9 +1,10 @@
 /* eslint-disable camelcase */
 import { differenceInDays } from 'date-fns'
-import SquareConnect, { Money, ApiClient, CurrencyType } from 'square-connect'
+import { Client, Environment, CreateOrderResponse, ApiResponse, Money } from 'square'
 import { v1 as uuidv1 } from 'uuid'
+import util from 'util'
 
-import { PaymentAccount } from '@common/payments'
+import { PaymentAccount, PaymentAccountSecret } from '@common/payments'
 import { Payment } from '@common/register'
 import { UUID } from '@common/util'
 
@@ -12,31 +13,36 @@ import { gCache } from './cache'
 import { SQ_APPLICATION_ID, SQ_APPLICATION_SECRET } from '../db/generalrepo'
 import { paymentslog } from './logging'
 
-function getAClient(mode: string, token?: string): ApiClient {
-    const client = new SquareConnect.ApiClient()
-    if (mode === 'sandbox') {
-        client.basePath = 'https://connect.squareupsandbox.com'
-    }
-    if (token) {
-        client.authentications.oauth2.accessToken = token
-    }
+function getAClient(mode: string, token?: string): Client {
+    const client = new Client({
+        environment: (mode === 'sandbox') ? Environment.Sandbox : Environment.Production,
+        accessToken: token
+    })
     return client
 }
 
 export async function squareOrder(conn: ScorekeeperProtocol, square: any, payments: Payment[], driverid: UUID): Promise<Payment[]> {
 
-    const account = await conn.payments.getPaymentAccount(square.accountid)
-    const secret  = await conn.payments.getPaymentAccountSecret(square.accountid)
+    let account: PaymentAccount
+    let secret: PaymentAccountSecret
+    try {
+        account = await conn.payments.getPaymentAccount(square.accountid)
+        secret  = await conn.payments.getPaymentAccountSecret(square.accountid)
+    } catch (error) {
+        paymentslog.error('error getting square account info: ' + error.message)
+        throw new Error('error getting square account info from database')
+    }
+
     const client  = getAClient(account.attr.mode, secret.secret)
     const refid   = uuidv1()
     const ikey2   = uuidv1()
 
     const body = {
-        idempotency_key: refid,
+        idempotencyKey: refid,
         order: {
-            location_id: account.accountid,
-            reference_id: refid,
-            line_items: [] as any
+            locationId: account.accountid,
+            referenceId: refid,
+            lineItems: [] as any
         }
     }
 
@@ -47,51 +53,50 @@ export async function squareOrder(conn: ScorekeeperProtocol, square: any, paymen
         } else {
             event = { name: 'Membership Payments' }
         }
-        body.order.line_items.push({
+        body.order.lineItems.push({
             name: event.name,
-            variation_name: p.itemname,
+            variationName: p.itemname,
             quantity: '1',
-            base_price_money: {
+            basePriceMoney: {
                 amount: p.amount,
                 currency: 'USD'
             }
         })
     }
 
-    let orderresponse
+    let orderresponse: ApiResponse<CreateOrderResponse>
     try {
-        const orders = new SquareConnect.OrdersApi(client)
-        orderresponse = await orders.createOrder(account.accountid, body)
+        orderresponse = await client.ordersApi.createOrder(body)
     } catch (error) {
         paymentslog.error('square setup issues: ' + error.message)
         throw new Error('square setup issues, notify admin')
     }
 
-    if (orderresponse.errors) {
-        paymentslog.error('square order response errors: ' + orderresponse.errors)
-        throw new Error(JSON.stringify(orderresponse.errors))
+    // orderresponse.
+    if (orderresponse.result.errors) {
+        paymentslog.error('square order response errors: ' + orderresponse.result.errors)
+        throw new Error(JSON.stringify(orderresponse.result.errors))
     }
 
     const sqpayment = {
-        source_id: square.nonce,
-        idempotency_key: ikey2,
-        amount_money: orderresponse.order!.total_money as Money,
-        order_id: orderresponse.order!.id
+        sourceId: square.nonce,
+        idempotencyKey: ikey2,
+        amountMoney: orderresponse.result.order!.totalMoney as Money,
+        orderId: orderresponse.result.order!.id
     }
 
-    const paymentapi = new SquareConnect.PaymentsApi(client)
-    const paymentresponse = await paymentapi.createPayment(sqpayment)
+    const paymentresponse = await client.paymentsApi.createPayment(sqpayment)
 
-    if (paymentresponse.errors) {
-        paymentslog.error('Payment response errors: ' + orderresponse.errors)
-        throw new Error(JSON.stringify(orderresponse.errors))
+    if (paymentresponse.result.errors) {
+        paymentslog.error('Payment response errors: ' + orderresponse.result.errors)
+        throw new Error(JSON.stringify(orderresponse.result.errors))
     }
 
     payments.forEach(p => {
         p.payid  = uuidv1()
         p.txtype = 'square'
-        p.txid   = paymentresponse.payment!.id as string
-        p.txtime = paymentresponse.payment!.created_at as string
+        p.txid   = paymentresponse.result.payment!.id as string
+        p.txtime = paymentresponse.result.payment!.createdAt as string
         p.accountid = account.accountid
         p.refunded = false
     })
@@ -122,21 +127,20 @@ export async function squareRefund(conn: ScorekeeperProtocol, payments: Payment[
     }
 
     const body = {
-        idempotency_key: refid,
-        payment_id: payments[0].txid,
-        amount_money: {
+        idempotencyKey: refid,
+        paymentId: payments[0].txid,
+        amountMoney: {
             amount: total,
-            currency: 'USD' as CurrencyType
+            currency: 'USD'
         },
         reason: reasons.join(', ')
     }
 
-    const refunds = new SquareConnect.RefundsApi(client)
-    const response = await refunds.refundPayment(body)
+    const response = await client.refundsApi.refundPayment(body)
 
-    if (response.errors) {
-        paymentslog.error('Refund errors: ' + response.errors)
-        throw new Error(JSON.stringify(response.errors))
+    if (response.result.errors) {
+        paymentslog.error('Refund errors: ' + response.result.errors)
+        throw new Error(JSON.stringify(response.result.errors))
     }
 
     payments.forEach(p => {
@@ -153,41 +157,35 @@ export async function squareoAuthRequest(conn: ScorekeeperProtocol, series: stri
     const create_mode   = client_id.includes('sandbox') ? 'sandbox' : 'production'
     const authzclient   = getAClient(create_mode)
 
-    const tokenresponse = await new SquareConnect.OAuthApi(authzclient).obtainToken({
-        client_id: client_id,
-        client_secret: client_secret,
-        grant_type: 'authorization_code',
+    const tokenresponse = await authzclient.oAuthApi.obtainToken({
+        clientId: client_id,
+        clientSecret: client_secret,
+        grantType: 'authorization_code',
         code: authorizationCode
     }).catch(error => {
-        let msg
-        try {
-            msg = error.response.body.message
-        } catch (referror) {
-            msg = 'unknown error response from Square server'
-        }
-        throw msg
+        throw error.result || `Unknown error response from Square server: ${JSON.stringify(error)}`
     })
 
-    if ((!tokenresponse.access_token) || (!tokenresponse.refresh_token)) {
+    if ((!tokenresponse.result.accessToken) || (!tokenresponse.result.refreshToken)) {
         throw new Error('token response is missing access or refresh token ' + tokenresponse)
     }
 
-    const client = getAClient(create_mode, tokenresponse.access_token)
-    const locationResponse = await new SquareConnect.LocationsApi(client).listLocations()
+    const client = getAClient(create_mode, tokenresponse.result.accessToken)
+    const locationResponse = await client.locationsApi.listLocations()
 
-    if (locationResponse.errors) {
-        throw new Error('Error getting locations: ' + locationResponse.errors)
+    if (locationResponse.result.errors) {
+        throw new Error('Error getting locations: ' + locationResponse.result.errors)
     }
-    if (locationResponse.locations!.length === 0) {
+    if (locationResponse.result.locations!.length === 0) {
         throw new Error('No locations present, need at least one')
     }
 
     const requestid = uuidv1()
     const request = {
-        secret: tokenresponse.access_token,
-        expires: tokenresponse.expires_at,
-        refresh: tokenresponse.refresh_token,
-        locations: JSON.parse(JSON.stringify(locationResponse.locations)),
+        secret: tokenresponse.result.accessToken,
+        expires: tokenresponse.result.expiresAt,
+        refresh: tokenresponse.result.refreshToken,
+        locations: JSON.parse(JSON.stringify(locationResponse.result.locations)),
         series: series
     }
     gCache.set(requestid, request)
@@ -197,8 +195,9 @@ export async function squareoAuthRequest(conn: ScorekeeperProtocol, series: stri
 
 
 export async function squareoAuthFinish(conn: ScorekeeperProtocol, requestid: string, locationid: string) {
-    const client_id   = await conn.general.getLocalSetting(SQ_APPLICATION_ID)
-    const create_mode = client_id.includes('sandbox') ? 'sandbox' : 'production'
+    const client_id     = await conn.general.getLocalSetting(SQ_APPLICATION_ID)
+    const client_secret = await conn.general.getLocalSetting(SQ_APPLICATION_SECRET)
+    const create_mode   = client_id.includes('sandbox') ? 'sandbox' : 'production'
 
     const request = gCache.get(requestid) as any
     if (!request) {
@@ -228,7 +227,8 @@ export async function squareoAuthFinish(conn: ScorekeeperProtocol, requestid: st
         secret: request.secret,
         attr: {
             refresh: request.refresh,
-            expires: request.expires
+            expires: request.expires,
+            applicationsecret: client_secret
         },
         modified: ''
     }
@@ -252,23 +252,22 @@ export async function squareoAuthRefresh(conn: ScorekeeperProtocol, account: Pay
         }
 
         paymentslog.info(`Refreshing ${account.accountid}`)
-        const client_secret = await conn.general.getLocalSetting(SQ_APPLICATION_SECRET)
         const authzclient   = getAClient(account.attr.mode)
-        const tokenresponse = await new SquareConnect.OAuthApi(authzclient).obtainToken({
-            client_id: account.attr.applicationid,
-            client_secret: client_secret,
-            grant_type: 'refresh_token',
-            refresh_token: secret.attr.refresh
+        const tokenresponse = await authzclient.oAuthApi.obtainToken({
+            clientId: account.attr.applicationid,
+            clientSecret: secret.attr.applicationsecret,
+            refreshToken: secret.attr.refresh,
+            grantType: 'refresh_token'
         })
 
-        if (!tokenresponse.access_token || !tokenresponse.expires_at) {
+        if (!tokenresponse.result.accessToken || !tokenresponse.result.expiresAt) {
             throw new Error('no access token or expires in refresh response')
         }
 
-        secret.secret = tokenresponse.access_token as string
-        secret.attr.expires = tokenresponse.expires_at as string
+        secret.secret = tokenresponse.result.accessToken as string
+        secret.attr.expires = tokenresponse.result.expiresAt as string
         await conn.payments.updatePaymentAccountSecrets('update', [secret])
     } catch (error) {
-        paymentslog.error(error)
+        paymentslog.error(error.result || error)
     }
 }

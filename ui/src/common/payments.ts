@@ -19,6 +19,7 @@ export interface PaymentAccountSecret {
     attr: {
         refresh: string;
         expires: UTCString;
+        applicationsecret: string;
     }
     modified: UTCString;
 }
