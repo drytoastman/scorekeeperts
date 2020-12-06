@@ -14,6 +14,7 @@ export const TABLE_ORDER = [
     'paymentaccounts',
     'paymentitems',
     'events',
+    'itemeventmap',
     'classlist',
     'cars',
     'registered',
