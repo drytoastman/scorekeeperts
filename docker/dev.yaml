@@ -1,7 +1,6 @@
 version: '3.2'
 volumes:
-    database:
-    socket:
+    database: { external: { name: "latest_database" }}
     certs: { external: { name: "certs" }}
 
 networks:
@@ -18,7 +17,6 @@ services:
             - '127.0.0.1:6666:6666'
         volumes:
             - database:/var/lib/postgresql/data
-            - socket:/var/run/postgresql
             - certs:/certs
         environment:
             - TZ=America/Los_Angeles
