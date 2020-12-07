@@ -32,10 +32,12 @@ async function getmatch(request): Promise<string | undefined> {
 
 
 async function resolver(request, send, rinfo): Promise<void> {
+    if (request.header.qr) return // is a response
     const response = Packet.createResponseFromRequest(request)
 
     try {
         const [question] = request.questions
+        if (!question) return
         const { name } = question
 
         const address = await getmatch(name)
