@@ -30,7 +30,7 @@ export async function driverget(task: ScorekeeperProtocol, auth: AuthData, param
             case 'settings':
                 ret.settings = _.pick(await task.series.seriesSettings(), [
                     'classinglink', 'seriesruleslink', 'requestrulesack', 'requestbarcodes',
-                    'requestmembership', 'membershipitem', 'membershipaccount'
+                    'requestmembership', 'membershipaccount'
                 ])
                 break
             case 'usednumbers':

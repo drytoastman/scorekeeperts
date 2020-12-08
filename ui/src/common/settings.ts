@@ -47,7 +47,6 @@ export class DefaultSettings implements SeriesSettings {
     resultsheader = ''
     cardtemplate = ''
     requestmembership = false
-    membershipitem = ''
     membershipaccount = ''
 }
 
