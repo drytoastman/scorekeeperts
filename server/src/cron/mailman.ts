@@ -67,6 +67,7 @@ let checkingMail = false
 export async function checkMailmanErrors() {
     if (checkingMail) return
     checkingMail = true
+    let connection: imaps.ImapSimple
 
     await db.task(async t => {
         const settings = await t.general.getLocalSettingsObj()
@@ -89,7 +90,8 @@ export async function checkMailmanErrors() {
             }
         }
 
-        const connection = await imaps.connect(imapConfig)
+        connection = await imaps.connect(imapConfig)
+        await connection.openBox('INBOX')
         const messages   = await connection.search(['ALL'], { bodies: ['HEADER', 'TEXT', ''] })
         cronlog.debug('checkmail: %d messsages', messages.length)
 
@@ -100,12 +102,12 @@ export async function checkMailmanErrors() {
                 await (connection as any).deleteMessage(item.attributes.uid) // missing stuff from their types file
             }
         }
-        connection.end()
 
     }).catch(error => {
         cronlog.error(error)
     }).finally(() => {
         checkingMail = false
+        if (connection) connection.end()
     })
 }
 
