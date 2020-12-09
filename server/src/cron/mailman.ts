@@ -125,11 +125,11 @@ async function processMessage(t: ScorekeeperProtocol, data: Buffer): Promise<boo
                     cronlog.warn('Mailman Error Report:')
                     allheaders.forEach((v, k) => { cronlog.warn(`    ${k}: ${v}`) })
                     if (status >= 5) {
-                        let email = allheaders.get('original-recipient')!.toString()
-                        if (email.includes(';')) {
+                        let email = (allheaders.get('original-recipient') || allheaders.get('final-recipient')) as string
+                        if (email && email.includes(';')) {
                             email = email.split(';')[1]
                             cronlog.warn(`ban ${email}`)
-                            await t.general.addEmailFilter(email)
+                            await t.general.addEmailFilter(email.trim())
                         }
                     }
                 }

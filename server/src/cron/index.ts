@@ -22,7 +22,7 @@ export function startCronJobs(modeflags: number) {  // times in local time zone
         jobs.push(new CronJob('0    0  4    * * *', oauthrefresh))
         jobs.push(new CronJob('0    0  1,13 * * *', backupNow))
         jobs.push(new CronJob('*/15 *  *    * * *', sendQueuedEmail))
-        jobs.push(new CronJob('0    0  */4  * * *', checkMailmanErrors))
+        jobs.push(new CronJob('0    0  */1  * * *', checkMailmanErrors))
         jobs.push(new CronJob('30  59  23   * * *', rotatedLogUpload))
     }
 
