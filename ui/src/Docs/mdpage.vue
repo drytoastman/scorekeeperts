@@ -7,6 +7,7 @@
 import axios from 'axios'
 import MarkdownIt from 'markdown-it'
 import MarkdownItAttrs from 'markdown-it-attrs'
+import MarkdownItDefList from 'markdown-it-deflist'
 
 export default {
     name: 'MdPage',
@@ -27,7 +28,23 @@ export default {
         },
         markdown() {
             const md = new MarkdownIt({ linkify: true })
-            md.use(MarkdownItAttrs, { allowedAttributes: ['class'] })
+            md.use(MarkdownItAttrs, { allowedAttributes: ['class', 'onclick'] })
+            md.use(MarkdownItDefList)
+
+            const defaultRender = md.renderer.rules.link_open || function(tokens, idx, options, env, self) {
+                return self.renderToken(tokens, idx, options)
+            }
+            // turn local links into standard vue router pushes
+            md.renderer.rules.link_open = function(tokens, idx, options, env, self) {
+                for (const [t, d] of tokens[idx].attrs) {
+                    if ((t === 'href') && (d[0] === '/')) {
+                        tokens[idx].attrPush(['onclick', `return docrouter('${d.slice(5)}')`]) // add new attribute
+                        break
+                    }
+                }
+                return defaultRender(tokens, idx, options, env, self)
+            }
+
             return md
         }
     },
@@ -50,6 +67,12 @@ export default {
         }
     },
     watch: { pagename() { this.downloadPage() } },
-    mounted() { this.downloadPage() }
+    mounted() {
+        this.downloadPage()
+        window.docrouter = link => {
+            this.$router.push(link)
+            return false
+        }
+    }
 }
 </script>

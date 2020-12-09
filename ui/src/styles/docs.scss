@@ -1,15 +1,15 @@
 .v-main .markdown {
 
     max-width: 1000px;
-    margin-left: 2rem;
+    margin: 0 2rem;
     color: #333;
 
     ul {
         list-style: initial;
-        margin-left: 2rem;
     }
 
     ul, ol {
+        margin-left: 2rem;
         margin-bottom: 1rem !important;
         p {
             margin-left: 0;
@@ -30,11 +30,11 @@
         color: #900;
     }
 
-    h1 { font-size: 2.0rem; margin-left: 0.0rem; margin-top: 2.0rem; }
-    h2 { font-size: 1.5rem; margin-left: 0.2rem; margin-top: 1.7rem; }
-    h3 { font-size: 1.2rem; margin-left: 0.4rem; margin-top: 1.1rem; }
-    h4 { font-size: 1.1rem; margin-left: 0.6rem; margin-top: 1.0rem; }
-    h5 { font-size: 1.0rem; margin-left: 0.7rem; margin-top: 0.9rem; }
+    h1 { font-size: 1.5rem; margin-left: 0.0rem; margin-top: 2.0rem; }
+    h2 { font-size: 1.3rem; margin-left: 0.3rem; margin-top: 1.7rem; }
+    h3 { font-size: 1.1rem; margin-left: 0.6rem; margin-top: 1.1rem; }
+    h4 { font-size: 1.0rem; margin-left: 0.9rem; margin-top: 1.0rem; }
+    h5 { font-size: 0.9rem; margin-left: 1.0rem; margin-top: 0.9rem; }
     p  { font-size: 1.0rem; margin-left: 1.2rem; }
 
     h1:first-child {
@@ -58,9 +58,20 @@
 
     img {
         vertical-align: top;
-        margin-left: 1rem;
-        margin-right: 1rem;
+        margin: 0 1rem 1rem 1rem;
         border: 1px solid #ccc;
+    }
+
+    dl {
+        margin-left: 1.2rem;
+        margin-bottom: 1rem;
+        dt {
+            font-weight: bold;
+        }
+        dd {
+            margin-left: 1rem;
+            margin-bottom: 0.5rem;
+        }
     }
 
     span.spacer100 {
@@ -84,6 +95,16 @@
 
     a {
         color: blue !important;
+    }
+
+    .three4 {
+        width: 75%;
+        height: 75%;
+    }
+
+    .half {
+        width: 50%;
+        height: 50%;
     }
 }
 

@@ -1,5 +1,7 @@
 # Adding External Results
 
+**OLD VERSION** {.warning}
+
 When results from an external event need to be included for championship
 points, head to the admin page at https://scorekeeper.wwscc.org/admin/ and
 select the series you are updating.  A password will be required if you haven't
