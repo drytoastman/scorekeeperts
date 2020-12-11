@@ -1,6 +1,6 @@
 <template>
     <div>
-        <v-speed-dial direction="bottom" transition="scale" v-model="fab" v-if="positiveCount > 1">
+        <v-speed-dial direction="bottom" transition="scale" v-model="fab" v-if="Object.keys(seriesCarts).length > 1">
             <template v-slot:activator>
             <v-btn v-model="fab" color="secondary" dark>
                 <v-icon v-if="fab">{{icons.mdiClose}}</v-icon>
@@ -12,8 +12,8 @@
             </v-btn>
         </v-speed-dial>
 
-        <v-btn class='righthang' color="secondary" dark v-else-if="positiveCount > 0" @click="cartopen(firstAccountId)">
-            <v-icon>{{icons.mdiCart}}</v-icon><span class='total'>{{firstCart.total|cents2dollars}}</span>
+        <v-btn class='righthang' color="secondary" dark v-else v-for="(cart,accountid) in seriesCarts" :key="accountid" @click="cartopen(accountid)">
+            <v-icon>{{icons.mdiCart}}</v-icon><span class='total'>{{cart.total|cents2dollars}}</span>
         </v-btn>
 
         <CartDialog v-model=cartOpen :accountid="cartAccountId"></CartDialog>
@@ -43,18 +43,7 @@ export default {
     },
     computed: {
         ...mapState(['carts', 'paymentaccounts']),
-        ...mapGetters(['seriesCarts']),
-        positiveCount() {
-            let count = 0
-            for (const key in this.seriesCarts) {
-                if (this.seriesCarts[key].total > 0) {
-                    count += 1
-                }
-            }
-            return count
-        },
-        firstAccountId() { return Object.keys(this.seriesCarts)[0] },
-        firstCart() { return this.seriesCarts[this.firstAccountId] }
+        ...mapGetters(['seriesCarts'])
     },
     methods: {
         cartopen(accountid) {

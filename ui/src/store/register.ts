@@ -43,15 +43,15 @@ export const registerActions = {
 export const cartMutations = {
 
     cartSetCar(state: Api2State, data: any) {
-        return deepset(state.carts, [state.currentSeries, data.accountid, data.eventid, 'cars', data.carid, data.session], data.value)
+        deepset(state.carts, [state.currentSeries, data.accountid, data.eventid, 'cars', data.carid, data.session], data.value)
     },
 
     cartSetOther(state: Api2State, data: any) {
-        return deepset(state.carts, [state.currentSeries, data.accountid, data.eventid, 'other', data.itemid], data.value)
+        deepset(state.carts, [state.currentSeries, data.accountid, data.eventid, 'other', data.itemid], data.value)
     },
 
     cartSetMembership(state: Api2State, data: any) {
-        return deepset(state.carts, [state.currentSeries, data.accountid, 'noevent', 'membership'], data.value)
+        deepset(state.carts, [state.currentSeries, data.accountid, 'noevent', 'membership'], data.value)
     },
 
     cartClear(state: Api2State, data: any) {
@@ -144,7 +144,9 @@ export const registerGetters = {
         const ret = {}
         for (const accountid in state.carts[state.currentSeries]) {
             const p = getters.cart(accountid)
-            ret[accountid] = p
+            if ((p.purchases.length > 0) && (p.total > 0)) {
+                ret[accountid] = p
+            }
         }
         return ret
     }
