@@ -52,7 +52,7 @@ export default {
             adminMenu: [
                 { title: 'Create a New Series',        page: 'createseries' },
                 { title: 'Series Settings',            page: 'seriessettings' },
-                { title: 'Setting Up Square/Paypal',   page: 'paymentaccounts' },
+                { title: 'Payment Accounts/Items',     page: 'paymentaccounts' },
                 { title: 'Create Events',              page: 'createevents' },
                 { title: '',                           page: '' },
                 { title: 'Adding External Results',    page: 'externalresults' },

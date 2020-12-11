@@ -28,7 +28,7 @@ export default {
         },
         markdown() {
             const md = new MarkdownIt({ linkify: true })
-            md.use(MarkdownItAttrs, { allowedAttributes: ['class', 'onclick'] })
+            md.use(MarkdownItAttrs, { allowedAttributes: ['class'] })
             md.use(MarkdownItDefList)
 
             const defaultRender = md.renderer.rules.link_open || function(tokens, idx, options, env, self) {

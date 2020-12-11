@@ -60,14 +60,28 @@ As memberships are series wide and not event specific, you must select an accoun
 All online payments are expected to have a list of items that the user can select from.  i.e. Member Entry and Non-Member Entry.  In the
 series settings you create all the possible items for the series.  Click Add Item and enter:
 
-  * Item Name - The visible name for the item such as Member Entry
-  * Price - The amount for a single item such as 30.00
-  * Item Type - Select type of car entry fee (normal), general event fee (non-entry) or series membership fee
+Item Name
+: the visible name for the item such as Member Entry
 
+Price
+: the amount for a single item such as 30.00
+
+Item Type
+: select type of item fee, there are currently three item types
+
+   Car Entry Fee
+   : the standard entry fee for events, one per registration entry
+
+   General Event Fee
+   : other optional fees specific to each event, such as student workers
+
+   Membership Fee
+   : series wide membership fee collection and reporting, Membership items are not related to any event and show up in the type right of the registration events page if there is a membership account assigned and they haven't paid for the series yet.
+
+![ItemTypes](/images/regpaymenttypes.png){ .half .inset }
 
 
 ## Event Setup
-Events &#x21D2; <EventName>; PaymentSetup
 
 ![EventPaymentSettings](/images/eventpaymentsettings.png){ .half }
 
