@@ -1,7 +1,10 @@
 <template>
     <v-dialog :value="value" @input="$emit('input')" persistent max-width="450px">
         <v-card>
-            <v-card-title>{{account.name}} <v-btn class='close' icon @click="$emit('input')"><v-icon>{{close}}</v-icon></v-btn></v-card-title>
+            <v-card-title class='headline primary--text'>
+                {{account.name}}
+                <v-btn class='close' icon @click="$emit('input')"><v-icon>{{close}}</v-icon></v-btn>
+            </v-card-title>
 
             <v-card-text>
                 <div v-for="edata in eventpurchases" :key="edata.name">
@@ -97,6 +100,10 @@ export default {
 </script>
 
 <style scoped>
+.close {
+    display: block;
+    margin-left: auto;
+}
 .itemgrid {
     display: grid;
     align-items: center;

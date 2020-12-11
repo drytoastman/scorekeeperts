@@ -132,10 +132,11 @@ export default {
             max-width: 20rem;
         }
         .rulesrequest {
-            color: #F559;
+            color: rgba(200, 0, 0, 0.7);
             a {
-                color: #F00;
+                color: rgba(200, 0, 0, 0.7);
             }
+            margin-bottom: 0.5rem;
         }
     }
 

@@ -5,7 +5,7 @@
                 <v-btn v-on="on" :disabled="!classcode">Picker</v-btn>
             </template>
             <v-card>
-                <v-card-title>
+                <v-card-title class='headline primary--text'>
                     Available Numbers For {{classcode}}
                     <v-btn class='close' icon @click="opened = false"><v-icon>{{close}}</v-icon></v-btn>
                 </v-card-title>

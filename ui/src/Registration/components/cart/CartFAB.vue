@@ -67,7 +67,7 @@ export default {
 
 <style lang="scss" scoped>
 ::v-deep .v-speed-dial__list {
-    align-items: end;
+    align-items: flex-end;
     .myfab {
         margin-right: 0;
     }
