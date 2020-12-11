@@ -66,8 +66,10 @@ export class RegisterRepository {
     }
 
     async getRegistationCounts(): Promise<Record<string, any>> {
-        const singles = await this.db.any('select eventid,count(carid) from registered group by eventid')
-        const uniques = await this.db.any('select r.eventid,count(distinct c.driverid) from registered r join cars c on r.carid=c.carid group by r.eventid')
+        const singles = await this.db.any(
+            'select e.eventid,count(r.carid) from registered r right join events e on r.eventid=e.eventid group by e.eventid')
+        const uniques = await this.db.any(
+            'select e.eventid,count(distinct c.driverid) from registered r right join events e on r.eventid=e.eventid left join cars c on r.carid=c.carid group by e.eventid')
         const collect = {}
 
         function add(eventid: UUID, label: string, count: number): void {
