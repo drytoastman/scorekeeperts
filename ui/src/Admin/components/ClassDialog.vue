@@ -13,8 +13,8 @@
 
                 <div class='row3'>
                 <v-select     v-model="classm.indexcode" label="Class-Wide Index" :items="indexlist" item-text="indexcode" item-value="indexcode"></v-select>
-                <v-text-field v-model="classm.classmultiplier" label="Additional Multiplier" :rules="vrules.classmultiplier"></v-text-field>
-                <v-text-field v-model="classm.countedruns" label="Counted Runs" :rules="vrules.countedruns"></v-text-field>
+                <v-text-field v-model="classmultiplier" label="Additional Multiplier" :rules="vrules.classmultiplier"></v-text-field>
+                <v-text-field v-model="countedruns" label="Counted Runs" :rules="vrules.countedruns"></v-text-field>
                 </div>
 
                 <v-text-field v-model="classm.caridxrestrict" label="Index Restrictions" :rules="vrules.caridxrestrict" :disabled="!classm.carindexed">
@@ -59,7 +59,15 @@ export default {
     computed: {
         ...mapState(['classes', 'indexes']),
         indexlist() { return orderBy(Object.values(this.indexes), 'indexcode') },
-        matches()   { return restrictedRegistrationIndexes(this.classm.caridxrestrict, Object.keys(this.indexes)).filter(v => v) }
+        matches()   { return restrictedRegistrationIndexes(this.classm.caridxrestrict, Object.keys(this.indexes)).filter(v => v) },
+        countedruns: {
+            get() { return this.classm.countedruns },
+            set(nv) { this.classm.countedruns = parseInt(nv) }
+        },
+        classmultiplier: {
+            get() { return this.classm.classmultiplier },
+            set(nv) { this.classm.classmultiplier = parseFloat(nv) }
+        }
     },
     methods: {
         update() {

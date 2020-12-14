@@ -16,11 +16,22 @@ export class ClassRepository {
         return this.db.any('SELECT * FROM classlist ORDER BY classcode')
     }
 
+    async classes(codes: string[]): Promise<SeriesClass[]> {
+        return this.db.any('SELECT * FROM classlist WHERE classcode IN ($1:csv) ORDER BY classcode', [codes])
+    }
+
     async updateClasses(type: string, classes: SeriesClass[]): Promise<SeriesClass[]> {
         classes.forEach(c => { validateObj(c, ClassValidator) })
 
-        if (type === 'insert') return this.db.any(this.pgp.helpers.insert(classes, TABLES.classlist) + ' RETURNING *')
-        if (type === 'update') return this.db.any(this.pgp.helpers.update(classes, TABLES.classlist) + ' WHERE v.classcode = t.classcode RETURNING *')
+        // log trigger will modify float into string for JSON, can't rely on RETURNING *
+        if (type === 'insert') {
+            await this.db.any(this.pgp.helpers.insert(classes, TABLES.classlist))
+            return this.classes(classes.map(c => c.classcode))
+        }
+        if (type === 'update') {
+            await this.db.any(this.pgp.helpers.update(classes, TABLES.classlist) + ' WHERE v.classcode = t.classcode')
+            return this.classes(classes.map(c => c.classcode))
+        }
         if (type === 'delete') return this.db.any('DELETE from classlist WHERE classcode in ($1:csv) RETURNING classcode', classes.map(c => c.classcode))
         throw Error(`Unknown operation type ${JSON.stringify(type)}`)
     }
