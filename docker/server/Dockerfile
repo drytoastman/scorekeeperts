@@ -1,10 +1,12 @@
 FROM node:14.15.1-buster-slim as builder
 
 WORKDIR /code
-COPY server/package*.json ./server/
-RUN cd server && npm install
-COPY server server
-RUN cd server && npm run build
+COPY package.json yarn.lock ./
+COPY server/package.json server/yarn.lock ./server/
+RUN yarn install
+RUN cd server && yarn install
+COPY . .
+RUN cd server && yarn build
 
 FROM node:14.15.1-buster-slim
 RUN apt-get update && apt-get install -y -q libnss3 libexpat1 libfontconfig1 fonts-liberation && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /var/log/*
