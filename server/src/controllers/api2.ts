@@ -1,11 +1,10 @@
-import _ from 'lodash'
 import { Router, Request, Response } from 'express'
 import delay from 'express-delay'
 import icalgen from 'ical-generator'
 import moment from 'moment'
 import util from 'util'
 
-import { db } from '@/db'
+import { db } from '@scdb'
 import { controllog } from '@/util/logging'
 
 import { login, logout, AuthData, serieslogin, adminlogin, adminlogout, checkAuth } from './auth'
@@ -17,7 +16,7 @@ import { seriesget } from './gets/seriesget'
 import { driverpost } from './posts/driverpost'
 import { seriespost } from './posts/seriespost'
 import { seriesadmin } from './posts/seriesadmin'
-import { AUTHTYPE_DRIVER, AUTHTYPE_NONE, AUTHTYPE_SERIES } from '@/common/auth'
+import { AUTHTYPE_DRIVER, AUTHTYPE_NONE, AUTHTYPE_SERIES } from '@sctypes/auth'
 import { unauthget } from './gets/unauthget'
 import { allSeriesSummary } from './allseries'
 import { getRemoteDB } from '@/sync/connections'
@@ -31,7 +30,7 @@ if (process.env.NODE_ENV === 'development') {
     controllog.info('Using production environment')
 }
 
-api2.use(async function(req: Request, res: Response, next: Function) {
+api2.use(async function(req: Request, res: Response, next: () => void) {
     if (!req.session) {
         return res.status(500).json({ error: 'no session available' })
     }
@@ -153,7 +152,7 @@ export async function remotecheck(req: Request, res: Response) {
         res.status(403).send('Not available on main server')
     }
     try {
-        const list = await getRemoteDB({ hostname: req.query.host as string }, req.query.series as string, req.query.password as string).series.seriesSettings()
+        await getRemoteDB({ hostname: req.query.host as string }, req.query.series as string, req.query.password as string).series.seriesSettings()
         return res.send('accepted')
     } catch (error) {
         return res.status(500).send(error.message)

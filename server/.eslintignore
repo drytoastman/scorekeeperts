@@ -1,1 +1,4 @@
 build/*
+tsbuild/*
+scripts/*
+webpack.config.js

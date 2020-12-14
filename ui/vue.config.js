@@ -3,6 +3,8 @@ module.exports = {
     chainWebpack: config => {
         // const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
         // config.plugin('analyze').use(BundleAnalyzerPlugin)
+        const path = require('path')
+        config.resolve.alias.set('@sctypes', path.resolve(__dirname, '../common/types'))
     },
     pages: {
         admin: {

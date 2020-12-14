@@ -1,11 +1,11 @@
 import axios from 'axios'
 import { base64encode } from 'nodejs-base64'
 import { v1 as uuidv1 } from 'uuid'
-import { ScorekeeperProtocol } from '../db'
+import { ScorekeeperProtocol } from '@scdb'
 import { paymentslog } from './logging'
-import { PaymentAccount, PaymentAccountSecret } from '@common/payments'
-import { Payment } from '@common/register'
-import { UUID } from '@common/util'
+import { PaymentAccount, PaymentAccountSecret } from '@sctypes/payments'
+import { Payment } from '@sctypes/register'
+import { UUID } from '@sctypes/util'
 
 function oauthUrl(mode: string) {
     const infix = (mode === 'sandbox') ? 'sandbox.' : ''

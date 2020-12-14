@@ -11,9 +11,13 @@
             // "preLaunchTask": "tsc",
             "sourceMaps": true,
             "internalConsoleOptions": "openOnSessionStart",
+            "outputCapture": "std",
             "program": "${workspaceFolder}/server/src/index.ts",
             "outFiles": ["${workspaceFolder}/server/tsbuild/**"],
             "skipFiles": ["<node_internals>/**"],
+            "env": {
+                "NODE_ENV": "development",
+            }
         },
         {
             "type": "node",

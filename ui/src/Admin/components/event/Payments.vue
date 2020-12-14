@@ -34,7 +34,7 @@
 
 <script>
 import { mapState } from 'vuex'
-import { ITEMTYPES, ITEM_TYPE_GENERAL_FEE } from '@/common/payments'
+import { ITEMTYPES, ITEM_TYPE_GENERAL_FEE } from '@sctypes/payments'
 
 export default {
     name: 'Payments',

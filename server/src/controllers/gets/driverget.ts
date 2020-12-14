@@ -1,9 +1,9 @@
 import _ from 'lodash'
 import { allSeriesSummary } from '../allseries'
-import { ScorekeeperProtocol } from '@/db'
+import { ScorekeeperProtocol } from '@scdb'
 import { unauthgetone } from './unauthget'
 import { AuthData, AuthError } from '../auth'
-import { AUTHTYPE_DRIVER } from '@/common/auth'
+import { AUTHTYPE_DRIVER } from '@sctypes/auth'
 
 export async function driverget(task: ScorekeeperProtocol, auth: AuthData, param: any) {
     const ret: any = {

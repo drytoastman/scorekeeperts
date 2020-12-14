@@ -1,15 +1,14 @@
-import _ from 'lodash'
 import fs from 'fs'
 import path from 'path'
 import util from 'util'
 
-import { Car } from '@common/car'
-import { ScorekeeperProtocol } from '@/db'
+import { Car } from '@sctypes/car'
+import { ScorekeeperProtocol } from '@scdb'
 import * as square from '@/util/square'
 
 import { allSeriesCars, allSeriesDeleteDriverLinks, allSeriesMerge } from '../allseries'
 import { AuthData } from '../auth'
-import { SeriesIndex } from '@/common/classindex'
+import { SeriesIndex } from '@sctypes/classindex'
 
 const readAsync = util.promisify(fs.readFile)
 

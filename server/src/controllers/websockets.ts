@@ -1,12 +1,12 @@
 import querystring from 'querystring'
 
-import { db, tableWatcher } from '../db'
+import { db, tableWatcher } from '@scdb'
 import { controllog } from '../util/logging'
 import { AuthData } from './auth'
-import { AUTHTYPE_DRIVER, AUTHTYPE_SERIES } from '@/common/auth'
+import { AUTHTYPE_DRIVER, AUTHTYPE_SERIES } from '@sctypes/auth'
 import { SessionMessage, SessionWebSocket, TrackingServer } from './types'
-import { Run, watchNonTimers } from '@/common/results'
-import { SeriesStatus } from '@/common/series'
+import { Run, watchNonTimers } from '@sctypes/results'
+import { SeriesStatus } from '@sctypes/series'
 import { generateProTimer, loadResultData } from './gets/livedata'
 import { LazyData } from './lazydata'
 
@@ -49,7 +49,7 @@ websockets.on('connection', async function connection(ws: SessionWebSocket, req:
             default:
                 return ws.close(1002, 'No authtype provided for updates')
         }
-        ws.onclose   = (event) => websockets.removeUpdate(series, authtype, ws)
+        ws.onclose   = () => websockets.removeUpdate(series, authtype, ws)
         websockets.addUpdate(series, authtype, ws)
 
 
@@ -84,7 +84,7 @@ tableWatcher.on('timertimes', (series: string, type: string, row: any) => {
     websockets.getLiveItem('timer').forEach(ws => ws.send(msg))
 })
 
-tableWatcher.on('localeventstream', async (series: string) => {
+tableWatcher.on('localeventstream', async () => {
     const rx = websockets.getLiveItem('protimer')
     if (rx.length > 0) {
         const msg = await generateProTimer()
@@ -128,8 +128,8 @@ for (const tbl of ['events', 'itemeventmap', 'paymentitems', 'paymentaccounts'])
     })
 }
 
-// for registered, counts can go to everybody, rest is specifi
-tableWatcher.on('registered', async function change(series: string, type: string, row: any) {
+// for registered, counts can go to everybody, rest is specific  (series, type, row)
+tableWatcher.on('registered', async function change(series: string) {
     try {
         const auth = websockets.getUpdatesAllAuth(series)
         if (auth.length > 0) {

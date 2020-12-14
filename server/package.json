@@ -8,7 +8,8 @@
     "dev": "concurrently npm:bwatch npm:server",
     "build": "webpack",
     "debug": "tsc && ts-node scripts/rewritepaths.ts && copyfiles -u 1 src/templates/* src/public/* src/sync/__tests__/*.sql tsbuild",
-    "test": "jest --runInBand"
+    "test": "jest --runInBand",
+    "lint": "eslint ."
   },
   "dependencies": {
     "@google-cloud/storage": "^5.6.0",

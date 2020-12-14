@@ -34,7 +34,7 @@ export function backupNow() {
             bucket.upload(path)
                 .then(() => cronlog.info('upload complete'))
                 .catch(error => cronlog.error('upload failure: ' + error))
-                .finally(() => fs.unlink(path, () => {}))
+                .finally(() => fs.unlink(path, () => { /**/ }))
         } else {
             cronlog.info(`bad data back from database server: ${s}`)
         }

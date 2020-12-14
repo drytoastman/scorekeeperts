@@ -6,8 +6,10 @@ import { sync } from 'globby'
 
 const outPath = 'tsbuild'
 const aliases = [
-    ['@common/', 'common/'],
-    ['@/', './']
+    ['@sctypes/', './common/types'],
+    ['@scdb/', './common/db'],
+    ['@scdb', './common/db'],
+    ['@/', './server/src']
 ]
 
 const convert = (modulePath: string, outFile: string): string => {
@@ -16,6 +18,8 @@ const convert = (modulePath: string, outFile: string): string => {
             const modulePathRel = modulePath.substring(prefix.length)
             const moduleSrc = resolve(outPath, aliaspath, modulePathRel)
             let rel = relative(dirname(outFile), moduleSrc).replace(/\\/g, '/')
+
+            console.log(`${modulePath} ${modulePathRel} ${moduleSrc} ${rel}`)
             if (rel[0] !== '.') rel = './' + rel
 
             console.log(`\treplacing '${modulePath}' ==> '${rel}'`)

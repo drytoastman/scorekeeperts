@@ -10,7 +10,7 @@
 </template>
 
 <script>
-import { RegisterValidator } from '@/common/driver'
+import { RegisterValidator } from '@sctypes/driver'
 import { PasswordEyeMixin } from '@/components/PasswordEyeMixin.js'
 import BaseDialog from '@/components/BaseDialog'
 

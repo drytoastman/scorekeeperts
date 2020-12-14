@@ -1,5 +1,5 @@
 import { mapState } from 'vuex'
-import { isOpen } from '@/common/event.ts'
+import { isOpen } from '@sctypes/event.ts'
 
 export const SessionIndexMixin = {
     computed: {

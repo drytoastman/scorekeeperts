@@ -1,6 +1,6 @@
 import dns, { Packet } from 'dns2'
 import { dnslog } from '@/util/logging'
-import { db } from '@/db'
+import { db } from '@scdb'
 
 const SERVFAIL = 2
 const NXDOMAIN = 3
@@ -31,7 +31,7 @@ async function getmatch(request): Promise<string | undefined> {
 }
 
 
-async function resolver(request, send, rinfo): Promise<void> {
+async function resolver(request, send): Promise<void> {
     if (request.header.qr) return // is a response
     const response = Packet.createResponseFromRequest(request)
 

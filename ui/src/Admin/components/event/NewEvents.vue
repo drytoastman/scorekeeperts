@@ -47,7 +47,7 @@
 import { mapGetters, mapState } from 'vuex'
 import { subDays } from 'date-fns'
 
-import { parseDate, parseTimestamp } from '@/common/util'
+import { parseDate, parseTimestamp } from '@sctypes/util'
 import BasicsTemplate from './BasicsTemplate.vue'
 import Limits from './Limits.vue'
 import Other from './Other.vue'

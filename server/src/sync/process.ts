@@ -1,9 +1,9 @@
 import { isPast } from 'date-fns'
 import { EventEmitter } from 'events'
 
-import { DefaultMap, difference, intersect } from '@/common/data'
-import { parseTimestamp } from '@/common/util'
-import { db, ScorekeeperProtocol, ScorekeeperProtocolDB } from '@/db'
+import { DefaultMap, difference, intersect } from '@sctypes/data'
+import { parseTimestamp } from '@sctypes/util'
+import { db, ScorekeeperProtocol, ScorekeeperProtocolDB } from '@scdb'
 import { synclog } from '@/util/logging'
 
 import { getRemoteDB } from './connections'
@@ -313,6 +313,7 @@ async function advancedMerge(wrap: SyncProcessInfo, table: string, localupdate: 
         if (!lo) {
             continue
         }
+        /* eslint-disable @typescript-eslint/no-non-null-assertion */
         if (localup.has(lo.pkhash)) {
             const res = lo.finalize(localup.get(lo.pkhash)!)
             toupdatel.push(res.obj)
@@ -322,6 +323,7 @@ async function advancedMerge(wrap: SyncProcessInfo, table: string, localupdate: 
             toupdater.push(res.obj)
             if (res.both) toupdatel.push(res.obj)
         }
+        /* eslint-enable @typescript-eslint/no-non-null-assertion */
     }
 
     await wrap.updateAll(table, toupdatel, toupdater)

@@ -54,7 +54,7 @@ import pickBy from 'lodash/pickBy'
 import { mapGetters, mapState } from 'vuex'
 import { mdiMagnify } from '@mdi/js'
 import { sendToClipboard, sendAsDownload } from '@/util/sendtouser'
-import _V from '@/common/validataorimport'
+import isEmail from 'validator/lib/isEmail'
 
 export default {
     name: 'ContactTable',
@@ -76,7 +76,7 @@ export default {
         },
         validemail() {
             return this.entrantlist.filter(row => {
-                return !row.optoutmail && _V.isEmail(row.email)
+                return !row.optoutmail && isEmail(row.email)
             }).map(row => {
                 return `${row.firstname} ${row.lastname} <${row.email}>`.replaceAll(/[,;]/g, '')
             })

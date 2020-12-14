@@ -20,6 +20,9 @@
     "paths": {
       "@/*": [
         "src/*"
+      ],
+      "@sctypes/*": [
+        "../common/types/*"
       ]
     },
     "lib": [

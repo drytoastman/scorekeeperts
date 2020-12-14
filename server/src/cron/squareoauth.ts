@@ -1,4 +1,4 @@
-import { db } from '../db'
+import { db } from '@scdb'
 import * as square from '../util/square'
 import { cronlog } from '../util/logging'
 

@@ -30,8 +30,8 @@
 <script>
 import isEmpty from 'lodash/isEmpty'
 import Vue from 'vue'
-import { CarValidator } from '@/common/car'
-import { restrictedRegistrationIndexes } from '@/common/classdata'
+import { CarValidator } from '@sctypes/car'
+import { restrictedRegistrationIndexes } from '@sctypes/classdata'
 import NumberPicker from './NumberPicker.vue'
 import BaseDialog from './BaseDialog.vue'
 

@@ -37,8 +37,6 @@ export default {
 }
 </script>
 
-
-
 <style scoped lang='scss'>
 .centerblock {
     margin: 0 auto 0 auto;

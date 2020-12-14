@@ -1,15 +1,15 @@
 import axios from 'axios'
 import Vue from 'vue'
 
-import { AUTHTYPE_NONE } from '@/common/auth'
-import { DefaultMap } from '@/common/data'
-import { SeriesEvent } from '@/common/event'
-import { LiveSocketWatch } from '@/common/results'
-import { UUID } from '@/common/util'
+import { AUTHTYPE_NONE } from '@sctypes/auth'
+import { DefaultMap } from '@sctypes/data'
+import { SeriesEvent } from '@sctypes/event'
+import { LiveSocketWatch } from '@sctypes/results'
+import { UUID } from '@sctypes/util'
 import ReconnectingWebSocket from 'reconnecting-websocket'
 import { ActionContext, ActionTree, GetterTree, MutationTree } from 'vuex'
 import { API2, Api2State } from './state'
-import { Challenge } from '@/common/challenge'
+import { Challenge } from '@sctypes/challenge'
 
 
 export const resultsMutations: MutationTree<Api2State> = {

@@ -3,8 +3,8 @@ import imaps from 'imap-simple'
 import { simpleParser }  from 'mailparser'
 import nodemailer from 'nodemailer'
 
-import { db, ScorekeeperProtocol } from '../db'
-import { MAIL_SEND_USER, MAIL_SEND_PASS, MAIL_SEND_HOST, MAIL_SEND_FROM, MAIL_SEND_REPLYTO } from '../db/generalrepo'
+import { db, ScorekeeperProtocol } from '@scdb'
+import { MAIL_SEND_USER, MAIL_SEND_PASS, MAIL_SEND_HOST, MAIL_SEND_FROM, MAIL_SEND_REPLYTO } from '@scdb/generalrepo'
 import { cronlog } from '../util/logging'
 
 let sendingQueued = false

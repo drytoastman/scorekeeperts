@@ -1,11 +1,11 @@
 import http from 'http'
 import WebSocket from 'ws'
 
-import { UUID } from '@/common/util'
+import { UUID } from '@sctypes/util'
 import { CookieSess } from './auth'
-import { AUTHTYPE_DRIVER, AUTHTYPE_SERIES } from '@/common/auth'
-import { LiveSocketWatch } from '@/common/results'
-import { DefaultMap } from '@/common/data'
+import { AUTHTYPE_DRIVER, AUTHTYPE_SERIES } from '@sctypes/auth'
+import { LiveSocketWatch } from '@sctypes/results'
+import { DefaultMap } from '@sctypes/data'
 
 export interface SessionWebSocket extends WebSocket {
     driverid: UUID|null

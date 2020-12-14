@@ -1,9 +1,9 @@
 import _ from 'lodash'
 import { Router } from 'express'
 
-import { db } from '@/db'
+import { db } from '@scdb'
 import { controllog } from '@/util/logging'
-import { ChampEntrant, Entrant } from '@/common/results'
+import { ChampEntrant, Entrant } from '@sctypes/results'
 
 export const oldapi = Router()
 
@@ -163,7 +163,8 @@ oldapi.get('/:series/scca/:eventid', (req, res, next) => {
     }).catch(next)
 })
 
-oldapi.use((error, _req, res, _next) => {
+oldapi.use((error, req, res, next) => {
     res.status(500).send({ error: error.message })
     controllog.error(error)
+    next()
 })

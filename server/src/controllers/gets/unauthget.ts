@@ -1,14 +1,14 @@
 import fs from 'fs'
 import util from 'util'
 
-import { ScorekeeperProtocol } from '@/db'
-import { SQ_APPLICATION_ID, RECAPTCHA_SITEKEY, IS_MAIN_SERVER } from '@/db/generalrepo'
+import { ScorekeeperProtocol } from '@scdb'
+import { SQ_APPLICATION_ID, RECAPTCHA_SITEKEY } from '@scdb/generalrepo'
 import { AuthData } from '../auth'
 import { generateProTimer, loadResultData } from './livedata'
 import { LazyData } from '../lazydata'
-import { LiveSocketWatch, watchNonTimers } from '@/common/results'
-import { EPOCH } from '@/common/util'
-import { gridTables } from '@/common/gridorder'
+import { LiveSocketWatch, watchNonTimers } from '@sctypes/results'
+import { EPOCH } from '@sctypes/util'
+import { gridTables } from '@sctypes/gridorder'
 
 const readdirAsync = util.promisify(fs.readdir)
 

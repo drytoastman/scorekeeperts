@@ -48,8 +48,9 @@ module.exports = {
     resolve: {
         extensions: ['.ts', '.js'],
         alias: {
-            '@': path.resolve(__dirname, 'src'),
-            '@common': path.resolve(__dirname, 'src/common')
+            '@sctypes': path.resolve(__dirname, '../common/types'),
+            '@scdb': path.resolve(__dirname, '../common/db'),
+            '@': path.resolve(__dirname, 'src')
         }
     },
     module: {

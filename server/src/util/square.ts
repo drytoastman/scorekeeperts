@@ -2,15 +2,14 @@
 import { differenceInDays } from 'date-fns'
 import { Client, Environment, CreateOrderResponse, ApiResponse, Money } from 'square'
 import { v1 as uuidv1 } from 'uuid'
-import util from 'util'
 
-import { PaymentAccount, PaymentAccountSecret } from '@common/payments'
-import { Payment } from '@common/register'
-import { UUID } from '@common/util'
+import { PaymentAccount, PaymentAccountSecret } from '@sctypes/payments'
+import { Payment } from '@sctypes/register'
+import { UUID } from '@sctypes/util'
 
-import { ScorekeeperProtocol } from '../db'
+import { ScorekeeperProtocol } from '@scdb'
 import { gCache } from './cache'
-import { SQ_APPLICATION_ID, SQ_APPLICATION_SECRET } from '../db/generalrepo'
+import { SQ_APPLICATION_ID, SQ_APPLICATION_SECRET } from '@scdb/generalrepo'
 import { paymentslog } from './logging'
 
 function getAClient(mode: string, token?: string): Client {
@@ -81,8 +80,8 @@ export async function squareOrder(conn: ScorekeeperProtocol, square: any, paymen
     const sqpayment = {
         sourceId: square.nonce,
         idempotencyKey: ikey2,
-        amountMoney: orderresponse.result.order!.totalMoney as Money,
-        orderId: orderresponse.result.order!.id
+        amountMoney: orderresponse.result.order?.totalMoney as Money,
+        orderId: orderresponse.result.order?.id
     }
 
     const paymentresponse = await client.paymentsApi.createPayment(sqpayment)
@@ -95,8 +94,8 @@ export async function squareOrder(conn: ScorekeeperProtocol, square: any, paymen
     payments.forEach(p => {
         p.payid  = uuidv1()
         p.txtype = 'square'
-        p.txid   = paymentresponse.result.payment!.id as string
-        p.txtime = paymentresponse.result.payment!.createdAt as string
+        p.txid   = paymentresponse.result.payment?.id as string
+        p.txtime = paymentresponse.result.payment?.createdAt as string
         p.accountid = account.accountid
         p.refunded = false
     })
@@ -176,7 +175,7 @@ export async function squareoAuthRequest(conn: ScorekeeperProtocol, series: stri
     if (locationResponse.result.errors) {
         throw new Error('Error getting locations: ' + locationResponse.result.errors)
     }
-    if (locationResponse.result.locations!.length === 0) {
+    if (locationResponse.result.locations?.length === 0) {
         throw new Error('No locations present, need at least one')
     }
 

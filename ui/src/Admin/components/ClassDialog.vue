@@ -36,8 +36,8 @@
 <script>
 import orderBy from 'lodash/orderBy'
 import { mapState } from 'vuex'
-import { ClassValidator } from '@/common/classindex'
-import { restrictedRegistrationIndexes } from '@/common/classdata'
+import { ClassValidator } from '@sctypes/classindex'
+import { restrictedRegistrationIndexes } from '@sctypes/classdata'
 
 import BaseDialog from '../../components/BaseDialog'
 

@@ -1,15 +1,14 @@
-import _ from 'lodash'
 import dns from 'dns'
 import { Request, Response } from 'express'
 import KeyGrip from 'keygrip'
+import isUUID from 'validator/lib/isUUID'
 
-import _V from '@common/validataorimport'
-import { RegisterValidator, ResetValidator } from '@common/driver'
-import { validateObj } from '@common/util'
-import { db } from '@/db'
+import { RegisterValidator, ResetValidator } from '@sctypes/driver'
+import { validateObj } from '@sctypes/util'
+import { db } from '@scdb'
 import { wrapObj, unwrapObj } from '@/util/statelessdata'
 import { controllog } from '@/util/logging'
-import { MAIL_SEND_REPLYTO, MAIL_SEND_FROM } from '@/db/generalrepo'
+import { MAIL_SEND_REPLYTO, MAIL_SEND_FROM } from '@scdb/generalrepo'
 import { verifyCaptcha } from '../captcha'
 
 async function emailresult(request: any): Promise<any> {
@@ -57,7 +56,7 @@ export async function token(req: Request, res: Response) {
                 return res.json({ tokenresult: 'toprofileeditor' })
 
             case 'reset':
-                if (!_V.isUUID(request.driverid)) throw Error('invalid driverid')
+                if (!isUUID(request.driverid)) throw Error('invalid driverid')
                 req.auth.driverAuthenticated(request.driverid)
                 return res.json({ tokenresult: 'changepassword' })
 

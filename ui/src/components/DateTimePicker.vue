@@ -46,7 +46,7 @@
 
 <script>
 import { format, parse } from 'date-fns'
-import { parseDate, parseTimestamp, formatToTimestamp } from '@/common/util'
+import { parseDate, parseTimestamp, formatToTimestamp } from '@sctypes/util'
 
 const VDATE = 'yyyy-MM-dd'
 const VTIME = 'HH:mm'

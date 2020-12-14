@@ -1,13 +1,13 @@
 import _ from 'lodash'
 
-import { ScorekeeperProtocol } from '@/db'
-import { UUID } from '@common/util'
-import { Car } from '@common/car'
-import { SeriesEvent } from '@/common/event'
-import { Entrant } from '@/common/results'
+import { ScorekeeperProtocol } from '@scdb'
+import { UUID } from '@sctypes/util'
+import { Car } from '@sctypes/car'
+import { SeriesEvent } from '@sctypes/event'
+import { Entrant } from '@sctypes/results'
 import { controllog } from '@/util/logging'
-import { Driver } from '@/common/driver'
-import { SeriesClass, SeriesIndex } from '@/common/classindex'
+import { Driver } from '@sctypes/driver'
+import { SeriesClass, SeriesIndex } from '@sctypes/classindex'
 
 export async function allSeriesSummary(db: ScorekeeperProtocol, driverid: string) {
     const ret:any[] = []
@@ -95,7 +95,7 @@ async function archiveActivity(task: ScorekeeperProtocol, key: string, untilyear
         for (const e of events) {
             try {
                 const results = await task.one('select data from results where name=$1', [e.eventid], r => r.data)
-                for (const [code, entries] of Object.entries(results)) {
+                for (const entries of Object.values(results)) {
                     for (const entrant of entries as Entrant[]) {
                         ids.add(entrant[key])
                     }

@@ -1,4 +1,4 @@
-import { ScorekeeperProtocol } from '@/db'
+import { ScorekeeperProtocol } from '@scdb'
 
 import { allClassesAndIndexes } from '../allseries'
 import { AuthData } from '../auth'

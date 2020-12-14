@@ -1,5 +1,5 @@
-import { EPOCH } from '@/common/util'
-import { pgp } from '@/db'
+import { EPOCH } from '@sctypes/util'
+import { pgp } from '@scdb'
 import { DB1, DB2, doSync, getTestDB, resetData, testids, timingpause, verifyObjectsAre, verifyObjectsLike, verifyUpdateLogChanges, with2DB } from './helpers'
 
 beforeEach(async () => {

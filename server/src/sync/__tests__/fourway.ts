@@ -1,4 +1,4 @@
-import { pgp } from '@/db'
+import { pgp } from '@scdb'
 import { DB1, DB2, DB3, DB4, doSync, resetData, testids, verifyObjectsLike, with4DB } from './helpers'
 
 beforeEach(async () => {

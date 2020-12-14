@@ -1,14 +1,16 @@
 import cookieSession from 'cookie-session'
-import express, { Request, Response } from 'express'
+import express, { Request, RequestHandler, Response } from 'express'
 import helmet from 'helmet'
 import morgan from 'morgan'
 import promiseRetry from 'promise-retry'
 
 import { api2, oldapi, websockets, websocketsStartWatching } from './controllers'
-import { db, tableWatcher, pgp } from './db'
+import { db, tableWatcher, pgp, setdblog } from '@scdb'
 import { CRON_MAIN_SERVER, CRON_SYNC_SERVER, startCronJobs, stopCronJobs } from './cron'
-import { accesslog, mainlog } from './util/logging'
+import { accesslog, mainlog, dblog } from './util/logging'
 import { startDNSServer } from './util/dns'
+
+setdblog(dblog)
 
 const app = express()
 let cookiesessioner
@@ -20,11 +22,11 @@ app.use(morgan('combined', {
             accesslog.info(message.substring(0, message.lastIndexOf('\n')))
         }
     }
-}))
+}) as RequestHandler)
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use('/public', express.static('public'))
-app.use('/api2', async function(req: Request, res: Response, next: Function) {
+app.use('/api2', async function(req: Request, res: Response) {
     return res.status(503).json({ error: 'waiting for db initializtion' })
 })
 
@@ -80,7 +82,7 @@ server.on('upgrade', function upgrade(request, socket, head) {
     // this is outside of express so we need to parse query ourselves
     const pathname = request.url.split('?')[0]
     if (pathname.startsWith('/api2') && cookiesessioner) {
-        cookiesessioner(request, {}, () => {}) // make sure cookie session (auth) is processed before handling
+        cookiesessioner(request, {}, () => { /* make sure cookie session (auth) is processed before handling */ })
         websockets.handleUpgrade(request, socket, head, ws => websockets.emit('connection', ws, request))
     } else {
         socket.destroy()

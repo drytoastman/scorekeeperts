@@ -7,8 +7,8 @@ import { Api2State, API2 } from './state'
 import { ActionContext, ActionTree, GetterTree, MutationTree } from 'vuex'
 import { deepset } from './api2mutations'
 import { getDataWrap } from './api2actions'
-import { ITEM_TYPE_SERIES_FEE } from '@/common/payments.ts'
-import { UUID } from '@/common/util'
+import { ITEM_TYPE_SERIES_FEE } from '@sctypes/payments'
+import { UUID } from '@sctypes/util'
 
 export const registerActions = {
 

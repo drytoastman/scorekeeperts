@@ -25,7 +25,6 @@ export async function logs(req: Request, res: Response) {
     }
 
     if (download) {
-        const ret = {}
         const zip = new AdmZip()
         for (const file of files) {
             zip.addLocalFile(`/var/log/${file}`)

@@ -6,10 +6,10 @@ import nunjucks from 'nunjucks'
 import puppeteer from 'puppeteer-core'
 import util from 'util'
 
-import { db } from '@/db'
-import { SeriesSettings } from '@common/settings'
-import { SeriesEvent } from '@common/event'
-import { UUID } from '@common/util'
+import { db } from '@scdb'
+import { SeriesSettings } from '@sctypes/settings'
+import { SeriesEvent } from '@sctypes/event'
+import { UUID } from '@sctypes/util'
 import { controllog } from '@/util/logging'
 
 import { checkAuth } from '../auth'
@@ -101,7 +101,7 @@ class MemLoader extends nunjucks.Loader {
     }
 }
 
-async function cardHTML(regData: RegData, series: String): Promise<string> {
+async function cardHTML(regData: RegData): Promise<string> {
     const cardspage   = await asyncRead('templates/cards.html', 'utf-8')
     let cardtemplate = regData.g.settings.cardtemplate
     if (!cardtemplate) {
@@ -115,7 +115,7 @@ async function cardHTML(regData: RegData, series: String): Promise<string> {
 async function cardtemplate(regData: RegData, series: string, res: Response) {
     try {
         regData.barcodescript = '<script type="text/javascript" src="/public/JsBarcode.code128.3.1.1.min.js"></script>'
-        res.send(await cardHTML(regData, series))
+        res.send(await cardHTML(regData))
     } catch (error) {
         controllog.error(error)
         return res.status(500).json({ error: error.message })
@@ -126,7 +126,7 @@ async function cardtemplate(regData: RegData, series: string, res: Response) {
 async function cardpdf(regData: RegData, series: string, res: Response) {
     try {
         regData.barcodescript = '<script type="text/javascript">\n' + await asyncRead('public/JsBarcode.code128.3.1.1.min.js', 'utf-8') + '\n</script>'
-        const html    = await cardHTML(regData, series)
+        const html    = await cardHTML(regData)
         const browser = await puppeteer.launch(chromeargs)
         const page    = await browser.newPage()
         await page.setContent(html, { waitUntil: 'load' })

@@ -1,4 +1,4 @@
-import { pgp, SYNCTABLES } from '@/db'
+import { SYNCTABLES } from '@scdb'
 
 export const FOREIGN_KEY_CONSTRAINT = '23503'
 export const LOCAL_TIMEOUT  = 5000

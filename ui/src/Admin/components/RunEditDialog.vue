@@ -46,7 +46,7 @@ import orderBy from 'lodash/orderBy'
 import isEqual from 'lodash/isEqual'
 import uniqWith from 'lodash/uniqWith'
 import { mapState } from 'vuex'
-import { isDecimal3 } from '@/common/util'
+import { isDecimal3 } from '@sctypes/util'
 import CarLabel from '@/components/CarLabel.vue'
 
 export default {

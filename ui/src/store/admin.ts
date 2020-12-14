@@ -6,7 +6,7 @@ import axios from 'axios'
 import { Api2State, API2 } from './state'
 import { ActionContext, ActionTree } from 'vuex'
 import { getDataWrap } from './api2actions'
-import { UUID } from '@/common/util'
+import { UUID } from '@sctypes/util'
 import { sendAsDownload } from '@/util/sendtouser'
 
 

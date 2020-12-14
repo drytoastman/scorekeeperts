@@ -1,10 +1,9 @@
-import _ from 'lodash'
 import { subSeconds } from 'date-fns'
-import { LiveSocketWatch, Run, TopTimesKey } from '@/common/results'
-import { formatToTimestamp, parseTimestamp, UUID } from '@/common/util'
-import { db } from '@/db'
-import { createTopTimesTable } from '@/common/toptimes'
-import { getDObj } from '@/common/data'
+import { LiveSocketWatch, Run, TopTimesKey } from '@sctypes/results'
+import { formatToTimestamp, parseTimestamp, UUID } from '@sctypes/util'
+import { db } from '@scdb'
+import { createTopTimesTable } from '@sctypes/toptimes'
+import { getDObj } from '@sctypes/data'
 import { LazyData } from '../lazydata'
 
 export async function generateProTimer(): Promise<any> {

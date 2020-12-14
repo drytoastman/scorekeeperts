@@ -1,6 +1,5 @@
-import util from 'util'
-import { parseTimestamp } from '@/common/util'
-import { pgp, ScorekeeperProtocol, SYNCTABLES } from '@/db'
+import { parseTimestamp } from '@sctypes/util'
+import { pgp, ScorekeeperProtocol, SYNCTABLES } from '@scdb'
 import { synclog } from '@/util/logging'
 import { getRemoteDB } from './connections'
 import { asyncwait, FOREIGN_KEY_CONSTRAINT, logtablefor, PRIMARY_TVEQ, PRIMARY_SETS } from './constants'
@@ -210,9 +209,9 @@ export class SyncProcessInfo {
         ])
     }
     private async insup(task: ScorekeeperProtocol, table: string, ins: DBObject[], up: DBObject[]) {
-        return task.tx(async tx => {
-            if (ins.length) await task.none(pgp.helpers.insert(ins, SYNCTABLES[table]))
-            if (up.length)  await task.none(pgp.helpers.update(up, SYNCTABLES[table]) + PRIMARY_TVEQ[table])
+        return task.tx(async (tx: ScorekeeperProtocol) => {
+            if (ins.length) await tx.none(pgp.helpers.insert(ins, SYNCTABLES[table]))
+            if (up.length)  await tx.none(pgp.helpers.update(up, SYNCTABLES[table]) + PRIMARY_TVEQ[table])
         })
     }
 

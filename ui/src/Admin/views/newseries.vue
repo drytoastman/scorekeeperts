@@ -24,7 +24,7 @@
 </template>
 
 <script>
-import { SeriesValidator } from '@/common/series'
+import { SeriesValidator } from '@sctypes/series'
 
 export default {
     name: 'CreateSeries',

@@ -2,7 +2,7 @@ import { diff as odiff } from 'deep-object-diff'
 import _ from 'lodash'
 import { v1 as uuidv1 } from 'uuid'
 
-import { ScorekeeperProtocol, pgp, db as dbx, ScorekeeperProtocolDB } from '@/db'
+import { ScorekeeperProtocol, pgp, db as dbx, ScorekeeperProtocolDB } from '@scdb'
 import { runSyncOnce } from '../process'
 import { ACTIVE } from '../mergeserver'
 import { asyncwait } from '../constants'
@@ -112,7 +112,7 @@ function serverName(port: number) {
 
 export async function resetData(ports: number[]) {
     try {
-        const serverids = ports.map(p1 => uuidv1())
+        const serverids = ports.map(() => uuidv1())
         await Promise.all(ports.map(async (p1: number) => {
             const d = getTestDB(p1)
             await d.any(p1 === ports[0] ? RESET + BASE : RESET, testids)
@@ -157,13 +157,15 @@ expect.extend({
     }
 })
 
+/* eslint-disable @typescript-eslint/no-namespace */
 declare global {
     namespace jest {
-        interface Matchers<R, T = {}> {
+        interface Matchers<R> {
             toBeAttrLike<E = any>(expected: E): R;
         }
     }
 }
+/* eslint-enable @typescript-eslint/no-namespace */
 
 /**
  * Object are the same on all databases, don't check actual value

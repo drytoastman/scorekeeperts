@@ -48,9 +48,9 @@
 <script>
 import { format } from 'date-fns'
 import { mapState } from 'vuex'
-import { isOpen, hasClosed, hasOpened } from '@/common/event'
+import { isOpen, hasClosed, hasOpened } from '@sctypes/event'
 import EventRegSelections from './EventRegSelections.vue'
-import { parseTimestamp } from '@/common/util'
+import { parseTimestamp } from '@sctypes/util'
 
 export default {
     components: {

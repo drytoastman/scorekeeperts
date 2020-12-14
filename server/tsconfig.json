@@ -8,8 +8,14 @@
       "@/*": [
         "src/*"
       ],
-      "@common/*": [
-        "src/common/*"
+      "@sctypes/*": [
+        "../common/types/*"
+      ],
+      "@scdb": [
+        "../common/db"
+      ],
+      "@scdb/*": [
+        "../common/db/*"
       ]
     },
     "lib": [
@@ -18,6 +24,7 @@
     ],
     "typeRoots": [
       "./node_modules/@types",
+      "../node_modules/@types"
     ],
 
     /* Strict Type-Checking Options */

@@ -1,7 +1,7 @@
 
 import { v1 as uuidv1 } from 'uuid'
 
-import { pgp } from '@/db'
+import { pgp } from '@scdb'
 import { ONESHOT } from '../mergeserver'
 import { runSyncOnce } from '../process'
 import { DB1, getTestDB, RESET, testids } from './helpers'

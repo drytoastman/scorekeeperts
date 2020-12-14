@@ -45,7 +45,7 @@
 <script>
 import range from 'lodash/range'
 import { mapGetters } from 'vuex'
-import { RANKS } from '@/common/challenge'
+import { RANKS } from '@sctypes/challenge'
 import EDisplay from '../components/standard/EDisplay.vue'
 import SingleRound from '../components/standard/SingleRound.vue'
 

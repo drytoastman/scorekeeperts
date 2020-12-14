@@ -1,16 +1,18 @@
 import _ from 'lodash'
 import { Request, Response } from 'express'
-import { db } from '@/db'
-import { UUID } from '@common/util'
-import { AUTHTYPE_DRIVER, AUTHTYPE_NONE, AUTHTYPE_SERIES } from '@/common/auth'
+import { db } from '@scdb'
+import { UUID } from '@sctypes/util'
+import { AUTHTYPE_DRIVER, AUTHTYPE_NONE, AUTHTYPE_SERIES } from '@sctypes/auth'
 
+/* eslint-disable @typescript-eslint/no-namespace */
 declare global {
-    module Express {
+    namespace Express {
         interface Request {
             auth: AuthData
         }
     }
 }
+/* eslint-enable @typescript-eslint/no-namespace */
 
 export interface CookieSess {
     driverid: UUID|null

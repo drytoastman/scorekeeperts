@@ -1,5 +1,5 @@
 import fs from 'fs'
-import { pgp, ScorekeeperProtocolDB } from '@/db'
+import { pgp, ScorekeeperProtocolDB } from '@scdb'
 import { PEER_TIMEOUT, REMOTE_TIMEOUT } from './constants'
 
 const dbmap = new Map<string, ScorekeeperProtocolDB>()
