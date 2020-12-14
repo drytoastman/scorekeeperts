@@ -8,10 +8,19 @@ import { MAIL_SEND_USER, MAIL_SEND_PASS, MAIL_SEND_HOST, MAIL_SEND_FROM, MAIL_SE
 import { cronlog } from '../util/logging'
 
 let sendingQueued = false
+let queueLockTime = new Date()
 export async function sendQueuedEmail() {
     let smtp: nodemailer.Transporter
-    if (sendingQueued) return
+    if (sendingQueued) {
+        if (queueLockTime.getTime() > (Date.now() + 60)) {
+            cronlog.warn(`Breaking sendQueued lock as it appears stale (${queueLockTime}, ${new Date()})`)
+        } else {
+            cronlog.warn(`Calling sendQueued and sendflag is still set (${queueLockTime})`)
+            return
+        }
+    }
     sendingQueued = true
+    queueLockTime = new Date()
 
     await db.task(async t => {
         const settings = await t.general.getLocalSettingsObj()
@@ -55,8 +64,8 @@ export async function sendQueuedEmail() {
     }).catch(error => {
         cronlog.error(error)
     }).finally(() => {
-        if (smtp) smtp.close()
         sendingQueued = false
+        if (smtp) smtp.close()
     })
 }
 
@@ -65,7 +74,10 @@ export async function sendQueuedEmail() {
  */
 let checkingMail = false
 export async function checkMailmanErrors() {
-    if (checkingMail) return
+    if (checkingMail) {
+        cronlog.warn('Calling checkMailmanErrors and checkflag is still set')
+        return
+    }
     checkingMail = true
     let connection: imaps.ImapSimple
 

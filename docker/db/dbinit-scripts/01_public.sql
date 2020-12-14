@@ -350,6 +350,7 @@ CREATE TABLE emailqueue (
 REVOKE ALL ON emailqueue FROM public;
 GRANT  ALL ON emailqueue TO mergeaccess;
 GRANT  ALL ON emailqueue_mailid_seq TO mergeaccess;
+CREATE TRIGGER  emailqueuemod AFTER INSERT OR UPDATE OR DELETE ON emailqueue FOR EACH STATEMENT EXECUTE PROCEDURE notifymods();
 COMMENT ON TABLE emailqueue IS 'temporary storage for items the web interface wants send, mailman will consume and delete';
 
 

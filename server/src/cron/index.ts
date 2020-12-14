@@ -4,6 +4,7 @@ import { sendQueuedEmail, checkMailmanErrors } from './mailman'
 import { backupNow, rotatedLogUpload } from './cloud'
 import { cronlog } from '../util/logging'
 import { runSyncOnce } from '@/sync/process'
+import { tableWatcher } from '@scdb'
 
 export const CRON_MAIN_SERVER = 0x01
 export const CRON_SYNC_SERVER = 0x02
@@ -21,9 +22,14 @@ export function startCronJobs(modeflags: number) {  // times in local time zone
     if (modeflags & CRON_MAIN_SERVER) {
         jobs.push(new CronJob('0    0  4    * * *', oauthrefresh))
         jobs.push(new CronJob('0    0  1,13 * * *', backupNow))
-        jobs.push(new CronJob('*/15 *  *    * * *', sendQueuedEmail))
-        jobs.push(new CronJob('0    0  */1  * * *', checkMailmanErrors))
+        jobs.push(new CronJob('0 */15  *    * * *', sendQueuedEmail))
+        jobs.push(new CronJob('0    0  */4  * * *', checkMailmanErrors))
         jobs.push(new CronJob('30  59  23   * * *', rotatedLogUpload))
+
+        tableWatcher.addTables(['emailqueue'])
+        tableWatcher.on('emailqueue', () => {
+            sendQueuedEmail()
+        })
     }
 
     if (modeflags & CRON_SYNC_SERVER) {

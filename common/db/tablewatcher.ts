@@ -6,10 +6,12 @@ import { dblog } from '.'
 export class TableWatcher extends EventEmitter {
     tables: Set<String>
     connection: IConnected<any, IClient> | null
+    started: boolean
     shuttingdown: boolean
 
     constructor(private db: IDatabase<any>) {
         super()
+        this.started = false
         this.shuttingdown = false
         this.tables = new Set<String>()
     }
@@ -19,14 +21,15 @@ export class TableWatcher extends EventEmitter {
         this.connection && this.connection.done()
     }
 
-    addTables(tbls: string[]) {
-        tbls.forEach(t => {
+    async addTables(tbls: string[]) {
+        for (const t of tbls) {
             this.tables.add(t)
             if (this.connection) {
-                this.connection.none('LISTEN $1~', t)
+                await this.connection.none('LISTEN $1~', t)
             }
-        })
-        if (!this.connection) {
+        }
+        if (!this.started) {
+            this.started = true
             this.reconnect()
         }
     }
