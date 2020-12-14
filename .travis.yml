@@ -3,10 +3,11 @@ os: linux
 node_js: 14
 services: [docker]
 install:
-  - cd server && npm install && cd -
-  - cd ui     && npm install && cd -
+  - yarn install
+  - cd server && yarn install && cd -
+  - cd ui     && yarn install && cd -
 script:
   - cd docker && docker-compose -f testing.yaml up -d && cd -
-  - cd server && npm run build && cd -
-  - cd ui     && npm run build && cd -
-  - cd server && npm test && cd -
+  - cd server && yarn build && cd -
+  - cd ui     && yarn build && cd -
+  - cd server && yarn test && cd -

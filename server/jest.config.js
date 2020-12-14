@@ -3,7 +3,9 @@ module.exports = {
     testEnvironment: 'node',
     moduleNameMapper: {
         '@/(.*)$': '<rootDir>/src/$1',
-        '@common/(.*)$': '<rootDir>/src/common/$1'
+        '@sctypes/(.*)$': '<rootDir>/../common/types/$1',
+        '@scdb': '<rootDir>/../common/db',
+        '@scdb/(.*)$': '<rootDir>/../common/db/$1'
     },
     testPathIgnorePatterns: [
         'helpers.ts',
