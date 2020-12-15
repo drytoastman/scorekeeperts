@@ -5,9 +5,9 @@ services: [docker]
 install:
   - yarn install
   - cd server && yarn install && cd -
-  - cd ui     && yarn install && cd -
+  - cd web    && yarn install && cd -
 script:
   - cd docker && docker-compose -f testing.yaml up -d && cd -
   - cd server && yarn build && cd -
-  - cd ui     && yarn build && cd -
+  - cd web    && yarn build && cd -
   - cd server && yarn test && cd -
