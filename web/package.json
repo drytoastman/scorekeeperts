@@ -61,5 +61,11 @@
   "browserslist": [
     "> 1%",
     "last 2 versions"
-  ]
+  ],
+  "babel": {
+    "presets": [ "@vue/cli-plugin-babel/preset" ]
+  },
+  "jest": {
+    "preset": "@vue/cli-plugin-unit-jest/presets/typescript-and-babel"
+  }
 }

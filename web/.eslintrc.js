@@ -25,6 +25,7 @@ module.exports = {
             '@typescript-eslint/explicit-module-boundary-types': 'off'
         }
     }],
+    ignorePatterns: ['dist/*', '*.js'],
     rules: {
         'vue/no-unused-components': 'warn',
         'vue/no-unused-vars': 'warn'

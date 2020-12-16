@@ -17,6 +17,7 @@ module.exports = {
     plugins: [
         '@typescript-eslint'
     ],
+    ignorePatterns: ['build/*', 'tsbuild/*', 'scripts/*', 'webpack.config.js'],
     parserOptions: {
         ecmaVersion: 2020,
         parser: '@typescript-eslint/parser'
