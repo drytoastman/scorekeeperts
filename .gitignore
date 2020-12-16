@@ -3,3 +3,4 @@ dist
 build
 tsbuild
 *.local
+dist_electron
