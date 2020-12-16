@@ -7,12 +7,34 @@
     <link rel="icon" href="<%= BASE_URL %>favicon.ico">
     <title><%= htmlWebpackPlugin.options.title %></title>
     <script>var VUE_BASE='PUT_BASE_HERE'</script>
+    <script>
+      function ready(callbackFunction){
+        if(document.readyState != 'loading')
+          callbackFunction(event)
+        else
+          document.addEventListener("DOMContentLoaded", callbackFunction)
+      }
+
+      function checkbad() {
+        var be = document.getElementById("browsererror");
+        if (be) {
+          be.innerHTML += "<div style='text-align: center; background:#A44; color:#FFF; padding: 1rem;'> \
+              <p>If you can read this, your browser is too old to load this page (Internet Explorer <= 11, Safari < 10).</p> \
+              <p>Please use an updated browser or one such as Firefox, Chrome or Edge.</p> \
+              <p>If you believe this is in error, let your series admin know</p></div>";
+        }
+      }
+
+      ready(checkbad)
+    </script>
   </head>
   <body>
     <noscript>
       <strong>We're sorry but <%= htmlWebpackPlugin.options.title %> doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
     </noscript>
-    <div id="app"></div>
+    <div id="app">
+       <div id="browsererror"></div>
+    </div>
     <!-- built files will be auto injected -->
   </body>
 </html>
