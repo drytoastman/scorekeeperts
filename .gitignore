@@ -3,4 +3,6 @@ dist
 build
 tsbuild
 *.local
+*.log
 dist_electron
+packages/*/lib

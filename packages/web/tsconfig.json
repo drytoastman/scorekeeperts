@@ -1,0 +1,17 @@
+{
+  "extends": "../tscommon.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "outDir": "tsbuild",
+    "paths": { "@/*": ["src/*"] },
+    "types": [ "vuetify" ]
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.vue",
+    "tests/**/*.ts",
+    "tests/**/*.tsx",
+    "src/components/*.js"
+  ]
+}

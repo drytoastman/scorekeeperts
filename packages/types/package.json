@@ -1,0 +1,18 @@
+{
+  "name": "sctypes",
+  "version": "5.0.0",
+  "private": true,
+  "main": "lib/index.js",
+  "license": "GPL-3.0-or-later",
+  "scripts": {
+    "build": "tsc --build .",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "lodash": "^4.17.20",
+    "validator": "^13.5.1"
+  },
+  "devDependencies": {
+    "typescript": "^4.1.3"
+  }
+}

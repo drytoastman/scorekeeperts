@@ -1,0 +1,13 @@
+{
+  "extends": "../tscommon.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "outDir": "tsbuild",
+    "paths": {
+      "@/*": ["src/*"]
+    }
+  },
+  "include": [
+    "src/**/*.ts"
+  ]
+}
