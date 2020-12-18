@@ -1,6 +1,7 @@
 {
   "extends": "../tscommon.json",
   "compilerOptions": {
+    "module": "commonjs",
     "baseUrl": ".",
     "outDir": "lib"
   },

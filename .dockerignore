@@ -1,6 +1,5 @@
 .git
 node_modules
-docker
 .travis.yml
 packages/**/build
 packages/**/dist
