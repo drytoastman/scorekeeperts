@@ -1,5 +1,10 @@
-**/node_modules
-**/dist
-**/build
-**/tsbuild
 .git
+node_modules
+docker
+.travis.yml
+packages/**/build
+packages/**/dist
+packages/**/dist_electron
+packages/**/lib
+packages/**/node_modules
+packages/**/tsbuild

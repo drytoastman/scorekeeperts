@@ -4,10 +4,10 @@ node_js: 14
 services: [docker]
 install:
   - yarn install
-  - cd server && yarn install && cd -
-  - cd web    && yarn install && cd -
 script:
   - cd docker && docker-compose -f testing.yaml up -d && cd -
-  - cd server && yarn build && cd -
-  - cd web    && yarn build && cd -
-  - cd server && yarn test && cd -
+  - cd packages/types  && yarn build && cd -
+  - cd packages/db     && yarn build && cd -
+  - cd packages/server && yarn build && cd -
+  - cd packages/web    && yarn build && cd -
+  - cd packages/server && yarn test && cd -
