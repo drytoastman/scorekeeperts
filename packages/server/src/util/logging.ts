@@ -55,12 +55,16 @@ const singleline = format.printf(({ level, message, label, timestamp, stack }) =
 
 const formats = [
     format.splat(),
-    format.errors({ stack: true }),
     format.timestamp({
         format: function() { return moment().format('YYYY-MM-DD HH:mm:ss') }
     }),
     singleline
 ]
+
+if (process.env.NODE_ENV === 'development') {
+    // stack trace isn't useful on packed code
+    formats.push(format.errors({ stack: true }))
+}
 
 // primary logging
 for (const l of ['main', 'database', 'cron', 'control', 'payments', 'dns', 'sync']) {
