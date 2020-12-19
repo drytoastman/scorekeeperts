@@ -1,4 +1,4 @@
-import { ScorekeeperProtocolDB } from 'index'
+import { ScorekeeperProtocolDB } from '.'
 import { IMain } from 'pg-promise'
 import { Challenge } from 'sctypes'
 

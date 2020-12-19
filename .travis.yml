@@ -6,8 +6,6 @@ install:
   - yarn install
 script:
   - cd docker && docker-compose -f testing.yaml up -d && cd -
-  - cd packages/types  && yarn build && cd -
-  - cd packages/db     && yarn build && cd -
   - cd packages/server && yarn build && cd -
   - cd packages/web    && yarn build && cd -
   - cd packages/server && yarn test && cd -

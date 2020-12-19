@@ -1,6 +1,6 @@
 import { UTCString, UUID } from 'sctypes'
 import { IMain, ColumnSet } from 'pg-promise'
-import { ScorekeeperProtocolDB } from 'index'
+import { ScorekeeperProtocolDB } from '.'
 
 let mergecols: ColumnSet|undefined
 

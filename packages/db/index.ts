@@ -53,14 +53,18 @@ interface LogMethod {
     (message: string, ...meta: any[]): any
     (message: any): any
 }
-// placeholder until use initializes with real logger
-export let dblog: undefined | {
+export let dblog: {
     error: LogMethod,
     warn: LogMethod,
     info: LogMethod,
     debug: LogMethod
+} = {
+    // placeholder until someone uses setdblog to initialize with real logger
+    error: () => { /**/ },
+    warn: ()  => { /**/ },
+    info: ()  => { /**/ },
+    debug: () => { /**/ }
 }
-
 export function setdblog(v) {
     dblog = v
 }
@@ -72,7 +76,7 @@ try {
         DBPORT = Number.parseInt(process.env.DBPORT)
     }
 } catch (error) {
-    dblog?.error(error)
+    dblog.error(error)
 }
 
 const cn = {
