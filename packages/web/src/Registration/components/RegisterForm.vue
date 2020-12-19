@@ -13,7 +13,7 @@
 </template>
 
 <script>
-import { RegisterValidator } from 'sctypes/lib/driver'
+import { RegisterValidator } from 'sctypes/driver'
 import { PasswordEyeMixin } from '@/components/PasswordEyeMixin.js'
 
 export default {

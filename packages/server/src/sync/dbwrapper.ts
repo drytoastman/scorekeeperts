@@ -1,4 +1,4 @@
-import { parseTimestamp } from 'sctypes/lib/util'
+import { parseTimestamp } from 'sctypes/util'
 import { pgp, ScorekeeperProtocol, SYNCTABLES } from 'scdb'
 import { synclog } from '@/util/logging'
 import { getRemoteDB } from './connections'

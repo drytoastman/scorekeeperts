@@ -2,7 +2,7 @@ import axios from 'axios'
 import { Request } from 'express'
 
 import { db } from 'scdb'
-import { RECAPTCHA_SECRET } from 'scdb/lib/generalrepo'
+import { RECAPTCHA_SECRET } from 'scdb/generalrepo'
 import { controllog } from '@/util/logging'
 
 export async function verifyCaptcha(req: Request): Promise<void> {

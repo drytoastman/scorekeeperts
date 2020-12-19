@@ -2,7 +2,7 @@ import Vue from 'vue'
 import VueRouter, { Route } from 'vue-router'
 import Vuex, { Store } from 'vuex'
 
-import { Driver } from 'sctypes/lib/driver'
+import { Driver } from 'sctypes/driver'
 import { adminActions } from './admin'
 import { api2Actions } from './api2actions'
 import { api2Getters } from './api2getters'
@@ -10,7 +10,7 @@ import { api2Mutations } from './api2mutations'
 import { installLoggingHandlers } from './logging'
 import { cartMutations, registerActions, registerGetters } from './register'
 import { Api2State, API2 } from './state'
-import { AUTHTYPE_DRIVER, AUTHTYPE_NONE, AUTHTYPE_SERIES } from 'sctypes/lib/auth'
+import { AUTHTYPE_DRIVER, AUTHTYPE_NONE, AUTHTYPE_SERIES } from 'sctypes/auth'
 import { resultsMutations, resultsActions, resultsGetters } from './results'
 
 Vue.use(Vuex)

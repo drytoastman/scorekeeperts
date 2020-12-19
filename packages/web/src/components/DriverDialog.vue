@@ -22,7 +22,7 @@
 </template>
 
 <script>
-import { DriverValidator } from 'sctypes/lib/driver'
+import { DriverValidator } from 'sctypes/driver'
 import BaseDialog from './BaseDialog'
 
 export default {

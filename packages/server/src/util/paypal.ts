@@ -3,9 +3,9 @@ import { base64encode } from 'nodejs-base64'
 import { v1 as uuidv1 } from 'uuid'
 import { ScorekeeperProtocol } from 'scdb'
 import { paymentslog } from './logging'
-import { PaymentAccount, PaymentAccountSecret } from 'sctypes/lib/payments'
-import { Payment } from 'sctypes/lib/register'
-import { UUID } from 'sctypes/lib/util'
+import { PaymentAccount, PaymentAccountSecret } from 'sctypes/payments'
+import { Payment } from 'sctypes/register'
+import { UUID } from 'sctypes/util'
 
 function oauthUrl(mode: string) {
     const infix = (mode === 'sandbox') ? 'sandbox.' : ''

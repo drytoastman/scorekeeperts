@@ -3,7 +3,7 @@ import { Router } from 'express'
 
 import { db } from 'scdb'
 import { controllog } from '@/util/logging'
-import { ChampEntrant, Entrant } from 'sctypes/lib/results'
+import { ChampEntrant, Entrant } from 'sctypes/results'
 
 export const oldapi = Router()
 

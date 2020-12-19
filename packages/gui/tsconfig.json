@@ -1,44 +1,17 @@
 {
+  "extends": "../tscommon.json",
   "compilerOptions": {
-    "target": "esnext",
-    "module": "esnext",
-    "strict": true,
-    "noImplicitAny": false,
-    "jsx": "preserve",
-    "importHelpers": true,
-    "moduleResolution": "node",
-    "experimentalDecorators": true,
-    "skipLibCheck": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "sourceMap": true,
     "baseUrl": ".",
-    "types": [
-      "webpack-env"
-    ],
-    "paths": {
-      "@/*": [
-        "src/*"
-      ],
-      "@sctypes/*": [ "../common/types/*" ],
-      "@scdb/*": [ "../common/db/*" ],
-      "@scdb": [ "../common/db" ],
-    },
-    "lib": [
-      "esnext",
-      "dom",
-      "dom.iterable",
-      "scripthost"
-    ]
+    "outDir": "tsbuild",
+    "paths": { "@/*": ["src/*"] },
+    "types": [ "webpack-env", "vuetify" ]
   },
   "include": [
     "src/**/*.ts",
     "src/**/*.tsx",
     "src/**/*.vue",
     "tests/**/*.ts",
-    "tests/**/*.tsx"
-  ],
-  "exclude": [
-    "node_modules"
+    "tests/**/*.tsx",
+    "src/components/*.js"
   ]
 }

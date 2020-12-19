@@ -22,7 +22,7 @@
 import orderBy from 'lodash/orderBy'
 import { mapState } from 'vuex'
 import { mdiPencil, mdiDelete, mdiPlus } from '@mdi/js'
-import { ITEMTYPES } from 'sctypes/lib/payments'
+import { ITEMTYPES } from 'sctypes/payments'
 
 export default {
     name: 'ItemsTable',

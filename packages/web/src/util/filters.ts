@@ -1,5 +1,5 @@
 import { VueConstructor } from 'vue'
-import { DateString, parseDate } from 'sctypes/lib/util'
+import { DateString, parseDate } from 'sctypes/util'
 
 export function capitalize(v: string): string {
     if (!v) { return v }

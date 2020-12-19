@@ -9,7 +9,7 @@
 </template>
 
 <script>
-import { IndexValidator } from 'sctypes/lib/classindex'
+import { IndexValidator } from 'sctypes/classindex'
 import BaseDialog from '../../components/BaseDialog'
 
 export default {

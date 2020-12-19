@@ -6,7 +6,6 @@ COPY packages/types/package.json ./packages/types/
 COPY packages/web/package.json   ./packages/server/
 RUN yarn install
 COPY . .
-RUN cd packages/types && yarn build
 RUN cd packages/web   && yarn build
 
 FROM nginx:1.18.0

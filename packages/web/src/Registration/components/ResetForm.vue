@@ -9,7 +9,7 @@
 </template>
 
 <script>
-import { ResetValidator } from 'sctypes/lib/driver'
+import { ResetValidator } from 'sctypes/driver'
 
 export default {
     name: 'ResetForm',

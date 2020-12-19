@@ -65,8 +65,8 @@
 
 <script>
 import { mapGetters, mapState } from 'vuex'
-import { SeriesStatus } from 'sctypes/lib/series'
-import { hasSessions } from 'sctypes/lib/event'
+import { SeriesStatus } from 'sctypes/series'
+import { hasSessions } from 'sctypes/event'
 
 export default {
     name: 'EventIndex',

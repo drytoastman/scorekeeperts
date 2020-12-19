@@ -35,9 +35,9 @@
 import { mdiCloseBox } from '@mdi/js'
 import { PrismEditor } from 'vue-prism-editor'
 import { prismlangs } from '@/util/prismwrapper'
-import { EventValidator } from 'sctypes/lib/event'
+import { EventValidator } from 'sctypes/event'
 import DateTimePicker from '@/components/DateTimePicker.vue'
-import { Min, nonBlank } from 'sctypes/lib/util'
+import { Min, nonBlank } from 'sctypes/util'
 
 export default {
     name: 'BasicSettings',

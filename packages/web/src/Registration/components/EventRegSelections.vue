@@ -34,7 +34,7 @@ import range from 'lodash/range'
 import findIndex from 'lodash/findIndex'
 import { mapState } from 'vuex'
 
-import { getSessions, isOpen } from 'sctypes/lib/event'
+import { getSessions, isOpen } from 'sctypes/event'
 import CarSelect from './CarSelect.vue'
 import CarPayment from './cart/CarPayment.vue'
 import OtherPayment from './cart/OtherPayment.vue'

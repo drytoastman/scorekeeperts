@@ -3,9 +3,9 @@ import { paypalCapture } from '@/util/paypal'
 import * as square from '@/util/square'
 
 import { allSeriesSummary } from '../allseries'
-import { UUID } from 'sctypes/lib/util'
+import { UUID } from 'sctypes/util'
 import { AuthError } from '../auth'
-import { AUTHTYPE_DRIVER } from 'sctypes/lib/auth'
+import { AUTHTYPE_DRIVER } from 'sctypes/auth'
 
 export async function driverpost(tx: ScorekeeperProtocol, driverid: UUID|null, param: any) {
     const ret: any = {

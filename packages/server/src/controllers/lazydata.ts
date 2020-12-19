@@ -1,10 +1,10 @@
-import { Car } from 'sctypes/lib/car'
-import { ClassData } from 'sctypes/lib/classindex'
-import { decorateClassResults, decorateChampResults, getBestNetRun } from 'sctypes/lib/decorate'
-import { SeriesEvent } from 'sctypes/lib/event'
-import { ChampResults, EventResults, Entrant } from 'sctypes/lib/results'
-import { SeriesSettings } from 'sctypes/lib/settings'
-import { UTCString, UUID } from 'sctypes/lib/util'
+import { Car } from 'sctypes/car'
+import { ClassData } from 'sctypes/classindex'
+import { decorateClassResults, decorateChampResults, getBestNetRun } from 'sctypes/decorate'
+import { SeriesEvent } from 'sctypes/event'
+import { ChampResults, EventResults, Entrant } from 'sctypes/results'
+import { SeriesSettings } from 'sctypes/settings'
+import { UTCString, UUID } from 'sctypes/util'
 import { ScorekeeperProtocol } from 'scdb'
 
 export class LazyData {

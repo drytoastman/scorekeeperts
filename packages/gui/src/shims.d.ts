@@ -1,4 +1,12 @@
+import { ScorekeeperProtocolDB } from 'scdb'
+import Vue from 'vue'
+
 declare module '*.vue' {
-  import Vue from 'vue'
   export default Vue
+}
+
+declare global {
+  interface Window {
+    db: ScorekeeperProtocolDB
+  }
 }

@@ -1,9 +1,9 @@
 import { subSeconds } from 'date-fns'
-import { LiveSocketWatch, Run, TopTimesKey } from 'sctypes/lib/results'
-import { formatToTimestamp, parseTimestamp, UUID } from 'sctypes/lib/util'
+import { LiveSocketWatch, Run, TopTimesKey } from 'sctypes/results'
+import { formatToTimestamp, parseTimestamp, UUID } from 'sctypes/util'
 import { db } from 'scdb'
-import { createTopTimesTable } from 'sctypes/lib/toptimes'
-import { getDObj } from 'sctypes/lib/data'
+import { createTopTimesTable } from 'sctypes/toptimes'
+import { getDObj } from 'sctypes/data'
 import { LazyData } from '../lazydata'
 
 export async function generateProTimer(): Promise<any> {

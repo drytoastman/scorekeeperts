@@ -1,4 +1,4 @@
-import { EPOCH } from 'sctypes/lib/util'
+import { EPOCH } from 'sctypes/util'
 import { pgp } from 'scdb'
 import { DB1, DB2, doSync, getTestDB, resetData, testids, timingpause, verifyObjectsAre, verifyObjectsLike, verifyUpdateLogChanges, with2DB } from './helpers'
 

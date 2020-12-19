@@ -22,7 +22,7 @@
 </template>
 
 <script>
-import { EventValidator, REGTYPE_AMPM, REGTYPE_DAY, REGTYPE_STANDARD } from 'sctypes/lib/event'
+import { EventValidator, REGTYPE_AMPM, REGTYPE_DAY, REGTYPE_STANDARD } from 'sctypes/event'
 
 export default {
     name: 'LimitSettings',

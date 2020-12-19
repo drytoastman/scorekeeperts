@@ -2,10 +2,9 @@
   "name": "scdb",
   "version": "5.0.0",
   "private": true,
-  "main": "lib/index.js",
+  "main": "index.ts",
   "license": "GPL-3.0-or-later",
   "scripts": {
-    "build": "tsc --build .",
     "lint": "eslint ."
   },
   "dependencies": {

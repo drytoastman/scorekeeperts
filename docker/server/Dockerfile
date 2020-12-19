@@ -7,8 +7,6 @@ COPY packages/db/package.json     ./packages/db/
 COPY packages/server/package.json ./packages/server/
 RUN yarn install
 COPY . .
-RUN cd packages/types  && yarn build
-RUN cd packages/db     && yarn build
 RUN cd packages/server && yarn build
 
 FROM node:14.15.1-buster-slim

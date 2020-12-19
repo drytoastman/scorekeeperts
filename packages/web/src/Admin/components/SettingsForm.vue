@@ -51,7 +51,7 @@ import isEqual from 'lodash/isEqual'
 import { mapState } from 'vuex'
 import { PrismEditor } from 'vue-prism-editor'
 import { prismlangs } from '@/util/prismwrapper'
-import { SettingsValidator } from 'sctypes/lib/settings'
+import { SettingsValidator } from 'sctypes/settings'
 import ChangeSeriesPassword from './ChangeSeriesPassword.vue'
 
 export default {

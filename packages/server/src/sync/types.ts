@@ -1,7 +1,7 @@
 import { addMilliseconds } from 'date-fns'
 import _ from 'lodash'
 
-import { formatToTimestamp, parseTimestamp, UTCString } from 'sctypes/lib/util'
+import { formatToTimestamp, parseTimestamp, UTCString } from 'sctypes/util'
 import { PRIMARY_KEYS } from './constants'
 
 export type PrimaryKeyHash = string

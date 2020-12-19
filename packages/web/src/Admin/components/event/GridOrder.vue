@@ -36,7 +36,7 @@
 <script>
 import { mapState } from 'vuex'
 import draggable from 'vuedraggable'
-import { createGridReport } from 'sctypes/lib/gridorder'
+import { createGridReport } from 'sctypes/gridorder'
 import GridBlock from './GridBlock.vue'
 import GridDisplay from '@/components/GridDisplay.vue'
 

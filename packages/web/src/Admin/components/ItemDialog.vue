@@ -16,9 +16,9 @@
 </template>
 
 <script>
-import { isDollar } from 'sctypes/lib/util'
+import { isDollar } from 'sctypes/util'
 import BaseDialog from '../../components/BaseDialog'
-import { ITEMTYPES } from 'sctypes/lib/payments'
+import { ITEMTYPES } from 'sctypes/payments'
 
 export default {
     components: {

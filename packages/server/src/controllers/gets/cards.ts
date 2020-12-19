@@ -7,9 +7,9 @@ import puppeteer from 'puppeteer-core'
 import util from 'util'
 
 import { db } from 'scdb'
-import { SeriesSettings } from 'sctypes/lib/settings'
-import { SeriesEvent } from 'sctypes/lib/event'
-import { UUID } from 'sctypes/lib/util'
+import { SeriesSettings } from 'sctypes/settings'
+import { SeriesEvent } from 'sctypes/event'
+import { UUID } from 'sctypes/util'
 import { controllog } from '@/util/logging'
 
 import { checkAuth } from '../auth'

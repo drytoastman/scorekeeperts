@@ -13,7 +13,7 @@
 
 <script>
 import orderBy from 'lodash/orderBy'
-import { LocalSettingsValidator } from 'sctypes/lib/settings'
+import { LocalSettingsValidator } from 'sctypes/settings'
 
 export default {
     name: 'HostSettings',

@@ -29,10 +29,9 @@
     </v-app>
 </template>
 
-<script>
+<script lang="ts">
 import Vue from 'vue'
 import HelloWorld from './components/HelloWorld.vue'
-// import { db } from '@scdb'
 
 console.log(process)
 
@@ -44,24 +43,11 @@ export default Vue.extend({
     },
 
     data: () => ({
-        serieslist: []
+        serieslist: [] as string[]
     }),
 
     async mounted() {
-        console.log('here4')
-        console.log(window.pgpromise)
-
-
-        this.serieslist = await window.pgpromise(
-            {
-                host: '127.0.0.1',
-                port: '6432',
-                database: 'scorekeeper',
-                user: 'localuser',
-                max: 30
-            }
-        ).any('SELECT * from mergeservers')
-        console.log(this.serieslist)
+        this.serieslist = await window.db.series.seriesList()
     }
 })
 </script>

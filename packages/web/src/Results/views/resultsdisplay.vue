@@ -32,8 +32,8 @@ import { mapGetters, mapState } from 'vuex'
 
 import ClassTable from '../components/standard/ClassTable.vue'
 import TopTimesTable from '../components/standard/TopTimesTable.vue'
-import { createTopTimesTable } from 'sctypes/lib/toptimes'
-import { ClassData } from 'sctypes/lib/classindex'
+import { createTopTimesTable } from 'sctypes/toptimes'
+import { ClassData } from 'sctypes/classindex'
 import { dmdy } from '@/util/filters'
 
 export default {

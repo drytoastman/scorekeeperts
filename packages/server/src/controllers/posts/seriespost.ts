@@ -2,13 +2,13 @@ import fs from 'fs'
 import path from 'path'
 import util from 'util'
 
-import { Car } from 'sctypes/lib/car'
+import { Car } from 'sctypes/car'
 import { ScorekeeperProtocol } from 'scdb'
 import * as square from '@/util/square'
 
 import { allSeriesCars, allSeriesDeleteDriverLinks, allSeriesMerge } from '../allseries'
 import { AuthData } from '../auth'
-import { SeriesIndex } from 'sctypes/lib/classindex'
+import { SeriesIndex } from 'sctypes/classindex'
 
 const readAsync = util.promisify(fs.readFile)
 

@@ -1,8 +1,8 @@
 import { isPast } from 'date-fns'
 import { EventEmitter } from 'events'
 
-import { DefaultMap, difference, intersect } from 'sctypes/lib/data'
-import { parseTimestamp } from 'sctypes/lib/util'
+import { DefaultMap, difference, intersect } from 'sctypes/data'
+import { parseTimestamp } from 'sctypes/util'
 import { db, ScorekeeperProtocol, ScorekeeperProtocolDB } from 'scdb'
 import { synclog } from '@/util/logging'
 

@@ -17,7 +17,7 @@
 </template>
 
 <script>
-import { EventValidator } from 'sctypes/lib/event'
+import { EventValidator } from 'sctypes/event'
 
 export default {
     name: 'OtherSettings',

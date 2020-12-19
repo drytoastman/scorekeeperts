@@ -2,13 +2,13 @@ import fs from 'fs'
 import util from 'util'
 
 import { ScorekeeperProtocol } from 'scdb'
-import { SQ_APPLICATION_ID, RECAPTCHA_SITEKEY } from 'scdb/lib/generalrepo'
+import { SQ_APPLICATION_ID, RECAPTCHA_SITEKEY } from 'scdb/generalrepo'
 import { AuthData } from '../auth'
 import { generateProTimer, loadResultData } from './livedata'
 import { LazyData } from '../lazydata'
-import { LiveSocketWatch, watchNonTimers } from 'sctypes/lib/results'
-import { EPOCH } from 'sctypes/lib/util'
-import { gridTables } from 'sctypes/lib/gridorder'
+import { LiveSocketWatch, watchNonTimers } from 'sctypes/results'
+import { EPOCH } from 'sctypes/util'
+import { gridTables } from 'sctypes/gridorder'
 
 const readdirAsync = util.promisify(fs.readdir)
 

@@ -2,8 +2,8 @@ import findIndex from 'lodash/findIndex'
 import Vue from 'vue'
 import { MutationTree } from 'vuex'
 import { Api2State, EMPTY } from './state'
-import { UUID } from 'sctypes/lib/util'
-import { Registration } from 'sctypes/lib/register'
+import { UUID } from 'sctypes/util'
+import { Registration } from 'sctypes/register'
 import ReconnectingWebSocket from 'reconnecting-websocket'
 
 export function clearApi2SeriesData(state: Api2State): void {

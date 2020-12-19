@@ -7,8 +7,8 @@
 <script>
 import { mapState } from 'vuex'
 import TopTimesTable from '../components/standard/TopTimesTable.vue'
-import { createTopTimesTable } from 'sctypes/lib/toptimes'
-import { ClassData } from 'sctypes/lib/classindex'
+import { createTopTimesTable } from 'sctypes/toptimes'
+import { ClassData } from 'sctypes/classindex'
 
 export default {
     name: 'TTDisplay',

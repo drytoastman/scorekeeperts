@@ -18,7 +18,7 @@
 <script>
 import { PrismEditor } from 'vue-prism-editor'
 import { prismlangs } from '@/util/prismwrapper'
-import { EventValidator } from 'sctypes/lib/event'
+import { EventValidator } from 'sctypes/event'
 import DateTimePicker from '@/components/DateTimePicker'
 
 export default {

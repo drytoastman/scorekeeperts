@@ -1,13 +1,13 @@
 import _ from 'lodash'
 
 import { ScorekeeperProtocol } from 'scdb'
-import { UUID } from 'sctypes/lib/util'
-import { Car } from 'sctypes/lib/car'
-import { SeriesEvent } from 'sctypes/lib/event'
-import { Entrant } from 'sctypes/lib/results'
+import { UUID } from 'sctypes/util'
+import { Car } from 'sctypes/car'
+import { SeriesEvent } from 'sctypes/event'
+import { Entrant } from 'sctypes/results'
 import { controllog } from '@/util/logging'
-import { Driver } from 'sctypes/lib/driver'
-import { SeriesClass, SeriesIndex } from 'sctypes/lib/classindex'
+import { Driver } from 'sctypes/driver'
+import { SeriesClass, SeriesIndex } from 'sctypes/classindex'
 
 export async function allSeriesSummary(db: ScorekeeperProtocol, driverid: string) {
     const ret:any[] = []

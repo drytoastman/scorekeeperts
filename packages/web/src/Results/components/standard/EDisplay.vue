@@ -9,7 +9,7 @@
 
 <script>
 import { t3 } from '@/util/filters'
-import { RANKS } from 'sctypes/lib/challenge'
+import { RANKS } from 'sctypes/challenge'
 
 export default {
     name: 'EDisplay',

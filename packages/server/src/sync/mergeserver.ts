@@ -2,10 +2,10 @@ import _ from 'lodash'
 import crypto from 'crypto'
 import { addSeconds } from 'date-fns'
 
-import { formatToTimestamp, parseTimestamp, UTCString, UUID } from 'sctypes/lib/util'
+import { formatToTimestamp, parseTimestamp, UTCString, UUID } from 'sctypes/util'
 import { ScorekeeperProtocol } from 'scdb'
-import { MergeServer } from 'scdb/lib/mergeserverrepo'
-import { SchemaError } from 'scdb/lib/generalrepo'
+import { MergeServer } from 'scdb/mergeserverrepo'
+import { SchemaError } from 'scdb/generalrepo'
 import { synclog } from '@/util/logging'
 import { HASH_COMMANDS } from './constants'
 
