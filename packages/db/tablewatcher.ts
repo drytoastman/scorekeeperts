@@ -4,7 +4,7 @@ import { IClient } from 'pg-promise/typescript/pg-subset'
 import { dblog } from '.'
 
 export class TableWatcher extends EventEmitter {
-    tables: Set<String>
+    tables: Set<string>
     connection: IConnected<any, IClient> | null = null
     started: boolean
     shuttingdown: boolean
@@ -13,7 +13,7 @@ export class TableWatcher extends EventEmitter {
         super()
         this.started = false
         this.shuttingdown = false
-        this.tables = new Set<String>()
+        this.tables = new Set<string>()
     }
 
     shutdown() {

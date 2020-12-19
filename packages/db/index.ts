@@ -34,7 +34,6 @@ export type ScorekeeperProtocolDB = IDatabase<DBExtensions> & DBExtensions;
 
 const initOptions: IInitOptions<DBExtensions> = {
     extend(obj: ScorekeeperProtocolDB) {
-        // eslint-disable-next-line @typescript-eslint/no-use-before-define
         obj.series = new SeriesRepository(obj, pgp)
         obj.clsidx = new ClassRepository(obj, pgp)
         obj.events = new EventsRepository(obj, pgp)
@@ -55,7 +54,7 @@ interface LogMethod {
     (message: any): any
 }
 // placeholder until use initializes with real logger
-export let dblog: {
+export let dblog: undefined | {
     error: LogMethod,
     warn: LogMethod,
     info: LogMethod,
@@ -73,7 +72,7 @@ try {
         DBPORT = Number.parseInt(process.env.DBPORT)
     }
 } catch (error) {
-    dblog!.error(error)
+    dblog?.error(error)
 }
 
 const cn = {

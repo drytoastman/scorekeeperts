@@ -1,11 +1,6 @@
 import _ from 'lodash'
 
-import { hasSessions } from 'sctypes'
-import { DecoratedRun, Entrant, EventResults, ExternalResult, RunStatus } from 'sctypes'
-import { PosPoints, SeriesInfo } from 'sctypes'
-import { SeriesSettings } from 'sctypes'
-import { UUID } from 'sctypes'
-import { getDList, make2D } from 'sctypes'
+import { hasSessions, DecoratedRun, Entrant, EventResults, ExternalResult, RunStatus, PosPoints, SeriesInfo, SeriesSettings, UUID, getDList, make2D } from 'sctypes'
 import { ScorekeeperProtocol, dblog } from '..'
 
 export async function updatedSeriesInfo(task: ScorekeeperProtocol): Promise<SeriesInfo> {

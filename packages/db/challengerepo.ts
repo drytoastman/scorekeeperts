@@ -1,8 +1,9 @@
-import { IDatabase, IMain } from 'pg-promise'
+import { ScorekeeperProtocolDB } from 'index'
+import { IMain } from 'pg-promise'
 import { Challenge } from 'sctypes'
 
 export class ChallengeRepository {
-    constructor(private db: IDatabase<any>, pgp: IMain) {
+    constructor(private db: ScorekeeperProtocolDB, private pgp: IMain) {
     }
 
     async challengeList(): Promise<Challenge[]> {

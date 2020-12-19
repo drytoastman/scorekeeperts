@@ -1,9 +1,6 @@
 import { IMain } from 'pg-promise'
 import { ScorekeeperProtocol } from '.'
-import { SeriesSettings, DefaultSettings, SettingsValidator } from 'sctypes'
-import { ActivityEntry, SeriesStatus } from 'sctypes'
-import { UUID, validateObj } from 'sctypes'
-import { getD } from 'sctypes'
+import { SeriesSettings, DefaultSettings, SettingsValidator,  ActivityEntry, SeriesStatus, UUID, validateObj, getD } from 'sctypes'
 
 export class SeriesRepository {
     constructor(private db: ScorekeeperProtocol, private pgp: IMain) {
@@ -95,7 +92,7 @@ export class SeriesRepository {
         await this.db.tx(async tx => {
             for (const key in settings) {
                 const val = this._obj2db(def, key, settings[key])
-                await this.db.none('INSERT INTO settings (name,val) VALUES ($1,$2) ON CONFLICT (name) DO UPDATE SET val=$3,modified=now()', [key, val, val])
+                await tx.none('INSERT INTO settings (name,val) VALUES ($1,$2) ON CONFLICT (name) DO UPDATE SET val=$3,modified=now()', [key, val, val])
             }
         })
         return this.seriesSettings()

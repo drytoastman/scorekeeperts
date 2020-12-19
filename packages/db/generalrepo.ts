@@ -1,8 +1,8 @@
-import { IDatabase, IMain } from 'pg-promise'
+import { IMain } from 'pg-promise'
 import KeyGrip from 'keygrip'
 import bcrypt from 'bcryptjs'
 import crypto from 'crypto'
-import { dblog } from '.'
+import { dblog, ScorekeeperProtocolDB } from '.'
 
 export const IS_MAIN_SERVER = 'IS_MAIN_SERVER'
 export const SQ_APPLICATION_ID = 'SQ_APPLICATION_ID'
@@ -33,7 +33,7 @@ export class SchemaError extends Error {
 }
 
 export class GeneralRepository {
-    constructor(private db: IDatabase<any>, pgp: IMain) {
+    constructor(private db: ScorekeeperProtocolDB, private pgp: IMain) {
     }
 
     async checkAdminPassword(password: string): Promise<boolean> {
@@ -99,7 +99,7 @@ export class GeneralRepository {
     }
 
     async rotateKeyGrip(): Promise<void> {
-        dblog.info('Rotating keygrip keys')
+        dblog?.info('Rotating keygrip keys')
         const row     = await this.db.one('SELECT value FROM localsettings WHERE key=$1', [KEYGRIP])
         const current = row.value.split(',')
         const size    = 5

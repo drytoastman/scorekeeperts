@@ -5,7 +5,7 @@ export interface Challenge {
     eventid:     UUID
     name:        string
     depth:       number
-    modified:    string
+     modified:    string
 }
 
 export interface ChallengeRound {

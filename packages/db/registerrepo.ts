@@ -1,13 +1,11 @@
-import { Registration, Payment, RegValidator } from 'sctypes'
-import { UUID, validateObj } from 'sctypes'
-import { IDatabase, IMain } from 'pg-promise'
+import { IMain } from 'pg-promise'
 import _ from 'lodash'
+import { Registration, Payment, RegValidator, UUID, validateObj, Car } from 'sctypes'
 import { verifyDriverRelationship } from './helper'
-import { TABLES } from '.'
-import { Car } from 'sctypes'
+import { ScorekeeperProtocolDB, TABLES } from '.'
 
 export class RegisterRepository {
-    constructor(private db: IDatabase<any>, private pgp: IMain) {
+    constructor(private db: ScorekeeperProtocolDB, private pgp: IMain) {
     }
 
     async getRegistrationbyDriverId(driverid: UUID): Promise<Registration[]> {
@@ -48,7 +46,7 @@ export class RegisterRepository {
         return ret
     }
 
-    async getRegistrationSummary(driverid: UUID): Promise<object[]> {
+    async getRegistrationSummary(driverid: UUID): Promise<Record<string, any>[]> {
         const events:any[] = []
         for (const row of await this.db.any(
             'SELECT r.*,c.*,e.eventid,e.name,e.date FROM registered AS r JOIN cars c ON r.carid=c.carid JOIN events e ON r.eventid=e.eventid ' +
@@ -80,7 +78,7 @@ export class RegisterRepository {
         singles.forEach(row => add(row.eventid, 'all', row.count))
         uniques.forEach(row => add(row.eventid, 'unique', row.count))
 
-        const ret: object[] = []
+        const ret: Record<string, any>[] = []
         for (const key in collect) {
             const v = collect[key]
             ret.push({ eventid: key, all: v.all, unique: v.unique })
@@ -108,7 +106,7 @@ export class RegisterRepository {
         return this.db.any('SELECT * FROM payments WHERE driverid=$1 and eventid=$2 and refunded=false', [driverid, eventid])
     }
 
-    async updateRegistration(type: string, reg: Registration[], eventid: UUID, verifyid: UUID|null = null): Promise<Object> {
+    async updateRegistration(type: string, reg: Registration[], eventid: UUID, verifyid: UUID|null = null): Promise<Record<string, any>> {
         if (verifyid) await verifyDriverRelationship(this.db, reg.map(r => r.carid), verifyid)
 
         function keys(v:any) {  return `${v.carid},${v.session}` }
@@ -139,10 +137,10 @@ export class RegisterRepository {
                     if (openspots.length === 0) {
                         throw new Error('Change aborted: would leave orphaned payment(s) as there were no registrations to move the payment to')
                     }
-                    openspots = _.orderBy(openspots, [o => o!.session === p.session ? 1 : 2])
+                    openspots = _.orderBy(openspots, [o => o?.session === p.session ? 1 : 2])
                     const o = openspots.shift() // can't be null if we tested for zero above
-                    p.newcarid = o!.carid
-                    p.newsession = o!.session
+                    p.newcarid = o?.carid
+                    p.newsession = o?.session
                 })
             }
 

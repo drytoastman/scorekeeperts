@@ -1,8 +1,5 @@
-import _ from 'lodash'
 import { IMain } from 'pg-promise'
-
-import { EventValidator, SeriesEvent } from 'sctypes'
-import { UUID, validateObj } from 'sctypes'
+import { EventValidator, SeriesEvent, UUID, validateObj } from 'sctypes'
 import { ScorekeeperProtocol, TABLES } from '.'
 
 export class EventsRepository {

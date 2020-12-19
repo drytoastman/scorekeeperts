@@ -1,6 +1,4 @@
-import { ChallengeResults, ChallengeRun } from 'sctypes'
-import { RunStatus } from 'sctypes'
-import { UUID } from 'sctypes'
+import { ChallengeResults, ChallengeRun, RunStatus, UUID } from 'sctypes'
 import { ScorekeeperProtocol, dblog } from '..'
 
 export async function updatedChallengeResults(task: ScorekeeperProtocol, challengeid: UUID): Promise<ChallengeResults> {

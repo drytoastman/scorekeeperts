@@ -1,9 +1,10 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 module.exports = {
+    /*
     chainWebpack: config => {
-        // const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
-        // config.plugin('analyze').use(BundleAnalyzerPlugin)
+        const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
+        config.plugin('analyze').use(BundleAnalyzerPlugin)
     },
+    */
     pages: {
         admin: {
             entry: './src/Admin/main.ts',

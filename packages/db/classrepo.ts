@@ -1,11 +1,10 @@
 import _ from 'lodash'
-import { IDatabase, IMain } from 'pg-promise'
-import { SeriesClass, ClassValidator, SeriesIndex, IndexValidator, ClassOrder, ClassData } from 'sctypes'
-import { validateObj } from 'sctypes'
-import { TABLES } from '.'
+import { IMain } from 'pg-promise'
+import { SeriesClass, ClassValidator, SeriesIndex, IndexValidator, ClassOrder, ClassData, validateObj } from 'sctypes'
+import { ScorekeeperProtocolDB, TABLES } from '.'
 
 export class ClassRepository {
-    constructor(private db: IDatabase<any>, private pgp: IMain) {
+    constructor(private db: ScorekeeperProtocolDB, private pgp: IMain) {
     }
 
     async getClassData(): Promise<ClassData> {

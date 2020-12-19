@@ -1,15 +1,11 @@
-import { IDatabase, IMain } from 'pg-promise'
-import _ from 'lodash'
-
+import { IMain } from 'pg-promise'
+import { PaymentAccount, PaymentItem, PaymentAccountSecret, UUID, validateObj, Payment, PaymentValidator, ItemMap } from 'sctypes'
 import { verifyDriverRelationship } from './helper'
-import { PaymentAccount, PaymentItem, PaymentAccountSecret } from 'sctypes'
-import { UUID, validateObj } from 'sctypes'
-import { Payment, PaymentValidator } from 'sctypes'
-import { ItemMap } from 'sctypes'
-import { TABLES } from '.'
+
+import { ScorekeeperProtocolDB, TABLES } from '.'
 
 export class PaymentsRepository {
-    constructor(private db: IDatabase<any>, private pgp: IMain) {
+    constructor(private db: ScorekeeperProtocolDB, private pgp: IMain) {
     }
 
     async getPaymentAccounts(): Promise<PaymentAccount[]> {

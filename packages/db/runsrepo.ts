@@ -1,9 +1,6 @@
-import { UTCString, UUID } from 'sctypes'
 import { IMain } from 'pg-promise'
-import _ from 'lodash'
+import { UTCString, UUID, Run } from 'sctypes'
 import { ScorekeeperProtocol, TABLES } from '.'
-import { Run } from 'sctypes'
-
 
 export class RunsRepository {
     constructor(private db: ScorekeeperProtocol, private pgp: IMain) {

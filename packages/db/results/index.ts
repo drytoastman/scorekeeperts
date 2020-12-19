@@ -9,15 +9,11 @@
         [UUID] - event or challenge result data matched to that id
 */
 
-import _ from 'lodash'
-import { UUID } from 'sctypes'
-import { SeriesInfo, SeriesStatus } from 'sctypes'
+import { UUID,  SeriesInfo, SeriesStatus, ChampResults, EventResults, ChallengeResults } from 'sctypes'
 import { updatedSeriesInfo, updatedEventResults } from './calc'
-import { ChampResults, EventResults, Run } from 'sctypes'
 import { updatedChallengeResults } from './calcchallenge'
 import { updatedChampResults } from './calcchamp'
 import { ScorekeeperProtocol, dblog } from '..'
-import { ChallengeResults } from 'sctypes'
 import { IMain } from 'pg-promise'
 
 export class ResultsRepository {

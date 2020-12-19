@@ -1,13 +1,13 @@
 import bcrypt from 'bcryptjs'
-import { IDatabase, IMain } from 'pg-promise'
+import { IMain } from 'pg-promise'
 import { v1 as uuidv1 } from 'uuid'
 
 import { UUID, validateObj } from 'sctypes/util'
 import { Driver, DriverValidator } from 'sctypes/driver'
-import { TABLES } from '.'
+import { ScorekeeperProtocolDB, TABLES } from '.'
 
 export class DriverRepository {
-    constructor(private db: IDatabase<any>, private pgp: IMain) {
+    constructor(private db: ScorekeeperProtocolDB, private pgp: IMain) {
         this.db = db
     }
 

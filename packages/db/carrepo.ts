@@ -1,12 +1,11 @@
-import _ from 'lodash'
-import { IDatabase, IMain } from 'pg-promise'
+import { IMain } from 'pg-promise'
 import { v1 as uuidv1 } from 'uuid'
 import { verifyDriverRelationship } from './helper'
 import { Car, CarValidator, UUID, validateObj } from 'sctypes'
-import { TABLES } from '.'
+import { ScorekeeperProtocolDB, TABLES } from '.'
 
 export class CarRepository {
-    constructor(private db: IDatabase<any>, private pgp: IMain) {
+    constructor(private db: ScorekeeperProtocolDB, private pgp: IMain) {
     }
 
     async getCarsbyDriverId(driverid: UUID): Promise<Car[]> {

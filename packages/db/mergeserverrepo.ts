@@ -1,6 +1,6 @@
 import { UTCString, UUID } from 'sctypes'
-import { IDatabase, IMain, ColumnSet } from 'pg-promise'
-import _ from 'lodash'
+import { IMain, ColumnSet } from 'pg-promise'
+import { ScorekeeperProtocolDB } from 'index'
 
 let mergecols: ColumnSet|undefined
 
@@ -21,7 +21,7 @@ export interface MergeServer {
 const LOCALID = '00000000-0000-0000-0000-000000000000'
 
 export class MergeServerRepository {
-    constructor(private db: IDatabase<any>, private pgp: IMain) {
+    constructor(private db: ScorekeeperProtocolDB, private pgp: IMain) {
     }
 
     async getActive(): Promise<MergeServer[]> {

@@ -18,7 +18,7 @@ export const EPOCH = '1970-01-01T00:00:00Z'
 
 export function parseDate(date: DateString): Date {
     const p = date.split('-')
-    return new Date(parseInt(p[0]), parseInt(p[1])-1, parseInt(p[2]))
+    return new Date(parseInt(p[0]), parseInt(p[1]) - 1, parseInt(p[2]))
 }
 export function parseTimestamp(timestamp: UTCString): Date { if (timestamp.slice(-1) !== 'Z') { timestamp += 'Z' } return new Date(timestamp) }
 export function formatToTimestamp(val: Date): string       { return val.toISOString() }
