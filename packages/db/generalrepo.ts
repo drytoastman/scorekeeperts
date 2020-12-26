@@ -99,7 +99,6 @@ export class GeneralRepository {
     }
 
     async rotateKeyGrip(): Promise<void> {
-        dblog?.info('Rotating keygrip keys')
         const row     = await this.db.one('SELECT value FROM localsettings WHERE key=$1', [KEYGRIP])
         const current = row.value.split(',')
         const size    = 5

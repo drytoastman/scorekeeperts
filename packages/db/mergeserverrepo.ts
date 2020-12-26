@@ -28,6 +28,10 @@ export class MergeServerRepository {
         return this.db.any("SELECT * FROM mergeservers WHERE hoststate IN ('A', '1') and serverid!=$1", [LOCALID])
     }
 
+    async getInActive(): Promise<MergeServer[]> {
+        return this.db.any("SELECT * FROM mergeservers WHERE hoststate NOT IN ('A', '1') and serverid!=$1", [LOCALID])
+    }
+
     async getQuickRuns(): Promise<MergeServer[]> {
         return this.db.any("SELECT * FROM mergeservers WHERE hoststate IN ('A') AND quickruns IS NOT NULL and serverid!=$1", [LOCALID])
     }

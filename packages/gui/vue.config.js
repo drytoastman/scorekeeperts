@@ -5,16 +5,30 @@ module.exports = {
     chainWebpack: config => {
         // const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
         // config.plugin('analyze').use(BundleAnalyzerPlugin)
-        //target: 'node14.15',
-        config.plugin('ignore').use(webpack.IgnorePlugin, [{ resourceRegExp: /^(pg-native|dns)$/ }])
+        config.plugin('ignore').use(webpack.IgnorePlugin, [{ resourceRegExp: /^(pg-native)$/ }])
+        config.target = 'node14.15'
     },
     pluginOptions: {
         electronBuilder: {
+            externals: ['serialport'],
             preload: 'src/preload.ts',
             nodeModulesPath: ['../../node_modules', './node_modules'],
             chainWebpackMainProcess: (config) => {
+                // have to set separately for main packaging
                 config.plugin('ignore').use(webpack.IgnorePlugin, [{ resourceRegExp: /^(pg-native)$/ }])
             }
+        }
+    },
+    pages: {
+        sync: {
+            entry: './src/Monitor/main.ts',
+            template: 'public/index.html',
+            title: 'Scorekeeper Status'
+        },
+        sync2: {
+            entry: './src/Monitor/main.ts',
+            template: 'public/index.html',
+            title: 'Scorekeeper Status 2'
         }
     },
     css: {

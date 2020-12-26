@@ -3,15 +3,11 @@ volumes:
     database: { external: { name: "latest_database" }}
     certs: { external: { name: "certs" }}
 
-networks:
-    net1:
-
 # Just need DB for dev, rest is run on dev machine
 services:
     db:
         image: drytoastman/scdb:${VERSION:-latest}
         container_name: db
-        networks: { net1: {}}
         ports:
             - '127.0.0.1:6432:6432'
             - '127.0.0.1:6666:6666'
