@@ -1,5 +1,4 @@
 import axios from 'axios'
-import { base64encode } from 'nodejs-base64'
 import { v1 as uuidv1 } from 'uuid'
 import { ScorekeeperProtocol } from 'scdb'
 import { paymentslog } from './logging'
@@ -24,8 +23,7 @@ function paymentsUrl(mode: string, txid: string) {
 
 
 async function paypalToken(account: PaymentAccount, secret: PaymentAccountSecret) {
-
-    const basicAuth = base64encode(`${account.accountid}:${secret.secret}`)
+    const basicAuth = Buffer.from(`${account.accountid}:${secret.secret}`, 'utf8').toString('base64')
     const auth = await axios.post(oauthUrl(account.attr.mode), 'grant_type=client_credentials', {
         headers: {
             Authorization: `Basic ${basicAuth}`

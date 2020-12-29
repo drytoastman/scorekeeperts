@@ -33,7 +33,6 @@
     "mailparser": "^3.0.1",
     "morgan": "^1.10.0",
     "node-cache": "^5.1.2",
-    "nodejs-base64": "^1.0.3",
     "nodemailer": "^6.4.16",
     "nunjucks": "^3.2.1",
     "promise-retry": "^2.0.1",
