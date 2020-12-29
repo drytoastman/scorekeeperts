@@ -71,12 +71,15 @@ websockets.on('connection', async function connection(ws: SessionWebSocket, req:
 })
 
 async function processLiveRequest(ws: SessionWebSocket, data: any) {
-    if (await db.series.getStatus(data.series) !== SeriesStatus.ACTIVE) {
-        return ws.send(JSON.stringify({ errors: ['not an active series'] }))
-    }
-    ws.watch   = data.watch
-    ws.series  = data.series
-    ws.eventid = data.eventid
+    db.task(async task => {
+        task.series.setSeries(data.series)
+        if (await task.series.getStatus(data.series) !== SeriesStatus.ACTIVE) {
+            return ws.send(JSON.stringify({ errors: ['not an active series'] }))
+        }
+        ws.watch   = data.watch
+        ws.series  = data.series
+        ws.eventid = await task.events.getEventidForSlug(data.eventid)
+    })
 }
 
 tableWatcher.on('timertimes', (series: string, type: string, row: any) => {

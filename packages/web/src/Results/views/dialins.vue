@@ -47,7 +47,7 @@ import { mapGetters, mapState } from 'vuex'
 export default {
     name: 'Dialins',
     props: {
-        eventid: String
+        // eventslug: String
     },
     data() {
         return {

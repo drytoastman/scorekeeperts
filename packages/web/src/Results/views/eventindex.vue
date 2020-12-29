@@ -46,7 +46,7 @@
                 <router-link :to="{name: 'grid'}">Grid</router-link>
             </template>
             <router-link :to="{name: 'dialins'}">Dialins</router-link>
-            <router-link v-for="c in challenges" :key="c.challengeid" :to="{name: 'bracket', params: { challengeid: c.challengeid }}">{{c.name}}</router-link>
+            <router-link v-for="c in challenges" :key="c.challengeid" :to="{name: 'bracket', params: { chalslug: uuidSlug(c.challengeid) }}">{{c.name}}</router-link>
         </div>
 
         <div class='classwrap'>
@@ -67,20 +67,23 @@
 import { mapGetters, mapState } from 'vuex'
 import { SeriesStatus } from 'sctypes/series'
 import { hasSessions } from 'sctypes/event'
+import { uuidSlug } from 'sctypes/util'
 
 export default {
     name: 'EventIndex',
     props: {
-        eventid: String
+        eventslug: String
+    },
+    data() {
+        return {
+            uuidSlug
+        }
     },
     computed: {
         ...mapState(['seriesinfo', 'ismainserver']),
         ...mapGetters(['resultsClasses']),
-        event() {
-            if (!this.seriesinfo.events) return {}
-            return this.seriesinfo.events.filter(e => e.eventid === this.eventid)[0]
-        },
-        challenges() { return this.seriesinfo.challenges.filter(c => c.eventid === this.eventid) },
+        event()      { return this.$store.getters.eventInfo(this.eventslug) },
+        challenges() { return this.seriesinfo.challenges.filter(c => c.eventid.startsWith(this.eventslug)) },
         hassession() { return this.event ? hasSessions(this.event) : false },
         active() { return this.seriesinfo.status === SeriesStatus.ACTIVE },
         groups() { return [1, 2, 3, 4] }

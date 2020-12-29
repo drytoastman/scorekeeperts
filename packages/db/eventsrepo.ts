@@ -20,6 +20,15 @@ export class EventsRepository {
         })
     }
 
+    async getEventidForSlug(eventslug: string): Promise<UUID> {
+        for (const row of await this.db.any('SELECT eventid FROM events')) {
+            if (row.eventid.startsWith(eventslug)) {
+                return row.eventid
+            }
+        }
+        throw new Error(`Deslug: cannot match ${eventslug} with eventids`)
+    }
+
     async updateEvents(type: string, events: SeriesEvent[]): Promise<SeriesEvent[]> {
         if (type !== 'delete') {
             events.forEach(e => validateObj(e, EventValidator))

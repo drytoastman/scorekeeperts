@@ -27,6 +27,7 @@ import SnackBar from '@/components/SnackBar.vue'
 import ResultsMenu from './components/ResultsMenu.vue'
 import cone from '@/../public/images/cone.png'
 import { seriesYear } from '@/store/results'
+import { uuidSlug } from 'sctypes/util'
 
 export default {
     name: 'Results',
@@ -86,7 +87,7 @@ export default {
                         this.push('champ')
                     } else {
                         this.updateEventResults()
-                        this.push('eventindex', { eventid: this.event.eventid })
+                        this.push('eventindex', { eventslug: uuidSlug(this.event.eventid) })
                     }
                 }
             }
@@ -113,13 +114,18 @@ export default {
             }
             if (this.$route.name === 'champ') {
                 this.event = this.champEntry
+            } else {
+                const info = this.$store.getters.eventInfo(this.$route.params.eventslug)
+                if (info.eventid) {
+                    this.event = info
+                }
             }
         },
         eventlist(nv) {
-            if (nv.length && !this.event && (this.$route.params.eventid || this.$route.params.challengeid)) {
-                const eid = this.$route.params.challengeid ? this.challengeInfo(this.$route.params.challengeid).eventid : this.$route.params.eventid
+            if (nv.length && !this.event && (this.$route.params.eventslug || this.$route.params.challengeid)) {
+                const eid = this.$route.params.challengeid ? this.challengeInfo(this.$route.params.challengeid).eventid : this.$route.params.eventslug
                 if (eid) {
-                    const f = nv.filter(e => e.eventid === eid)
+                    const f = nv.filter(e => e.eventid && e.eventid.startsWith(eid))
                     if (f.length) {
                         this.event = f[0]
                         this.updateEventResults()

@@ -45,7 +45,7 @@ export default {
     props: {
         codes:   Array,
         groups:  Array,
-        eventid: String
+        eventslug: String
     },
     computed: {
         ...mapState(['seriesinfo', 'eventresults']),
@@ -59,7 +59,7 @@ export default {
             return this.seriesinfo.settings || {}
         },
         event() {
-            return this.eventInfo(this.eventid)
+            return this.eventInfo(this.eventslug)
         },
         entrantcount() {
             return Object.values(this.eventresults).map(clist => clist.length).reduce((acc, cur) => acc + cur, 0)

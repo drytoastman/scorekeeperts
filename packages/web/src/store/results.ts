@@ -5,7 +5,6 @@ import { AUTHTYPE_NONE } from 'sctypes/auth'
 import { DefaultMap } from 'sctypes/data'
 import { SeriesEvent } from 'sctypes/event'
 import { LiveSocketWatch } from 'sctypes/results'
-import { UUID } from 'sctypes/util'
 import ReconnectingWebSocket from 'reconnecting-websocket'
 import { ActionContext, ActionTree, GetterTree, MutationTree } from 'vuex'
 import { API2, Api2State } from './state'
@@ -15,7 +14,6 @@ import { Challenge } from 'sctypes/challenge'
 export const resultsMutations: MutationTree<Api2State> = {
 
     setWebSocket(state: Api2State, ws: ReconnectingWebSocket) { state.websocket = ws },
-    setEvent(state: Api2State, eventid: UUID)          { state.live.eventid = eventid },
     setWatch(state: Api2State, watch: LiveSocketWatch) { state.live.watch = watch },
 
     setGetClass(state: Api2State, classcode: string) {
@@ -23,8 +21,15 @@ export const resultsMutations: MutationTree<Api2State> = {
         state.live.getclass = classcode
     },
 
-    setSeriesEvent(state: Api2State, param: any) {
-        state.live.eventid = param.eventid
+    setEventSlug(state: Api2State, eventslug: string) {
+        state.live.eventslug = eventslug
+        state.live.eventid   = eventslug
+        if (state.seriesinfo.events) {
+            const match = state.seriesinfo.events.filter((e: SeriesEvent) => e.eventid.startsWith(eventslug))
+            if (match.length > 0) {
+                state.live.eventid = match[0].eventid
+            }
+        }
     },
 
     processLiveData(state: Api2State, data: any) {
@@ -84,8 +89,8 @@ export const resultsMutations: MutationTree<Api2State> = {
 export const resultsActions: ActionTree<Api2State, any> = {
 
     newRouteParam(context: ActionContext<Api2State, any>, params: any): void {
-        if ((context.state.currentSeries !== params.series) || (context.state.live.eventid !== params.eventid)) {
-            context.commit('setSeriesEvent', params)
+        if ((context.state.currentSeries !== params.series) || (context.state.live.eventslug !== params.eventslug)) {
+            context.commit('setEventSlug', params.eventslug)
         }
     },
 
@@ -185,16 +190,16 @@ export const resultsGetters: GetterTree<Api2State, Api2State> = {
         return years
     },
 
-    eventInfo: (state) => (eventid: UUID) => {
+    eventInfo: (state) => (eventslug: string) => {
         if (!state.seriesinfo.events) return {}
-        const e = state.seriesinfo.events.filter((e: SeriesEvent) => e.eventid === eventid)
+        const e = state.seriesinfo.events.filter((e: SeriesEvent) => e.eventid.startsWith(eventslug))
         if (e.length) return e[0]
         return {}
     },
 
-    challengeInfo: (state) => (challengeid: UUID) => {
+    challengeInfo: (state) => (challengeslug: string) => {
         if (!state.seriesinfo.challenges) return {}
-        const e = state.seriesinfo.challenges.filter((c: Challenge) => c.challengeid === challengeid)
+        const e = state.seriesinfo.challenges.filter((c: Challenge) => c.challengeid.startsWith(challengeslug))
         if (e.length) return e[0]
         return {}
     },

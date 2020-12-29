@@ -44,6 +44,32 @@ export class ResultsRepository {
     }
 
 
+    async getEventidForSlug(eventslug: string): Promise<UUID> {
+        if (eventslug.length < 36) { // slug only, need to find match
+            const info = await this.getSeriesInfo()
+            for (const e of info.events) {
+                if (e.eventid.startsWith(eventslug)) {
+                    return e.eventid
+                }
+            }
+            throw new Error(`ArchiveDeslug: cannot match ${eventslug} with eventids`)
+        }
+        return eventslug
+    }
+
+    async getChallengeIdForSlug(chalslug: string): Promise<UUID> {
+        if (chalslug.length < 36) { // slug only, need to find match
+            const info = await this.getSeriesInfo()
+            for (const c of info.challenges) {
+                if (c.challengeid.startsWith(chalslug)) {
+                    return c.challengeid
+                }
+            }
+            throw new Error(`ArchiveDeslug: cannot match ${chalslug} with eventids`)
+        }
+        return chalslug
+    }
+
     async getEventResults(eventid: UUID): Promise<EventResults> {
         if (await this.needEventUpdate(eventid)) {
             await this.insertResults(eventid, updatedEventResults(this.db, eventid))

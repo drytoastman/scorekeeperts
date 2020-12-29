@@ -17,6 +17,7 @@ export function t3(v: number): string {
 }
 
 export function dmdy(v: DateString): string {
+    if (!v) return ''
     return parseDate(v).toDateString()
 }
 

@@ -88,6 +88,7 @@ export class Api2State {
     champresults: any = {}
     live = {
         eventid: '',
+        eventslug: '',
         getclass: '',
         watch: undefined as LiveSocketWatch|undefined,
 

@@ -66,12 +66,15 @@ export async function unauthgetone(task: ScorekeeperProtocol, auth: AuthData, pa
             case 'seriesinfo':      ret.seriesinfo      = await task.results.getSeriesInfo();         break
             case 'champresults':    ret.champresults    = await task.results.getChampResults();       break
             case 'eventresults':
+                param.eventid    = await task.results.getEventidForSlug(param.eventid)
                 ret.eventresults = Object.assign(await task.results.getEventResults(param.eventid), { _eventid: param.eventid })
                 break
             case 'challengeresults':
+                param.challengeid    = await task.results.getChallengeIdForSlug(param.challengeid)
                 ret.challengeresults = await task.results.getChallengeResults(param.challengeid)
                 break
             case 'gridtables':
+                param.eventid  = await task.events.getEventidForSlug(param.eventid)
                 ret.gridtables = gridTables(
                                     (await task.clsidx.classOrder()).filter(c => c.eventid === param.eventid),
                                     (await task.clsidx.classList()).map(c => c.classcode),
@@ -81,6 +84,7 @@ export async function unauthgetone(task: ScorekeeperProtocol, auth: AuthData, pa
                 break
 
             case 'live':
+                param.eventid = await task.events.getEventidForSlug(param.eventid)
                 watch = JSON.parse(param.watch)
                 if (watch.protimer) Object.assign(ret, await generateProTimer())
                 if (watch.timer)    ret.timer = await task.series.getLastTimer()

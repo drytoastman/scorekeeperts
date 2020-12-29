@@ -56,7 +56,7 @@ export default {
         SingleRound
     },
     props: {
-        challengeid: String
+        chalslug: String
     },
     data() {
         return {
@@ -68,7 +68,7 @@ export default {
     },
     computed: {
         ...mapGetters(['challengeInfo']),
-        challenge()  { return this.challengeInfo(this.challengeid) },
+        challenge()  { return this.challengeInfo(this.chalslug) },
         roundlist() {
             const ret = []
             const baserounds = 2 ** (this.challenge.depth - 1)
@@ -93,7 +93,7 @@ export default {
     },
     methods: {
         getdata() {
-            this.$store.dispatch('getdata', { items: 'challengeresults', challengeid: this.challengeid }).then(res => {
+            this.$store.dispatch('getdata', { items: 'challengeresults', challengeid: this.chalslug }).then(res => {
                 if (res) {
                     this.results = res.challengeresults
                 }
@@ -105,7 +105,7 @@ export default {
         }
     },
     watch: {
-        challengeid(nv) { if (nv) this.getdata() }
+        chalslug(nv) { if (nv) this.getdata() }
     },
     mounted() {
         window.openround = e => { // hacky way to let the JavaFX GUI still modify behavior in a webpack environmnt

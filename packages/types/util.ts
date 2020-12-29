@@ -10,6 +10,14 @@ import isAlphanumeric from 'validator/lib/isAlphanumeric'
 import isLowercase from 'validator/lib/isLowercase'
 
 export type UUID = string;
+/*
+export class UUID extends String {
+    slug() {
+        return this.split('-')[0]
+    }
+}
+*/
+
 export type DateString = string;
 export type UTCString = string;
 export type VuetifyValidationRule  = (value: any) => string | boolean
@@ -22,6 +30,7 @@ export function parseDate(date: DateString): Date {
 }
 export function parseTimestamp(timestamp: UTCString): Date { if (timestamp.slice(-1) !== 'Z') { timestamp += 'Z' } return new Date(timestamp) }
 export function formatToTimestamp(val: Date): string       { return val.toISOString() }
+export function uuidSlug(uuid: UUID):         string       { return uuid.split('-')[0] }
 
 export interface DataValidationRules {
     [key: string]: VuetifyValidationRules;

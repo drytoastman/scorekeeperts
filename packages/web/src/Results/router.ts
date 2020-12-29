@@ -1,10 +1,10 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 
-const Announcer      = () => import(/* webpackChunkName: "resultsviews" */ './views/announcer.vue')
-const ProPanel       = () => import(/* webpackChunkName: "resultsviews" */ './views/propanel.vue')
-const User           = () => import(/* webpackChunkName: "resultsviews" */ './views/user.vue')
-const DataEntry      = () => import(/* webpackChunkName: "resultsviews" */ './views/dataentry.vue')
+const Announcer      = () => import(/* webpackChunkName: "resultsviews1" */ './views/announcer.vue')
+const ProPanel       = () => import(/* webpackChunkName: "resultsviews1" */ './views/propanel.vue')
+const User           = () => import(/* webpackChunkName: "resultsviews1" */ './views/user.vue')
+const DataEntry      = () => import(/* webpackChunkName: "resultsviews1" */ './views/dataentry.vue')
 const ResultsDisplay = () => import(/* webpackChunkName: "resultsviews" */ './views/resultsdisplay.vue')
 const ChampDisplay   = () => import(/* webpackChunkName: "resultsviews" */ './views/champdisplay.vue')
 const TTDisplay      = () => import(/* webpackChunkName: "resultsviews" */ './views/ttdisplay.vue')
@@ -23,33 +23,33 @@ function queryProps(route) {
     }
 
     return {
-        type:    route.name,
-        eventid: route.params.eventid,
-        codes:   tolist(route.query.codes),
-        groups:  tolist(route.query.groups),
-        counted: route.query.counted
+        type:      route.name,
+        eventslug: route.params.eventslug,
+        codes:     tolist(route.query.codes),
+        groups:    tolist(route.query.groups),
+        counted:   route.query.counted
     }
 }
 
 const routes = [
-    { path: '/',                         name: 'root',       component: Placeholder },
-    { path: '/:series',                  name: 'series',     component: Series },
-    { path: '/:series/champ',            name: 'champ',      component: ChampDisplay },
-    { path: '/:series/:eventid',         name: 'eventindex', component: EventIndex,     props: true },
-    { path: '/:series/:eventid/byclass', name: 'byclass',    component: ResultsDisplay, props: queryProps },
-    { path: '/:series/:eventid/bygroup', name: 'bygroup',    component: ResultsDisplay, props: queryProps },
-    { path: '/:series/:eventid/post',    name: 'post',       component: ResultsDisplay, props: queryProps },
-    { path: '/:series/:eventid/tt',      name: 'toptimes',   component: TTDisplay,      props: queryProps },
-    { path: '/:series/:eventid/audit',   name: 'audit',      component: Placeholder },
-    { path: '/:series/:eventid/grid',    name: 'grid',       component: Grid,           props: true },
-    { path: '/:series/:eventid/dialins', name: 'dialins',    component: Dialins,        props: true },
-    { path: '/:series/:challengeid/bracket', name: 'bracket', component: Challenge,     props: true },
+    { path: '/',                             name: 'root',       component: Placeholder },
+    { path: '/:series',                      name: 'series',     component: Series },
+    { path: '/:series/champ',                name: 'champ',      component: ChampDisplay },
+    { path: '/:series/:eventslug',           name: 'eventindex', component: EventIndex,     props: true },
+    { path: '/:series/:eventslug/byclass',   name: 'byclass',    component: ResultsDisplay, props: queryProps },
+    { path: '/:series/:eventslug/bygroup',   name: 'bygroup',    component: ResultsDisplay, props: queryProps },
+    { path: '/:series/:eventslug/post',      name: 'post',       component: ResultsDisplay, props: queryProps },
+    { path: '/:series/:eventslug/tt',        name: 'toptimes',   component: TTDisplay,      props: queryProps },
+    { path: '/:series/:eventslug/audit',     name: 'audit',      component: Placeholder },
+    { path: '/:series/:eventslug/grid',      name: 'grid',       component: Grid,           props: true },
+    { path: '/:series/:eventslug/dialins',   name: 'dialins',    component: Dialins,        props: true },
+    { path: '/:series/:eventslug/bracket/:chalslug', name: 'bracket', component: Challenge, props: true },
 
     // live paths
-    { path: '/:series/:eventid/announcer', name: 'announcer', component: Announcer },
-    { path: '/:series/:eventid/propanel',  name: 'propanel',  component: ProPanel },
-    { path: '/:series/:eventid/dataentry', name: 'dataentry', component: DataEntry },
-    { path: '/:series/:eventid/user',      name: 'user',      component: User }
+    { path: '/:series/:eventslug/announcer', name: 'announcer',  component: Announcer },
+    { path: '/:series/:eventslug/propanel',  name: 'propanel',   component: ProPanel },
+    { path: '/:series/:eventslug/dataentry', name: 'dataentry',  component: DataEntry },
+    { path: '/:series/:eventslug/user',      name: 'user',       component: User }
 ]
 
 declare const VUE_BASE: string

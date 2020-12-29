@@ -19,7 +19,7 @@ export default {
         GridDisplay
     },
     props: {
-        eventid: String
+        eventslug: String
     },
     data()  {
         return {
@@ -30,16 +30,14 @@ export default {
     },
     methods: {
         getdata() {
-            this.$store.dispatch('getdata', { items: 'gridtables', eventid: this.eventid }).then(res => {
+            const eventid = this.$store.getters.eventInfo(this.eventslug).eventid || this.eventslug
+            this.$store.dispatch('getdata', { items: 'gridtables', eventid: eventid }).then(res => {
                 if (res) this.bynumber = res.gridtables
             })
-            this.$store.dispatch('getdata', { items: 'gridtables', eventid: this.eventid, order: 'position' }).then(res => {
+            this.$store.dispatch('getdata', { items: 'gridtables', eventid: eventid, order: 'position' }).then(res => {
                 if (res) this.byposition = res.gridtables
             })
         }
-    },
-    watch: {
-        eventid(nv) { if (nv) this.getdata() }
     },
     mounted() {
         this.getdata()
