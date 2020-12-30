@@ -2,7 +2,7 @@
     <div class='inset'>
         <div v-if="series">
             <h2>{{series}}</h2>
-            <div v-for="e in Object.values(this.$store.state.events)" :key="e.eventid">
+            <div v-for="e in this.$store.getters.orderedEvents" :key="e.eventid">
                 <span class='date'>{{e.date|dmdy}}</span> {{e.name}}
             </div>
         </div>

@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="display" :width="340">
+  <v-dialog v-model="display" persistent :width="340">
     <template v-slot:activator="{ on }">
       <v-text-field :disabled="disabled" :label="label" :value="displayedDateTime" :style="fieldstyle" :class="fieldclass" :rules="rules" v-on="on" readonly></v-text-field>
     </template>
@@ -18,7 +18,7 @@
             <v-date-picker v-model="date" @input="showTimePicker" full-width></v-date-picker>
           </v-tab-item>
           <v-tab-item key="timer">
-            <v-time-picker ref="timer" v-model="time" full-width></v-time-picker>
+            <v-time-picker ref="timer" v-model="time" full-width :allowed-minutes="allowedMin"></v-time-picker>
           </v-tab-item>
         </v-tabs>
 
@@ -29,7 +29,7 @@
 
         <!-- just time -->
         <div v-else-if="timeOnly">
-            <v-time-picker ref="timer" v-model="time" full-width></v-time-picker>
+            <v-time-picker ref="timer" v-model="time" full-width :allowed-minutes="allowedMin"></v-time-picker>
         </div>
 
       </v-card-text>
@@ -98,11 +98,18 @@ export default {
         }
     },
     methods: {
+        allowedMin(v) {
+            return v % 5 === 0
+        },
         init() {
-            if (!this.datetimestr) { return }
-            const d = (this.datetimestr.length === 10) ? parseDate(this.datetimestr) : parseTimestamp(this.datetimestr)
-            this.date = format(d, VDATE)
-            this.time = format(d, VTIME)
+            if (!this.datetimestr) {
+                this.date = ''
+                this.time = ''
+            } else {
+                const d = (this.datetimestr.length === 10) ? parseDate(this.datetimestr) : parseTimestamp(this.datetimestr)
+                this.date = format(d, VDATE)
+                this.time = format(d, VTIME)
+            }
         },
         okHandler() {
             this.resetPicker()
