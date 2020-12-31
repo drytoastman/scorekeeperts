@@ -115,6 +115,7 @@ export default {
 <style lang="scss" scoped>
 .classlinks {
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
     column-gap: 10px;
     a {
