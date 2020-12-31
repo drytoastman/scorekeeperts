@@ -98,7 +98,7 @@ export default {
                 const rea = run.reaction
                 const six = run.sixty
                 if (rea || six) {
-                    data.push(`<span class='reaction'>${rea}/${six}</span>`)
+                    data.push(`<span class='reaction'>${t3(rea)}/${t3(six)}</span>`)
                 } else {
                     data.push("<span class='reaction'>&zwnj;</span>")
                 }

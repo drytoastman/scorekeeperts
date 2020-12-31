@@ -161,8 +161,17 @@ table.results {
             text-align: center;
         }
 
-        &.bestnet .net {
-            text-decoration: underline;
+        &.bestraw {
+            background: rgba(150, 0, 0, 0.1);
+        }
+
+        &.bestnet {
+            background: rgba(0, 0, 150, 0.1);
+            .net {
+                @media print {
+                    text-decoration: underline;
+                }
+            }
         }
 
         &.drop {
@@ -178,11 +187,12 @@ table.results {
             &.raw {
                 margin-top: 3px;
                 font-size: 90%;
-                color: #777;
+                opacity: 0.5;
             }
             &.reaction {
                 display: block;
                 font-size: 80%;
+                padding-bottom: 2px;
             }
         }
     }
