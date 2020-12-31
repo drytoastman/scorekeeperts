@@ -1,8 +1,8 @@
 <template>
     <BaseDialog :value="value" :persistent="false" :apiType="apiType" dataType="Class" width="440px" @input="$emit('input')" @update="update">
         <v-form ref="form">
-                <v-text-field v-model="classm.classcode" label="Code"></v-text-field>
-                <v-text-field v-model="classm.descrip"   label="Description"></v-text-field>
+                <v-text-field v-model="classm.classcode" label="Code"        :rules="vrules.classcode"></v-text-field>
+                <v-text-field v-model="classm.descrip"   label="Description" :rules="vrules.descrip"></v-text-field>
 
                 <div class='row4'>
                 <v-checkbox v-model="classm.eventtrophy" label="Event Trophy"></v-checkbox>
@@ -13,8 +13,8 @@
 
                 <div class='row3'>
                 <v-select     v-model="classm.indexcode" label="Class-Wide Index" :items="indexlist" item-text="indexcode" item-value="indexcode"></v-select>
-                <v-text-field v-model="classmultiplier" label="Additional Multiplier" :rules="vrules.classmultiplier"></v-text-field>
-                <v-text-field v-model="countedruns" label="Counted Runs" :rules="vrules.countedruns"></v-text-field>
+                <v-text-field v-model="classmultiplier"  label="Additional Multiplier" :rules="vrules.classmultiplier"></v-text-field>
+                <v-text-field v-model="countedruns"      label="Counted Runs"          :rules="vrules.countedruns"></v-text-field>
                 </div>
 
                 <v-text-field v-model="classm.caridxrestrict" label="Index Restrictions" :rules="vrules.caridxrestrict" :disabled="!classm.carindexed">
@@ -71,15 +71,17 @@ export default {
     },
     methods: {
         update() {
-            if (!this.classm.carindexed) {
-                this.classm.caridxrestrict = ''
+            if (this.$refs.form.validate()) {
+                if (!this.classm.carindexed) {
+                    this.classm.caridxrestrict = ''
+                }
+                this.$store.dispatch('setdata', {
+                    type: this.apiType,
+                    items: { classes: [this.classm] },
+                    busy: { key: 'busyClass', id: this.classm.classcode }
+                })
+                this.$emit('input')
             }
-            this.$store.dispatch('setdata', {
-                type: this.apiType,
-                items: { classes: [this.classm] },
-                busy: { key: 'busyClass', id: this.classm.classcode }
-            })
-            this.$emit('input')
         }
     },
     watch: {

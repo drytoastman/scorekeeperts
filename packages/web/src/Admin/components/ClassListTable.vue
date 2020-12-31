@@ -4,7 +4,7 @@
             <v-btn color=secondary @click.stop="newclass">Add Class</v-btn>
         </div>
 
-        <v-data-table :items="classlist" :headers="headers" item-key="classcode" disable-pagination hide-default-footer>
+        <v-data-table :items="classlist" :headers="headers" item-key="classcode" disable-pagination hide-default-footer dense>
 
             <template v-slot:[`item.eventtrophy`]="{ item }"><span v-if="item.eventtrophy">&checkmark;</span></template>
             <template v-slot:[`item.champtrophy`]="{ item }"><span v-if="item.champtrophy">&checkmark;</span></template>
@@ -81,8 +81,10 @@ export default {
                 secondruns: false,
                 classmultiplier: 1.0,
                 countedruns: 0,
+                classcode: '',
                 indexcode: '',
-                caridxrestrict: ''
+                caridxrestrict: '',
+                descrip: ''
             }
             this.dialogApiType = 'insert'
             this.classDialog = true
