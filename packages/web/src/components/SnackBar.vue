@@ -31,6 +31,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.v-snack:not(.v-snack--absolute) {
+    height: initial; // fix underlap with lower scrollbar
+}
 .snackinfo {
     color: lightgreen;
 }
