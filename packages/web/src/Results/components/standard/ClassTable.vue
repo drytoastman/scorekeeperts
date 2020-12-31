@@ -62,7 +62,7 @@ export default {
     },
     computed: {
         ...mapState(['eventresults', 'seriesinfo']),
-        ...mapGetters(['eventInfo', 'resultsEvent']),
+        ...mapGetters(['resultsEvent']),
 
         rowspan() { return this.event.courses > 1 ? this.event.courses : undefined },
         colspan() { return this.event.runs + (this.event.courses > 1 ? 5 : 4) },
@@ -87,11 +87,21 @@ export default {
             const data = []
             if (run.status === 'OK') {
                 data.push(`<span class='net'>${t3(run.net)} (${run.cones},${run.gates})</span>`)
-                if (showraw) {
-                    data.push(`<span class='raw'>[${t3(run.raw)}]</span>`)
-                }
+
             } else if (run.status !== 'PLC') {
                 data.push(`<span class='net'>${run.status}</span>`)
+            }
+            if (showraw && run.raw < 999.999) {
+                data.push(`<span class='raw'>[${t3(run.raw)}]</span>`)
+            }
+            if (this.event.ispro) {
+                const rea = run.reaction
+                const six = run.sixty
+                if (rea || six) {
+                    data.push(`<span class='reaction'>${rea}/${six}</span>`)
+                } else {
+                    data.push("<span class='reaction'>&zwnj;</span>")
+                }
             }
             return data.join('')
         },
