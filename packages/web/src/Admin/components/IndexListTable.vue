@@ -17,7 +17,7 @@
         </div>
 
 
-        <v-data-table :items="indexlist" :headers="headers" item-key="indexcode" disable-pagination hide-default-footer>
+        <v-data-table :items="indexlist" :headers="headers" item-key="indexcode" disable-pagination hide-default-footer dense>
             <template v-slot:[`item.actions`]="{ item }">
                 <div v-if="busyIndex[item.indexcode]" class='busy'>
                     busy
@@ -67,7 +67,11 @@ export default {
     },
     methods: {
         newindex() {
-            this.dialogData = { }
+            this.dialogData = {
+                indexcode: '',
+                descrip: '',
+                value: ''
+            }
             this.dialogApiType = 'insert'
             this.IndexDialog = true
         },

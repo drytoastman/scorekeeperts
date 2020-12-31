@@ -47,7 +47,7 @@ export async function rotateLogs() {
 }
 
 const singleline = format.printf(({ level, message, label, timestamp, stack }) => {
-    if (stack) {
+    if (process.env.NODE_ENV === 'development' && stack) { // stack is useless if a packed file
         return `${timestamp} [${label}/${level}]: ${message}\n${stack}`
     }
     return `${timestamp} [${label}/${level}]: ${message}`
@@ -60,11 +60,6 @@ const formats = [
     }),
     singleline
 ]
-
-if (process.env.NODE_ENV === 'development') {
-    // stack trace isn't useful on packed code
-    formats.push(format.errors({ stack: true }))
-}
 
 // primary logging
 for (const l of ['main', 'database', 'cron', 'control', 'payments', 'dns', 'sync']) {

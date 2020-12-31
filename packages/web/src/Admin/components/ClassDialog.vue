@@ -71,7 +71,7 @@ export default {
     },
     methods: {
         update() {
-            if (this.$refs.form.validate()) {
+            if (this.apiType === 'delete' || this.$refs.form.validate()) {
                 if (!this.classm.carindexed) {
                     this.classm.caridxrestrict = ''
                 }
@@ -88,6 +88,7 @@ export default {
         value: function(newv) {
             if (newv) {
                 this.classm = JSON.parse(JSON.stringify(this.classobj))
+                this.$refs.form?.resetValidation()
             }
         }
     }

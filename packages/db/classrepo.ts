@@ -22,16 +22,30 @@ export class ClassRepository {
     async updateClasses(type: string, classes: SeriesClass[]): Promise<SeriesClass[]> {
         classes.forEach(c => { validateObj(c, ClassValidator) })
 
-        // log trigger will modify float into string for JSON, can't rely on RETURNING *
-        if (type === 'insert') {
-            await this.db.any(this.pgp.helpers.insert(classes, TABLES.classlist))
-            return this.classes(classes.map(c => c.classcode))
+        try {
+            // log trigger will modify float into string for JSON, can't rely on RETURNING *
+            if (type === 'insert') {
+                await this.db.any(this.pgp.helpers.insert(classes, TABLES.classlist))
+                return this.classes(classes.map(c => c.classcode))
+            }
+            if (type === 'update') {
+                await this.db.any(this.pgp.helpers.update(classes, TABLES.classlist) + ' WHERE v.classcode = t.classcode')
+                return this.classes(classes.map(c => c.classcode))
+            }
+            if (type === 'delete') {
+                return await this.db.any('DELETE from classlist WHERE classcode in ($1:csv) RETURNING classcode', classes.map(c => c.classcode))
+            }
+        } catch (error) {
+            console.log(JSON.stringify(error))
+            if (error.constraint) {
+                switch (error.table) {
+                    case 'cars': throw Error('Class is still in use by a car')
+                    case 'classlist': throw Error('The classcode already exists')
+                }
+            }
+            throw error
         }
-        if (type === 'update') {
-            await this.db.any(this.pgp.helpers.update(classes, TABLES.classlist) + ' WHERE v.classcode = t.classcode')
-            return this.classes(classes.map(c => c.classcode))
-        }
-        if (type === 'delete') return this.db.any('DELETE from classlist WHERE classcode in ($1:csv) RETURNING classcode', classes.map(c => c.classcode))
+
         throw Error(`Unknown operation type ${JSON.stringify(type)}`)
     }
 
@@ -42,9 +56,20 @@ export class ClassRepository {
     async updateIndexes(type: string, indexes: SeriesIndex[]): Promise<SeriesIndex[]> {
         indexes.forEach(i => { validateObj(i, IndexValidator) })
 
-        if (type === 'insert') return this.db.any(this.pgp.helpers.insert(indexes, TABLES.indexlist) + ' RETURNING *')
-        if (type === 'update') return this.db.any(this.pgp.helpers.update(indexes, TABLES.indexlist) + ' WHERE v.indexcode = t.indexcode RETURNING *')
-        if (type === 'delete') return this.db.any('DELETE from indexlist WHERE indexcode in ($1:csv) RETURNING indexcode', indexes.map(i => i.indexcode))
+        try {
+            if (type === 'insert') return await this.db.any(this.pgp.helpers.insert(indexes, TABLES.indexlist) + ' RETURNING *')
+            if (type === 'update') return await this.db.any(this.pgp.helpers.update(indexes, TABLES.indexlist) + ' WHERE v.indexcode = t.indexcode RETURNING *')
+            if (type === 'delete') return await this.db.any('DELETE from indexlist WHERE indexcode in ($1:csv) RETURNING indexcode', indexes.map(i => i.indexcode))
+        } catch (error) {
+            if (error.constraint) {
+                switch (error.table) {
+                    case 'cars':      throw Error('Index is still in use by a car')
+                    case 'classlist': throw Error('Index is still in use by a class')
+                    case 'indexlist': throw Error('The indexcode already exists')
+                }
+            }
+            throw error
+        }
         throw Error(`Unknown operation type ${JSON.stringify(type)}`)
     }
 

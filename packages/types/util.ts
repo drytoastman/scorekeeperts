@@ -59,7 +59,7 @@ export const isInteger: VuetifyValidationRule  = v => {
 }
 
 export const isDecimal3: VuetifyValidationRule = v => {
-    return (v === undefined) || typeof v === 'number' || isDecimal(v, { decimal_digits: '0,3' }) || 'must be a decimal with max 3 places'
+    return (v === undefined) || (v === null) || typeof v === 'number' || isDecimal(v, { decimal_digits: '0,3' }) || 'must be a decimal with max 3 places'
 }
 
 export const isDollar: VuetifyValidationRule = v => {
