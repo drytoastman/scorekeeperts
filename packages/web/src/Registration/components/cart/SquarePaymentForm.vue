@@ -61,6 +61,7 @@ export default {
         createSquareForm() {
             return new SqPaymentForm({
                 applicationId: this.applicationid,
+                locationId: this.account.accountid,
                 inputClass: 'sq-input',
                 autoBuild: false,
                 inputStyles: [{
