@@ -40,7 +40,7 @@
     "read-last-lines": "^1.7.2",
     "scdb": "5.0.0",
     "sctypes": "5.0.0",
-    "square": "^7.0.0",
+    "square": "8.0",
     "utf-8-validate": "^5.0.3",
     "validator": "^13.5.1",
     "winston": "^3.3.3",

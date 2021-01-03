@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 import { differenceInDays } from 'date-fns'
-import { Client, Environment, CreateOrderResponse, ApiResponse, Money } from 'square'
+import { Client, Environment, CreateOrderResponse, ApiResponse, Money, CreatePaymentResponse } from 'square'
 import { v1 as uuidv1 } from 'uuid'
 
 import { PaymentAccount, PaymentAccountSecret } from 'sctypes/payments'
@@ -67,7 +67,7 @@ export async function squareOrder(conn: ScorekeeperProtocol, square: any, paymen
     try {
         orderresponse = await client.ordersApi.createOrder(body)
     } catch (error) {
-        paymentslog.error('square setup issues: ' + error.message)
+        paymentslog.error('square setup issues: ' + JSON.stringify(error))
         throw new Error('square setup issues, notify admin')
     }
 
@@ -84,7 +84,14 @@ export async function squareOrder(conn: ScorekeeperProtocol, square: any, paymen
         orderId: orderresponse.result.order?.id
     }
 
-    const paymentresponse = await client.paymentsApi.createPayment(sqpayment)
+
+    let paymentresponse: ApiResponse<CreatePaymentResponse>
+    try {
+        paymentresponse = await client.paymentsApi.createPayment(sqpayment)
+    } catch (error) {
+        paymentslog.error('square payment error: ' + JSON.stringify(error))
+        throw new Error('square payment error, notify admin')
+    }
 
     if (paymentresponse.result.errors) {
         paymentslog.error('Payment response errors: ' + orderresponse.result.errors)
