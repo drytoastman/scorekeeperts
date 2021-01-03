@@ -35,7 +35,7 @@ import DriverDialog from '../../components/DriverDialog'
 import ChangePasswordDialog from '../components/ChangePasswordDialog'
 import EmailGroups from '../components/EmailGroups'
 import EmailGroupsDialog from '../components/EmailGroupsDialog'
-import SummaryDisplay from '../components/SummaryDisplay'
+import SummaryDisplay from '../components/SummaryDisplay.vue'
 
 export default {
     name: 'Profile',

@@ -25,7 +25,7 @@ export default {
         },
         fontsize: {
             type: String,
-            default: '100%'
+            default: ''
         },
         session: {
             type: Boolean,
@@ -44,6 +44,7 @@ export default {
         line-height: 20px;
         text-align: left;
         white-space: nowrap;
+        overflow: hidden;
     }
     span {
         vertical-align: middle;

@@ -16,7 +16,7 @@
                         <div class='session'>Session: {{r.session}}</div>
                         <CarLabel :car="r" session></CarLabel>
                     </div>
-                    <CarLabel v-else :car="r" fontsize="110%"></CarLabel>
+                    <CarLabel v-else :car="r"></CarLabel>
                 </li>
             </ol>
         </div>
@@ -67,6 +67,7 @@ export default {
 }
 .series {
     font-style: italic;
+    font-size: 90%;
 }
 .title {
     display: flex;

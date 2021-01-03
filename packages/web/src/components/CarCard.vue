@@ -33,9 +33,15 @@ export default {
 <style scoped lang='scss'>
 .carcard {
     display: grid;
-    grid-template-rows: auto 3rem;
+    grid-template-rows: auto 4rem;
+    .carlabel {
+        font-size: 90%;
+    }
     .v-card__title {
         align-items: flex-start;
+    }
+    .v-card__actions {
+        padding: 1rem;
     }
 }
 .v-card--disabled > :not(.v-card__progress) {
@@ -44,5 +50,6 @@ export default {
 .inuse {
     margin-left: 1rem;
     color: #A33;
+    white-space: nowrap;
 }
 </style>

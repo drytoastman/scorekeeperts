@@ -69,8 +69,7 @@ export default {
         row-gap: 1rem;
         flex-wrap: wrap;
         .carcard {
-            flex: 1 0;
-            max-width: max(30rem, 50%);
+            flex: 1 0 20rem;
         }
     }
     .flexbutton {
@@ -86,11 +85,5 @@ export default {
         .flexbutton {
             width: 100%;
         }
-    }
-</style>
-
-<style>
-    .v-main__wrap {
-        xmargin: 1rem; /* don't collapse on small screens */
     }
 </style>
