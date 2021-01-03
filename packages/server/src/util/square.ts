@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 import { differenceInDays } from 'date-fns'
-import { Client, Environment, CreateOrderResponse, ApiResponse, Money, CreatePaymentResponse } from 'square'
+import { Client, Environment, CreateOrderResponse, ApiResponse, Money, CreatePaymentResponse, RefundPaymentResponse } from 'square'
 import { v1 as uuidv1 } from 'uuid'
 
 import { PaymentAccount, PaymentAccountSecret } from 'sctypes/payments'
@@ -18,6 +18,19 @@ function getAClient(mode: string, token?: string): Client {
         accessToken: token
     })
     return client
+}
+
+function squareError(prefix: string, error: any) {
+    let newerror = ''
+    if (error.result.errors) {
+        paymentslog.error(`${prefix}: ${JSON.stringify(error.result.errors)}`)
+        newerror = error.result.errors[0].detail
+    } else {
+        paymentslog.error(`${prefix}: ${JSON.stringify(error)}`)
+        newerror = error.toString()
+    }
+
+    return new Error(`${prefix}: ${newerror}`)
 }
 
 export async function squareOrder(conn: ScorekeeperProtocol, square: any, payments: Payment[], driverid: UUID): Promise<Payment[]> {
@@ -66,15 +79,11 @@ export async function squareOrder(conn: ScorekeeperProtocol, square: any, paymen
     let orderresponse: ApiResponse<CreateOrderResponse>
     try {
         orderresponse = await client.ordersApi.createOrder(body)
+        if (orderresponse.result.errors?.length) {
+            throw orderresponse
+        }
     } catch (error) {
-        paymentslog.error('square setup issues: ' + JSON.stringify(error))
-        throw new Error('square setup issues, notify admin')
-    }
-
-    // orderresponse.
-    if (orderresponse.result.errors) {
-        paymentslog.error('square order response errors: ' + orderresponse.result.errors)
-        throw new Error(JSON.stringify(orderresponse.result.errors))
+        throw squareError('order response error', error)
     }
 
     const sqpayment = {
@@ -88,14 +97,11 @@ export async function squareOrder(conn: ScorekeeperProtocol, square: any, paymen
     let paymentresponse: ApiResponse<CreatePaymentResponse>
     try {
         paymentresponse = await client.paymentsApi.createPayment(sqpayment)
+        if (paymentresponse.result.errors?.length) {
+            throw paymentresponse
+        }
     } catch (error) {
-        paymentslog.error('square payment error: ' + JSON.stringify(error))
-        throw new Error('square payment error, notify admin')
-    }
-
-    if (paymentresponse.result.errors) {
-        paymentslog.error('Payment response errors: ' + orderresponse.result.errors)
-        throw new Error(JSON.stringify(orderresponse.result.errors))
+        throw squareError('square payment error', error)
     }
 
     payments.forEach(p => {
@@ -121,9 +127,13 @@ export async function squareRefund(conn: ScorekeeperProtocol, payments: Payment[
     let total = 0
     const reasons:string[] = []
     for (const p of payments) {
-        const event = await conn.events.getEvent(p.eventid)
         total += p.amount
-        reasons.push(`${event.name} ${p.itemname}`)
+        if (p.eventid) {
+            const event = await conn.events.getEvent(p.eventid)
+            reasons.push(`${event.name} ${p.itemname}`)
+        } else {
+            reasons.push(`${p.itemname}`)
+        }
         if (p.txid !== payments[0].txid) {
             throw Error('refund payments have different transaction ids')
         }
@@ -142,11 +152,14 @@ export async function squareRefund(conn: ScorekeeperProtocol, payments: Payment[
         reason: reasons.join(', ')
     }
 
-    const response = await client.refundsApi.refundPayment(body)
-
-    if (response.result.errors) {
-        paymentslog.error('Refund errors: ' + response.result.errors)
-        throw new Error(JSON.stringify(response.result.errors))
+    let response: ApiResponse<RefundPaymentResponse>
+    try {
+        response = await client.refundsApi.refundPayment(body)
+        if (response.result.errors?.length) {
+            throw response
+        }
+    } catch (error) {
+        throw squareError('refund error', error)
     }
 
     payments.forEach(p => {
@@ -158,45 +171,47 @@ export async function squareRefund(conn: ScorekeeperProtocol, payments: Payment[
 
 
 export async function squareoAuthRequest(conn: ScorekeeperProtocol, series: string, authorizationCode: string) {
-    const client_id     = await conn.general.getLocalSetting(SQ_APPLICATION_ID)
-    const client_secret = await conn.general.getLocalSetting(SQ_APPLICATION_SECRET)
-    const create_mode   = client_id.includes('sandbox') ? 'sandbox' : 'production'
-    const authzclient   = getAClient(create_mode)
+    try {
+        const client_id     = await conn.general.getLocalSetting(SQ_APPLICATION_ID)
+        const client_secret = await conn.general.getLocalSetting(SQ_APPLICATION_SECRET)
+        const create_mode   = client_id.includes('sandbox') ? 'sandbox' : 'production'
+        const authzclient   = getAClient(create_mode)
 
-    const tokenresponse = await authzclient.oAuthApi.obtainToken({
-        clientId: client_id,
-        clientSecret: client_secret,
-        grantType: 'authorization_code',
-        code: authorizationCode
-    }).catch(error => {
-        throw error.result || `Unknown error response from Square server: ${JSON.stringify(error)}`
-    })
+        const tokenresponse = await authzclient.oAuthApi.obtainToken({
+            clientId: client_id,
+            clientSecret: client_secret,
+            grantType: 'authorization_code',
+            code: authorizationCode
+        })
 
-    if ((!tokenresponse.result.accessToken) || (!tokenresponse.result.refreshToken)) {
-        throw new Error('token response is missing access or refresh token ' + tokenresponse)
+        if ((!tokenresponse.result.accessToken) || (!tokenresponse.result.refreshToken)) {
+            throw new Error('token response is missing access or refresh token ' + tokenresponse)
+        }
+
+        const client = getAClient(create_mode, tokenresponse.result.accessToken)
+        const locationResponse = await client.locationsApi.listLocations()
+
+        if (locationResponse.result.errors) {
+            throw new Error('Error getting locations: ' + locationResponse.result.errors)
+        }
+        if (locationResponse.result.locations?.length === 0) {
+            throw new Error('No locations present, need at least one')
+        }
+
+        const requestid = uuidv1()
+        const request = {
+            secret: tokenresponse.result.accessToken,
+            expires: tokenresponse.result.expiresAt,
+            refresh: tokenresponse.result.refreshToken,
+            locations: JSON.parse(JSON.stringify(locationResponse.result.locations)),
+            series: series
+        }
+        gCache.set(requestid, request)
+
+        return { requestid: requestid, locations: request.locations }
+    } catch (error) {
+        throw squareError('oauth request error', error)
     }
-
-    const client = getAClient(create_mode, tokenresponse.result.accessToken)
-    const locationResponse = await client.locationsApi.listLocations()
-
-    if (locationResponse.result.errors) {
-        throw new Error('Error getting locations: ' + locationResponse.result.errors)
-    }
-    if (locationResponse.result.locations?.length === 0) {
-        throw new Error('No locations present, need at least one')
-    }
-
-    const requestid = uuidv1()
-    const request = {
-        secret: tokenresponse.result.accessToken,
-        expires: tokenresponse.result.expiresAt,
-        refresh: tokenresponse.result.refreshToken,
-        locations: JSON.parse(JSON.stringify(locationResponse.result.locations)),
-        series: series
-    }
-    gCache.set(requestid, request)
-
-    return { requestid: requestid, locations: request.locations }
 }
 
 
@@ -274,6 +289,6 @@ export async function squareoAuthRefresh(conn: ScorekeeperProtocol, account: Pay
         secret.attr.expires = tokenresponse.result.expiresAt as string
         await conn.payments.updatePaymentAccountSecrets('update', [secret])
     } catch (error) {
-        paymentslog.error(error.result || error)
+        squareError('refresh error', error)
     }
 }
