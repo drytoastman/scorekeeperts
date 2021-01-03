@@ -11,7 +11,7 @@
                         {{item.amount | cents2dollars}}
                     </template>
                     <template v-slot:[`item.eventid`]="{ item }">
-                        {{events[item.eventid].name}}
+                        {{item.eventid ? events[item.eventid].name : ''}}
                     </template>
                 </v-data-table>
             </v-card-text>

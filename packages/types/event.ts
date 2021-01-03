@@ -69,7 +69,7 @@ export const REGTYPE_STANDARD = 0
 export const REGTYPE_AMPM = 1
 export const REGTYPE_DAY = 2
 
-export const isSession: VuetifyValidationRule = v => { return ['', 'AM', 'PM', 'Day'].includes(v) || 'Session can only be one of AM, PM or Day' }
+export const isSession: VuetifyValidationRule = v => { return v === null || ['', 'AM', 'PM', 'Day'].includes(v) || 'Session can only be one of AM, PM or Day' }
 
 export const EventValidator: DataValidationRules = {
     eventid:       [isUUIDV],

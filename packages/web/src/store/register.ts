@@ -68,7 +68,7 @@ export const registerGetters = {
     },
 
     driverMembership: (state) => {
-        return state.payments.null || []
+        return state.payments.null ? state.payments.null.filter(p => !p.refunded) : []
     },
 
     membershipfees: (state) => {

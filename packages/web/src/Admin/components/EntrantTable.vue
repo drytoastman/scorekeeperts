@@ -76,7 +76,7 @@ export default {
             return this.events[this.eventid] || {}
         },
         doRunEdit() {
-            return hasFinished(this.event)
+            return this.event.date && hasFinished(this.event)
         },
         entrantlist() {
             if (this.eventid) { // use registration, add payments

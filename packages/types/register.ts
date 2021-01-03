@@ -35,7 +35,7 @@ export interface Payment {
 export const PaymentValidator: DataValidationRules = {
     payid:    [],
     eventid:  [isUUIDN],
-    carid:    [isUUIDV],
+    carid:    [isUUIDN],
     session:  [isSession],
     refid:    [],
     txtype:   [],
