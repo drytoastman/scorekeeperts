@@ -1,5 +1,6 @@
 import fs from 'fs'
 import util from 'util'
+import _ from 'lodash'
 
 import { ScorekeeperProtocol } from 'scdb'
 import { SQ_APPLICATION_ID, RECAPTCHA_SITEKEY } from 'scdb/generalrepo'
@@ -65,6 +66,14 @@ export async function unauthgetone(task: ScorekeeperProtocol, auth: AuthData, pa
             case 'classorder':      ret.classorder      = await task.clsidx.classOrder();             break
             case 'seriesinfo':      ret.seriesinfo      = await task.results.getSeriesInfo();         break
             case 'champresults':    ret.champresults    = await task.results.getChampResults();       break
+            case 'entrylist':
+                param.eventid = await task.results.getEventidForSlug(param.eventid)
+                ret.entrylist = (await task.register.getFullEventRegistration(param.eventid, false)).map((e: any) => {
+                    const r = _.pick(e, ['carid', 'firstname', 'lastname', 'classcode', 'indexcode', 'number', 'session', 'payments', 'year', 'make', 'model', 'color'])
+                    r.payments = r.payments.lenth
+                    return r
+                })
+                break
             case 'eventresults':
                 param.eventid    = await task.results.getEventidForSlug(param.eventid)
                 ret.eventresults = Object.assign(await task.results.getEventResults(param.eventid), { _eventid: param.eventid })

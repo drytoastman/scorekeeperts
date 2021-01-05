@@ -23,13 +23,21 @@
             <v-col class='tlabel'>Singles:</v-col>
             <v-col class='tdata'>{{ecounts.unique||0}}/{{event.sinlimit}}</v-col>
 
-            <v-col class='tlabel'>Count:</v-col>
-            <v-col class='tdata'>{{ecounts.all||0}}/{{event.totlimit}}</v-col>
+            <v-col class='tlabel'>Entries:</v-col>
+            <v-col class='tdata entries'>
+                <router-link :to="{name: 'entries', params: { eventslug: eventslug}}">
+                    {{ecounts.all||0}}/{{event.totlimit}}
+                </router-link>
+            </v-col>
         </v-row>
 
         <v-row no-gutters v-else-if="hasOpened">
-            <v-col class='tlabel'>Count:</v-col>
-            <v-col class='tdata'>{{ecounts.all||0}}{{event.totlimit && `/${event.totlimit}` || ''}}</v-col>
+            <v-col class='tlabel'>Entries:</v-col>
+            <v-col class='tdata entries'>
+                <router-link :to="{name: 'entries', params: { eventslug: eventslug}}">
+                    {{ecounts.all||0}}{{event.totlimit && `/${event.totlimit}` || ''}}
+                </router-link>
+            </v-col>
         </v-row>
 
         <v-row v-if="event.attr.notes && !hasClosed">
@@ -50,7 +58,7 @@ import { format } from 'date-fns'
 import { mapState } from 'vuex'
 import { isOpen, hasClosed, hasOpened } from 'sctypes/event'
 import EventRegSelections from './EventRegSelections.vue'
-import { parseTimestamp } from 'sctypes/util'
+import { parseTimestamp, uuidSlug } from 'sctypes/util'
 
 export default {
     components: {
@@ -69,7 +77,8 @@ export default {
         ecounts() { return this.counts[this.event.eventid] || {} },
         isOpen()    { return isOpen(this.event) },
         hasOpened() { return hasOpened(this.event) },
-        hasClosed() { return hasClosed(this.event) }
+        hasClosed() { return hasClosed(this.event) },
+        eventslug() { return uuidSlug(this.event.eventid) }
     }
 }
 </script>
@@ -108,6 +117,10 @@ export default {
     }
     .tdata {
         font-size: 95%;
+    }
+    .entries a {
+        cursor: pointer;
+        color: blue;
     }
 }
 </style>
