@@ -63,6 +63,13 @@ export const cartMutations = {
 
 export const registerGetters = {
 
+    eventInfo: (state) => (eventslug: string) => {
+        if (!state.events) return {}
+        const eids = Object.keys(state.events).filter((uuid: UUID) => uuid.startsWith(eventslug))
+        if (eids.length) return state.events[eids[0]]
+        return {}
+    },
+
     driver: (state) => {
         return state.driverid ? state.drivers[state.driverid] : {}
     },

@@ -8,7 +8,7 @@ import { Api2State } from './state'
 export const api2Getters = {
 
     orderedEvents: (state): SeriesEvent[] => {
-        return orderBy(state.events, ['date'])
+        return orderBy(state.events, ['date', 'name'])
     },
 
     membershipfees: (state): PaymentItem[] => {

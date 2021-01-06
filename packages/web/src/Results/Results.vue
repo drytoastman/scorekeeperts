@@ -51,7 +51,7 @@ export default {
         yearlist()   { return orderBy([...this.yearGroups.keys()], v => v, 'desc') },
         serieslist() { return orderBy(this.yearGroups.getD(this.year), v => v) },
         eventlist()  {
-            const e = this.seriesinfo.events ? orderBy(this.seriesinfo.events, 'date') : []
+            const e = this.seriesinfo.events ? orderBy(this.seriesinfo.events, ['date', 'name']) : []
             if (e.length) e.push(this.dividerEntry)
             e.push(this.champEntry)
             return e

@@ -69,8 +69,8 @@ export async function unauthgetone(task: ScorekeeperProtocol, auth: AuthData, pa
             case 'entrylist':
                 param.eventid = await task.results.getEventidForSlug(param.eventid)
                 ret.entrylist = (await task.register.getFullEventRegistration(param.eventid, false)).map((e: any) => {
-                    const r = _.pick(e, ['carid', 'firstname', 'lastname', 'classcode', 'indexcode', 'number', 'session', 'payments', 'year', 'make', 'model', 'color'])
-                    r.payments = r.payments.lenth
+                    const r = _.pick(e, ['carid', 'driverid', 'firstname', 'lastname', 'classcode', 'indexcode', 'number', 'session', 'payments', 'year', 'make', 'model', 'color'])
+                    r.payments = r.payments.length
                     return r
                 })
                 break

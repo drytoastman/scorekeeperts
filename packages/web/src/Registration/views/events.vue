@@ -19,7 +19,7 @@
         </div>
 
         <v-expansion-panels multiple focusable hover accordion tile v-model='panelstate'>
-            <v-expansion-panel v-for="event in orderedEvents" :key="event.eventid">
+            <v-expansion-panel v-for="event in events" :key="event.eventid">
                 <v-expansion-panel-header class='elevation-4' xcolor='primary lighten-1 white--text'>
                     <v-container class="pa-0">
                         <v-row no-gutters align=center class='eventrow'>
@@ -44,7 +44,6 @@
 </template>
 
 <script>
-import orderBy from 'lodash/orderBy'
 import filter from 'lodash/filter'
 import { isFuture } from 'date-fns'
 import { mapState, mapGetters } from 'vuex'
@@ -71,9 +70,9 @@ export default {
     }),
     computed: {
         ...mapState(['currentSeries', 'driversattr', 'settings', 'events', 'counts', 'registered', 'paymentitems', 'panelstate']),
-        ...mapGetters(['driver', 'membershipfees', 'driverMembership']),
+        ...mapGetters(['driver', 'membershipfees', 'driverMembership', 'orderedEvents']),
         // events by date, filtering out events that already occured as of today midnight, will still show up day of
-        orderedEvents() { return filter(orderBy(this.events, ['date']), e => isFuture(parseDate(e.date))) },
+        events() { return filter(this.orderedEvents, e => isFuture(parseDate(e.date))) },
 
         panelstate: {
             get: function() { return this.$store.state.panelstate },

@@ -15,7 +15,7 @@ export async function allSeriesSummary(db: ScorekeeperProtocol, driverid: string
         await db.series.setSeries(series)
         ret.push(...(await db.register.getRegistrationSummary(driverid)).map(v => Object.assign(v, { series: series })))
     }
-    return _.sortBy(ret, ['date'])
+    return _.sortBy(ret, ['date', 'name'])
 }
 
 export async function allSeriesDeleteDriverLinks(db: ScorekeeperProtocol, driverids: UUID[]) {
