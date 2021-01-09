@@ -11,7 +11,11 @@ export function installLoggingHandlers(store: Store<Api2State>): void {
 
     window.addEventListener('unhandledrejection', function(event) {
         const msg = `unhandledrejection: ${JSON.stringify(event)}`
-        store.commit('addErrors', [msg])
+        const keys = Object.keys(event)
+        if (keys.length === 1 &&  keys[0] === 'isTrusted') {  // { isTrusted: true }
+            // don't bother user with useless errors from failed library gets
+            store.commit('addErrors', [msg])
+        }
         console.log(msg)
         if (event.reason) console.log(event.reason.stack)
     })
