@@ -4,7 +4,7 @@ import helmet from 'helmet'
 import morgan from 'morgan'
 import promiseRetry from 'promise-retry'
 
-import { api2, oldapi, websockets, websocketsStartWatching } from './controllers'
+import { api2, oldapi, websockets } from './controllers'
 import { db, tableWatcher, pgp, setdblog } from 'scdb'
 import { CRON_MAIN_SERVER, CRON_SYNC_SERVER, startCronJobs, stopCronJobs } from './cron'
 import { accesslog, mainlog, dblog } from './util/logging'
@@ -60,7 +60,7 @@ async function dbWaitAndApiSetup() {
     app.use('/api', oldapi)
     app.use('/api2', api2)
 
-    websocketsStartWatching()
+    tableWatcher.start()
     if (await db.general.isMainServer()) {
         if (process.env.NODE_ENV !== 'development') {
             startCronJobs(CRON_MAIN_SERVER)

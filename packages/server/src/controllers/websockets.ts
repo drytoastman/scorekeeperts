@@ -10,11 +10,6 @@ import { SeriesStatus } from 'sctypes/series'
 import { generateProTimer, loadResultData } from './gets/livedata'
 import { LazyData } from './lazydata'
 
-
-export function websocketsStartWatching() {
-    tableWatcher.addTables(['registered', 'events', 'itemeventmap', 'paymentitems', 'paymentaccounts', 'runs', 'timertimes', 'localeventstream'])
-}
-
 export const websockets = new TrackingServer({ noServer: true })
 
 websockets.on('connection', async function connection(ws: SessionWebSocket, req: SessionMessage) {
