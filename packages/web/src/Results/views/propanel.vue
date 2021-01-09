@@ -24,7 +24,7 @@
                         </template>
                     </v-tab-item>
                     <v-tab-item>
-                        <ClassSelector v-model="selectedClass" :classcodes="classcodes"></ClassSelector>
+                        <ClassSelector v-model="selectedClass"></ClassSelector>
                         <template v-if="!isEmpty(lastclass) && !lastclass.nodata">
                             <ClassTable       :cls="lastclass.class"></ClassTable>
                             <ChampTable     :champ="lastclass.champ"></ChampTable>
@@ -82,7 +82,6 @@ export default {
         }
     },
     computed: {
-        classcodes() { return this.$store.state.classcodes },
         last()       { return this.$store.state.live.last },
         lastclass()  { return this.$store.state.live.lastclass },
         leftentrant()  { return this.$store.state.live.left?.entrant },

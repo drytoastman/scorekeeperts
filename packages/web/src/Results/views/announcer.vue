@@ -42,7 +42,7 @@
                         </template>
                     </v-tab-item>
                     <v-tab-item>
-                        <ClassSelector v-model="selectedClass" :classcodes="classcodes"></ClassSelector>
+                        <ClassSelector v-model="selectedClass"></ClassSelector>
                         <template v-if="!isEmpty(lastclass) && !lastclass.nodata">
                             <EntrantTable :entrant="lastclass.entrant"></EntrantTable>
                             <ClassTable       :cls="lastclass.class"></ClassTable>
