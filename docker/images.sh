@@ -8,7 +8,7 @@ fi
 V=$2
 case "$1" in
     build)
-        if [ "$NO_BUILD_HERE" -eq 1 ]; then
+        if [ "$NO_BUILD_HERE" == "1" ]; then
             echo "Do NOT build on this machine!"
             exit -1
         fi
