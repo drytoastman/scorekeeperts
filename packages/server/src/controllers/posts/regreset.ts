@@ -107,7 +107,7 @@ export async function register(req: Request, res: Response) {
         try {
             await verifyCaptcha(req)
             if (filter === null) {
-                await dns.promises.lookup(request.email.split('@').pop())
+                await dns.promises.resolveMx(request.email.split('@').pop())
             } else if (filter === false) {
                 throw Error('Email matched filter drop')
             }
