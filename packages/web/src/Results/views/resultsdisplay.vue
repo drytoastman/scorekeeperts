@@ -62,7 +62,11 @@ export default {
             return this.eventInfo(this.eventslug)
         },
         entrantcount() {
-            return Object.values(this.eventresults).map(clist => clist.length).reduce((acc, cur) => acc + cur, 0)
+            let count = 0
+            for (const code of this.resultsClasses) {
+                count += this.eventresults[code].length
+            }
+            return count
         },
         classdata() {
             return new ClassData(this.seriesinfo.classes, this.seriesinfo.indexes)

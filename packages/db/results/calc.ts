@@ -1,6 +1,6 @@
 import _ from 'lodash'
 
-import { hasSessions, DecoratedRun, Entrant, EventResults, ExternalResult, RunStatus, PosPoints, SeriesInfo, SeriesSettings, UUID, getDList, make2D } from 'sctypes'
+import { hasSessions, DecoratedRun, Entrant, EventResults, ExternalResult, RunStatus, PosPoints, SeriesInfo, SeriesSettings, UUID, getDList, make2D, getSessions } from 'sctypes'
 import { ScorekeeperProtocol, dblog } from '..'
 
 export async function updatedSeriesInfo(task: ScorekeeperProtocol): Promise<SeriesInfo> {
@@ -78,10 +78,13 @@ export async function updatedEventResults(task: ScorekeeperProtocol, eventid: UU
         delete e.attr
 
         if (sessions) {
-            getDList(results, e.rungroup + '').push(e)
+            const slist = getSessions(event)
+            const sess = (e.rungroup > 0 && e.rungroup - 1 < slist.length) ? slist[e.rungroup - 1] : 'Unknown'
+
+            getDList(results, sess).push(e)
             e.indexval = 1.0
             e.indexstr = ''
-            e.classcode = ''
+            e.classcode = sess
         } else {
             getDList(results, e.classcode).push(e)
             const index = classdata.getEffectiveIndex(e)

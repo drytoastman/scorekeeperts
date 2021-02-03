@@ -65,9 +65,13 @@ export class ClassData {
     }
 
     getCountedRuns(classcode: string, event: SeriesEvent): number {
-        const classruns = this.classlist[classcode].countedruns || 999
-        const eventruns = event.countedruns || 999
-        return Math.min(classruns, eventruns)
+        if (classcode in this.classlist) {
+            const classruns = this.classlist[classcode].countedruns || 999
+            const eventruns = event.countedruns || 999
+            return Math.min(classruns, eventruns)
+        }
+        // For sessions, there are no classes, no counted runs
+        return 999
     }
 
     getEffectiveIndex(car: Car): {value:number, str: string} {

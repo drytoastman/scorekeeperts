@@ -106,7 +106,10 @@ export default {
             return data.join('')
         },
         descrip(classcode) {
-            return this.classmap[classcode].descrip
+            if (classcode in this.classmap) {
+                return this.classmap[classcode].descrip
+            }
+            return `${classcode} Session`
         }
     }
 }

@@ -58,7 +58,7 @@ export function createTopTimesTable(classdata: ClassData, results: EventResults,
         let entries: TopTimeEntry[] = []
         for (const classcode in results) {
             if (classcode === '_eventid') continue
-            if (classdata.classlist[classcode].secondruns && key.counted) { continue }
+            if (classcode in classdata.classlist && classdata.classlist[classcode].secondruns && key.counted) { continue }
 
             for (const e of results[classcode]) {
                 let current = false
