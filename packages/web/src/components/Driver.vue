@@ -1,6 +1,8 @@
 <template>
     <div v-if="driver && driver.attr">
-        <div class='title'>{{driver.firstname}} {{driver.lastname}}</div>
+        <div class='title'>{{driver.firstname}} {{driver.lastname}}
+            <span class='username'>({{driver.username}})</span>
+        </div>
         <div class='driverid'>{{driver.driverid}}</div>
         <div v-if="driver.email">
             {{driver.email}}
@@ -53,6 +55,10 @@ export default {
 <style scoped>
 .dncicon {
     margin-left: 10px;
+}
+.username {
+    font-weight: normal;
+    font-size: initial;
 }
 .econtact, .ephone {
     margin-left: 10px;

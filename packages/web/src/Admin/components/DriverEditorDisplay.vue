@@ -36,9 +36,9 @@
 
 <script>
 import { mapState } from 'vuex'
-import Driver from '../../components/Driver'
-import CarLabel from '../../components/CarLabel'
-import ConfirmDialog from '../../components/ConfirmDialog'
+import Driver from '../../components/Driver.vue'
+import CarLabel from '../../components/CarLabel.vue'
+import ConfirmDialog from '../../components/ConfirmDialog.vue'
 
 export default {
     name: 'DriverEditorDisplay',
