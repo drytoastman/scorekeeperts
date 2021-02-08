@@ -127,7 +127,7 @@ export async function register(req: Request, res: Response) {
         } catch (error) {
             const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress
             controllog.warn(`Ignore request ${request.email} ${ip}: ${error}`)
-            return res.status(400).json({ error: error })
+            return res.status(400).json({ error: error.toString() })
         }
 
         return res.status(200).json(await emailresult(request))
@@ -183,7 +183,7 @@ export async function reset(req: Request, res: Response) {
         } catch (error) {
             const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress
             controllog.warn(`Ignore reset ${rcpt.email} ${ip}: ${error}`)
-            return res.status(400).json({ error: error })
+            return res.status(400).json({ error: error.toString() })
         }
 
         return res.status(200).json(await emailresult(rcpt))

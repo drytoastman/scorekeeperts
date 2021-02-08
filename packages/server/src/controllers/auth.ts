@@ -44,7 +44,7 @@ export class AuthData {
     seriesAuthenticated(series: string) { this.session.series[series] = true }
     clearSeries(series: string)         { delete this.session.series[series] }
     clearAllSeries()                    { this.session.series = {} }
-    hasAnySeriesAuth()                  { return Object.keys(this.session.series).length > 1 || this.session.admin === true }
+    hasAnySeriesAuth()                  { return Object.keys(this.session.series).length > 0 || this.session.admin === true }
     hasSeriesAuth(series: string)       { return series in this.session.series || this.session.admin === true }
     requireSeries(series: string)       { if (!this.hasSeriesAuth(series)) { throw new Error(`Series auth for ${series} failed`) } }
 
