@@ -105,7 +105,9 @@ export async function register(req: Request, res: Response) {
         }
 
         try {
-            await verifyCaptcha(req)
+            if (!req.auth.hasAnySeriesAuth()) {
+                await verifyCaptcha(req)
+            }
             if (filter === null) {
                 await dns.promises.resolveMx(request.email.split('@').pop())
             } else if (filter === false) {
@@ -125,7 +127,7 @@ export async function register(req: Request, res: Response) {
         } catch (error) {
             const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress
             controllog.warn(`Ignore request ${request.email} ${ip}: ${error}`)
-            return res.status(400).json({ error: 'Request filtered due to suspicious parameters' })
+            return res.status(400).json({ error: error })
         }
 
         return res.status(200).json(await emailresult(request))
@@ -165,7 +167,9 @@ export async function reset(req: Request, res: Response) {
         }
 
         try {
-            await verifyCaptcha(req)
+            if (!req.auth.hasAnySeriesAuth()) {
+                await verifyCaptcha(req)
+            }
             const url  = tokenURL(req, request)
             const body = `<h3>Scorekeeper Username and Password Reset</h3>
                           <p>Use the following link to continue the reset process.</p>
@@ -179,7 +183,7 @@ export async function reset(req: Request, res: Response) {
         } catch (error) {
             const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress
             controllog.warn(`Ignore reset ${rcpt.email} ${ip}: ${error}`)
-            return res.status(400).json({ error: 'Request filtered due to suspicious parameters' })
+            return res.status(400).json({ error: error })
         }
 
         return res.status(200).json(await emailresult(rcpt))
