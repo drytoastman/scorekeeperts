@@ -1,8 +1,18 @@
-FROM ubuntu:20.04
+FROM alpine:3.13.2
 
-RUN apt-get update
-RUN apt-get -y install supervisor postfix opendkim opendkim-tools rsyslog
-RUN useradd admin
+RUN apk add --no-cache postfix opendkim
+RUN adduser -S admin
+RUN adduser postfix opendkim
 
-ADD postfixsetup.sh /sbin/postfixsetup.sh
-CMD /sbin/postfixsetup.sh; /usr/bin/supervisord -c /etc/supervisor/supervisord.conf
+# RUN apk add --no-cache busybox-extras vim
+COPY aliases /etc/
+COPY aliases.lmdb /etc/postfix/
+COPY main.cf /etc/postfix/
+COPY master.cf /etc/postfix
+COPY opendkim.conf /etc/opendkim
+
+ARG MAILNAME
+RUN  sed -i "s/\$MAILNAME/$MAILNAME/" /etc/postfix/main.cf
+RUN  sed -i "s/\$MAILNAME/$MAILNAME/" /etc/opendkim/opendkim.conf
+
+CMD mkdir -p /var/spool/postfix/mbox; /sbin/syslogd -O /var/log/mail.log; /usr/sbin/opendkim; postfix start-fg
