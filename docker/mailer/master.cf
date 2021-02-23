@@ -1,4 +1,3 @@
-smtp       inet  n       -       n       -       1       postscreen
 pickup     unix  n       -       n       60      1       pickup
 cleanup    unix  n       -       n       -       0       cleanup
 qmgr       unix  n       -       n       300     1       qmgr
@@ -11,9 +10,6 @@ verify     unix  -       -       n       -       1       verify
 flush      unix  n       -       n       1000?   0       flush
 proxymap   unix  -       -       n       -       -       proxymap
 proxywrite unix  -       -       n       -       1       proxymap
-smtp       unix  -       -       n       -       -       smtp
-relay      unix  -       -       n       -       -       smtp
-    -o syslog_name=postfix/$service_name
 showq      unix  n       -       n       -       -       showq
 error      unix  -       -       n       -       -       error
 retry      unix  -       -       n       -       -       error
@@ -24,7 +20,34 @@ lmtp       unix  -       -       n       -       -       lmtp
 anvil      unix  -       -       n       -       1       anvil
 scache     unix  -       -       n       -       1       scache
 postlog    unix-dgram n  -       n       -       1       postlogd
-smtpd      pass  -       -       n       -       -       smtpd
+
 submission inet  n       -       n       -       -       smtpd
     -o syslog_name=postfix/submission
     -o smtpd_tls_security_level=encrypt
+
+smtp       inet  n       -       n       -       1       postscreen
+smtpd      pass  -       -       n       -       -       smtpd
+tlsproxy   unix  -       -       n       -       0       tlsproxy
+dnsblog    unix  -       -       n       -       0       dnsblog
+
+smtp       unix  -       -       n       -       -       smtp
+relay      unix  -       -       n       -       -       smtp
+    -o syslog_name=postfix/$service_name
+
+
+sc         unix  -       -       n       -       1       smtp
+        -o smtp_send_xforward_command=yes
+        -o disable_mime_output_conversion=yes
+        -o smtp_generic_maps=
+
+localhost:10026 inet n   -       n       -       10      smtpd
+        -o content_filter=
+        -o receive_override_options=no_header_body_checks,no_milters
+        -o smtpd_helo_restrictions=
+        -o smtpd_client_restrictions=
+        -o smtpd_sender_restrictions=
+        # Postfix 2.10 and later: specify empty smtpd_relay_restrictions.
+        -o smtpd_relay_restrictions=
+        -o smtpd_recipient_restrictions=permit_mynetworks,reject
+        -o mynetworks=127.0.0.0/8
+        -o smtpd_authorized_xforward_hosts=127.0.0.0/8

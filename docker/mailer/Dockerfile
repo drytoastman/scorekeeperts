@@ -1,15 +1,15 @@
 FROM alpine:3.13.2
 
-RUN apk add --no-cache postfix opendkim
+RUN apk add --no-cache postfix opendkim busybox-extras
 RUN adduser -S admin
 RUN adduser postfix opendkim
 
 # RUN apk add --no-cache busybox-extras vim
-COPY aliases /etc/
-COPY aliases.lmdb /etc/postfix/
-COPY main.cf /etc/postfix/
-COPY master.cf /etc/postfix
-COPY opendkim.conf /etc/opendkim
+COPY aliases       /etc/postfix/
+COPY aliases.lmdb  /etc/postfix/
+COPY main.cf       /etc/postfix/
+COPY master.cf     /etc/postfix/
+COPY opendkim.conf /etc/opendkim/
 
 ARG MAILNAME
 RUN  sed -i "s/\$MAILNAME/$MAILNAME/" /etc/postfix/main.cf

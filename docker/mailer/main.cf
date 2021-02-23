@@ -23,12 +23,19 @@ shlib_directory = /usr/lib/postfix
 myhostname = $MAILNAME
 mynetworks_style = host
 relay_domains =
+content_filter = sc:localhost:10025
 
 smtpd_helo_required = yes
 disable_vrfy_command = yes
 smtpd_tls_security_level = may
 smtpd_tls_cert_file = /etc/letsencrypt/live/$MAILNAME/cert.pem
 smtpd_tls_key_file = /etc/letsencrypt/live/$MAILNAME/privkey.pem
+
+postscreen_dnsbl_threshold = 2
+postscreen_dnsbl_sites = zen.spamhaus.org*2 bl.spamcop.net*1
+postscreen_dnsbl_action = drop
+postscreen_greet_action = drop
+
 mail_spool_directory = /var/spool/postfix/mbox
 
 milter_protocol = 2
