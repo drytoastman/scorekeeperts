@@ -95,6 +95,6 @@ export const EventValidator: DataValidationRules = {
     accountid:     [], // is in list
     modified:      [isTimestamp],
     created:       [isTimestamp],
-    location:      [MaxLength(32)],
-    notes:         [MaxLength(512)]
+    location:      [MaxLength(64)],
+    notes:         [MaxLength(2048)]
 }

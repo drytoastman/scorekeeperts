@@ -33,7 +33,7 @@ export interface SeriesClass
 export const ClassValidator: DataValidationRules =
 {
     classcode:       [Length(2, 8)],
-    descrip:         [MaxLength(128)],
+    descrip:         [MaxLength(256)],
     eventtrophy:     [],
     champtrophy:     [],
     carindexed:      [],
@@ -41,7 +41,7 @@ export const ClassValidator: DataValidationRules =
     indexcode:       [MaxLength(8)],
     classmultiplier: [isDecimal3],
     usecarflag:      [],
-    caridxrestrict:  [MaxLength(128)],
+    caridxrestrict:  [MaxLength(256)],
     countedruns:     [isInteger, Min(0)]
 }
 
