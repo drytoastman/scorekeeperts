@@ -4,7 +4,7 @@ import { simpleParser }  from 'mailparser'
 import nodemailer from 'nodemailer'
 
 import { db, ScorekeeperProtocol } from 'scdb'
-import { MAIL_SEND_USER, MAIL_SEND_PASS, MAIL_SEND_HOST, MAIL_SEND_FROM, MAIL_SEND_REPLYTO } from 'scdb/generalrepo'
+import { MAIL_SEND_USER, MAIL_SEND_PASS, MAIL_SEND_HOST, MAIL_SEND_FROM } from 'scdb/generalrepo'
 import { cronlog } from '../util/logging'
 
 let sendingQueued = false
@@ -28,7 +28,6 @@ export async function sendQueuedEmail() {
         const pass    = settings[MAIL_SEND_PASS]
         const host    = settings[MAIL_SEND_HOST]
         const from    = settings[MAIL_SEND_FROM]
-        // const replyto = settings[MAIL_SEND_REPLYTO]
 
         if (!user || !pass || !host) {
             throw Error(`Unable to create smtp mailer with (${user}, ${pass}, ${host})`)
@@ -52,9 +51,7 @@ export async function sendQueuedEmail() {
             // send mail with defined transport object
             const r = email.content.recipient
             await smtp.sendMail({
-                // from:    `"Admin via Scorekeeper" <${from}>`,
-                // replyTo: `"Scorekeeper Admin" <${replyto}>`,
-                from:    `"Admin via Scorekeeper" <${from}>`,
+                from:    `"Scorekeeper Admin" <${from}>`,
                 to:      `"${r.firstname} ${r.lastname}" <${r.email}>`,
                 subject: email.content.subject,
                 html:    email.content.html,

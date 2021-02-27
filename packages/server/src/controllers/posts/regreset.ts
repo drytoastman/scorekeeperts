@@ -5,22 +5,19 @@ import isUUID from 'validator/lib/isUUID'
 
 import { RegisterValidator, ResetValidator } from 'sctypes/driver'
 import { validateObj } from 'sctypes/util'
-import { MAIL_SEND_REPLYTO, MAIL_SEND_FROM } from 'scdb/generalrepo'
+import { MAIL_SEND_FROM } from 'scdb/generalrepo'
 import { db } from 'scdb'
 import { wrapObj, unwrapObj } from '@/util/statelessdata'
 import { controllog } from '@/util/logging'
 import { verifyCaptcha } from '../captcha'
 
 async function emailresult(request: any): Promise<any> {
-    const [from, replyto] = await db.task(async t => {
-        return [await t.general.getLocalSetting(MAIL_SEND_FROM), await t.general.getLocalSetting(MAIL_SEND_REPLYTO)]
-    })
+    const from = await db.general.getLocalSetting(MAIL_SEND_FROM)
     return {
         emailresult: {
             firstname: request.firstname,
             lastname: request.lastname,
             email: request.email,
-            replyto: replyto,
             from: from
         }
     }
@@ -115,12 +112,8 @@ export async function register(req: Request, res: Response) {
             }
 
             const url  = tokenURL(req, request)
-            const html = `<h3>Scorekeeper Profile Creation</h3>
-                          <p>Use the following link to complete the registration process</p>
-                          <a href='${url}'>${url}</a>`
-            const text = `Scorekeeper Profile Creation
-                          Use the following URL to complete the registration process:
-                          ${url}`
+            const html = `<h3>Scorekeeper Profile Creation</h3>\n<p>Use the following link to complete the registration process</p>\n<a href='${url}'>${url}</a>`
+            const text = `Scorekeeper Profile Creation\n\nUse the following URL to complete the registration process:\n${url}`
 
             await db.general.queueEmail({
                 subject: 'Scorekeeper Profile Request',
@@ -175,12 +168,8 @@ export async function reset(req: Request, res: Response) {
                 await verifyCaptcha(req)
             }
             const url  = tokenURL(req, request)
-            const html = `<h3>Scorekeeper Username and Password Reset</h3>
-                          <p>Use the following link to continue the reset process.</p>
-                          <a href='${url}'>${url}</a>`
-            const text = `Scorekeeper Username and Password Reset
-                          Use the following URL to continue the reset process
-                          ${url}`
+            const html = `<h3>Scorekeeper Username and Password Reset</h3>\n<p>Use the following link to continue the reset process.</p>\n<a href='${url}'>${url}</a>`
+            const text = `Scorekeeper Username and Password Reset\n\nUse the following URL to continue the reset process\n${url}`
 
             await db.general.queueEmail({
                 subject: 'Scorekeeper Reset Request',

@@ -48,6 +48,7 @@ export const isDomain: VuetifyValidationRule   = v => { return isFQDN(v) || 'not
 export const isAlphaNum: VuetifyValidationRule = v => { return isAlphanumeric(v) || 'must be alpha numeric' }
 export const isOneZero: VuetifyValidationRule  = v => { return ['0', '1'].includes(v) || 'must be 1 or 0' }
 export const isLower: VuetifyValidationRule    = v => { return isLowercase(v) || 'must be lowercase' }
+export const isAlphaOrEmail: VuetifyValidationRule = v => { return isAlphanumeric(v) || isEmail(v) || 'must be alpha numeric or an email' }
 
 
 export const isURLV: VuetifyValidationRule      = v => {
