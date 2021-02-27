@@ -115,14 +115,18 @@ export async function register(req: Request, res: Response) {
             }
 
             const url  = tokenURL(req, request)
-            const body = `<h3>Scorekeeper Profile Creation</h3>
+            const html = `<h3>Scorekeeper Profile Creation</h3>
                           <p>Use the following link to complete the registration process</p>
                           <a href='${url}'>${url}</a>`
+            const text = `Scorekeeper Profile Creation
+                          Use the following URL to complete the registration process:
+                          ${url}`
 
             await db.general.queueEmail({
                 subject: 'Scorekeeper Profile Request',
                 recipient: request,
-                body: body
+                html: html,
+                text: text
             })
         } catch (error) {
             const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress
@@ -171,14 +175,18 @@ export async function reset(req: Request, res: Response) {
                 await verifyCaptcha(req)
             }
             const url  = tokenURL(req, request)
-            const body = `<h3>Scorekeeper Username and Password Reset</h3>
+            const html = `<h3>Scorekeeper Username and Password Reset</h3>
                           <p>Use the following link to continue the reset process.</p>
                           <a href='${url}'>${url}</a>`
+            const text = `Scorekeeper Username and Password Reset
+                          Use the following URL to continue the reset process
+                          ${url}`
 
             await db.general.queueEmail({
                 subject: 'Scorekeeper Reset Request',
                 recipient: rcpt,
-                body: body
+                html: html,
+                text: text
             })
         } catch (error) {
             const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress

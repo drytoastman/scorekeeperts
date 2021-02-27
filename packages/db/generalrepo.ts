@@ -2,7 +2,8 @@ import { IMain } from 'pg-promise'
 import KeyGrip from 'keygrip'
 import bcrypt from 'bcryptjs'
 import crypto from 'crypto'
-import { dblog, ScorekeeperProtocolDB } from '.'
+import { ScorekeeperProtocolDB } from '.'
+import { Email } from 'sctypes/email'
 
 export const IS_MAIN_SERVER = 'IS_MAIN_SERVER'
 export const SQ_APPLICATION_ID = 'SQ_APPLICATION_ID'
@@ -111,11 +112,11 @@ export class GeneralRepository {
         await this.db.none('UPDATE localsettings SET value=$1 WHERE key=$2', [current.join(','), KEYGRIP])
     }
 
-    async queueEmail(content: any): Promise<null> {
+    async queueEmail(content: Email): Promise<null> {
         return this.db.none('INSERT INTO emailqueue (content) VALUES ($1::json)', [content])
     }
 
-    async firstQueuedEmail(): Promise<any|null> {
+    async firstQueuedEmail(): Promise<{ mailid: number, content: Email } | null> {
         return this.db.oneOrNone('SELECT * FROM emailqueue ORDER BY created LIMIT 1')
     }
 

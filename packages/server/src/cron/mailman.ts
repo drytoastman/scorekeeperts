@@ -28,7 +28,7 @@ export async function sendQueuedEmail() {
         const pass    = settings[MAIL_SEND_PASS]
         const host    = settings[MAIL_SEND_HOST]
         const from    = settings[MAIL_SEND_FROM]
-        const replyto = settings[MAIL_SEND_REPLYTO]
+        // const replyto = settings[MAIL_SEND_REPLYTO]
 
         if (!user || !pass || !host) {
             throw Error(`Unable to create smtp mailer with (${user}, ${pass}, ${host})`)
@@ -52,11 +52,13 @@ export async function sendQueuedEmail() {
             // send mail with defined transport object
             const r = email.content.recipient
             await smtp.sendMail({
+                // from:    `"Admin via Scorekeeper" <${from}>`,
+                // replyTo: `"Scorekeeper Admin" <${replyto}>`,
                 from:    `"Admin via Scorekeeper" <${from}>`,
-                replyTo: `"Scorekeeper Admin" <${replyto}>`,
                 to:      `"${r.firstname} ${r.lastname}" <${r.email}>`,
                 subject: email.content.subject,
-                html:    email.content.body
+                html:    email.content.html,
+                text:    email.content.text
             })
 
             await t.general.deleteQueuedEmail(email.mailid)
