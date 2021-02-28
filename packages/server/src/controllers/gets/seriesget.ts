@@ -10,7 +10,7 @@ export async function seriesget(task: ScorekeeperProtocol, auth: AuthData, param
         series: param.series
     }
 
-    await task.series.setSeries(ret.series)
+    await task.series.setSeries(ret.series, true)
     for (const item of param.items) {
         if (await unauthgetone(task, auth, param, item, ret)) continue
 

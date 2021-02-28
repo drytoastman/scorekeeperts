@@ -21,9 +21,16 @@ export class SeriesRepository {
         return SeriesStatus.INVALID
     }
 
-    async setSeries(series: string): Promise<null> {
+    async setSeries(series: string, assertActive?: boolean): Promise<null> {
         const schema = ['public']
-        if (series) schema.unshift(series)
+        if (series) {
+            if (assertActive) {
+                if ((await this.getStatus(series)) !== SeriesStatus.ACTIVE) {
+                    throw Error(`${series} is not an active series`)
+                }
+            }
+            schema.unshift(series)
+        }
         return this.db.none('set search_path=$1:csv', [schema])
     }
 

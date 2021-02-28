@@ -12,7 +12,7 @@ export async function driverget(task: ScorekeeperProtocol, auth: AuthData, param
     }
 
     const driverid = auth.driverId()
-    await task.series.setSeries(ret.series)
+    await task.series.setSeries(ret.series, true)
     // if no series, remove driver only items that won't work
     if (!ret.series) param.items = param.items.filter((v:string) => !['settings', 'driversattr', 'cars', 'payments', 'registered', 'usednumbers'].includes(v))
 

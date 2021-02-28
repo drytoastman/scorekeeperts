@@ -32,7 +32,7 @@ export async function seriespost(tx: ScorekeeperProtocol, auth: AuthData, param:
     }
     let dids
 
-    await tx.series.setSeries(param.series)
+    await tx.series.setSeries(param.series, true)
 
     for (const key in param.items) {
         switch (key) {

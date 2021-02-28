@@ -39,7 +39,7 @@ async function seriesarchive(task: ScorekeeperProtocol, param: any): Promise<any
     if (param.series !== param.verifyseries) {
         throw Error('Series name verification failed')
     }
-    await task.series.setSeries(param.series)
+    await task.series.setSeries(param.series, true)
     await task.results.cacheAll()
     await pgdb.series.dropSeries(param.series)
     return {}
