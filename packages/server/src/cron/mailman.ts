@@ -57,6 +57,7 @@ export async function sendQueuedEmail() {
                 html:    email.content.html,
                 text:    email.content.text
             })
+            cronlog.info(`mailgun send: ${r.email}`)
 
             await t.general.deleteQueuedEmail(email.mailid)
         }
