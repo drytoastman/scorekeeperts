@@ -20,6 +20,7 @@ import { AUTHTYPE_DRIVER, AUTHTYPE_NONE, AUTHTYPE_SERIES } from 'sctypes/auth'
 import { unauthget } from './gets/unauthget'
 import { allSeriesSummary } from './allseries'
 import { getRemoteDB } from '@/sync/connections'
+import { mailgunwebhook } from './posts/mailgun'
 
 export const api2 = Router()
 
@@ -173,6 +174,7 @@ api2.get('/adminlogout',  adminlogout)
 api2.get('/ical/:driverid', ical)
 api2.get('/remotelist', remotelist)
 api2.get('/remotecheck', remotecheck)
+api2.post('/mailgun', mailgunwebhook)
 
 // Authenticated items
 api2.get('/', apiget)
