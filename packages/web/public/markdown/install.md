@@ -1,19 +1,33 @@
-# Installation
+# OS Requirements
 
-## Requirements
-1. A Docker environment for your operating system, some common installation instructions are:
-    - [Ubuntu](https://docs.docker.com/install/linux/docker-ce/ubuntu/)
+### Linux
+1. Install docker from your distribution repository (common ones below)
     - [Debian](https://docs.docker.com/engine/install/debian/)
+    - [Ubuntu](https://docs.docker.com/install/linux/docker-ce/ubuntu/)
     - [Fedora](https://docs.docker.com/engine/install/fedora/)
-    - [OS X](https://docs.docker.com/docker-for-mac/install/)
-    - **Windows 10**
-      1. Uninstall Docker-Toolbox and VirtualBox if present
-      1. Windows logo key + R, type winver, the OS Build should be 19041 (20H1), 19042 (20H2) or later
-      2. If not recent enough, [update Windows 10 to 20H1 or later](https://support.microsoft.com/en-us/windows/get-the-windows-10-october-2020-update-7d20e88c-0568-483a-37bc-c3885390d212)
-      3. [Activate WSL2 (Steps 1-5) ](https://docs.microsoft.com/en-us/windows/wsl/install-win10#manual-installation-steps)
-      4. [Install Docker Desktop for Windows](https://hub.docker.com/editions/community/docker-ce-desktop-windows/) - if asked, select Linux containers, NOT Windows containers
 
-## Installing
+2. Make sure that the username you intend to use for Linux is a member of the docker group and then log out and back in, without this you will see Scorekeeper stuck at "*Establishing Network*".  Run the following to create the docker group and then add your username to it:
+
+    - sudo groupadd docker
+    - sudo usermod -aG docker <your username>
+
+3. If intending to connect to a serial port based timer, make sure your username has access to the serial port devices or all the ports will appear greyed out when trying to open a port.  For Debian, you want to add your username to the dialout group like below:
+
+    - sudo usermod -aG dialout <your username>
+
+### Windows 10
+1. Uninstall Docker-Toolbox and VirtualBox if present
+2. Windows logo key + R, type winver, the OS Build should be 19041 (20H1), 19042 (20H2) or later
+3. If not recent enough, [update Windows 10 to 20H1 or later](https://support.microsoft.com/en-us/windows/get-the-windows-10-october-2020-update-7d20e88c-0568-483a-37bc-c3885390d212)
+4. [Activate WSL2 (Steps 1-5) ](https://docs.microsoft.com/en-us/windows/wsl/install-win10#manual-installation-steps)
+5. [Install Docker Desktop for Windows](https://hub.docker.com/editions/community/docker-ce-desktop-windows/) - if asked, select Linux containers, NOT Windows containers
+
+### OS X
+1. Install Docker Desktop from https://docs.docker.com/docker-for-mac/install/)
+2. Hope for the best, this is untested
+
+
+# Installing Scorekeeper
 1. Verify that the above requirements for Docker are installed (a system install of Java is no longer required)
 
 1. Download the latest scorekeeper zip from https://github.com/drytoastman/scorekeeperfrontend/releases
