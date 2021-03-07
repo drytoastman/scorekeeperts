@@ -6,7 +6,12 @@ COPY packages/types/package.json  ./packages/types/
 COPY packages/db/package.json     ./packages/db/
 COPY packages/server/package.json ./packages/server/
 RUN yarn install
-COPY . .
+
+COPY package.json yarn.lock ./
+COPY packages/tscommon.json packages/
+COPY packages/types         packages/types
+COPY packages/db            packages/db
+COPY packages/server        packages/server
 RUN cd packages/server && yarn build
 
 FROM node:14.15.1-buster-slim

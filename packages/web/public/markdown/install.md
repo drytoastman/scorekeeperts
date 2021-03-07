@@ -7,10 +7,11 @@
     - [Fedora](https://docs.docker.com/engine/install/fedora/)
     - [OS X](https://docs.docker.com/docker-for-mac/install/)
     - **Windows 10**
+      1. Uninstall Docker-Toolbox and VirtualBox if present
       1. Windows logo key + R, type winver, the OS Build should be 19041 (20H1), 19042 (20H2) or later
-      1. If not recent enough, [update Windows 10 to 20H1 or later](https://support.microsoft.com/en-us/windows/get-the-windows-10-october-2020-update-7d20e88c-0568-483a-37bc-c3885390d212)
-      1. [Activate WSL2 (Steps 1-5) ](https://docs.microsoft.com/en-us/windows/wsl/install-win10#manual-installation-steps)
-      1. [Install Docker Desktop for Windows](https://hub.docker.com/editions/community/docker-ce-desktop-windows/) - if asked, select Linux containers, NOT Windows containers
+      2. If not recent enough, [update Windows 10 to 20H1 or later](https://support.microsoft.com/en-us/windows/get-the-windows-10-october-2020-update-7d20e88c-0568-483a-37bc-c3885390d212)
+      3. [Activate WSL2 (Steps 1-5) ](https://docs.microsoft.com/en-us/windows/wsl/install-win10#manual-installation-steps)
+      4. [Install Docker Desktop for Windows](https://hub.docker.com/editions/community/docker-ce-desktop-windows/) - if asked, select Linux containers, NOT Windows containers
 
 ## Installing
 1. Verify that the above requirements for Docker are installed (a system install of Java is no longer required)

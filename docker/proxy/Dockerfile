@@ -3,10 +3,14 @@ FROM node:14.15.1-buster-slim as builder
 WORKDIR /code
 COPY package.json yarn.lock ./
 COPY packages/types/package.json ./packages/types/
-COPY packages/web/package.json   ./packages/server/
+COPY packages/web/package.json   ./packages/web/
 RUN yarn install
-COPY . .
-RUN cd packages/web   && yarn build
+
+COPY package.json yarn.lock ./
+COPY packages/tscommon.json packages/
+COPY packages/types         packages/types
+COPY packages/web           packages/web
+RUN cd packages/web && yarn build
 
 FROM nginx:1.18.0
 RUN apt-get update && apt-get install -y -q --no-install-recommends certbot && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /var/log/*
