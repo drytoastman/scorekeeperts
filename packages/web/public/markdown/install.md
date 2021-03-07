@@ -2,10 +2,15 @@
 
 ## Requirements
 1. A Docker environment for your operating system, some common installation instructions are:
-    - [OS X](https://docs.docker.com/docker-for-mac/install/)
     - [Ubuntu](https://docs.docker.com/install/linux/docker-ce/ubuntu/)
-    - [Windows 10 Home](https://docs.docker.com/toolbox/toolbox_install_windows)
-    - [Windows 10 Pro](https://docs.docker.com/docker-for-windows/)
+    - [Debian](https://docs.docker.com/engine/install/debian/)
+    - [Fedora](https://docs.docker.com/engine/install/fedora/)
+    - [OS X](https://docs.docker.com/docker-for-mac/install/)
+    - **Windows 10**
+      1. Windows logo key + R, type winver, the OS Build should be 19041 (20H1), 19042 (20H2) or later
+      1. If not recent enough, [update Windows 10 to 20H1 or later](https://support.microsoft.com/en-us/windows/get-the-windows-10-october-2020-update-7d20e88c-0568-483a-37bc-c3885390d212)
+      1. [Activate WSL2 (Steps 1-5) ](https://docs.microsoft.com/en-us/windows/wsl/install-win10#manual-installation-steps)
+      1. [Install Docker Desktop for Windows](https://hub.docker.com/editions/community/docker-ce-desktop-windows/) - if asked, select Linux containers, NOT Windows containers
 
 ## Installing
 1. Verify that the above requirements for Docker are installed (a system install of Java is no longer required)
@@ -21,10 +26,10 @@
 1. If you have never run **LoadCerts** on this machine before, the Cert box
    will be red as it only has a filler certificate. Select **File** &rarr;
    **LoadCerts**. You will be asked for the certificates file, select the
-   **certs.tgz** provided by the system administrator. These are shared
-   between versions so you only need to do it once.
+   **certs.tgz** provided by the server administrator. These are shared
+   between versions so you only need to do it once per computer.
 
-Without this step, you cannot sync with scorekeeper.wwscc.org or other laptops. {.warning}
+Without the above step, you cannot sync with scorekeeper.wwscc.org or other laptops. {.warning}
 
 1. For non-Linux installs you **may** need to open incoming firewall ports depending on your own system:
 
@@ -38,4 +43,3 @@ Without this step, you cannot sync with scorekeeper.wwscc.org or other laptops. 
         1. **UDP:53**    standard unicast dns for onsite resolving of "de" and "reg" to a Scorekeeper laptop IP
         1. **UDP:5353**  standard multicast dns for onsite resolving of "de" and "reg" to a Scorekeeper laptop IP
         1. **UDP:5454**  for discovering nearby machines or network timers
-

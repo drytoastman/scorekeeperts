@@ -27,13 +27,11 @@ Cons:
   * Maybe not ideal if laptop has dual use outside of events
 
 
-## 2. Windows 10 (After Summer 2020 update)
+## 2. Windows 10
 
-When Microsoft realeases their 20H1 update in the summer of 2020, they will have
-a new version of the Windows Subsystem for Linux.  This lightweight
+Windows 10 has a new version of the Windows Subsystem for Linux.  This lightweight
 virtualization is actually running a regular Linux kernel and is capable of
-running Docker.  Best of all, it looks like it will even be available for Home
-editions of Windows.
+running Docker.
 
 Pros:
 
@@ -46,11 +44,10 @@ Cons:
   * Not free (though most laptops come with Windows)
 
 
-## 3. Windows 10 Professional or newer OS X
+## 3. Newer OS X (not well tested)
 
-Both of the these allow installation of Docker Desktop via a slightly heavier
-weight virtual machines.  Hyper-V for Windows and Hypervisor.framework for OS
-X.
+This also allows installation of Docker Desktop via a slightly heavier
+weight virtual machines, Hypervisor.framework for OS X.
 
 Pros:
 
@@ -64,24 +61,9 @@ Cons:
   * more resource usage then 1 or 2
 
 
-## 4. Windows 10 Home, Windows 7 or older OS X Machines
-
-Older machines require the use of Docker-Toolbox and VirtualBox.  VirtualBox is
-a complete viritualization solution.
-
-Pros:
-
-  * You probably have one hanging around already
-  * Can work on older OS versions
-
-Cons:
-
-  * most memory and CPU overhead
-  * VM is slow to boot
-  * Eventually, I want to drop support for this
-
-
 ## Other types
 
-I don't believe Docker will run on anything else like Chrome OS so Scorekeeper won't be supporting those.  
-
+I don't believe Docker will run on anything else like Chrome OS so Scorekeeper
+won't be supporting those.  If you have another system where you can bring up
+a docker environment and a local API connection is available, Scorekeeper will
+run there too but you must configure the docker system yourself.
