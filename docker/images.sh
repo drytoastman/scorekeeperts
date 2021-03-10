@@ -7,6 +7,11 @@ fi
 
 V=$2
 case "$1" in
+	bp)
+		bash "$0" build $2
+		bash "$0" push $2
+		;;
+
     build)
         if [ "$NO_BUILD_HERE" == "1" ]; then
             echo "Do NOT build on this machine!"

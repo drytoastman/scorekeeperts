@@ -1,17 +1,19 @@
 # OS Requirements
 
 ### Linux
-1. Install docker from your distribution repository (common ones below)
+1. Make sure to remove or disable apache if so installed (it obstructs port 80)
+
+2. Install docker from your distribution repository (common ones below)
     - [Debian](https://docs.docker.com/engine/install/debian/)
     - [Ubuntu](https://docs.docker.com/install/linux/docker-ce/ubuntu/)
     - [Fedora](https://docs.docker.com/engine/install/fedora/)
 
-2. Make sure that the username you intend to use for Linux is a member of the docker group and then log out and back in, without this you will see Scorekeeper stuck at "*Establishing Network*".  Run the following to create the docker group and then add your username to it:
+3. Make sure that the username you intend to use for Linux is a member of the docker group and then log out and back in, without this you will see Scorekeeper stuck at "*Establishing Network*".  Run the following to create the docker group and then add your username to it:
 
     - sudo groupadd docker
     - sudo usermod -aG docker <your username>
 
-3. If intending to connect to a serial port based timer, make sure your username has access to the serial port devices or all the ports will appear greyed out when trying to open a port.  For Debian, you want to add your username to the dialout group like below:
+4. If intending to connect to a serial port based timer, make sure your username has access to the serial port devices or all the ports will appear greyed out when trying to open a port.  For Debian, you want to add your username to the dialout group like below:
 
     - sudo usermod -aG dialout <your username>
 
