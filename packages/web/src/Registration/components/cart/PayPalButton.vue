@@ -29,7 +29,8 @@ export default {
             this.purchase.forEach(pur => {
                 const event = this.events[pur.eventid]
                 const item  = this.paymentitems[pur.itemid]
-                items.push({ name: `${event.name} - ${item.name}`, quantity: '1', unit_amount: { currency_code: 'USD', value: (item.price / 100).toFixed(2) }})
+                const name  = event ? `${event.name} - ${item.name}` : `Membership - ${item.name}`
+                items.push({ name: name, quantity: '1', unit_amount: { currency_code: 'USD', value: (item.price / 100).toFixed(2) }})
                 total += item.price
             })
 
