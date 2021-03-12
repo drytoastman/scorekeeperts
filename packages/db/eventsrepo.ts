@@ -43,12 +43,15 @@ export class EventsRepository {
             } else if (type === 'delete') {
                 const ret = [] as SeriesEvent[]
                 for (const e of events) {
-                    await tx.none('DELETE from registered WHERE eventid=$1', [e.eventid])
+                    await tx.none('DELETE from registered   WHERE eventid=$1', [e.eventid])
+                    await tx.none('DELETE from runorder     WHERE eventid=$1', [e.eventid])
+                    await tx.none('DELETE from classorder   WHERE eventid=$1', [e.eventid])
+                    await tx.none('DELETE from itemeventmap WHERE eventid=$1', [e.eventid])
+                    await tx.none('DELETE from challenges   WHERE eventid=$1', [e.eventid])
                     ret.push(await tx.one('DELETE from events WHERE eventid=$1 RETURNING eventid', [e.eventid]).catch(error => {
                         if (error.constraint) {
                             switch (error.table) {
                                 case 'payments': throw Error(`There are still payments attached to ${e.name}, cannot delete event`)
-                                case 'runorder': throw Error(`There are still cars into the runorder for ${e.name}, cannot delete event`)
                                 case 'runs':     throw Error(`There are still runs recorded for ${e.name}, cannot delete event`)
                             }
                         }
