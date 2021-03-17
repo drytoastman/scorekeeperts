@@ -69,7 +69,7 @@ const ims = 'INSERT INTO mergeservers(serverid, hostname, address, ctimeout, hos
 const dbmap = new Map<number, ScorekeeperProtocolDB>()
 export function getTestDB(port: number): ScorekeeperProtocolDB {
     if (!dbmap.has(port)) {
-        dbmap.set(port, pgp(Object.assign({}, dbx.$cn, { user: 'postgres', port: port })))
+        dbmap.set(port, pgp(Object.assign({}, dbx.$cn, { user: 'postgres', application_name: 'synclocal', port: port })))
     }
     return dbmap.get(port) as ScorekeeperProtocolDB
 }
@@ -203,7 +203,7 @@ export async function verifyUpdateLogChanges(tasks: ScorekeeperProtocol[], table
     for (const t of tasks) {
         for (const row of await t.any("SELECT * from publiclog where tablen=$1 and action='U'", [table])) {
             const diff = odiff(row.olddata, row.newdata)
-            expect(Object.keys(diff)).not.toEqual(['modified']) // not just modified that changed though trigger should catch that
+            expect(Object.keys(diff)).not.toEqual(['modified']) // not just modified that changed
         }
     }
 }

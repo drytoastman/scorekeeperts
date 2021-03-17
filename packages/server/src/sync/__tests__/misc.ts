@@ -32,6 +32,21 @@ describe('testing misc', () => {
         })
     })
 
+    test('registration change and back again on remote', async () => {
+        // Regression test for bug where a registered is modified and then back again, new modified value but same data so trigger filters """
+        await with2DB(DB1, DB2, testids.series, async (task1, task2) => {
+            const data = [testids.eventid1, testids.carid3, '', 0, '2021-03-11 05:12:27.388459']
+            // Insert local
+            await task1.none('INSERT INTO registered (eventid, carid, session, rorder, modified) VALUES ($1, $2, $3, $4, $5)', data)
+            // Insert remote
+            data[4] = '2021-03-11 17:13:03.802123'
+            await task2.none('INSERT INTO registered (eventid, carid, session, rorder, modified) VALUES ($1, $2, $3, $4, $5)', data)
+
+            await doSync(DB1)
+            await verifyObjectsSame([task1, task2], 'SELECT * FROM registered WHERE eventid=$1',  testids.eventid1)
+        })
+    })
+
     test('double sync should fault', async () => {
         try {
             // use allSettled so the both finish before moving on

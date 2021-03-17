@@ -248,7 +248,7 @@ export class SyncProcessInfo {
             }
 
             // Failed on lock1 or lock2, release the lock we did get, wait and retry
-            synclog.debug('Unable to obtain locks, sleeping and trying again')
+            synclog.warn('Unable to obtain locks, sleeping and trying again')
             if (this.lock1) { await this.lock1.one('SELECT pg_advisory_unlock(42)') }
             await asyncwait(1000)
             tries -= 1

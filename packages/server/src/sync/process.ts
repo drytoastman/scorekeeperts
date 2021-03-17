@@ -3,10 +3,10 @@ import { EventEmitter } from 'events'
 
 import { DefaultMap, difference, intersect } from 'sctypes/data'
 import { parseTimestamp } from 'sctypes/util'
-import { db, ScorekeeperProtocol, ScorekeeperProtocolDB } from 'scdb'
+import { ScorekeeperProtocol, ScorekeeperProtocolDB } from 'scdb'
 import { synclog } from '@/util/logging'
 
-import { getRemoteDB } from './connections'
+import { getLocalDB, getRemoteDB } from './connections'
 import { ADVANCED_UPDATE_TABLES, INTERTWINED_DATA, LOCAL_TIMEOUT, TABLE_ORDER } from './constants'
 import { performSyncWrap, SyncProcessInfo } from './dbwrapper'
 import { MergeServerEntry } from './mergeserver'
@@ -16,14 +16,14 @@ export const syncwatcher  = new EventEmitter()
 export let syncKillSignal = false
 let syncIsActive = false
 
-export async function runSyncOnce(rootdb?: ScorekeeperProtocolDB) {
+export async function runSyncOnce(testdb?: ScorekeeperProtocolDB) {
     if (syncIsActive) {
         throw new SyncError('Request to sync but there is already an active sync ocurring on the database')
     }
     syncIsActive   = true
     syncKillSignal = false
 
-    await (rootdb || db).task(async roottask => {
+    await (testdb || getLocalDB()).task(async roottask => {
         await roottask.none('SET idle_in_transaction_session_timeout=$1', [LOCAL_TIMEOUT])
 
         let myserver: MergeServerEntry

@@ -174,6 +174,8 @@ export class LoggedObject {
 
         // Pick modified time based on object that didn't change or the final modtime + epsilon
         let both = false
+        data.created  += 'Z'  // otherwise the compare doesn't work right and Date will round microsec up to millisec
+        data.modified += 'Z'
         if (!dbObjectSame(last, data)) {
             both = true
             data.modified = formatToTimestamp(addMilliseconds(parseTimestamp(data.modified), 1))
