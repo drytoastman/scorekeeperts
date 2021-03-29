@@ -4,8 +4,9 @@ import { PEER_TIMEOUT, REMOTE_TIMEOUT } from './constants'
 
 const dbmap = new Map<string, ScorekeeperProtocolDB>()
 
+const localdb = pgp(Object.assign({}, db.$cn, { application_name: 'synclocal' }))
 export function getLocalDB(): ScorekeeperProtocolDB {
-    return pgp(Object.assign({}, db.$cn, { application_name: 'synclocal' }))
+    return localdb
 }
 
 export function getRemoteDB(remote: { address?: string, hostname: string }, series: string, password: string): ScorekeeperProtocolDB {
