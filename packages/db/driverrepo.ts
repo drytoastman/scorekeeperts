@@ -52,7 +52,7 @@ export class DriverRepository {
     }
 
     async getDriverByUsername(username: string): Promise<Driver|null> {
-        return this.db.oneOrNone('SELECT * FROM drivers WHERE username=$1', [username.trim()])
+        return this.db.oneOrNone('SELECT * FROM drivers WHERE lower(username)=$1', [username.trim().toLowerCase()])
     }
 
     async getDriverSeriesAttr(driverid: UUID): Promise<any> {
@@ -77,7 +77,7 @@ export class DriverRepository {
     }
 
     async checkLogin(username: string, password: string): Promise<UUID> {
-        const d = await this.db.oneOrNone('SELECT * FROM drivers WHERE username=$1', [username])
+        const d = await this.getDriverByUsername(username)
         if (!d) {
             throw Error('Unknown username')
         }
