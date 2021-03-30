@@ -34,6 +34,11 @@ export default {
 .v-snack:not(.v-snack--absolute) {
     height: initial; // fix underlap with lower scrollbar
 }
+
+::v-deep .v-snack__wrapper {
+    background: #222;
+}
+
 .snackinfo {
     color: lightgreen;
 }
