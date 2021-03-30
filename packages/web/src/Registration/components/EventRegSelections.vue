@@ -7,7 +7,7 @@
             <div class='regrow'>
                 <template v-if="isOpen || ereg[grp.index] || ereg[grp.session]">
                     <span class='sessionlabel'>{{grp.key}}</span>
-                    <template v-show="!nocars[grp.key]">
+                    <template v-if="!nocars[grp.key]">
                         <CarSelect
                             :session=grp.session :index=grp.index :event=event :locked="!isOpen" class='select'
                             @nocars="$set(nocars, grp.key, $event)">
@@ -19,7 +19,7 @@
                         </CarPayment>
                     </template>
 
-                    <LinkHoverToState v-show="!!nocars[grp.key] && isOpen" :to="{name:'cars'}" variable="flashCars" class='carslink'>
+                    <LinkHoverToState v-show="nocars[grp.key] && isOpen" :to="{name:'cars'}" variable="flashCars" class='carslink'>
                         Create, Edit and Delete Cars Via the Cars Menu
                     </LinkHoverToState>
                 </template>

@@ -93,7 +93,6 @@ export default {
 }
 
 .selectblanknote {
-    text-align: center;
     width: 100%;
     font-style: italic;
     font-size: 80%;

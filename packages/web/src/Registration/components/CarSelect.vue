@@ -1,7 +1,10 @@
 <template>
     <div>
         <v-select :items="carlist" :disabled="busy" item-value="carid" v-model="selectedcarid" hide-details solo ref='select' v-if="!locked">
-            <template v-slot:item="d"><CarLabel :car=d.item :session="!!session"></CarLabel></template>
+            <template v-slot:item="d">
+                <div v-if="!d.item.carid" class='selectblanknote'>Unregister</div>
+                <CarLabel v-else :car=d.item :session="!!session"></CarLabel>
+            </template>
             <template v-slot:selection="d">
                 <div v-if="!d.item.carid" class='selectblanknote'>Register Here</div>
                 <CarLabel v-else :car=d.item :session="!!session"></CarLabel>
@@ -90,6 +93,7 @@ export default {
 ::v-deep {
     .v-list-item--active {
         opacity: 0.4;
+        pointer-events: none;
     }
 }
 </style>
