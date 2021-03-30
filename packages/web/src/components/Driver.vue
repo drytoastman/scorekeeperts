@@ -24,8 +24,8 @@
         <div>{{driver.attr.address}}</div>
         <div class='csz'>{{driver.attr.city}} {{driver.attr.state}} {{driver.attr.zip}}</div>
         <div class='sponsorbrag'>
-            <template v-if="driver.attr.sponsor"><span><b>Sponsor:</b></span><span>{{driver.attr.sponsor}}</span></template>
-            <template v-if="driver.attr.brag"><span><b> Brag:</b></span><span>{{driver.attr.brag}}</span></template>
+            <template v-if="driver.attr.sponsor"><span class='key'>Sponsor:</span><span>{{driver.attr.sponsor}}</span></template>
+            <template v-if="driver.attr.brag"><span class='key'>Brag:</span><span>{{driver.attr.brag}}</span></template>
         </div>
         <div>
             <span v-if="driver.attr.econtact || driver.attr.ephone"><b>Emergency</b></span><br/>
@@ -73,8 +73,12 @@ export default {
 }
 .sponsorbrag {
     display: grid;
-    grid-template-columns: auto auto;
+    grid-template-columns: 4rem auto;
     column-gap: 10px;
+}
+.sponsorbrag .key {
+    font-weight: bold;
+    text-align: right;
 }
 .noemail {
     font-style: italic;
