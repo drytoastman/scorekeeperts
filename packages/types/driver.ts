@@ -1,4 +1,4 @@
-import { DataValidationRules, MaxLength, Length, isUUIDV, isEmailV, isBarcode, isTimestamp, UUID, MinLength, UTCString } from './util'
+import { DataValidationRules, MaxLength, Length, isUUIDV, isEmailV, isBarcode, isTimestamp, UUID, MinLength, UTCString, isLower } from './util'
 
 export interface Driver
 {
@@ -26,11 +26,18 @@ export interface Driver
     created: UTCString;
 }
 
+const username  = [Length(6, 16)]
+const password  = [Length(6, 32)]
+const firstname = [Length(2, 32)]
+const lastname  = [Length(2, 32)]
+const email     = [isEmailV]
+
 export const DriverValidator: DataValidationRules = {
     driverid:   [isUUIDV],
-    firstname:  [Length(2, 32)],
-    lastname:   [Length(2, 32)],
-    email:      [isEmailV],
+    firstname:  firstname,
+    lastname:   lastname,
+    username:   username,
+    email:      email,
     barcode:    [isBarcode],
     optoutmail: [],
     address:    [MaxLength(64)],
@@ -48,16 +55,16 @@ export const DriverValidator: DataValidationRules = {
 }
 
 export const RegisterValidator: DataValidationRules = {
-    firstname:  [Length(2, 32)],
-    lastname:   [Length(2, 32)],
-    email:      [isEmailV],
-    username:   [Length(6, 32)],
-    password:   [Length(6, 32)],
+    firstname:  firstname,
+    lastname:   lastname,
+    email:      email,
+    username:   username,
+    password:   password,
     recaptcha:  [MinLength(64)]
 }
 
 export const ResetValidator: DataValidationRules = {
-    firstname:  [Length(2, 32)],
-    lastname:   [Length(2, 32)],
-    email:      [isEmailV]
+    firstname:  firstname,
+    lastname:   lastname,
+    email:      email
 }
