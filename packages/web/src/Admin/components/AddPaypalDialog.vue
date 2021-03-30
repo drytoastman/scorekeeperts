@@ -4,8 +4,8 @@
             <v-container>
                 <div class='text-center'><img :src="icons.paypalIcon" /></div>
                 <v-text-field v-model="account.name"      label="Name"></v-text-field>
-                <v-text-field v-model="account.accountid" label="Client Id"></v-text-field>
-                <v-text-field v-model="secret.secret"     label="Client Secret"></v-text-field>
+                <v-text-field v-model="account.accountid" label="App Client Id (not paypal username)"></v-text-field>
+                <v-text-field v-model="secret.secret"     label="App Client Secret (not paypal password)"></v-text-field>
                 <v-select :items="['production', 'sandbox']" v-model="account.attr.mode" label='mode' light hide-details placeholder="Select A Mode"></v-select>
             </v-container>
         </v-form>

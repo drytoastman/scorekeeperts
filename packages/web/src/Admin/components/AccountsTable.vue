@@ -1,5 +1,7 @@
 <template>
     <div class='accountstable'>
+        <div class='doclink'>Documentation at <a href='/docs/paymentaccounts' target='_blank'>{{prefix}}/docs/paymentaccounts</a></div>
+
         <div class='baseadminbuttons' :style=buttongridtemplate>
             <v-btn color="secondary" :href="squareOAuthUrl" :disabled="!squareapplicationid">
                 (Re)Authorize <img class='squareicon' :src="icons.squareIcon"/>
@@ -87,7 +89,8 @@ export default {
                 { text: 'Name', value: 'name' },
                 { text: 'Type', value: 'type' },
                 { text: 'Actions', value: 'actions', sortable: false }
-            ]
+            ],
+            prefix: window.location.protocol + '//' + window.location.host
         }
     },
     computed: {

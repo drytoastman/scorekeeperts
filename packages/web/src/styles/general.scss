@@ -66,3 +66,10 @@ html {
 .v-list-item.v-list-item--link:hover {
     background: #eeeef0;
 }
+
+.doclink {
+    text-align: center;
+    a {
+        color: blue !important;
+    }
+}
