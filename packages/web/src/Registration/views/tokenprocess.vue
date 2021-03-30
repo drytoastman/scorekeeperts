@@ -6,7 +6,7 @@
 </template>
 
 <script>
-import ChangePasswordDialog from '../components/ChangePasswordDialog'
+import ChangePasswordDialog from '../components/ChangePasswordDialog.vue'
 
 export default {
     name: 'TokenProcess',
@@ -25,6 +25,7 @@ export default {
             this.status = 'submitting new password'
         },
         complete() {
+            // pretend we are authenticated and try and get our data
             this.$store.commit('clearDriverData')
             this.$store.commit('driverAuthenticated', true)
             this.$store.dispatch('getdata')
@@ -32,6 +33,11 @@ export default {
         }
     },
     mounted() {
+        if (!this.$route.query.t || !this.$route.query.s) {
+            this.status = 'Invalid query parameters'
+            return
+        }
+
         this.$store.dispatch('token', { token: this.$route.query.t, signature: this.$route.query.s }).then(data => {
             if ('tokenerror' in data) {
                 this.status = data.tokenerror
