@@ -26,7 +26,7 @@ export interface Driver
     created: UTCString;
 }
 
-const username  = [Length(6, 16)]
+const username  = [Length(6, 36)]
 const password  = [Length(6, 32)]
 const firstname = [Length(2, 32)]
 const lastname  = [Length(2, 32)]
