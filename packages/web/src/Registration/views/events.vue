@@ -45,7 +45,7 @@
 
 <script>
 import filter from 'lodash/filter'
-import { isFuture } from 'date-fns'
+import { isFuture, add } from 'date-fns'
 import { mapState, mapGetters } from 'vuex'
 
 import { parseDate } from 'sctypes/util'
@@ -71,8 +71,8 @@ export default {
     computed: {
         ...mapState(['currentSeries', 'driversattr', 'settings', 'events', 'counts', 'registered', 'paymentitems', 'panelstate']),
         ...mapGetters(['driver', 'membershipfees', 'driverMembership', 'orderedEvents']),
-        // events by date, filtering out events that already occured as of today midnight, will still show up day of
-        events() { return filter(this.orderedEvents, e => isFuture(parseDate(e.date))) },
+        // events by date, filtering out events that already occured as of 2 days forward at midnight, will still show up day of and next
+        events() { return filter(this.orderedEvents, e => isFuture(add(parseDate(e.date), { days: 2 }))) },
 
         panelstate: {
             get: function() { return this.$store.state.panelstate },
