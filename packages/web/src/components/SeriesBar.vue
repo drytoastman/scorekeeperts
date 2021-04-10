@@ -1,5 +1,6 @@
 <template>
     <div class='seriesbar'>
+        <SiteSwitcher :site='title'></SiteSwitcher>
         <span class='btitle'>{{title}}</span>
         <v-select solo light dense hide-details placeholder="Select A Series" ref="sselect"
                     v-model="selectedSeries" :items="serieslist" :menu-props="{maxHeight: 'calc(100% - 1rem)'}"
@@ -10,9 +11,13 @@
 
 <script>
 import { mapState } from 'vuex'
+import SiteSwitcher from '@/components/SiteSwitcher.vue'
 
 export default {
     name: 'SeriesBar',
+    components: {
+        SiteSwitcher
+    },
     props: {
         title: String
     },

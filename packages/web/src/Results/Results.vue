@@ -1,7 +1,7 @@
 <template>
     <v-app fluid>
         <v-app-bar v-if="!$route.query.gui" dark color="primary">
-            <v-img :src=cone max-height=40 max-width=40></v-img>
+            <SiteSwitcher site='Results' :icon='cone'></SiteSwitcher>
             <div class='header'>Scorekeeper Results</div>
             <div class='menus'>
                 <ResultsMenu v-model="selectedYear"    depend="ok"             :items="yearlist"   placeholder="Select Year"></ResultsMenu>
@@ -23,6 +23,7 @@
 import orderBy from 'lodash/orderBy'
 import { mapGetters, mapState } from 'vuex'
 
+import SiteSwitcher from '@/components/SiteSwitcher.vue'
 import SnackBar from '@/components/SnackBar.vue'
 import ResultsMenu from './components/ResultsMenu.vue'
 import cone from '@/../public/images/cone.png'
@@ -33,7 +34,8 @@ export default {
     name: 'Results',
     components: {
         SnackBar,
-        ResultsMenu
+        ResultsMenu,
+        SiteSwitcher
     },
     data() {
         return  {
@@ -142,8 +144,11 @@ export default {
 
 <style lang="scss" scoped>
 .header {
-    margin-left: 1rem;
     margin-right: 1rem;
+}
+
+::v-deep .siteswitcher {
+    margin-right: 0.7rem;
 }
 
 .menus {
