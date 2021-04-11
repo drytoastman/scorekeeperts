@@ -29,8 +29,8 @@ export async function driverget(task: ScorekeeperProtocol, auth: AuthData, param
             case 'driversattr': ret.driversattr       = await task.drivers.getDriverSeriesAttr(driverid);        break
             case 'settings':
                 ret.settings = _.pick(await task.series.seriesSettings(), [
-                    'classinglink', 'seriesruleslink', 'requestrulesack', 'requestbarcodes',
-                    'requestmembership', 'membershipaccount'
+                    'classinglink', 'seriesruleslink', 'requestrulesack', 'rulesackbeforereg',
+                    'requestbarcodes', 'requestmembership', 'membershipaccount'
                 ])
                 break
             case 'usednumbers':

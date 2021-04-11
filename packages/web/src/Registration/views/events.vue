@@ -18,7 +18,7 @@
             </div>
         </div>
 
-        <v-expansion-panels multiple focusable hover accordion tile v-model='panelstate'>
+        <v-expansion-panels multiple focusable hover accordion tile v-model='panelstate' v-if='!(settings.requestrulesack && !driversattr.rulesack && settings.rulesackbeforereg)'>
             <v-expansion-panel v-for="event in events" :key="event.eventid">
                 <v-expansion-panel-header class='elevation-4' xcolor='primary lighten-1 white--text'>
                     <v-container class="pa-0">

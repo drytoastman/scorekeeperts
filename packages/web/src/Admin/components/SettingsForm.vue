@@ -17,10 +17,15 @@
         <v-text-field v-model="settingsm.classinglink"     style="grid-area: linkc"  :rules="vrules.classinglink" label="Classing Help Link"></v-text-field>
 
         <v-checkbox v-model="settingsm.requestrulesack"    style="grid-area: reqr"   :rules="vrules.requestrulesack" label="Request Rules Ack"></v-checkbox>
-        <v-text-field v-model="settingsm.seriesruleslink"  style="grid-area: linkr"  :rules="vrules.seriesruleslink" label="Series Rules Link"></v-text-field>
+        <v-text-field v-if="settingsm.requestrulesack"
+            v-model="settingsm.seriesruleslink"  style="grid-area: linkr"  :rules="vrules.seriesruleslink" label="Series Rules Link">
+        </v-text-field>
+        <v-checkbox v-if="settingsm.requestrulesack"
+            v-model="settingsm.rulesackbeforereg"  style="grid-area: reqrbr" :rules="vrules.rulesackbeforereg" label="Require Before Registering">
+        </v-checkbox>
 
         <v-checkbox v-model="settingsm.usepospoints"        style="grid-area: usepos" :rules="vrules.usepospoints" label="Use Position Based Points"></v-checkbox>
-        <v-text-field :disabled="!settingsm.usepospoints"
+        <v-text-field v-if="settingsm.usepospoints"
             v-model="settingsm.pospointlist" style="grid-area: ppoints" :rules="vrules.pospointlist" label="Position Points List">
         </v-text-field>
 
@@ -102,6 +107,7 @@ export default {
         "linkc linkc linkc linkc linkc linkc "
         "reqmem reqmem memitm memitm memact memact "
         "reqr reqr linkr linkr linkr linkr "
+        " .     .  reqrbr reqrbr reqrbr reqrbr "
         "usepos usepos ppoints ppoints ppoints ppoints "
         "reqb reqb indexa indexa superu superu "
         "temp temp temp temp temp temp "

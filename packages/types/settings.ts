@@ -10,6 +10,7 @@ export interface SeriesSettings
     classinglink: string;
     seriesruleslink: string;
     requestrulesack: boolean;
+    rulesackbeforereg: boolean;
     requestbarcodes: boolean;
     usepospoints: boolean;
     pospointlist: string;
@@ -34,6 +35,7 @@ export class DefaultSettings implements SeriesSettings {
     classinglink = ''
     seriesruleslink = ''
     requestrulesack = false
+    rulesackbeforereg = false
     requestbarcodes = false
     usepospoints = false
     pospointlist = '20,16,13,11,9,7,6,5,4,3,2,1'
