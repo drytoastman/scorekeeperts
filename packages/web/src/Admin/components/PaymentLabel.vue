@@ -11,7 +11,7 @@
         <span v-else>
             <div class='head'>{{payment.amount | cents2dollars}}</div>
             <div class='extra'>{{payment.itemname}}</div>
-            <div class='txid'>{{payment.txid}}</div>
+            <div class='txid'>{{payment.txid ? payment.txid : 'onsite'}}</div>
         </span>
     </div>
 </template>

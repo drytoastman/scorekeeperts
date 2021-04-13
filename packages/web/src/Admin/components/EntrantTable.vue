@@ -16,7 +16,7 @@
 
             <template v-slot:[`item.actions`]="{ item }">
                 <div v-if='!item.busy && !busyPayment[item.payment && item.payment.payid]'>
-                    <v-icon v-if="item.payment && !item.payment.refunded" @click.stop="refund(item)">{{icons.mdiCreditCardRefund}}</v-icon>
+                    <v-icon v-if="item.payment && item.payment.txid && !item.payment.refunded" @click.stop="refund(item)">{{icons.mdiCreditCardRefund}}</v-icon>
 
                     <v-icon v-if="doRunEdit" @click.stop="editruns(item)">{{icons.mdiCarSettings}}</v-icon>
                     <v-icon v-else-if="eventid && (!item.payment || item.payment.refunded)" @click.stop="unregister(item)">{{icons.mdiAccountRemove}}</v-icon>
