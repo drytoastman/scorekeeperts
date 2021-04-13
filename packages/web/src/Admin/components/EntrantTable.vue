@@ -162,11 +162,13 @@ export default {
         },
         itemFilter(value, search, item) {
             if (!search) return true
-            const r = new RegExp(search, 'i')
-            return (
-                r.test(item.firstname) || r.test(item.lastname) || r.test(item.eventname) || r.test(item.session) ||
-                carMatch(item.car, r) || (item.payment && (item.payment.refunded ? r.test('Refunded') : r.test(item.payment.itemname)))
-            )
+            // const r = new RegExp(search, 'i')
+            const reg = this.search.split(' ').map(t => new RegExp(t, 'i'))
+            for (const r of reg) {
+                if (!(r.test(item.firstname) || r.test(item.lastname) || r.test(item.eventname) || r.test(item.session) || carMatch(item.car, r) ||
+                (item.payment && (item.payment.refunded ? r.test('Refunded') : r.test(item.payment.itemname) || r.test(item.payment.txid))))) return false
+            }
+            return true
         },
         loadRequired() {
             this.$store.dispatch('ensureTablesAndCarDriverInfo', ['payments', 'registered'])

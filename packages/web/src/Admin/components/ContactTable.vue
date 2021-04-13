@@ -90,8 +90,10 @@ export default {
             }).filter(a => {
                 // search bar filter
                 if (this.search) {
-                    const r = new RegExp(this.search, 'i')
-                    if (!(r.test(a.firstname) || r.test(a.lastname) || r.test(a.email) || r.test(a.barcode) || r.test(a.classes))) return false
+                    const reg = this.search.split(' ').map(t => new RegExp(t, 'i'))
+                    for (const r of reg) {
+                        if (!(r.test(a.firstname) || r.test(a.lastname) || r.test(a.email) || r.test(a.barcode) || r.test(a.classes))) return false
+                    }
                 }
                 // barcode status filter
                 if (this.nobarcode && a.barcode) {
