@@ -11,6 +11,7 @@
         <span v-else>
             <div class='head'>{{payment.amount | cents2dollars}}</div>
             <div class='extra'>{{payment.itemname}}</div>
+            <div class='txid'>{{payment.txid}}</div>
         </span>
     </div>
 </template>
@@ -36,7 +37,14 @@ export default {
         text-align: left;
         white-space: nowrap;
     }
-    .head { color: green; }
+    .head   { color: green; }
     .refund { color: blue; }
-    .extra { font-size: 90%; }
+    .extra  {
+        color: #333;
+        font-size: 90%;
+    }
+    .txid   {
+        color: #777;
+        font-size: 80%;
+    }
 </style>
