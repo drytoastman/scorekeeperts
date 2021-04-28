@@ -146,6 +146,12 @@ export async function doSync(port: number, remotes?: number[]) {
 
 expect.extend({
     toBeAttrLike(received: any, like: any) {
+        if (like === null) {
+            if (received !== null) {
+                return { message: () => 'received was not null, like was', pass: false }
+            }
+            return { message: () => `${received} null same as ${like}`, pass: true }
+        }
         for (const key in like) {
             if (key === 'attr') continue
             if (!_.isEqual(received[key], like[key])) return { message: () => `${key}: ${received[key]} != ${like[key]}`, pass: false }

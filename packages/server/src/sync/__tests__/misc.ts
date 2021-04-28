@@ -1,5 +1,5 @@
 import { pgp } from 'scdb'
-import { doSync, resetData, testids, verifyObjectsSame, verifyObjectsAre, with2DB, DB1, DB2 } from './helpers'
+import { doSync, resetData, testids, verifyObjectsSame, verifyObjectsAre, verifyObjectsLike, with2DB, DB1, DB2 } from './helpers'
 
 beforeEach(async () => {
     await resetData([DB1, DB2])
@@ -10,6 +10,27 @@ afterAll(() => {
 })
 
 describe('testing misc', () => {
+
+    test('run key add, delete then add again, latest add should take precedence over earlier delete', async () => {
+        // Regression test for bug where an old delete of a run that was synced would keep deleting new runs being added with the same key
+        await with2DB(DB1, DB2, testids.series, async (task1, task2) => {
+            const therun = { eventid: testids.eventid1, carid: testids.carid1, course: 1, rungroup: 1, run: 1, raw: 1.0, cones: 0, gates: 0, status: 'OK', attr: {}}
+            const select = 'SELECT * FROM runs WHERE eventid=$(eventid1) AND carid=$(carid1) AND course=1 AND rungroup=1 AND run=1'
+
+            await verifyObjectsLike([task1, task2], select, testids, therun)
+
+            // DELETE
+            await task1.none('DELETE FROM runs WHERE eventid=$(eventid1) AND carid=$(carid1) AND course=1 AND rungroup=1 AND run=1', testids)
+            await doSync(DB1)
+            await verifyObjectsLike([task1, task2], select, testids, null)
+
+            // REINSERT
+            await task1.none("INSERT INTO runs (eventid, carid, course, rungroup, run, raw, status, attr) VALUES ($(eventid1), $(carid1), 1, 1, 1, 1.0, 'OK', '{}')", testids)
+            await doSync(DB1)
+            await verifyObjectsLike([task1, task2], select, testids, therun)
+        })
+    })
+
 
     test('account delete reinsertion regression', async () => {
         // Regression test for bug where delete of payment account was being reinserted by a remote sync """

@@ -212,7 +212,14 @@ async function mergeTablesInternal(wrap: SyncProcessInfo, tables: string[]): Pro
 
         // pk only in local database
         for (const pk of difference(l, r)) {
-            if (rdeleted.has(pk)) {
+            const delobj = rdeleted.get(pk)
+            const locobj = localobj.get(pk)
+            if (!locobj) {
+                synclog.error(`PK differences, expected locobj with key ${pk}, but nothing found`)
+                continue
+            }
+
+            if (delobj && (delobj.deletedat > parseTimestamp(locobj.modified))) {
                 localdelete.getD(t).push(rdeleted.get(pk) as DeletedObject)
             } else {
                 remoteinsert.getD(t).push(localobj.get(pk) as DBObject)
