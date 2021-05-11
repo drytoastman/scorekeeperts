@@ -6,3 +6,4 @@ tsbuild
 *.log
 dist_electron
 packages/*/lib
+.yarn
