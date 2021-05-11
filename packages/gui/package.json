@@ -14,7 +14,7 @@
   "main": "background.js",
   "dependencies": {
     "dockerode": "^3.2.1",
-    "lodash": "^4.17.20",
+    "lodash": "^4.17.21",
     "scdb": "5.0.0",
     "sctypes": "5.0.0",
     "serialport": "^9.0.4",
