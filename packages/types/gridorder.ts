@@ -67,7 +67,7 @@ class GridReport {
     table(group: number, key: string): Entrant[][] {
         const ret = [] as Entrant[][]
         let row = [] as Entrant[]
-        const classes = this.groups[group]
+        const classes = this.groups[group].filter(c => c[key].length > 0)
 
         for (let ii = 0; ii < classes.length; ii++) {
             if (!classes[ii][key]) continue
