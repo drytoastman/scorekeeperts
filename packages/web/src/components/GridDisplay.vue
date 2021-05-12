@@ -9,7 +9,10 @@
                         <td class='code' :key="idx+1000">{{e.car ? e.car.classcode : ''}}</td>
                         <td class='num'  :key="idx+2000">{{e.car ? e.car.number : ''}}</td>
                         <td class='net'  :key="idx+4000" v-if="shownet">{{e.net|t3}}</td>
-                        <td class='name' :key="idx+3000"><span v-if="e.driver">{{e.driver.firstname}} {{e.driver.lastname}}</span></td>
+                        <td class='name' :key="idx+3000">
+                            <span v-if="e.driver">{{e.driver.firstname}} {{e.driver.lastname}}</span>
+                            <span class='entryerror'>{{e.error}}</span>
+                        </td>
                     </template>
                 </tr>
             </template>
@@ -56,5 +59,9 @@ th {
     font-size: 120%;
     font-weight: bold;
     text-align: center;
+}
+.entryerror {
+    margin-left: 1rem;
+    color: red;
 }
 </style>

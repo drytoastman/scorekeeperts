@@ -9,6 +9,7 @@ import { EventResults } from './results'
 interface Entrant {
     car: Car|undefined
     driver: Driver|undefined
+    error?: string
 }
 
 class ClassWrapper {
@@ -44,9 +45,15 @@ class GridReport {
     addEntrantsByNumber(entrants: Entrant[]) {
         for (const e of entrants) {
             if (!e.car) continue
-            if (e.car.number < 100) {
+            const num = e.car.number
+            if (num < 100) {
                 this.groupmap[e.car.classcode].firsts.push(e)
             } else {
+                if (num >= 200) {
+                    e.error = 'invalid pro number'
+                } else if (!this.groupmap[e.car.classcode].firsts.find(f => f.car?.number === num - 100)) {
+                    e.error = 'no match < 100'
+                }
                 this.groupmap[e.car.classcode].duals.push(e)
             }
         }
