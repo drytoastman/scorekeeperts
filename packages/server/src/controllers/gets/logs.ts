@@ -11,7 +11,7 @@ const readfileAsync = util.promisify(fs.readFile)
 export async function logs(req: Request, res: Response) {
     req.auth.requireAdmin()
 
-    const linecount = req.query.lines || 10
+    const linecount = req.query.lines ? parseInt(req.query.lines.toString()) : 10
     const download = 'separate' in req.query
     const interleave = 'interleave' in req.query
     const files = (await readdirAsync('/var/log')).filter(f => f.endsWith('.log') && !f.startsWith('access'))

@@ -22,7 +22,7 @@
     "csv-stringify": "^5.5.3",
     "date-fns": "^2.16.1",
     "deep-object-diff": "^1.1.0",
-    "dns2": "^1.4.2",
+    "dns2": "^2.0.0",
     "express": "^4.17.1",
     "express-delay": "^0.2.0",
     "express-promise-router": "^4.0.1",
