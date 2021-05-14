@@ -59,7 +59,7 @@ export default {
     },
     computed: {
         ...mapState(['currentSeries', 'classes', 'classorder', 'drivers', 'cars', 'registered']),
-        newdata() { return [this.classes, this.classorder, this.cars, this.registered] }
+        newdata() { return [this.eventid, this.classes, this.classorder, this.cars, this.registered] }
     },
     methods: {
         groupActive(group) {
