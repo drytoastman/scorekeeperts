@@ -34,6 +34,7 @@
 </template>
 
 <script>
+import orderBy from 'lodash/orderBy'
 import { mapState } from 'vuex'
 import draggable from 'vuedraggable'
 import { createGridReport } from 'sctypes/gridorder'
@@ -58,7 +59,7 @@ export default {
     },
     computed: {
         ...mapState(['currentSeries', 'classes', 'classorder', 'drivers', 'cars', 'registered']),
-        newdata() { return [this.classes, this.classorder, this.cars, this.registered] }
+        newdata() { return [this.eventid, this.classes, this.classorder, this.cars, this.registered] }
     },
     methods: {
         groupActive(group) {
@@ -75,11 +76,9 @@ export default {
             }
         },
         buildReport() {
-            this.report = createGridReport(
-                this.classorder.filter(co => co.eventid === this.eventid),
-                Object.keys(this.classes),
-                this.eventid in this.registered ? this.registered[this.eventid].map(r => this.cars[r.carid]).filter(c => c) : [],
-                this.drivers)
+                this.report = createGridReport(this.classorder.filter(co => co.eventid === this.eventid), Object.keys(this.classes))
+                const cars = this.eventid in this.registered ? this.registered[this.eventid].map(r => this.cars[r.carid]).filter(c => c) : []
+                this.report.addEntrantsByNumber(orderBy(cars.map(c => ({ car: c, driver: this.drivers[c.driverid] })), 'car.number'))
         },
         update() {
             this.$store.dispatch('setdata', {

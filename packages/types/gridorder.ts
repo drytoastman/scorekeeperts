@@ -9,6 +9,7 @@ import { EventResults } from './results'
 interface Entrant {
     car: Car|undefined
     driver: Driver|undefined
+    error?: string
 }
 
 class ClassWrapper {
@@ -41,34 +42,31 @@ class GridReport {
         this.groups[rungroup].push(this.groupmap[code])
     }
 
-    addEntrants(entrants: Entrant[]) {
+    addEntrantsByNumber(entrants: Entrant[]) {
         for (const e of entrants) {
             if (!e.car) continue
-            if (e.car.number < 100) {
+            const num = e.car.number
+            if (num < 100) {
                 this.groupmap[e.car.classcode].firsts.push(e)
             } else {
+                if (num >= 200) {
+                    e.error = 'invalid pro number'
+                } else if (!this.groupmap[e.car.classcode].firsts.find(f => f.car?.number === num - 100)) {
+                    e.error = 'no match < 100'
+                }
                 this.groupmap[e.car.classcode].duals.push(e)
             }
         }
-        this.order('car.number')
     }
 
-    applyResults(eventresults: EventResults) {
-        for (const code in this.groupmap) {
-            for (const key of ['firsts', 'duals']) {
-                for (const e of this.groupmap[code][key] || []) {
-                    e.net = eventresults[code].find(r => r.carid === e.car.carid)?.net
-                }
-            }
-        }
-        this.order('net')
-    }
-
-    order(key: string) {
-        for (const group of this.groups) {
-            for (const cw of group) {
-                cw.firsts = orderBy(cw.firsts, key)
-                cw.duals  = orderBy(cw.duals,  key)
+    addEntrantsByResult(entrants: Entrant[]) {
+        for (const e of entrants) {
+            if (!e.car) continue
+            const dub = (e.car.number + 100) % 200
+            if (this.groupmap[e.car.classcode].firsts.find(e => e.car?.number === dub)) {
+                this.groupmap[e.car.classcode].duals.push(e)
+            } else {
+                this.groupmap[e.car.classcode].firsts.push(e)
             }
         }
     }
@@ -76,7 +74,7 @@ class GridReport {
     table(group: number, key: string): Entrant[][] {
         const ret = [] as Entrant[][]
         let row = [] as Entrant[]
-        const classes = this.groups[group]
+        const classes = this.groups[group].filter(c => c[key].length > 0)
 
         for (let ii = 0; ii < classes.length; ii++) {
             if (!classes[ii][key]) continue
@@ -112,7 +110,7 @@ class GridReport {
 }
 
 
-export function createGridReport(classorders: ClassOrder[], classcodes: string[], cars: Car[], drivermap: {[key: string]: Driver}): GridReport {
+export function createGridReport(classorders: ClassOrder[], classcodes: string[]): GridReport {
     const report = new GridReport()
     const rem = new Set(classcodes.filter(k => k !== 'HOLD'))
 
@@ -126,16 +124,18 @@ export function createGridReport(classorders: ClassOrder[], classcodes: string[]
         report.addClass(code, 0)
     }
 
-    report.addEntrants(cars.map(c => ({ car: c, driver: drivermap[c.driverid] })))
     return report
 }
 
 
 export function gridTables(classorders: ClassOrder[], classcodes: string[], cars: Car[], drivermap: {[key: string]: Driver}, eventresults?: EventResults):
                     {[idx: string]: { firsts: Entrant[][], duals: Entrant[][] }} {
-    const report = createGridReport(classorders, classcodes, cars, drivermap)
+    const report = createGridReport(classorders, classcodes)
+
     if (eventresults) {
-        report.applyResults(eventresults)
+        report.addEntrantsByResult(orderBy(cars.map(c => ({ car: c, driver: drivermap[c.driverid], net: eventresults[c.classcode].find(r => r.carid === c.carid)?.net })), 'net'))
+    } else {
+        report.addEntrantsByNumber(orderBy(cars.map(c => ({ car: c, driver: drivermap[c.driverid] })), 'car.number'))
     }
 
     const tables = {}

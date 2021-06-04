@@ -65,7 +65,7 @@ async function resolver(request, send): Promise<void> {
 export async function startDNSServer() {
     dnslog.info('starting dns servers')
 
-    const udpserver = dns.createServer(resolver)
+    const udpserver = dns.createUDPServer(resolver)
     udpserver.on('listening', () => { dnslog.info('UDP DNS Server listening') })
     udpserver.on('error', error => dnslog.error(error))
     udpserver.listen(DNSPORT)

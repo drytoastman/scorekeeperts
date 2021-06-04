@@ -4,7 +4,7 @@
             <span class=''>Upcoming Entries</span>
             <a class='icallink' :href="icallink"><v-icon color="secondary">{{mdiCalendarClock}}</v-icon> ical</a>
         </div>
-        <div class='eventsummary' v-for="s in summary" :key="s.eventid">
+        <div class='eventsummary' v-for="s in upcoming" :key="s.eventid">
             <div class='eventinfo'>
                 <span class='date'>{{s.date | dmdy}}</span>
                 <span class='series'>{{s.series}}</span>
@@ -27,6 +27,8 @@
 import { mapState } from 'vuex'
 import { mdiCalendarClock } from '@mdi/js'
 import { API2 } from '@/store/state'
+import { isFuture, add } from 'date-fns'
+import { parseDate } from 'sctypes/util'
 import CarLabel from '../../components/CarLabel'
 
 export default {
@@ -41,6 +43,7 @@ export default {
     },
     computed: {
         ...mapState(['summary', 'driverid']),
+        upcoming() { return this.summary.filter(s => isFuture(add(parseDate(s.date), { days: 1 }))) },
         icallink() { return API2.ICAL.replace('DRIVERID', this.driverid) }
     }
 }

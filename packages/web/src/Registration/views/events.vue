@@ -20,7 +20,11 @@
 
         <v-expansion-panels multiple focusable hover accordion tile v-model='panelstate' v-if='!(settings.requestrulesack && !driversattr.rulesack && settings.rulesackbeforereg)'>
             <v-expansion-panel v-for="event in events" :key="event.eventid">
-                <v-expansion-panel-header class='elevation-4' xcolor='primary lighten-1 white--text'>
+                <v-expansion-panel-header class='elevation-4' xcolor='primary lighten-1 white--text' :disabled="event.isexternal">
+                    <template v-slot:actions>
+                        <v-icon color="primary" v-if="!event.isexternal">$expand</v-icon>
+                        <v-icon v-else></v-icon>
+                    </template>
                     <v-container class="pa-0">
                         <v-row no-gutters align=center class='eventrow'>
                             <v-col class='datecol'>
@@ -31,11 +35,12 @@
                                     <circle cx=7 cy=7 r="6" :fill="opencolor(event)" />
                                 </svg>
                                 <span class='eventname'>{{event.name}}</span>
+                                <span class='external' v-if='event.isexternal'>External</span>
                             </v-col>
                         </v-row>
                     </v-container>
                 </v-expansion-panel-header>
-                <v-expansion-panel-content>
+                <v-expansion-panel-content v-if="!event.isexternal">
                     <RegisterEventDisplay :event="event" @regrequest="regrequest(event)" @payrequest="payrequest(event)"></RegisterEventDisplay>
                 </v-expansion-panel-content>
             </v-expansion-panel>
@@ -96,6 +101,7 @@ export default {
             this.paymentOpen = true
         },
         opencolor: function(event) {
+            if (event.isexternal) return '#FFF'
             if (isOpen(event)) return '#4C4'
             if (hasClosed(event)) return '#C44'
             return '#BBB'
@@ -143,6 +149,11 @@ export default {
         font-size: 1.2rem;
         white-space: nowrap;
         color: var(--v-primary-base);
+    }
+    .external {
+        margin-left: 1rem;
+        font-size: 1.2rem;
+        color: var(--v-secondary-base);
     }
     .datecol {
         text-align: right;
