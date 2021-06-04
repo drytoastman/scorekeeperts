@@ -39,12 +39,17 @@ export class RunsRepository {
     }
 
 
+    async getRunOrder(eventid: UUID, course: number, rungroup: number): Promise<UUID[]> {
+        // Returns a list of objects (classcode, carid) for the next cars in order after carid """
+        return await this.db.map('SELECT unnest(cars) cid from runorder WHERE eventid=$(eventid) AND course=$(course) AND rungroup=$(rungroup)',
+                                        { eventid, course, rungroup }, r => r.cid)
+    }
+
     async getNextRunOrder(aftercarid: UUID, eventid: UUID, course: number, rungroup: number, classcodefilter?: string, count = 3):
         Promise<Array<{carid: UUID, classcode: string, number: number}>> {
 
         // Returns a list of objects (classcode, carid) for the next cars in order after carid """
-        const order = await this.db.map('SELECT unnest(cars) cid from runorder WHERE eventid=$(eventid) AND course=$(course) AND rungroup=$(rungroup)',
-                                        { eventid, course, rungroup }, r => r.cid)
+        const order = await this.getRunOrder(eventid, course, rungroup)
         const ret = [] as any[]
         for (const [ii, rowid] of order.entries()) {
             if (rowid === aftercarid) {

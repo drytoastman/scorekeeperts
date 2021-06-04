@@ -6,6 +6,7 @@ const ProPanel       = () => import(/* webpackChunkName: "resultsviews1" */ './v
 const User           = () => import(/* webpackChunkName: "resultsviews1" */ './views/user.vue')
 const DataEntry      = () => import(/* webpackChunkName: "resultsviews1" */ './views/dataentry.vue')
 const ResultsDisplay = () => import(/* webpackChunkName: "resultsviews" */ './views/resultsdisplay.vue')
+const AuditDisplay   = () => import(/* webpackChunkName: "resultsviews" */ './views/auditdisplay.vue')
 const ChampDisplay   = () => import(/* webpackChunkName: "resultsviews" */ './views/champdisplay.vue')
 const TTDisplay      = () => import(/* webpackChunkName: "resultsviews" */ './views/ttdisplay.vue')
 const EventIndex     = () => import(/* webpackChunkName: "resultsviews" */ './views/eventindex.vue')
@@ -27,6 +28,9 @@ function queryProps(route) {
         eventslug: route.params.eventslug,
         codes:     tolist(route.query.codes),
         groups:    tolist(route.query.groups),
+        group:     route.query.group,
+        course:    route.query.course,
+        order:     route.query.order,
         counted:   route.query.counted
     }
 }
@@ -40,7 +44,7 @@ const routes = [
     { path: '/:series/:eventslug/bygroup',   name: 'bygroup',    component: ResultsDisplay, props: queryProps },
     { path: '/:series/:eventslug/post',      name: 'post',       component: ResultsDisplay, props: queryProps },
     { path: '/:series/:eventslug/tt',        name: 'toptimes',   component: TTDisplay,      props: queryProps },
-    { path: '/:series/:eventslug/audit',     name: 'audit',      component: Placeholder },
+    { path: '/:series/:eventslug/audit',     name: 'audit',      component: AuditDisplay,   props: queryProps },
     { path: '/:series/:eventslug/grid',      name: 'grid',       component: Grid,           props: true },
     { path: '/:series/:eventslug/dialins',   name: 'dialins',    component: Dialins,        props: true },
     { path: '/:series/:eventslug/bracket/:chalslug', name: 'bracket', component: Challenge, props: true },

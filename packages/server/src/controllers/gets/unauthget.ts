@@ -66,6 +66,10 @@ export async function unauthgetone(task: ScorekeeperProtocol, auth: AuthData, pa
             case 'classorder':      ret.classorder      = await task.clsidx.classOrder();             break
             case 'seriesinfo':      ret.seriesinfo      = await task.results.getSeriesInfo();         break
             case 'champresults':    ret.champresults    = await task.results.getChampResults();       break
+            case 'runorder':
+                param.eventid = await task.results.getEventidForSlug(param.eventid)
+                ret.runorder  = await task.runs.getRunOrder(param.eventid, param.course, param.rungroup)
+                break
             case 'entrylist':
                 param.eventid = await task.results.getEventidForSlug(param.eventid)
                 ret.entrylist = (await task.register.getFullEventRegistration(param.eventid, false)).map((e: any) => {
