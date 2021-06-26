@@ -32,6 +32,12 @@ export class ClassRepository {
                 await this.db.any(this.pgp.helpers.update(classes, TABLES.classlist) + ' WHERE v.classcode = t.classcode')
                 return this.classes(classes.map(c => c.classcode))
             }
+            if (type === 'upsert') {
+                await this.db.any(this.pgp.helpers.insert(classes, TABLES.classlist) +
+                           ' ON CONFLICT(classcode) DO UPDATE SET ' +
+                           TABLES.classlist.assignColumns({ from: 'EXCLUDED', skip: 'id' }))
+                return this.classes(classes.map(c => c.classcode))
+            }
             if (type === 'delete') {
                 return await this.db.any('DELETE from classlist WHERE classcode in ($1:csv) RETURNING classcode', classes.map(c => c.classcode))
             }

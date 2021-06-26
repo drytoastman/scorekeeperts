@@ -2,6 +2,7 @@
     <div class='classlisttable'>
         <div class='adminbuttons'>
             <v-btn color=secondary @click.stop="newclass">Add Class</v-btn>
+            <JSONUpsertWidget label="Import JSON" insertkey="classes"></JSONUpsertWidget>
         </div>
 
         <v-data-table :items="classlist" :headers="headers" item-key="classcode" disable-pagination hide-default-footer dense>
@@ -37,11 +38,13 @@ import orderBy from 'lodash/orderBy'
 import { mapState } from 'vuex'
 import { mdiPencil, mdiDelete } from '@mdi/js'
 import ClassDialog from './ClassDialog.vue'
+import JSONUpsertWidget from './JSONUpsertWidget.vue'
 
 export default {
     name: 'ClassList',
     components: {
-        ClassDialog
+        ClassDialog,
+        JSONUpsertWidget
     },
     data() {
         return {
