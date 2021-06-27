@@ -22,23 +22,36 @@ export function backupNow() {
     const client = new net.Socket()
 
     cronlog.info('starting backup %s', name)
-    client.connect({ host: 'db', port: 6666 }, () => {
-        client.write(name + '\n')
-    })
-    client.on('data', d => {
+    client.on('data', async d => {
         const s = d.toString()
         if (s.trim() === 'done') {
             cronlog.info('backup complete')
             const path = `/var/log/${name}.sql.gz`
-            const bucket = storage.bucket(backupBucket)
-            bucket.upload(path)
-                .then(() => cronlog.info('upload complete'))
-                .catch(error => cronlog.error('upload failure: ' + error))
-                .finally(() => fs.unlink(path, () => { /**/ }))
+            if (fs.existsSync(path)) {
+                const bucket = storage.bucket(backupBucket)
+                try {
+                    await bucket.upload(path)
+                    cronlog.info('upload complete')
+                } catch (error) {
+                    cronlog.error('upload failure: ' + error)
+                    cronlog.verbose(error.stack)
+                } finally {
+                    fs.unlink(path, () => { /**/ })
+                }
+            } else {
+                cronlog.error(`backup file "${path}" was not present in /var/log after getting done back`)
+            }
         } else {
-            cronlog.info(`bad data back from database server: ${s}`)
+            cronlog.error(`bad data back from database server: ${s}`)
         }
         client.end()
+    })
+
+    client.on('close',  () => { cronlog.info('backup socket closed') })
+    client.on('error',  error => { cronlog.error('backup socket error: ' + error.toString()) })
+
+    client.connect({ host: 'db', port: 6666 }, () => {
+        client.write(name + '\n')
     })
 }
 
