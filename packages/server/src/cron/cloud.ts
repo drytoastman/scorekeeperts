@@ -12,6 +12,7 @@ import { cronlog } from '@/util/logging'
 let config: any
 if (fs.existsSync('creds.json')) {
     config = { keyFilename: 'creds.json' }
+    cronlog.info('using local creds.json for google storage backup')
 }
 const storage      = new Storage(config)
 const backupBucket = 'scorekeeperbackup'

@@ -14,6 +14,8 @@ module.exports = {
     entry: './src/index.ts',
     mode: NODE_ENV,
     target: 'node14.15',
+    // devtool: NODE_ENV === 'production' ? 'nosources-source-map' : 'eval-cheap-module-source-map',
+    devtool: NODE_ENV === 'production' ? false : 'eval-cheap-module-source-map',
     plugins: [
         new webpack.IgnorePlugin({ resourceRegExp: /^pg-native$/ }),
         new webpack.DefinePlugin({ 'global.GENTLY': false }),
