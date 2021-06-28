@@ -1,5 +1,5 @@
 <template>
-    <v-dialog :value="value" @input="$emit('input')" persistent max-width="600px">
+    <v-dialog :value="value" @input="$emit('input')" persistent max-width="650px">
         <v-card>
             <v-card-title>
                 <span class="headline primary--text">Edit Runs</span>
@@ -28,7 +28,10 @@
                         <v-text-field v-model="props.item.gates" :rules="irules" single-line class='int'></v-text-field>
                     </template>
                     <template v-slot:[`item.status`]="props">
-                        <v-select :items="['OK', 'DNF', 'DNS', 'RL', 'NS']" v-model="props.item.status" class='stat'></v-select>
+                        <v-select :items="statusvalues" v-model="props.item.status" class='stat'></v-select>
+                    </template>
+                    <template v-slot:[`item.delete`]="props">
+                        <v-checkbox v-model="props.item.delete"></v-checkbox>
                     </template>
                 </v-data-table>
             </v-card-text>
@@ -62,6 +65,7 @@ export default {
         return {
             drules: [isDecimal3],
             irules: [v => v >= 0 || '>= 0'],
+            statusvalues: ['OK', 'DNF', 'DNS', 'RL', 'NS'],
             headers: [
                 { text: 'Course', value: 'course',   align: 'center' },
                 { text: 'Group',  value: 'rungroup', align: 'center' },
@@ -69,7 +73,8 @@ export default {
                 { text: 'Raw',    value: 'raw',      align: 'center' },
                 { text: 'C',      value: 'cones',    align: 'center' },
                 { text: 'G',      value: 'gates',    align: 'center' },
-                { text: 'Status', value: 'status',   align: 'center' }
+                { text: 'Status', value: 'status',   align: 'center' },
+                { text: 'Delete', value: 'delete',   align: 'center' }
             ],
             runs: []
         }
@@ -83,7 +88,7 @@ export default {
         updateRuns() {
             this.$store.dispatch('setdata', {
                 items: {
-                    runs: this.runs
+                    runs: this.runs.filter(r => this.statusvalues.includes(r.status))
                 }
             }).then(data => {
                 if (data && data.runs) this.$emit('input')
@@ -111,7 +116,8 @@ export default {
                                     raw: 999.999,
                                     cones: 0,
                                     gates: 0,
-                                    status: 'DNS'
+                                    status: 'PLC',
+                                    delete: false
                                 })
                             }
                         }

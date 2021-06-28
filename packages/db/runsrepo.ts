@@ -13,10 +13,14 @@ export class RunsRepository {
     async updateRuns(runs: Run[]): Promise<Run[]> {
         const ret = [] as Run[]
         for (const run of runs) {
-            const res = await this.db.oneOrNone(this.pgp.helpers.insert([run], TABLES.runs) +
+            if (run.delete) {
+                await this.db.none('DELETE FROM runs WHERE eventid=$(eventid) AND carid=$(carid) AND rungroup=$(rungroup) AND course=$(course) AND run=$(run)', run)
+            } else {
+                const res = await this.db.oneOrNone(this.pgp.helpers.insert([run], TABLES.runs) +
                                     ' ON CONFLICT (eventid,carid,rungroup,course,run) DO UPDATE SET ' +
                                     this.pgp.helpers.sets(run, TABLES.runs) + ' RETURNING *')
-            if (res) ret.push(res) // null means nothing changed do trigger stopped it
+                if (res) ret.push(res) // null means nothing changed do trigger stopped it
+            }
         }
         return ret
     }

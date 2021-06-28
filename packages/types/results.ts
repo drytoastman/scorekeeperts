@@ -27,6 +27,7 @@ export interface Run {
         sixty?: number;
     }
     modified: string;
+    delete?: boolean;
 }
 
 export interface DecoratedRun extends Run {
