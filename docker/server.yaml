@@ -3,7 +3,6 @@ volumes:
     database:
     logs:
     certs: { external: { name: "certs" }}
-    webdata:
     letsencrypt: { external: { name: "letsencrypt" }}
 
 networks:
