@@ -42,7 +42,7 @@
     "sctypes": "5.0.0",
     "square": "8.0",
     "utf-8-validate": "^5.0.3",
-    "validator": "^13.5.1",
+    "validator": "^13.7.0",
     "winston": "^3.3.3",
     "ws": "^7.4.1"
   },
