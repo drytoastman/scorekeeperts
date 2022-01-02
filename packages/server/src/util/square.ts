@@ -90,7 +90,8 @@ export async function squareOrder(conn: ScorekeeperProtocol, square: any, paymen
         sourceId: square.nonce,
         idempotencyKey: ikey2,
         amountMoney: orderresponse.result.order?.totalMoney as Money,
-        orderId: orderresponse.result.order?.id
+        orderId: orderresponse.result.order?.id,
+        locationId: account.accountid
     }
 
 
