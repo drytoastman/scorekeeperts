@@ -41,7 +41,9 @@ export async function squareOrder(conn: ScorekeeperProtocol, square: any, paymen
         account = await conn.payments.getPaymentAccount(square.accountid)
         secret  = await conn.payments.getPaymentAccountSecret(square.accountid)
     } catch (error) {
-        paymentslog.error('error getting square account info: ' + error.message)
+        let msg: string
+        if (error instanceof Error) { msg = error.message } else { msg = String(error) }
+        paymentslog.error('error getting square account info: ' + msg)
         throw new Error('error getting square account info from database')
     }
 
@@ -147,7 +149,7 @@ export async function squareRefund(conn: ScorekeeperProtocol, payments: Payment[
         idempotencyKey: refid,
         paymentId: payments[0].txid,
         amountMoney: {
-            amount: total,
+            amount: BigInt(total),
             currency: 'USD'
         },
         reason: reasons.join(', ')
