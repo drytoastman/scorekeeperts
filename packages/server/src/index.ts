@@ -80,8 +80,8 @@ const server = app.listen(PORT, () => {
 
 server.on('upgrade', function upgrade(request, socket, head) {
     // this is outside of express so we need to parse query ourselves
-    const pathname = request.url.split('?')[0]
-    if (pathname.startsWith('/api2') && cookiesessioner) {
+    const pathname = request && request.url && request.url.split('?')[0]
+    if (pathname && pathname.startsWith('/api2') && cookiesessioner) {
         cookiesessioner(request, {}, () => { /* make sure cookie session (auth) is processed before handling */ })
         websockets.handleUpgrade(request, socket, head, ws => websockets.emit('connection', ws, request))
     } else {

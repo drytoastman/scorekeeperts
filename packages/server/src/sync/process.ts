@@ -2,7 +2,7 @@ import { isPast } from 'date-fns'
 import { EventEmitter } from 'events'
 
 import { DefaultMap, difference, intersect } from 'sctypes/data'
-import { parseTimestamp } from 'sctypes/util'
+import { errString, parseTimestamp } from 'sctypes/util'
 import { ScorekeeperProtocol, ScorekeeperProtocolDB } from 'scdb'
 import { synclog } from '@/util/logging'
 
@@ -10,7 +10,7 @@ import { getLocalDB, getRemoteDB } from './connections'
 import { ADVANCED_UPDATE_TABLES, INTERTWINED_DATA, LOCAL_TIMEOUT, TABLE_ORDER } from './constants'
 import { performSyncWrap, SyncProcessInfo } from './dbwrapper'
 import { MergeServerEntry } from './mergeserver'
-import { DBObject, DeletedObject, getPKHash, KillSignalError, mincreatetime, minmodtime, PrimaryKeyHash, SyncError, SyncErrors, TableName } from './types'
+import { DBObject, DeletedObject, getPKHash, KillSignalError, mincreatetime, minmodtime, PrimaryKeyHash, SyncError, TableName } from './types'
 
 export const syncwatcher  = new EventEmitter()
 export let syncKillSignal = false
@@ -30,7 +30,7 @@ export async function runSyncOnce(testdb?: ScorekeeperProtocolDB) {
         try {
             myserver = new MergeServerEntry(await roottask.merge.getLocalMergeServer(), roottask)
         } catch (error) {
-            throw new SyncError('Unable to load local server info: ' + error.message)
+            throw new SyncError('Unable to load local server info: ' + errString(error))
         }
 
         // Check for any quickruns flags and do those first
@@ -55,7 +55,7 @@ export async function runSyncOnce(testdb?: ScorekeeperProtocolDB) {
                 } catch (e) {
                     synclog.error(`Caught exception merging with ${remote.display}: ${e}`)
                     syncwatcher.emit('exception', { label: 'mergeloop', remote: remote, exception: e })
-                    await remote.serverError(e.toString())
+                    await remote.serverError(errString(e))
                 }
             }
         }
@@ -124,10 +124,10 @@ async function mergeWith(roottask: ScorekeeperProtocol, myserver: MergeServerEnt
             })
 
         } catch (e) {
-            error = e.toString()
+            error = errString(e)
             synclog.warn(`Merge with ${remoteserver.display}/${series} failed: ${e}`)
             syncwatcher.emit('exception', { label: 'mergewith', remote: remoteserver, exception: e })
-            if (e.name === SyncErrors.KillSignal) throw e
+            if (e instanceof KillSignalError) throw e
         } finally {
             await remoteserver.seriesDone(series, error)
         }

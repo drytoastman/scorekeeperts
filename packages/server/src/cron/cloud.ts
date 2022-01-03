@@ -35,7 +35,7 @@ export function backupNow() {
                     cronlog.info('upload complete')
                 } catch (error) {
                     cronlog.error('upload failure: ' + error)
-                    cronlog.verbose(error.stack)
+                    if (error instanceof Error) cronlog.verbose(error.stack)
                 } finally {
                     fs.unlink(path, () => { /**/ })
                 }

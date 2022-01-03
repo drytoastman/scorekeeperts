@@ -1,4 +1,5 @@
 import { pgp } from 'scdb'
+import { errString } from 'sctypes'
 import { doSync, resetData, testids, verifyObjectsSame, verifyObjectsAre, verifyObjectsLike, with2DB, DB1, DB2 } from './helpers'
 
 beforeEach(async () => {
@@ -76,7 +77,7 @@ describe('testing misc', () => {
             }
             throw new Error('double sync did not throw error')
         } catch (error) {
-            expect(error.message).toMatch(/Request to sync but there is already an active sync ocurring on the database/)
+            expect(errString(error)).toMatch(/Request to sync but there is already an active sync ocurring on the database/)
         }
     })
 })

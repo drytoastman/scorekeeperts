@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import { Request, Response } from 'express'
 import { db } from 'scdb'
-import { UUID } from 'sctypes/util'
+import { errString, UUID } from 'sctypes/util'
 import { AUTHTYPE_DRIVER, AUTHTYPE_NONE, AUTHTYPE_SERIES } from 'sctypes/auth'
 
 /* eslint-disable @typescript-eslint/no-namespace */
@@ -72,7 +72,7 @@ export async function login(req: Request, res: Response) {
         req.auth.driverAuthenticated(await db.drivers.checkLogin(req.body.username, req.body.password))
         res.status(200).json({ result: 'authenticated' })
     } catch (error) {
-        res.status(401).json({ error: error.toString() })
+        res.status(401).json({ error: errString(error) })
     }
 }
 
@@ -87,7 +87,7 @@ export async function serieslogin(req: Request, res: Response) {
         req.auth.seriesAuthenticated(req.body.series)
         res.status(200).json({ result: 'authenticated' })
     } catch (error) {
-        res.status(401).json({ error: error.toString() })
+        res.status(401).json({ error: errString(error) })
     }
 }
 
@@ -100,7 +100,7 @@ export async function adminlogin(req: Request, res: Response) {
             throw Error('Admin password incorrect')
         }
     } catch (error) {
-        res.status(401).json({ error: error.toString() })
+        res.status(401).json({ error: errString(error) })
     }
 }
 

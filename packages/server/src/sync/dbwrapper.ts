@@ -133,7 +133,8 @@ export class SyncProcessInfo {
             try {
                 await task.none(pgp.helpers.insert(objs, SYNCTABLES[table]))
             } catch (error) {
-                if (error.code === FOREIGN_KEY_CONSTRAINT) return false
+                const e:any = error
+                if (e.code === FOREIGN_KEY_CONSTRAINT) return false
                 throw error
             }
         }
@@ -152,7 +153,8 @@ export class SyncProcessInfo {
             try {
                 await task.none(pgp.helpers.update(objs, SYNCTABLES[table]) + PRIMARY_TVEQ[table])
             } catch (error) {
-                if (error.code === FOREIGN_KEY_CONSTRAINT) return false
+                const e:any = error
+                if (e.code === FOREIGN_KEY_CONSTRAINT) return false
                 throw error
             }
         }
@@ -175,7 +177,8 @@ export class SyncProcessInfo {
                 await task.none(`DELETE FROM ${table} WHERE ${PRIMARY_SETS[table]}`, obj.data)
                 await task.none('UPDATE $1:raw SET otime=$2 WHERE otime=CURRENT_TIMESTAMP', [logtable, obj.deletedat])
             } catch (error) {
-                if (error.code === FOREIGN_KEY_CONSTRAINT) {
+                const e:any = error
+                if (e.code === FOREIGN_KEY_CONSTRAINT) {
                     synclog.warn(`adding ${getPKHash(table, obj.data)} to undelete`)
                     undelete.push(obj.data)
                 } else {

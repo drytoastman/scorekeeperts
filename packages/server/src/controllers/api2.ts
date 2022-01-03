@@ -4,10 +4,11 @@ import icalgen from 'ical-generator'
 import moment from 'moment'
 import util from 'util'
 
-import { db } from 'scdb'
+import { db, pgp } from 'scdb'
+import { errString } from 'sctypes/util'
 import { controllog } from '@/util/logging'
 
-import { login, logout, AuthData, serieslogin, adminlogin, adminlogout, checkAuth } from './auth'
+import { login, logout, AuthData, serieslogin, adminlogin, adminlogout, checkAuth, AuthError } from './auth'
 import { changepassword, register, reset, token } from './posts/regreset'
 import { cards } from './gets/cards'
 import { logs } from './gets/logs'
@@ -59,7 +60,7 @@ export async function apiget(req: Request, res: Response) {
                 param = checkAuth(req)
                 param.items = param.items ? param.items.split(',') : defaultget(param.authtype)
             } catch (error) {
-                if (error.param) {
+                if (error instanceof AuthError && error.param) {
                     // for apigets, try unauthget on authfail for unauth items
                     error.param.items = error.param.items.split(',') // don't add defaults, must be specific
                     const res = await unauthget(task, req.auth, error.param)
@@ -76,10 +77,10 @@ export async function apiget(req: Request, res: Response) {
             }
         }))
     } catch (error) {
-        if (error.authtype) {
+        if (error instanceof AuthError && error.authtype) {
             res.status(401).json({ error: error.message, authtype: error.authtype })
-        } else {
-            if (error.query) {
+        } else if (error instanceof Error) {
+            if (error instanceof pgp.errors.QueryResultError && error.query) {
                 controllog.error(util.inspect(error))
             } else {
                 controllog.error(error)
@@ -102,11 +103,11 @@ export async function apipost(req: Request, res: Response) {
             throw Error('Unknown authtype')
         }))
     } catch (error) {
-        if (error.authtype) {
-            res.status(401).json({ error: error.message, types: error.types })
+        if (error instanceof AuthError && error.authtype) {
+            res.status(401).json({ error: error.message, authtype: error.authtype })
         } else {
             controllog.error(error)
-            res.status(500).send({ error: error.message })
+            res.status(500).send({ error: errString(error) })
         }
     }
 }
@@ -132,7 +133,7 @@ export async function ical(req: Request, res: Response) {
         cal.serve(res)
     } catch (error) {
         controllog.error(error)
-        res.status(500).json({ error: error.toString() })
+        res.status(500).json({ error: errString(error) })
     }
 }
 
@@ -144,7 +145,7 @@ export async function remotelist(req: Request, res: Response) {
         const list = await getRemoteDB({ hostname: req.query.host as string }, 'nulluser', 'nulluser').series.seriesList()
         return res.send(list.join(','))
     } catch (error) {
-        return res.status(500).send(error.message)
+        return res.status(500).send(errString(error))
     }
 }
 
@@ -156,7 +157,7 @@ export async function remotecheck(req: Request, res: Response) {
         await getRemoteDB({ hostname: req.query.host as string }, req.query.series as string, req.query.password as string).series.seriesSettings()
         return res.send('accepted')
     } catch (error) {
-        return res.status(500).send(error.message)
+        return res.status(500).send(errString(error))
     }
 }
 

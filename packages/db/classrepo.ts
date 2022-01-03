@@ -42,9 +42,9 @@ export class ClassRepository {
                 return await this.db.any('DELETE from classlist WHERE classcode in ($1:csv) RETURNING classcode', classes.map(c => c.classcode))
             }
         } catch (error) {
-            console.log(JSON.stringify(error))
-            if (error.constraint) {
-                switch (error.table) {
+            const e:any = error
+            if (e.constraint) {
+                switch (e.table) {
                     case 'cars': throw Error('Class is still in use by a car')
                     case 'classlist': throw Error('The classcode already exists')
                 }
@@ -67,8 +67,9 @@ export class ClassRepository {
             if (type === 'update') return await this.db.any(this.pgp.helpers.update(indexes, TABLES.indexlist) + ' WHERE v.indexcode = t.indexcode RETURNING *')
             if (type === 'delete') return await this.db.any('DELETE from indexlist WHERE indexcode in ($1:csv) RETURNING indexcode', indexes.map(i => i.indexcode))
         } catch (error) {
-            if (error.constraint) {
-                switch (error.table) {
+            const e:any = error
+            if (e.constraint) {
+                switch (e.table) {
                     case 'cars':      throw Error('Index is still in use by a car')
                     case 'classlist': throw Error('Index is still in use by a class')
                     case 'indexlist': throw Error('The indexcode already exists')

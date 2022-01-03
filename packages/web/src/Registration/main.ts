@@ -13,14 +13,6 @@ Vue.use(filters)
 Vue.use(LoadScript)
 Vue.use(Vuetify)
 
-declare module 'vue/types/vue' {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    interface VueConstructor<V extends Vue = Vue> {
-        loadScript: any;
-        unloadScript: any;
-    }
-}
-
 const base = {
     primary: '#465146',
     secondary: '#478841',

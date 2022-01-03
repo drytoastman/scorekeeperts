@@ -9,10 +9,10 @@ import util from 'util'
 import { db } from 'scdb'
 import { SeriesSettings } from 'sctypes/settings'
 import { SeriesEvent } from 'sctypes/event'
-import { UUID } from 'sctypes/util'
+import { errString, UUID } from 'sctypes/util'
 import { controllog } from '@/util/logging'
 
-import { checkAuth } from '../auth'
+import { AuthError, checkAuth } from '../auth'
 
 const asyncRead = util.promisify(fs.readFile)
 
@@ -118,7 +118,7 @@ async function cardtemplate(regData: RegData, series: string, res: Response) {
         res.send(await cardHTML(regData))
     } catch (error) {
         controllog.error(error)
-        return res.status(500).json({ error: error.message })
+        return res.status(500).json({ error: errString(error) })
     }
 }
 
@@ -139,7 +139,7 @@ async function cardpdf(regData: RegData, series: string, res: Response) {
         browser.close()
     } catch (error) {
         controllog.error(error)
-        return res.status(500).json({ error: error.message })
+        return res.status(500).json({ error: errString(error) })
     }
 }
 
@@ -176,7 +176,11 @@ export async function cards(req: Request, res: Response) {
     try {
         param = checkAuth(req)
     } catch (error) {
-        return res.status(401).json({ error: error.message, authtype: error.authtype })
+        if (error instanceof AuthError) {
+            return res.status(401).json({ error: error.message, authtype: error.authtype })
+        } else {
+            return res.status(500).json({ error: errString(error) })
+        }
     }
 
     const regData = await loadRegData(param.series, param.eventid, param.order !== 'blank')

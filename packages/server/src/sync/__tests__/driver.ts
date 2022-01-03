@@ -1,4 +1,4 @@
-import { EPOCH } from 'sctypes/util'
+import { EPOCH, errString } from 'sctypes/util'
 import { pgp } from 'scdb'
 import { DB1, DB2, doSync, getTestDB, resetData, testids, timingpause, verifyObjectsAre, verifyObjectsLike, verifyUpdateLogChanges, with2DB } from './helpers'
 
@@ -85,7 +85,7 @@ describe('driver sync tests', () => {
                 await task.none('UPDATE cars SET driverid=$1 WHERE driverid=$2', [testids.driverid1, testids.newdriverid])
                 throw Error('Invalid update did not throw error')
             } catch (error) {
-                expect(error.message).toMatch(/Updating without changing modification time/)
+                expect(errString(error)).toMatch(/Updating without changing modification time/)
             }
         })
     })

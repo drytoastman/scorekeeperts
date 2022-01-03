@@ -23,3 +23,4 @@ This repo contains the Typescript components of the scorekeeper tools.  Eventual
  1. cd packages/web
  2. yarn dev
 
+Open a browser to http://127.0.0.1

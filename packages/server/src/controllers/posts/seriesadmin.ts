@@ -2,12 +2,12 @@ import { AUTHTYPE_SERIES } from 'sctypes/auth'
 import { Car } from 'sctypes/car'
 import { Driver } from 'sctypes/driver'
 import { SeriesValidator } from 'sctypes/series'
-import { validateObj } from 'sctypes/util'
+import { errString, validateObj } from 'sctypes/util'
 import { db, pgdb, ScorekeeperProtocol } from 'scdb'
 import { controllog } from '@/util/logging'
 import { Request, Response } from 'express'
 import { allSeriesDeleteDriverLinks, getInactiveCars, getInactiveDrivers } from '../allseries'
-import { AuthData, checkAuth } from '../auth'
+import { AuthData, AuthError, checkAuth } from '../auth'
 
 export async function seriesadmin(req: Request, res: Response) {
     try {
@@ -26,11 +26,11 @@ export async function seriesadmin(req: Request, res: Response) {
             throw Error(`unknown seriesadmin request: ${param.request}`)
         }))
     } catch (error) {
-        if (error.authtype) {
-            res.status(401).json({ error: error.message, types: error.types })
+        if (error instanceof AuthError && error.authtype) {
+            res.status(401).json({ error: error.message, types: error.param.types })
         } else {
             controllog.error(error)
-            res.status(500).send({ error: error.message })
+            res.status(500).send({ error: errString(error) })
         }
     }
 }

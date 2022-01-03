@@ -4,7 +4,7 @@ import KeyGrip from 'keygrip'
 import isUUID from 'validator/lib/isUUID'
 
 import { RegisterValidator, ResetValidator } from 'sctypes/driver'
-import { validateObj } from 'sctypes/util'
+import { errString, validateObj } from 'sctypes/util'
 import { MAIL_SEND_FROM } from 'scdb/generalrepo'
 import { db } from 'scdb'
 import { wrapObj, unwrapObj } from '@/util/statelessdata'
@@ -62,7 +62,7 @@ export async function token(req: Request, res: Response) {
         }
     } catch (error) {
         controllog.warn(error)
-        return res.json({ tokenerror: error.toString() })
+        return res.json({ tokenerror: errString(error) })
     }
 }
 
@@ -92,7 +92,7 @@ export async function register(req: Request, res: Response) {
             })
         } catch (error) {
             controllog.error(error)
-            return res.status(400).json({ error: error.toString() })
+            return res.status(400).json({ error: errString(error) })
         }
 
         if (!ismain) {
@@ -124,14 +124,14 @@ export async function register(req: Request, res: Response) {
         } catch (error) {
             const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress
             controllog.warn(`Ignore request ${request.email} ${ip}: ${error}`)
-            return res.status(400).json({ error: error.toString() })
+            return res.status(400).json({ error: errString(error) })
         }
 
         return res.status(200).json(await emailresult(request))
 
     } catch (error) {
         controllog.error(error)
-        res.status(500).json({ error: error.toString() })
+        res.status(500).json({ error: errString(error) })
     }
 }
 
@@ -160,7 +160,7 @@ export async function reset(req: Request, res: Response) {
             request.driverid = d.driverid
         } catch (error) {
             controllog.error(error)
-            return res.status(400).json({ error: error.toString() })
+            return res.status(400).json({ error: errString(error) })
         }
 
         try {
@@ -180,14 +180,14 @@ export async function reset(req: Request, res: Response) {
         } catch (error) {
             const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress
             controllog.warn(`Ignore reset ${rcpt.email} ${ip}: ${error}`)
-            return res.status(400).json({ error: error.toString() })
+            return res.status(400).json({ error: errString(error) })
         }
 
         return res.status(200).json(await emailresult(rcpt))
 
     } catch (error) {
         controllog.error(error)
-        res.status(500).json({ error: error.toString() })
+        res.status(500).json({ error: errString(error) })
     }
 }
 
@@ -206,6 +206,6 @@ export async function changepassword(req: Request, res: Response) {
         res.status(200).json({ result: 'Password change successful' })
     } catch (error) {
         controllog.error(error)
-        res.status(500).json({ error: error.toString() })
+        res.status(500).json({ error: errString(error) })
     }
 }

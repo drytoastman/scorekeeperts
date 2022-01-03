@@ -24,6 +24,10 @@ export type VuetifyValidationRule  = (value: any) => string | boolean
 export type VuetifyValidationRules = VuetifyValidationRule[]
 export const EPOCH = '1970-01-01T00:00:00Z'
 
+export function errString(error: unknown): string {
+    return (error instanceof Error) ? error.message : String(error)
+}
+
 export function parseDate(date: DateString): Date {
     const p = date.split('-')
     return new Date(parseInt(p[0]), parseInt(p[1]) - 1, parseInt(p[2]))
@@ -73,7 +77,7 @@ export function isPrintable(allowblank: boolean): VuetifyValidationRule {
         const isString = typeof v === 'string' || v instanceof String
         const quant = allowblank ? '*' : '+'
         const re = new RegExp(`^[ -~]${quant}$`, 'i')
-        return (isString && re.test(v)) || 'must be ascii printable characters'
+        return (isString && re.test(v.toString())) || 'must be ascii printable characters'
     }
 }
 

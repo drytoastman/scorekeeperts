@@ -2,6 +2,7 @@ import { v1 as uuidv1 } from 'uuid'
 
 import { pgp } from 'scdb'
 import { DB1, DB2, doSync, resetData, testids, timingpause, verifyObjectsLike, with2DB } from './helpers'
+import { errString } from 'sctypes/util'
 
 beforeEach(async () => {
     await resetData([DB1, DB2])
@@ -27,7 +28,7 @@ describe('grouped tables', () => {
                 await task1.none(insert, [[uuidv1()], testids.eventid1, 2, 2])
                 throw Error('runorder conflict did not throw error')
             } catch (error) {
-                expect(error.message).toMatch(/Attempting to create a row with an unknown carid/)
+                expect(errString(error)).toMatch(/Attempting to create a row with an unknown carid/)
             }
 
             // make sure we can't double a car
@@ -35,7 +36,7 @@ describe('grouped tables', () => {
                 await task1.none(insert, [[testids.carid2, testids.carid3, testids.carid2], testids.eventid1, 2, 2])
                 throw Error('runorder duplicate did not throw error')
             } catch (error) {
-                expect(error.message).toMatch(/You cannot add a car multiple times to the same rungroup/)
+                expect(errString(error)).toMatch(/You cannot add a car multiple times to the same rungroup/)
             }
 
             await doSync(DB1)
@@ -62,7 +63,7 @@ describe('grouped tables', () => {
                 await task1.none(insert, [testids.eventid1, 2, ['c3', 'c4', 'c5']])
                 throw Error('classorder conflict did not throw error')
             } catch (error) {
-                expect(error.message).toMatch(/Class cannot be in multiple rungroups for the same event/)
+                expect(errString(error)).toMatch(/Class cannot be in multiple rungroups for the same event/)
             }
 
             // can't add if class doesn't exist
@@ -70,7 +71,7 @@ describe('grouped tables', () => {
                 await task1.none(insert, [testids.eventid1, 2, ['c6']])
                 throw Error('classorder missing did not throw error')
             } catch (error) {
-                expect(error.message).toMatch(/Attempting to create a row with an unknown class code/)
+                expect(errString(error)).toMatch(/Attempting to create a row with an unknown class code/)
             }
 
             await doSync(DB1)
