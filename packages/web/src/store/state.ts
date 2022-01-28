@@ -6,7 +6,7 @@ import { Car } from 'sctypes/car'
 import { Registration, Payment } from 'sctypes/register'
 import { UUID } from 'sctypes/util'
 import ReconnectingWebSocket from 'reconnecting-websocket'
-import { LiveSocketWatch } from 'sctypes/results'
+import { ExternalResult, LiveSocketWatch } from 'sctypes/results'
 
 export const EMPTY = ''
 export const API2 = {
@@ -73,10 +73,11 @@ export class Api2State {
     registered: {[key: string]: Registration[]} = {}
     payments: {[key: string]: Payment[]} = {}
     attendance: {[key: string]: UUID[]} = {}
-    dattendance: {[key: string]: {[key: string]: string[]}} = {}
     counts: {[key: string]: any} = {}
     classorder: {[key: string]: any} = {}
     driversattr: {[key: string]: any} = {}
+    dattendance: {[key: string]: {[key: string]: string[]}} = {}
+    externalresults: {[key: string]: ExternalResult[]} = {}
 
     // square oauth
     squareapplicationid = ''

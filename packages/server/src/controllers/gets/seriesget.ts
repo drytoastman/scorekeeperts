@@ -24,6 +24,7 @@ export async function seriesget(task: ScorekeeperProtocol, auth: AuthData, param
             case 'registered':    ret.registered = await task.register.getAllRegistration(param.eventid); break
             case 'settings':      ret.settings = await task.series.seriesSettings(); break
             case 'runs':          ret.runs = await task.runs.getRuns(param.eventid, param.carid); break
+            case 'externalresults': ret.externalresults = await task.runs.getExternalResults(param.eventid); break
             case 'usednumbers':
                 ret.usednumbers = await task.register.usedNumbers(param.driverid, param.classcode, await task.series.superUniqueNumbers())
                 break

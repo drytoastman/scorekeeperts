@@ -73,12 +73,24 @@ export class RunsRepository {
         return ret
     }
 
-    async setExternalResults(results: ExternalResult[]): Promise<ExternalResult[]> {
+    async getExternalResults(eventid: UUID): Promise<ExternalResult[]> {
+        return this.db.any('SELECT * FROM externalresults WHERE eventid=$1', [eventid])
+    }
+
+    async setExternalResults(type: string, results: ExternalResult[]): Promise<ExternalResult[]> {
         const ret = [] as ExternalResult[]
         for (const res of results) {
-            const out = await this.db.oneOrNone('INSERT INTO externalresults (eventid, driverid, classcode, net) VALUES ($1, $2, $3, $4) ' +
+            let out
+            if (type === 'upsert') {
+                out = await this.db.oneOrNone('INSERT INTO externalresults (eventid, driverid, classcode, net) VALUES ($1, $2, $3, $4) ' +
                                     ' ON CONFLICT (eventid, driverid, classcode) DO UPDATE SET net=$4,modified=now() RETURNING *',
                                     [res.eventid, res.driverid, res.classcode, res.net])
+            } else if (type === 'delete') {
+                out = await this.db.oneOrNone('DELETE FROM externalresults WHERE eventid=$1 AND driverid=$2 AND classcode=$3 RETURNING *',
+                        [res.eventid, res.driverid, res.classcode])
+            } else {
+                throw new Error('unknown type of of action for eventresults')
+            }
             if (out) ret.push(out) // null means nothing changed do trigger stopped it
         }
         return ret

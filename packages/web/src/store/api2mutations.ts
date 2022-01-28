@@ -35,7 +35,8 @@ const type2idfield = {
     indexes:         'indexcode',
     counts:          'eventid',
     payments:        'payid',
-    itemeventmap:    'itemid'
+    itemeventmap:    'itemid',
+    externalresults: 'driverid'
 }
 
 /* Helper functions that do some lodash like things but force reactivity */
@@ -237,6 +238,7 @@ export function api2Mutations(adminOptions: boolean):  MutationTree<Api2State> {
 
                     case 'payments':
                     case 'itemeventmap':
+                    case 'externalresults':
                         idfield = type2idfield[key]
                         // special of eventid to array of values
                         if (data.type === 'get') { state[key] = {} }

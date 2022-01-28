@@ -59,7 +59,6 @@ export default {
     },
     methods: {
         setResult() {
-            console.log('set')
             this.$store.dispatch('setdata', {
                 type: 'upsert',
                 items: {
@@ -77,13 +76,10 @@ export default {
             return this.dattendance[driverid][eventid]
         },
         reset() {
-            console.log('dattendance get')
-            this.$store.dispatch('getdata', { items: 'dattendance' })
+            this.$store.dispatch('getdata', { items: 'dattendance', eventid: this.seriesevent.eventid })
         }
     },
-    watch: {
-        seriesevent() { this.reset() }
-    },
+    watch: { seriesevent() { this.reset() } },
     mounted() { this.reset() }
 }
 </script>
