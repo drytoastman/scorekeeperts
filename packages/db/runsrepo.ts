@@ -1,5 +1,5 @@
 import { IMain } from 'pg-promise'
-import { UTCString, UUID, Run } from 'sctypes'
+import { UTCString, UUID, Run, ExternalNet } from 'sctypes'
 import { ScorekeeperProtocol, TABLES } from '.'
 
 export class RunsRepository {
@@ -73,6 +73,20 @@ export class RunsRepository {
         return ret
     }
 
+    async setExternalResult(nets: ExternalNet[]): Promise<ExternalNet[]> {
+        const ret = [] as ExternalNet[]
+        for (const net of nets) {
+            const res = await this.db.oneOrNone('INSERT INTO externalresults (eventid, driverid, classcode, net) VALUES ($1, $2, $3, $4) ' +
+                                    ' ON CONFLICT (eventid, driverid, classcode) DO UPDATE SET net=$4,modified=now() RETURNING *',
+                                    [net.eventid, net.driverid, net.classcode, net.net])
+            if (res) ret.push(res) // null means nothing changed do trigger stopped it
+        }
+        return ret
+    }
+
+    /**
+     * Returns a map of event UUID to list of driver UUID for each event
+     */
     async attendance(): Promise<{[key: string]: UUID[]}> {
         const rows = await this.db.any('SELECT DISTINCT r.eventid,c.driverid FROM runs r JOIN cars c ON c.carid=r.carid')
         const ret = {}
@@ -82,6 +96,25 @@ export class RunsRepository {
         }
         for (const eventid in ret) {
             ret[eventid] = Array.from(ret[eventid])
+        }
+        return ret
+    }
+
+    /**
+     * Returns an map of driver UUID to map of event UUID to list of classcodes for each driver
+     */
+    async driverAttendance(): Promise<{[key: string]: { [key: string]: {classcode: string, indexcode: string}}}> {
+        const rows = await this.db.any('SELECT DISTINCT r.eventid,c.driverid,c.classcode,c.indexcode FROM runs r JOIN cars c ON c.carid=r.carid')
+        const ret = {}
+        for (const row of rows) {
+            if (!(row.driverid in ret)) ret[row.driverid] = {}
+            if (!(row.eventid in ret[row.driverid])) ret[row.driverid][row.eventid] = new Set()
+            ret[row.driverid][row.eventid].add({ classcode: row.classcode, indexcode: row.indexcode })
+        }
+        for (const driverid in ret) {
+            for (const eventid in ret[driverid]) {
+                ret[driverid][eventid] = Array.from(ret[driverid][eventid])
+            }
         }
         return ret
     }

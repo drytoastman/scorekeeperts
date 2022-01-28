@@ -1,4 +1,4 @@
-import Vue from 'vue'
+import Vue, { PluginObject } from 'vue'
 import Vuetify from 'vuetify/lib'
 import colors from 'vuetify/es5/util/colors'
 import LoadScript from 'vue-plugin-load-script'
@@ -10,7 +10,7 @@ import { createRegisterStore } from '@/store'
 import filters from '@/util/filters'
 
 Vue.use(filters)
-Vue.use(LoadScript)
+Vue.use(LoadScript as PluginObject<void>)
 Vue.use(Vuetify)
 
 const base = {

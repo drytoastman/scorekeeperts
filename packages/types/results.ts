@@ -43,6 +43,13 @@ export interface DecoratedRun extends Run {
     netimp?: number;
 }
 
+export interface ExternalNet {
+    eventid: UUID;
+    driverid: UUID;
+    classcode: string;
+    net: number;
+}
+
 export interface Entrant extends Car {
     firstname: string;
     lastname: string;

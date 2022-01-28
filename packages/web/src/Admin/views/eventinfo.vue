@@ -19,21 +19,25 @@
         </ConfirmDialog>
         <v-tabs color="secondary" show-arrows>
             <v-tab>Event Settings</v-tab>
-            <v-tab>Payment Setup</v-tab>
-            <v-tab>Entry Admin</v-tab>
-            <v-tab v-if="event.ispro">Grid Order</v-tab>
+            <v-tab v-if="!event.isexternal">Payment Setup</v-tab>
+            <v-tab v-if="!event.isexternal">Entry Admin</v-tab>
+            <v-tab v-if="event.ispro && !event.isexternal">Grid Order</v-tab>
+            <v-tab v-if="event.isexternal">External Results</v-tab>
 
             <v-tab-item>
                 <EventSettings :seriesevent="event"></EventSettings>
             </v-tab-item>
-            <v-tab-item>
+            <v-tab-item v-if="!event.isexternal">
                 <PaymentSettings :seriesevent="event"></PaymentSettings>
             </v-tab-item>
-            <v-tab-item>
+            <v-tab-item v-if="!event.isexternal">
                 <EntrantTable :eventid=eventid></EntrantTable>
             </v-tab-item>
-            <v-tab-item  v-if="event.ispro">
+            <v-tab-item  v-if="event.ispro && !event.isexternal">
                 <GridOrder :eventid=eventid></GridOrder>
+            </v-tab-item>
+            <v-tab-item  v-if="event.isexternal">
+                <ExternalResults :seriesevent="event"></ExternalResults>
             </v-tab-item>
 
         </v-tabs>
@@ -50,6 +54,7 @@ import EntrantTable from '../components/EntrantTable.vue'
 import GridOrder from '../components/event/GridOrder.vue'
 import PaymentSettings from '../components/event/PaymentSettings.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
+import ExternalResults from '../components/event/ExternalResults.vue'
 
 export default {
     name: 'EventInfo',
@@ -58,7 +63,8 @@ export default {
         EntrantTable,
         GridOrder,
         PaymentSettings,
-        ConfirmDialog
+        ConfirmDialog,
+        ExternalResults
     },
     props: {
         eventid: String

@@ -107,6 +107,7 @@ export function api2Mutations(adminOptions: boolean):  MutationTree<Api2State> {
             clearApi2SeriesData(state)
             if (adminOptions) {
                 state.attendance = {}
+                state.dattendance = {}
             }
         },
 
@@ -114,6 +115,7 @@ export function api2Mutations(adminOptions: boolean):  MutationTree<Api2State> {
             state.currentSeries = EMPTY
             clearApi2SeriesData(state)
             state.attendance = {}
+            state.dattendance = {}
             state.serieslist = state.serieslist.filter(s => s !== series)
         },
 
@@ -194,6 +196,7 @@ export function api2Mutations(adminOptions: boolean):  MutationTree<Api2State> {
                     case 'unsubscribe':
                     case 'summary':
                     case 'attendance':
+                    case 'dattendance':
                     case 'classorder':
                     case 'ismainserver':
                     case 'paxlists':

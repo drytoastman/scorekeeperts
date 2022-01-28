@@ -34,6 +34,10 @@ export async function seriesget(task: ScorekeeperProtocol, auth: AuthData, param
             case 'activity':
                 ret.activity = await task.series.activity()
                 break
+            case 'dattendance':
+                ret.dattendance = await task.runs.driverAttendance()
+                ret.drivers     = await task.drivers.getDriversById(Object.keys(ret.dattendance))
+                break
         }
     }
 

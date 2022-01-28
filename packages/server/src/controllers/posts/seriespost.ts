@@ -149,6 +149,11 @@ export async function seriespost(tx: ScorekeeperProtocol, auth: AuthData, param:
 
             case 'classorder':
                 ret.classorder = await tx.clsidx.upsertClassOrder(param.type, param.items.classorder)
+                break
+
+            case 'externalresults':
+                ret.externalresults = await tx.runs.setExternalResult(param.items.externalresults)
+                break
         }
     }
 

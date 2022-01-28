@@ -73,6 +73,7 @@ export class Api2State {
     registered: {[key: string]: Registration[]} = {}
     payments: {[key: string]: Payment[]} = {}
     attendance: {[key: string]: UUID[]} = {}
+    dattendance: {[key: string]: {[key: string]: string[]}} = {}
     counts: {[key: string]: any} = {}
     classorder: {[key: string]: any} = {}
     driversattr: {[key: string]: any} = {}
