@@ -1,5 +1,5 @@
 import { IMain } from 'pg-promise'
-import { UTCString, UUID, Run, ExternalNet } from 'sctypes'
+import { UTCString, UUID, Run, ExternalResult } from 'sctypes'
 import { ScorekeeperProtocol, TABLES } from '.'
 
 export class RunsRepository {
@@ -73,13 +73,13 @@ export class RunsRepository {
         return ret
     }
 
-    async setExternalResult(nets: ExternalNet[]): Promise<ExternalNet[]> {
-        const ret = [] as ExternalNet[]
-        for (const net of nets) {
-            const res = await this.db.oneOrNone('INSERT INTO externalresults (eventid, driverid, classcode, net) VALUES ($1, $2, $3, $4) ' +
+    async setExternalResults(results: ExternalResult[]): Promise<ExternalResult[]> {
+        const ret = [] as ExternalResult[]
+        for (const res of results) {
+            const out = await this.db.oneOrNone('INSERT INTO externalresults (eventid, driverid, classcode, net) VALUES ($1, $2, $3, $4) ' +
                                     ' ON CONFLICT (eventid, driverid, classcode) DO UPDATE SET net=$4,modified=now() RETURNING *',
-                                    [net.eventid, net.driverid, net.classcode, net.net])
-            if (res) ret.push(res) // null means nothing changed do trigger stopped it
+                                    [res.eventid, res.driverid, res.classcode, res.net])
+            if (out) ret.push(out) // null means nothing changed do trigger stopped it
         }
         return ret
     }

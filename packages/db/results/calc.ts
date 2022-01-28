@@ -1,6 +1,7 @@
+/* eslint-disable max-len */
 import _ from 'lodash'
 
-import { hasSessions, DecoratedRun, Entrant, EventResults, ExternalResult, RunStatus, PosPoints, SeriesInfo, SeriesSettings, UUID, getDList, make2D, getSessions } from 'sctypes'
+import { hasSessions, DecoratedRun, Entrant, EventResults, ExternalChampResult, RunStatus, PosPoints, SeriesInfo, SeriesSettings, UUID, getDList, make2D, getSessions } from 'sctypes'
 import { ScorekeeperProtocol, dblog } from '..'
 
 export async function updatedSeriesInfo(task: ScorekeeperProtocol): Promise<SeriesInfo> {
@@ -23,8 +24,8 @@ async function updatedExternalEventResults(task: ScorekeeperProtocol, eventid: U
     /* The external event version of updateEventResults, only do point calculation based off of net result */
     dblog.debug(`updatedExternalEventResults ${eventid}`)
 
-    const results = {} as {[key: string]: ExternalResult[]}
-    const data: ExternalResult[] = await task.any('SELECT r.*,d.firstname,d.lastname FROM drivers d JOIN externalresults r ON r.driverid=d.driverid WHERE r.eventid=$1', [eventid])
+    const results = {} as {[key: string]: ExternalChampResult[]}
+    const data: ExternalChampResult[] = await task.any('SELECT r.*,d.firstname,d.lastname FROM drivers d JOIN externalresults r ON r.driverid=d.driverid WHERE r.eventid=$1', [eventid])
     for (const r of data) {
         getDList(results, r.classcode).push(r)
     }

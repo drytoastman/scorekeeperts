@@ -43,7 +43,7 @@ export interface DecoratedRun extends Run {
     netimp?: number;
 }
 
-export interface ExternalNet {
+export interface ExternalResult {
     eventid: UUID;
     driverid: UUID;
     classcode: string;
@@ -104,7 +104,7 @@ export interface EventNotice {
     ispotential: boolean
 }
 
-export interface ExternalResult {
+export interface ExternalChampResult {
     position: number;
     pospoints: number;
     diffpoints: number;

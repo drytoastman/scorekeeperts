@@ -152,7 +152,7 @@ export async function seriespost(tx: ScorekeeperProtocol, auth: AuthData, param:
                 break
 
             case 'externalresults':
-                ret.externalresults = await tx.runs.setExternalResult(param.items.externalresults)
+                ret.externalresults = await tx.runs.setExternalResults(param.items.externalresults)
                 break
         }
     }
