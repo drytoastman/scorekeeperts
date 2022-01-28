@@ -1,4 +1,4 @@
-FROM node:16.13.1-buster-slim as builder
+FROM node:16.13.1-bullseye as builder
 
 WORKDIR /code
 COPY package.json yarn.lock ./

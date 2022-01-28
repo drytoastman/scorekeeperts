@@ -116,9 +116,11 @@ export class RunsRepository {
      * Returns an map of driver UUID to map of event UUID to list of classcodes for each driver
      */
     async driverAttendance(): Promise<{[key: string]: { [key: string]: {classcode: string, indexcode: string}}}> {
-        const rows = await this.db.any('SELECT DISTINCT r.eventid,c.driverid,c.classcode,c.indexcode FROM runs r JOIN cars c ON c.carid=r.carid')
+        const runs = await this.db.any('SELECT DISTINCT r.eventid,c.driverid,c.classcode,c.indexcode FROM runs r JOIN cars c ON c.carid=r.carid')
+        const extr = await this.db.any('SELECT e.eventid,e.driverid,e.classcode FROM externalresults e')
+
         const ret = {}
-        for (const row of rows) {
+        for (const row of [...runs, ...extr]) {
             if (!(row.driverid in ret)) ret[row.driverid] = {}
             if (!(row.eventid in ret[row.driverid])) ret[row.driverid][row.eventid] = new Set()
             ret[row.driverid][row.eventid].add({ classcode: row.classcode, indexcode: row.indexcode })
