@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { v1 as uuidv1 } from 'uuid'
 import { ScorekeeperProtocol } from 'scdb'
-import { paymentslog } from './logging'
+// import { paymentslog } from './logging'
 import { PaymentAccount, PaymentAccountSecret } from 'sctypes/payments'
 import { Payment } from 'sctypes/register'
 import { UUID } from 'sctypes/util'
@@ -16,15 +16,16 @@ function captureUrl(mode: string, orderid: string) {
     return `https://api.${infix}paypal.com/v2/checkout/orders/${orderid}/capture`
 }
 
+/*
 function paymentsUrl(mode: string, txid: string) {
     const infix = (mode === 'sandbox') ? 'sandbox.' : ''
     return `https://api.${infix}paypal.com/v2/payments/captures/${txid}`
 }
-
+*/
 
 async function paypalToken(account: PaymentAccount, secret: PaymentAccountSecret) {
     const basicAuth = Buffer.from(`${account.accountid}:${secret.secret}`, 'utf8').toString('base64')
-    const auth = await axios.post(oauthUrl(account.attr.mode), 'grant_type=client_credentials', {
+    const auth = await axios.post<any>(oauthUrl(account.attr.mode), 'grant_type=client_credentials', {
         headers: {
             Authorization: `Basic ${basicAuth}`
         }
@@ -38,7 +39,7 @@ export async function paypalCapture(conn: ScorekeeperProtocol, paypal: any, paym
     const account   = await conn.payments.getPaymentAccount(paypal.accountid)
     const token     = await paypalToken(account, secret)
 
-    const capture = await axios.post(captureUrl(account.attr.mode, paypal.orderid), '', {
+    const capture = await axios.post<any>(captureUrl(account.attr.mode, paypal.orderid), '', {
         headers: {
             Authorization: `Bearer ${token}`,
             Accept: 'application/json',
@@ -63,6 +64,7 @@ export async function paypalCapture(conn: ScorekeeperProtocol, paypal: any, paym
     throw new Error(data.error)
 }
 
+/*
 export async function paypalCheckRefunds(conn: ScorekeeperProtocol, account: PaymentAccount) {
 
     const secret    = await conn.payments.getPaymentAccountSecret(account.accountid)
@@ -71,7 +73,7 @@ export async function paypalCheckRefunds(conn: ScorekeeperProtocol, account: Pay
 
     const todelete:Payment[] = []
     for (const payment of payments) {
-        const capture = await axios.get(paymentsUrl(account.attr.mode, payment.txid), {
+        const capture = await axios.get<any>(paymentsUrl(account.attr.mode, payment.txid), {
             headers: {
                 Authorization: `Bearer ${token}`,
                 Accept: 'application/json',
@@ -88,3 +90,4 @@ export async function paypalCheckRefunds(conn: ScorekeeperProtocol, account: Pay
     paymentslog.info('delete ' + JSON.stringify(todelete))
     await conn.payments.updatePayments('delete', todelete)
 }
+*/
