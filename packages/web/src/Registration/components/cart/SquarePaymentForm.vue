@@ -4,7 +4,7 @@
             No Square Application Id was found!
         </div>
         <div v-else>
-            <div v-if="!formloaded">
+            <div v-show="!formloaded">
                 <div class='loading'>
                     Loading square payment form.
                 </div>
@@ -12,14 +12,13 @@
                     If this persists, check any privacy settings/extensions.
                 </div>
             </div>
-            <div class='sq-grid'>
-                <div id="sq-card-number"     class="sq-input"></div>
-                <div id="sq-expiration-date" class="sq-input"></div>
-                <div id="sq-cvv"             class="sq-input"></div>
-                <div id="sq-postal-code"     class="sq-input"></div>
-                <v-btn id="sq-creditcard" :disabled="total<=0" @click.prevent="squareform.requestCardNonce()" color="secondary">
-                    <img class='buttonicon' :src="squareicon"/>
-                </v-btn>
+            <div>
+                <form id="payment-form">
+                    <div id="card-container"></div>
+                    <v-btn class='sqpaybutton' :disabled="total<=0" @click.prevent="handlePayClick" color="secondary" v-show="formloaded">
+                        Make Payment
+                    </v-btn>
+                </form>
             </div>
         </div>
         <div v-if="errors.length > 0" class='errors'>
@@ -29,8 +28,6 @@
 </template>
 
 <script>
-import squaresvg from '@/images/square.svg'
-
 export default {
     props: {
         opened: Boolean,
@@ -40,8 +37,8 @@ export default {
     },
     data() {
         return {
-            squareForm: null,
-            squareicon: squaresvg,
+            sqpayments: null,
+            sqcard: null,
             formloaded: false,
             timeout: false,
             errors: []
@@ -50,79 +47,48 @@ export default {
     computed: {
         squareURL() {
             if (!this.account.attr) return undefined
-            const infix = this.account.attr.mode === 'sandbox' ? 'sandbox' : ''
-            return `https://js.squareup${infix}.com/v2/paymentform`
+            const prefix = this.account.attr.mode === 'sandbox' ? 'sandbox.' : ''
+            return `https://${prefix}web.squarecdn.com/v1/square.js`
         },
         applicationid() {
             return this.account.attr?.applicationid
         }
     },
     methods: {
-        createSquareForm() {
-            return new SqPaymentForm({
-                applicationId: this.applicationid,
-                locationId: this.account.accountid,
-                inputClass: 'sq-input',
-                autoBuild: false,
-                inputStyles: [{
-                    fontSize: '14px',
-                    lineHeight: '20px',
-                    padding: '10px',
-                    placeholderColor: '#a0a0a0'
-                }],
-                cardNumber: {
-                    elementId: 'sq-card-number',
-                    placeholder: 'Card Number'
-                },
-                cvv: {
-                    elementId: 'sq-cvv',
-                    placeholder: 'CVV'
-                },
-                expirationDate: {
-                    elementId: 'sq-expiration-date',
-                    placeholder: 'MM/YY'
-                },
-                postalCode: {
-                    elementId: 'sq-postal-code',
-                    placeholder: 'Postal'
-                },
-                callbacks: {
-                    cardNonceResponseReceived: this.cardNonceResponseReceived,
-                    paymentFormLoaded: this.paymentFormLoaded
+        async handlePayClick() {
+            try {
+                const result = await this.sqcard.tokenize()
+                if (result.status === 'OK') {
+                    this.$store.dispatch('setdata', {
+                        type: 'insert',
+                        square: { nonce: result.token, accountid: this.account.accountid },
+                        items: { payments: this.payments },
+                        busy: { key: 'busyPay', ids: this.payments.map(p => p.eventid) }
+                    })
+                    this.$emit('complete')
+                } else {
+                    this.errors = result.errors.map(e => e.message)
                 }
-            })
-        },
-
-        paymentFormLoaded() {
-            console.log('loaded')
-            this.formloaded = true
-        },
-
-        cardNonceResponseReceived(errors, nonce) {
-            if (errors) {
-                this.errors = errors.map(e => e.message)
-                return
+            } catch (e) {
+                console.error(e)
             }
-            this.$store.dispatch('setdata', {
-                type: 'insert',
-                square: { nonce: nonce, accountid: this.account.accountid },
-                items: { payments: this.payments },
-                busy: { key: 'busyPay', ids: this.payments.map(p => p.eventid) }
-            })
-            this.$emit('complete')
         },
 
         async loadSquare() {
             if (this.applicationid && this.squareURL) {
-                console.log(this.applicationid)
-                console.log(this.squareURL)
                 try {
                     this.timeout = false
                     this.formloaded = false
                     setTimeout(() => { this.timeout = true }, 4000)
-                    await this.$loadScript(this.squareURL)
-                    this.squareform = this.createSquareForm()
-                    this.squareform.build()
+                    if (!window.Square) {
+                        await this.$loadScript(this.squareURL)
+                    }
+
+                    this.sqpayments = window.Square.payments(this.applicationid, this.account.accountid) // appid, locid
+                    this.sqcard = await this.sqpayments.card()
+                    await this.sqcard.attach('#card-container')
+                    this.formloaded = true
+
                 } catch (error) {
                     this.$store.commit('addErrors', [`Failed to load ${this.squareURL}, check any privacy extensions`])
                     console.log('square form load failure:')
@@ -132,11 +98,10 @@ export default {
         },
 
         async unloadSquare() {
-            if (this.squareform) {
-                this.squareform.destroy()
+            if (this.sqcard) {
+                this.sqcard.destroy()
             }
             this.errors = []
-            await this.$unloadScript(this.squareURL)
         }
     },
     watch: {
@@ -153,35 +118,21 @@ export default {
 </script>
 
 <style>
-.sq-grid {
-    display: grid;
-    align-items: center;
-    grid-template-columns: 1fr 1fr 1fr;
-    row-gap: 0.5rem;
-    column-gap: 0.5rem;
-}
-#sq-card-number {
-    grid-column: 1 / span 3;
-}
-#sq-creditcard {
-    grid-column: 1 / span 3;
-    grid-row: 3;
-}
-.sq-input {
-    border: 1px solid #E0E2E3;
-    background-color: white;
-    border-radius: 6px;
+.sqpaybutton {
+    width: 100%;
+    font-family: sans-serif;
+    font-size: 17px;
+    letter-spacing: 1px;
+    text-transform: none;
 }
 
-.buttonicon {
-    filter: brightness(0) invert(100);
-}
 .loading {
     font-size: 90%;
     color: grey;
     text-align: center;
 }
 .errors {
+    display: none;
     color: red;
     text-align: center;
 }

@@ -27,6 +27,7 @@
   },
   "devDependencies": {
     "@mdi/js": "^5.8.55",
+    "@square/web-payments-sdk-types": "^1.22.0",
     "@types/jest": "^26.0.18",
     "@types/lodash": "^4.14.165",
     "@types/validator": "^13.1.1",

@@ -1,5 +1,5 @@
 <template>
-    <v-dialog :value="value" @input="$emit('input')" persistent max-width="450px">
+    <v-dialog :value="value" @input="$emit('input')" persistent max-width="600px">
         <v-card>
             <v-card-title class='headline primary--text'>
                 {{account.name}}
