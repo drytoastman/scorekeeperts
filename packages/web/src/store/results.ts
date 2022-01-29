@@ -119,7 +119,7 @@ export const resultsActions: ActionTree<Api2State, any> = {
             }
         }
 
-        axios.get(API2.ROOT, { params: p, withCredentials: true }).then(res => {
+        axios.get<any>(API2.ROOT, { params: p, withCredentials: true }).then(res => {
             context.commit('processLastClass', res.data)
         }).catch(error => {
             context.commit('addErrors', [error.toString()])
@@ -167,7 +167,7 @@ export const resultsActions: ActionTree<Api2State, any> = {
             watch: context.state.live.watch
         }
 
-        axios.get(API2.ROOT, { params: p, withCredentials: true }).then(res => {
+        axios.get<any>(API2.ROOT, { params: p, withCredentials: true }).then(res => {
             context.commit(res.data.last ? 'processLiveData' : 'processNoClassData', res.data)
         }).catch(error => {
             context.commit('addErrors', [error.toString()])
