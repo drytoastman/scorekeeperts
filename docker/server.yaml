@@ -47,6 +47,7 @@ services:
         volumes:
             - logs:/var/log
             - letsencrypt:/etc/letsencrypt
+            - PUT_FULL_PATH_HERE:/paxlists
         ports:
             - "80:80"
             - "443:443"
