@@ -1,5 +1,6 @@
 import get from 'lodash/get'
 import orderBy from 'lodash/orderBy'
+import isEmpty from 'lodash/isEmpty'
 import axios from 'axios'
 import Vue from 'vue'
 
@@ -101,6 +102,7 @@ export const registerGetters = {
         }
         const accountcart:any = get(state.carts, [state.currentSeries, accountid])
         if (!accountcart) return ret
+        if (isEmpty(state.paymentitems)) return ret
 
         for (const eventid in accountcart) {
             if (accountcart[eventid].membership) {
