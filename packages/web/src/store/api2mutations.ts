@@ -200,7 +200,6 @@ export function api2Mutations(adminOptions: boolean):  MutationTree<Api2State> {
                     case 'dattendance':
                     case 'classorder':
                     case 'ismainserver':
-                    case 'paxlists':
                     case 'emailresult':
                     case 'settings':
                     case 'squareapplicationid':

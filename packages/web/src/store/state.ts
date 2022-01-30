@@ -38,7 +38,6 @@ export class Api2State {
     infos: string[] = []
     serieslist: string[] = []
     listids: string[] = []
-    paxlists: string[] = []
     websocket: ReconnectingWebSocket | undefined = undefined
     authinitial = false // true once we get our first authinfo back
 

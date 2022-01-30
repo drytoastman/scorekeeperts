@@ -1,5 +1,3 @@
-import fs from 'fs'
-import util from 'util'
 import _ from 'lodash'
 
 import { ScorekeeperProtocol } from 'scdb'
@@ -10,8 +8,6 @@ import { LazyData } from '../lazydata'
 import { LiveSocketWatch, watchNonTimers } from 'sctypes/results'
 import { EPOCH } from 'sctypes/util'
 import { gridTables } from 'sctypes/gridorder'
-
-const readdirAsync = util.promisify(fs.readdir)
 
 export async function unauthget(task: ScorekeeperProtocol, auth: AuthData, param: any) {
     const ret: any = {
@@ -38,7 +34,6 @@ export async function unauthgetone(task: ScorekeeperProtocol, auth: AuthData, pa
         case 'serieslist':          ret.serieslist          = await task.series.seriesList();   break
         case 'squareapplicationid': ret.squareapplicationid = await task.general.getLocalSetting(SQ_APPLICATION_ID); break
         case 'ismainserver':        ret.ismainserver        = await task.general.isMainServer(); break
-        case 'paxlists':            ret.paxlists            = (await readdirAsync('public')).filter(f => f.endsWith('.json')); break
         case 'allseries':           ret.allseries           = await task.series.allSeries(); break
         case 'recaptchasitekey':
             if (await task.general.isMainServer()) {

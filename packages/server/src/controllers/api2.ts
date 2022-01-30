@@ -43,7 +43,7 @@ api2.use(async function(req: Request, res: Response, next: () => void) {
 
 function defaultget(authtype: string) {
     const COMMONDEFAULT = ['classes', 'counts', 'events', 'indexes', 'listids', 'paymentaccounts', 'paymentitems', 'itemeventmap', 'serieslist', 'settings']
-    const SERIESDEFAULT = [...COMMONDEFAULT, 'classorder', 'localsettings', 'squareapplicationid', 'ismainserver', 'paxlists']
+    const SERIESDEFAULT = [...COMMONDEFAULT, 'classorder', 'localsettings', 'squareapplicationid', 'ismainserver']
     const DRIVERDEFAULT = [...COMMONDEFAULT, 'cars', 'drivers', 'payments', 'registered', 'summary', 'unsubscribe', 'driversattr']
     switch (authtype) {
         case AUTHTYPE_DRIVER: return DRIVERDEFAULT

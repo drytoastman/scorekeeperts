@@ -18,3 +18,12 @@ services:
             - TZ=America/Los_Angeles
         stop_grace_period: 2s
 
+    nginx:
+        image: drytoastman/scproxy:${VERSION:-latest}
+        container_name: nginx
+        ports:
+            - '127.0.0.1:8080:80'
+        volumes:
+            - ./paxlists:/paxlists
+        stop_grace_period: 1s
+

@@ -2,7 +2,7 @@
     <div class='indexlisttable'>
         <div class='baseadminbuttons' style='grid-template-columns: 10rem 18rem'>
             <v-btn color=secondary @click.stop="newindex">Add Index</v-btn>
-            <v-menu>
+            <v-menu v-model="resetshown">
                 <template v-slot:activator="{ on, attrs }">
                     <v-btn color="secondary" v-bind="attrs" v-on="on">
                     Reset To Predefined List &#9660;
@@ -34,10 +34,11 @@
 </template>
 
 <script>
+import axios from 'axios'
 import orderBy from 'lodash/orderBy'
 import { mapState } from 'vuex'
 import { mdiPencil, mdiDelete } from '@mdi/js'
-import IndexDialog from './IndexDialog'
+import IndexDialog from './IndexDialog.vue'
 
 export default {
     name: 'IndexList',
@@ -58,12 +59,29 @@ export default {
                 { text: 'Desc', value: 'descrip', width: 250 },
                 { text: 'Value', value: 'value', sortable: false },
                 { text: 'Actions', value: 'actions', sortable: false }
-            ]
+            ],
+            paxlists: ['loading...    '],
+            resetshown: false
         }
     },
     computed: {
-        ...mapState(['indexes', 'busyIndex', 'paxlists']),
+        ...mapState(['indexes', 'busyIndex']),
         indexlist() { return orderBy(Object.values(this.indexes).filter(v => v.indexcode), 'indexcode') }
+    },
+    watch: {
+        resetshown(newv) {
+            if (newv) {
+                axios.get('/paxlists').then(resp => {
+                    if (!Array.isArray(resp.data)) {
+                        this.$store.commit('addErrors', ['/paxlists did not return a json array'])
+                        return
+                    }
+                    this.paxlists = resp.data.map(e => e.name).filter(n => n.endsWith('.json'))
+                }).catch(error => {
+                    this.$store.commit('addErrors', [`GET /paxlists: ${error}`])
+                })
+            }
+        }
     },
     methods: {
         newindex() {
@@ -86,7 +104,9 @@ export default {
             this.IndexDialog = true
         },
         paxselect(list) {
-            this.$store.dispatch('setdata', { items: { paxlist: list }})
+            if (!list.startsWith('loading')) {
+                this.$store.dispatch('setdata', { items: { paxlist: list }})
+            }
         }
     }
 }

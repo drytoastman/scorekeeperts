@@ -1,6 +1,4 @@
-import fs from 'fs'
-import path from 'path'
-import util from 'util'
+import axios from 'axios'
 
 import { Car } from 'sctypes/car'
 import { ScorekeeperProtocol } from 'scdb'
@@ -10,19 +8,22 @@ import { allSeriesCars, allSeriesDeleteDriverLinks, allSeriesMerge } from '../al
 import { AuthData } from '../auth'
 import { SeriesIndex } from 'sctypes/classindex'
 
-const readAsync = util.promisify(fs.readFile)
-
-async function readPaxFile(name: string): Promise<SeriesIndex[]> {
-    const list = JSON.parse(await readAsync('public/' + name, 'utf-8'))
-    const ret  = [] as SeriesIndex[]
-    for (const key in list) {
-        ret.push({
-            indexcode: key,
-            descrip:   `${name.slice(0, -5).replace('_', ' ')} ${key}`,
-            value:     list[key]
-        })
+async function readPaxList(name: string): Promise<SeriesIndex[]> {
+    try {
+        const resp = await axios.get<any>(`/paxlists/${name}`)
+        const ret  = [] as SeriesIndex[]
+        const list = resp.data
+        for (const key in list) {
+            ret.push({
+                indexcode: key,
+                descrip:   `${name.slice(0, -5).replace('_', ' ')} ${key}`,
+                value:     list[key]
+            })
+        }
+        return ret
+    } catch (error) {
+        throw new Error(`reading paxlist from server: ${error}`)
     }
-    return ret
 }
 
 export async function seriespost(tx: ScorekeeperProtocol, auth: AuthData, param: any) {
@@ -106,7 +107,7 @@ export async function seriespost(tx: ScorekeeperProtocol, auth: AuthData, param:
                 break
 
             case 'paxlist':
-                Object.assign(ret, await tx.clsidx.resetIndex(await readPaxFile(path.basename(param.items.paxlist))))  // basename is a security measure
+                Object.assign(ret, await tx.clsidx.resetIndex(await readPaxList(param.items.paxlist)))
                 break
 
             case 'events':
