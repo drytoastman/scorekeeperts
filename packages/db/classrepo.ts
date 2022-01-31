@@ -87,14 +87,19 @@ export class ClassRepository {
                         'ON CONFLICT (indexcode) DO UPDATE SET value=$(value), descrip=$(descrip), modified=now()', index)
         }
 
-        const keep     = [...indexes.map(i => i.indexcode), '']
-        const required = await this.db.map('SELECT DISTINCT indexcode FROM cars', [], r => r.indexcode)
-        const todelete = await this.db.map('SELECT indexcode FROM indexlist WHERE indexcode NOT IN ($1:csv)', [keep], r => r.indexcode)
-        const issues   = _.intersection(required, todelete)
-        const willdel  = _.difference(todelete, issues)
+        const keep      = [...indexes.map(i => i.indexcode), '']
+        const carused   = await this.db.map('SELECT DISTINCT indexcode FROM cars', [], r => r.indexcode)
+        const clsused   = await this.db.map('SELECT DISTINCT indexcode FROM classlist', [], r => r.indexcode)
+        const todelete  = await this.db.map('SELECT indexcode FROM indexlist WHERE indexcode NOT IN ($1:csv)', [keep], r => r.indexcode)
+        const carissues = _.intersection(carused, todelete)
+        const clsissues = _.intersection(clsused, todelete)
+        const willdel   = _.difference(todelete, carissues, clsissues)
 
-        if (issues.length) {
-            errors.push(`Can't remove old indexes (${issues.join(',')}), they are still in use by cars and have been left in place`)
+        if (carissues.length) {
+            errors.push(`Old indexes (${carissues.join(',')}) have been left in place as they are still in use by at least 1 car`)
+        }
+        if (clsissues.length) {
+            errors.push(`Old indexes (${clsissues.join(',')}) have been left in place as they are still in use by at least 1 class (class indexed)`)
         }
         if (willdel.length) {
             await this.db.none('DELETE FROM indexlist WHERE indexcode IN ($1:csv)', [willdel])
