@@ -8,9 +8,9 @@ import { allSeriesCars, allSeriesDeleteDriverLinks, allSeriesMerge } from '../al
 import { AuthData } from '../auth'
 import { SeriesIndex } from 'sctypes/classindex'
 
-async function readPaxList(name: string): Promise<SeriesIndex[]> {
+async function readPaxList(requestroot: string, name: string): Promise<SeriesIndex[]> {
     try {
-        const resp = await axios.get<any>(`/paxlists/${name}`)
+        const resp = await axios.get<any>(`${requestroot}/paxlists/${name}`)
         const ret  = [] as SeriesIndex[]
         const list = resp.data
         for (const key in list) {
@@ -26,7 +26,7 @@ async function readPaxList(name: string): Promise<SeriesIndex[]> {
     }
 }
 
-export async function seriespost(tx: ScorekeeperProtocol, auth: AuthData, param: any) {
+export async function seriespost(tx: ScorekeeperProtocol, auth: AuthData, param: any, requestroot: string) {
     const ret: any = {
         type: param.type,
         series: param.series
@@ -107,7 +107,7 @@ export async function seriespost(tx: ScorekeeperProtocol, auth: AuthData, param:
                 break
 
             case 'paxlist':
-                Object.assign(ret, await tx.clsidx.resetIndex(await readPaxList(param.items.paxlist)))
+                Object.assign(ret, await tx.clsidx.resetIndex(await readPaxList(requestroot, param.items.paxlist)))
                 break
 
             case 'events':

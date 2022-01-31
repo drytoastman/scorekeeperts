@@ -98,7 +98,7 @@ export async function apipost(req: Request, res: Response) {
         res.json(await db.tx('apipost', async tx => {
             switch (param.authtype) {
                 case AUTHTYPE_DRIVER: return driverpost(tx, req.auth.driverId(), param)
-                case AUTHTYPE_SERIES: return seriespost(tx, req.auth, param)
+                case AUTHTYPE_SERIES: return seriespost(tx, req.auth, param, `${req.protocol}://${req.hostname}`)
             }
             throw Error('Unknown authtype')
         }))
