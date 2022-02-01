@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { v1 as uuidv1 } from 'uuid'
 import { ScorekeeperProtocol } from 'scdb'
-// import { paymentslog } from './logging'
+import { paymentslog } from './logging'
 import { PaymentAccount, PaymentAccountSecret } from 'sctypes/payments'
 import { Payment } from 'sctypes/register'
 import { UUID } from 'sctypes/util'
@@ -35,17 +35,26 @@ async function paypalToken(account: PaymentAccount, secret: PaymentAccountSecret
 
 export async function paypalCapture(conn: ScorekeeperProtocol, paypal: any, payments: Payment[], driverid: UUID): Promise<Payment[]> {
 
-    const secret    = await conn.payments.getPaymentAccountSecret(paypal.accountid)
-    const account   = await conn.payments.getPaymentAccount(paypal.accountid)
-    const token     = await paypalToken(account, secret)
+    let capture, account, token
+    try {
+        const secret = await conn.payments.getPaymentAccountSecret(paypal.accountid)
+        account = await conn.payments.getPaymentAccount(paypal.accountid)
+        token   = await paypalToken(account, secret)
 
-    const capture = await axios.post<any>(captureUrl(account.attr.mode, paypal.orderid), '', {
-        headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: 'application/json',
-            'Content-Type': 'application/json'
+        capture = await axios.post<any>(captureUrl(account.attr.mode, paypal.orderid), undefined, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                Accept: 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+    } catch (error: any) {
+        if ((error.response) && (error.response.data)) {
+            paymentslog.error(`Paypal error: ${JSON.stringify(error.response.data.details)}`)
+            throw new Error(`Paypal error: ${error.response.data.message}`)
         }
-    })
+        throw error
+    }
 
     const data = capture.data
     if (!data.error) {
