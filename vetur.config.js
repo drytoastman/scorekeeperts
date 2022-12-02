@@ -3,7 +3,6 @@ module.exports = {
         './packages/types',
         './packages/db',
         './packages/server',
-        './packages/web',
-        './packages/gui'
+        './packages/web'
     ]
 }
