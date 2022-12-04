@@ -1,9 +1,9 @@
+import { Email } from 'sctypes/email'
 import { IMain } from 'pg-promise'
 import KeyGrip from 'keygrip'
+import { ScorekeeperProtocolDB } from '.'
 import bcrypt from 'bcryptjs'
 import crypto from 'crypto'
-import { ScorekeeperProtocolDB } from '.'
-import { Email } from 'sctypes/email'
 
 export const IS_MAIN_SERVER = 'IS_MAIN_SERVER'
 export const SQ_APPLICATION_ID = 'SQ_APPLICATION_ID'
@@ -17,8 +17,10 @@ export const ADMIN_PASSWORD = 'ADMIN_PASSWORD'
 export const KEYGRIP = 'KEYGRIP'
 export const RECAPTCHA_SECRET = 'RECAPTCHA_SECRET'
 export const RECAPTCHA_SITEKEY = 'RECAPTCHA_SITEKEY'
+export const BACKUP_BUCKET = 'BACKUP_BUCKET'
+export const LOGS_BUCKET = 'LOGS_BUCKET'
 
-const viewable = [MAIL_SEND_USER, MAIL_SEND_HOST, MAIL_SEND_FROM, IS_MAIN_SERVER, SQ_APPLICATION_ID, RECAPTCHA_SITEKEY]
+const viewable = [MAIL_SEND_USER, MAIL_SEND_HOST, MAIL_SEND_FROM, IS_MAIN_SERVER, SQ_APPLICATION_ID, RECAPTCHA_SITEKEY, BACKUP_BUCKET, LOGS_BUCKET]
 
 export class SchemaError extends Error {
     constructor(message: string) {

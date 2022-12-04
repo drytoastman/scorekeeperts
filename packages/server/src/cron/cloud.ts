@@ -1,13 +1,16 @@
+import { BACKUP_BUCKET, LOGS_BUCKET } from 'scdb/generalrepo'
+
 /* eslint-disable quotes */
 import { Storage } from '@google-cloud/storage'
 import _ from 'lodash'
 import child from 'child_process'
+import { cronlog } from '@/util/logging'
+import { db } from 'scdb'
 import fs from 'fs'
 import moment from 'moment'
 import net from 'net'
 import util from 'util'
 import zlib from 'zlib'
-import { cronlog } from '@/util/logging'
 
 let config: any
 if (fs.existsSync('creds.json')) {
@@ -15,14 +18,13 @@ if (fs.existsSync('creds.json')) {
     cronlog.info('using local creds.json for google storage backup')
 }
 const storage      = new Storage(config)
-const backupBucket = 'scorekeeperbackup'
-const logBucket    = 'scorekeeperlogs'
 
-export function backupNow() {
+export async function backupNow() {
     const name   = `scorekeeper-${moment().format('YYYY-MM-DD-HH-mm')}`
     const client = new net.Socket()
+    const backupBucket = await db.general.getLocalSetting(BACKUP_BUCKET)
 
-    cronlog.info('starting backup %s', name)
+    cronlog.info('starting backup %s to \'%s\'', name, backupBucket)
     client.on('data', async d => {
         const s = d.toString()
         if (s.trim() === 'done') {
@@ -62,10 +64,14 @@ const readdirAsync = util.promisify(fs.readdir)
 
 export async function rotatedLogUpload() {
     // Upload anything that has been rotated to 2*.log during the day
-    cronlog.info('starting log upload')
+    const logBucket = await db.general.getLocalSetting(LOGS_BUCKET)
+    cronlog.info('starting log upload to \'%s\'', logBucket)
+
     const bucket   = storage.bucket(logBucket)
     const files    = await readdirAsync('/var/log')
     const toupload = files.filter(f => f[0] === '2').map(f => `/var/log/${f}`)
+    cronlog.debug('found files: %s', toupload)
+
     for (const path of toupload) {
         try {
             await bucket.upload(path)
@@ -82,6 +88,7 @@ export async function rotatedLogUpload() {
 
 
 export async function restoreBackup() {
+    const backupBucket = await db.general.getLocalSetting(BACKUP_BUCKET)
     const files  = (await storage.bucket(backupBucket).getFiles())[0]
     const latest = _(files).filter(f => !!f.name.match(/scorekeeper\S+.sql.gz/)).maxBy('metadata.timeCreated')
     if (!latest) {
