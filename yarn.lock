@@ -19,21 +19,28 @@
     "@jridgewell/gen-mapping" "^0.1.0"
     "@jridgewell/trace-mapping" "^0.3.9"
 
-"@apimatic/core@^0.6.2":
-  version "0.6.2"
-  resolved "https://registry.yarnpkg.com/@apimatic/core/-/core-0.6.2.tgz#ed9099a6cdbd86dc6459681d8d9f526161721566"
-  integrity sha512-AK96zE9w+cdH9eFUIQUR/GWhSrBFcGtLeCM0SAbpXWn9LLfTYjp9NN1iSdw8E4UqwFfVR3LunSL2vm+t+ECWgQ==
+"@apimatic/convert-to-stream@0.0.2":
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/@apimatic/convert-to-stream/-/convert-to-stream-0.0.2.tgz#7d9942071291011c4576de97619d974face8acaa"
+  integrity sha512-1DRg17ItExfMYsXwjt6WIjJSCgV5RGg3fHPLgYD44/YmiU+7suWj7YfPKKUqmNcnJ/AvMh4lG1+tHrfOT01zXw==
+
+"@apimatic/core@^0.7.9":
+  version "0.7.9"
+  resolved "https://registry.yarnpkg.com/@apimatic/core/-/core-0.7.9.tgz#8420cbc54f5eaba57d72bc5491cbf6b33851e57a"
+  integrity sha512-zoOXyaZxaZdu9OwwArD70a+1WQQzPenocBjr1tkhOeFv73lXjihxHOOt6dBplQUU/FL279FnKCE/QP4vBipRGw==
   dependencies:
-    "@apimatic/json-bigint" "^1.1.0"
+    "@apimatic/convert-to-stream" "0.0.2"
+    "@apimatic/json-bigint" "^1.2.0"
     "@apimatic/schema" "^0.6.0"
     axios "^0.21.1"
+    detect-browser "^5.3.0"
     detect-node "^2.0.4"
     form-data "^3.0.0"
     lodash.flatmap "^4.5.0"
     tiny-warning "^1.0.3"
     tslib "^2.1.0"
 
-"@apimatic/json-bigint@^1.1.0":
+"@apimatic/json-bigint@^1.2.0":
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/@apimatic/json-bigint/-/json-bigint-1.2.0.tgz#05223455ec135976fe7a55456c2d21a3bbde56d8"
   integrity sha512-+bmVzYMdZu0Ya5L+my4FXFUih54OvQA/qlZsFOYdOoostyUuB27UDrVWQs/WVCmS0ADdo5vTU0eeTrrBkHoySw==
@@ -5328,6 +5335,11 @@ destroy@1.2.0:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/destroy/-/destroy-1.2.0.tgz#4803735509ad8be552934c67df614f94e66fa015"
   integrity sha512-2sJGJTaXIIaR1w4iJSNoN0hnMY7Gpc/n8D4qSCJw8QqFWXf7cuAgnEHxBpweaVcPevC2l3KpjYCx3NypQQgaJg==
+
+detect-browser@^5.3.0:
+  version "5.3.0"
+  resolved "https://registry.yarnpkg.com/detect-browser/-/detect-browser-5.3.0.tgz#9705ef2bddf46072d0f7265a1fe300e36fe7ceca"
+  integrity sha512-53rsFbGdwMwlF7qvCt0ypLM5V5/Mbl0szB7GPN8y9NCcbknYOeVVXdrXEq+90IwAfrrzt6Hd+u2E2ntakICU8w==
 
 detect-newline@^2.1.0:
   version "2.1.0"
@@ -12893,13 +12905,13 @@ sprintf-js@~1.0.2:
   resolved "https://registry.yarnpkg.com/sprintf-js/-/sprintf-js-1.0.3.tgz#04e6926f662895354f3dd015203633b857297e2c"
   integrity sha512-D9cPgkvLlV3t3IzL0D0YLvGA9Ahk4PcvVwUbN0dSGr1aP0Nrt4AEnTUbuGvquEC0mA64Gqt1fzirlRs5ibXx8g==
 
-square@17.0.0:
-  version "17.0.0"
-  resolved "https://registry.yarnpkg.com/square/-/square-17.0.0.tgz#117fb75d6e8a793062dd9f59b224c44bf073d7b7"
-  integrity sha512-16U78woz2hgQnMsz7kAnhNUfCzH7o0vt8vmjzduLUl6hS4jPRz181nn/RdQdxOyX19DQYYKLsKLRDErpwCcg2Q==
+square@24.0.0:
+  version "24.0.0"
+  resolved "https://registry.yarnpkg.com/square/-/square-24.0.0.tgz#1faa2742e4f8c126b4fc123b5698e76ab2b4e21c"
+  integrity sha512-TDbxCZwTpU3SQdziTJkjVdC1j1jilB24wiTemnNycxQ4QyYJMtEGGlzTc1ofHmMDa6z49JyAYMzBRI6EiYmumw==
   dependencies:
-    "@apimatic/core" "^0.6.2"
-    "@apimatic/json-bigint" "^1.1.0"
+    "@apimatic/core" "^0.7.9"
+    "@apimatic/json-bigint" "^1.2.0"
     "@apimatic/schema" "^0.6.0"
     "@types/node" "^14.14.30"
 
