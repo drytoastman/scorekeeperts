@@ -124,6 +124,10 @@ export class SeriesRepository {
         return this.db.one('select verify_user($1, $2)', [series, newpassword])
     }
 
+    async forcePassword(series: string, newpassword: string) {
+        return this.db.one('select verify_user($1, $2)', [series, newpassword])
+    }
+
     async copySeries(current: string, series: string, password: string, options: {[key: string]: boolean}) {
         // Create a new series and copy over from info from the current
         if (await this.getStatus(series) !== SeriesStatus.INVALID) {

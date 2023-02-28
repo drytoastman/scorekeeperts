@@ -20,7 +20,7 @@ export async function seriesadmin(req: Request, res: Response) {
             switch (param.request) {
                 case 'archive':  return seriesarchive(task, param)
                 case 'purge':    return seriespurge(task, param, req.auth)
-                case 'password': return changeseriespassword(param)
+                case 'password': return changeseriespassword(param, req.auth)
                 case 'createseries': return createseries(param, req.auth)
             }
             throw Error(`unknown seriesadmin request: ${param.request}`)
@@ -81,8 +81,12 @@ async function seriespurge(task: ScorekeeperProtocol, param: any, auth: AuthData
     }
 }
 
-async function changeseriespassword(param: any) {
-    return await pgdb.series.changePassword(param.series, param.currentpassword, param.newpassword)
+async function changeseriespassword(param: any, auth: AuthData) {
+    if (auth.hasAdminAuth()) {
+        return await pgdb.series.forcePassword(param.series, param.newpassword)
+    } else {
+        return await pgdb.series.changePassword(param.series, param.currentpassword, param.newpassword)
+    }
 }
 
 async function createseries(param: any, auth: AuthData): Promise<any> {
