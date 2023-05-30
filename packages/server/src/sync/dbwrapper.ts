@@ -95,9 +95,7 @@ export class SyncProcessInfo {
                     const pkhash = getPKHash(table, obj.newdata)
                     if (objmap.has(pkhash))                            objmap.get(pkhash)?.update(obj.otime, obj.olddata, obj.newdata)
                 } else if (obj.action === 'D') {
-                    if (objmap.has(getPKHash(table, obj.olddata))) {
-                        throw Error('LoggedObject delete is invalid')
-                    }
+                    synclog.debug(`LoggedObject delete (${table}, ${obj.otime})`)
                 } else {
                     synclog.warning('How did we get here?')
                 }

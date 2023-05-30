@@ -10,7 +10,7 @@ afterAll(async () => {
 })
 
 describe('sync conflicts', () => {
-    test('delete driver on one db while linking to a car on the other, should undelete', async () => {
+    test('delete driver on one db while linking to a car on the other, should undelete, also test loggedobject delete', async () => {
         // Insert remote
         await with2DB(DB1, DB2, testids.series, async (task1, task2) => {
             const expected = { firstname: 'first', lastname: 'last', email: 'email' }
@@ -19,14 +19,19 @@ describe('sync conflicts', () => {
 
             await verifyObjectsLike([task1, task2], 'SELECT * FROM drivers WHERE driverid=$1',  testids.driverid1, expected)
 
-            task1.none('DELETE FROM drivers WHERE driverid=$1', [testids.newdriverid])
+            await task1.none('DELETE FROM drivers WHERE driverid=$1', [testids.newdriverid])
             await timingpause()
-            task2.none("INSERT INTO cars (carid, driverid, classcode, indexcode, number, useclsmult, attr, modified) VALUES ($1, $2, 'c1', 'i1', 2, 'f', '{}', now())",
+            await task2.none("INSERT INTO cars (carid, driverid, classcode, indexcode, number, useclsmult, attr, modified) VALUES ($1, $2, 'c1', 'i1', 2, 'f', '{}', now())",
                         [testids.newcarid, testids.newdriverid])
+            await task2.none("UPDATE drivers SET firstname='jack',modified=now() WHERE driverid=$1", testids.newdriverid)
+            expected.firstname = 'jack' // this won't come over initially as comparision is row to deleted row, not a merge of rows
             await doSync(DB1)
 
-            await verifyObjectsLike([task1, task2], 'SELECT * FROM drivers WHERE driverid=$1',  testids.newdriverid, expected)
             await verifyObjectsLike([task1, task2], 'SELECT * FROM cars WHERE carid=$1',  testids.newcarid, { classcode: 'c1' })
+
+            await doSync(DB2)
+            // now it should be on both
+            await verifyObjectsLike([task1, task2], 'SELECT * FROM drivers WHERE driverid=$1',  testids.newdriverid, expected)
         })
     })
 

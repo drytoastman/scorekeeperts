@@ -142,10 +142,7 @@ export class LoggedObject {
         }
         if (!this.initB) {
             this.initB = new InsertObject(otime, ltime, newdata)
-            return
         }
-
-        throw Error('inserted thrice?')
     }
 
     update(time: Date, olddata: DBObject, newdata: DBObject) {
