@@ -9,7 +9,7 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "axios": "^0.22",
+    "axios": "^1.6.0",
     "date-fns": "^2.16.1",
     "markdown-it": "^12.0.3",
     "markdown-it-attrs": "^3.0.3",
