@@ -40,7 +40,7 @@
             </v-col>
         </v-row>
 
-        <v-row v-if="event.attr.notes && !hasClosed">
+        <v-row v-if="event.attr.notes">
             <v-col class='tlabel'>Notes:</v-col>
             <v-col class='tdata' v-html=event.attr.notes></v-col>
         </v-row>
