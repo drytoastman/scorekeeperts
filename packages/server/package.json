@@ -14,7 +14,7 @@
   "dependencies": {
     "@google-cloud/storage": "5.8.3",
     "adm-zip": "^0.5.1",
-    "axios": "^0.22",
+    "axios": "^1.7.8",
     "bufferutil": "^4.0.2",
     "cookie-session": "^2.0.0-rc.1",
     "cors": "^2.8.5",
@@ -40,7 +40,7 @@
     "read-last-lines": "^1.7.2",
     "scdb": "5.0.0",
     "sctypes": "5.0.0",
-    "square": "24.0.0",
+    "square": "37.1.1",
     "utf-8-validate": "^5.0.3",
     "validator": "^13.5.1",
     "winston": "^3.3.3",
