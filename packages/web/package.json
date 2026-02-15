@@ -9,9 +9,9 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "axios": "^0.22",
+    "axios": "^1.13.5",
     "date-fns": "^2.16.1",
-    "markdown-it": "^13.0.2",
+    "markdown-it": "^14.1.1",
     "markdown-it-attrs": "^3.0.3",
     "markdown-it-deflist": "^2.1.0",
     "prismjs": "^1.22.0",
