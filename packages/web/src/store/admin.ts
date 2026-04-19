@@ -58,7 +58,7 @@ export const adminActions = {
                 responseType: 'blob'
             })
 
-            sendAsDownload(response.data, response.headers['content-type'], response.headers['content-disposition'].split(/[="]/)[2])
+            sendAsDownload(response.data, response.headers['content-type'] as string, (response.headers['content-disposition'] as string).split(/[="]/)[2])
             return 'done'
         } catch (error) {
             context.dispatch('axiosError', error)
