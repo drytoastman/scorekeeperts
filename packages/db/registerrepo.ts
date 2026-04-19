@@ -21,10 +21,16 @@ export class RegisterRepository {
     }
 
     async getFullEventRegistration(eventid: UUID, paymentRequired: boolean): Promise<any[]> {
-        const rows = await this.db.any('SELECT d.driverid,d.firstname,d.lastname,d.email,d.barcode,d.optoutmail,c.*,r.*,r.modified as regmodified, ' +
-                    'd.attr as dattr, sa.attr as sattr ' +
-                    'FROM cars c JOIN drivers d ON c.driverid=d.driverid JOIN registered r ON r.carid=c.carid LEFT JOIN seriesattr sa ON c.driverid=sa.driverid ' +
-                    'WHERE r.eventid=$1 ORDER BY c.number', [eventid])
+        const rows = await this.db.any(
+            'SELECT d.driverid, d.firstname, d.lastname, d.email, d.barcode, d.optoutmail, c.*, r.*, r.modified as regmodified, ' +
+            '       d.attr as dattr, sa.attr as sattr ' +
+            'FROM cars c ' +
+            'JOIN drivers d ON c.driverid = d.driverid ' +
+            'JOIN registered r ON r.carid = c.carid ' +
+            'LEFT JOIN seriesattr sa ON c.driverid = sa.driverid ' +
+            'WHERE r.eventid = $1 ' +
+            'ORDER BY c.number',
+            [eventid])
 
         const regobj: {[key:string]: any} = {}
         for (const row of rows) {
@@ -36,6 +42,18 @@ export class RegisterRepository {
             const key = p.carid + p.session
             if (key in regobj) {
                 regobj[key].payments.push(p)
+            }
+        }
+
+        // fetch non-event payments (e.g. memberships) and merge into each registrant's payments
+        const driverids = [...new Set(rows.map((r: any) => r.driverid))]
+        if (driverids.length) {
+            for (const p of await this.db.any('SELECT * FROM payments WHERE eventid IS NULL AND driverid IN ($1:csv)', [driverids])) {
+                for (const key of Object.keys(regobj)) {
+                    if (regobj[key].driverid === p.driverid) {
+                        regobj[key].payments.push(p)
+                    }
+                }
             }
         }
 
