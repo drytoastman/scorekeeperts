@@ -120,7 +120,7 @@ export async function squareOrder(conn: ScorekeeperProtocol, square: any, paymen
 }
 
 
-export async function squareRefund(conn: ScorekeeperProtocol, payments: Payment[]): Promise<Payment[]> {
+export async function squareRefund(conn: ScorekeeperProtocol, payments: Payment[], customAmount?: number): Promise<Payment[]> {
 
     const account = await conn.payments.getPaymentAccount(payments[0].accountid)
     const secret  = await conn.payments.getPaymentAccountSecret(account.accountid)
@@ -145,11 +145,17 @@ export async function squareRefund(conn: ScorekeeperProtocol, payments: Payment[
         }
     }
 
+    if (customAmount !== undefined && (customAmount <= 0 || customAmount > total)) {
+        throw Error(`refund amount ${customAmount} is invalid, must be between 1 and ${total}`)
+    }
+
+    const refundAmount = customAmount !== undefined ? customAmount : total
+
     const body = {
         idempotencyKey: refid,
         paymentId: payments[0].txid,
         amountMoney: {
-            amount: BigInt(total),
+            amount: BigInt(refundAmount),
             currency: 'USD'
         },
         reason: reasons.join(', ')

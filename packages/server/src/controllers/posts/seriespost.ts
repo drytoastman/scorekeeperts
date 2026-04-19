@@ -66,7 +66,7 @@ export async function seriespost(tx: ScorekeeperProtocol, auth: AuthData, param:
                 break
 
             case 'refund':
-                ret.payments = await square.squareRefund(tx, param.items.refund)
+                ret.payments = await square.squareRefund(tx, param.items.refund, param.items.refundAmount)
                 break
 
             case 'paymentaccounts':

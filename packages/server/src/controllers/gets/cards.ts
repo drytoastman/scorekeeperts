@@ -37,9 +37,8 @@ if (process.platform === 'win32') {
     // running shell in container
     chromeargs = {
         executablePath: '/headless-shell/headless-shell',
-        headless: false,
         args: ['--no-sandbox', '--disable-setuid-sandbox']
-    }
+    } as puppeteer.LaunchOptions
 }
 
 

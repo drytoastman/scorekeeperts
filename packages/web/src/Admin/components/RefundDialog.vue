@@ -14,12 +14,23 @@
                         {{item.eventid ? events[item.eventid].name : ''}}
                     </template>
                 </v-data-table>
+                <v-text-field v-if="base.accountid && base.txtype==='square'"
+                    v-model="customAmount"
+                    label="Refund Amount ($)"
+                    type="number"
+                    :min="0.01"
+                    :max="maxAmount"
+                    :rules="[v => (v > 0 && v <= maxAmount) || `Must be between $0.01 and $${maxAmount}`]"
+                    step="0.01"
+                    class="mt-3"
+                    outlined dense
+                />
             </v-card-text>
             <v-card-actions>
                 <v-spacer></v-spacer>
                 <v-btn color="primary darken-2" text @click="$emit('input')">Cancel</v-btn>
                 <v-btn color="primary darken-2" text @click="mark">Mark Refunded</v-btn>
-                <v-btn color="primary darken-2" text @click="refund" v-if="base.accountid && base.txtype==='square'">{{actionbutton}}</v-btn>
+                <v-btn color="primary darken-2" text @click="refund" v-if="base.accountid && base.txtype==='square'" :disabled="!refundValid">{{actionbutton}}</v-btn>
             </v-card-actions>
         </v-card>
     </v-dialog>
@@ -46,7 +57,8 @@ export default {
                 { text: 'Item',    value: 'itemname' },
                 { text: 'Amount',  value: 'amount' }
             ],
-            selected: []
+            selected: [],
+            customAmount: 0
         }
     },
     computed: {
@@ -62,13 +74,15 @@ export default {
                 }
             })
         },
-        actionbutton() { return `Square Refund ${this.$options.filters.cents2dollars(sumBy(this.selected, 'amount'))}` }
+        maxAmount() { return (sumBy(this.selected, 'amount') / 100).toFixed(2) },
+        refundValid() { return this.selected.length > 0 && this.customAmount > 0 && this.customAmount <= parseFloat(this.maxAmount) },
+        actionbutton() { return `Square Refund $${parseFloat(this.customAmount).toFixed(2)}` }
     },
     methods: {
         refund() {
             this.$store.dispatch('setdata', {
                 type: 'update',
-                items: { refund: this.selected },
+                items: { refund: this.selected, refundAmount: Math.round(parseFloat(this.customAmount) * 100) },
                 busy: { key: 'busyPayment', id: this.selected.map(p => p.payid) }
             })
             this.$emit('input')
@@ -88,7 +102,11 @@ export default {
         value: function(newv) {
             if (newv) {
                 this.selected = []
+                this.customAmount = 0
             }
+        },
+        selected: function() {
+            this.customAmount = parseFloat(this.maxAmount)
         }
     }
 }
