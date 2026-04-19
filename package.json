@@ -8,6 +8,10 @@
     "packages/web"
   ],
   "resolutions": {
-    "ejs": "^3.1.10"
+    "ejs": "^3.1.10",
+    "elliptic": "^6.6.1",
+    "@babel/traverse": "^7.23.2",
+    "form-data": "^3.0.4",
+    "webpack-dev-middleware": "^5.3.4"
   }
 }
