@@ -6,5 +6,8 @@
     "packages/db",
     "packages/server",
     "packages/web"
-  ]
+  ],
+  "resolutions": {
+    "ejs": "^3.1.10"
+  }
 }
