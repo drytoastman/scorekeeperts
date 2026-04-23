@@ -12,7 +12,7 @@
     "keygrip": "^1.1.0",
     "pg-promise": "^11.5.5",
     "sctypes": "5.0.0",
-    "uuid": "^8.3.2"
+    "uuid": "^14.0.0"
   },
   "devDependencies": {
     "@types/lodash": "^4.14.165",
