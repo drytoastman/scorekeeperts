@@ -19,9 +19,9 @@ case "$1" in
         fi
 
         echo "Building VERSION=$V"
-        docker build -t drytoastman/scdb:$V     -f db/Dockerfile     db
-        docker build -t drytoastman/scserver:$V -f server/Dockerfile ../
-        docker build -t drytoastman/scproxy:$V  -f proxy/Dockerfile  ../
+        docker build --platform linux/amd64 -t drytoastman/scdb:$V     -f db/Dockerfile     db
+        docker build --platform linux/amd64 -t drytoastman/scserver:$V -f server/Dockerfile ../
+        docker build --platform linux/amd64 -t drytoastman/scproxy:$V  -f proxy/Dockerfile  ../
         ;;
 
     pull)
