@@ -51,6 +51,17 @@ export async function asyncwait(ms: number) {
     return new Promise(resolve => { setTimeout(resolve, ms) })
 }
 
+export function seriesLockId(series: string): number {
+    // Generate a stable per-series advisory lock ID from the series name.
+    // This allows different series to sync concurrently without blocking each other.
+    // Uses a simple hash (djb2) mapped to a positive 32-bit integer range.
+    let hash = 5381
+    for (let i = 0; i < series.length; i++) {
+        hash = ((hash << 5) + hash + series.charCodeAt(i)) | 0
+    }
+    return (hash >>> 0) || 1 // ensure non-zero
+}
+
 function sumpart(idx: number):string  { return `sum(('x' || substring(t.rowhash, ${idx}, 8))::bit(32)::bigint) as sum${idx}` }
 function sums(): string               { return `${sumpart(1)}, ${sumpart(9)}, ${sumpart(17)}, ${sumpart(25)}` }
 function md5col(col: string): string  { return `md5(${col}::text)` }

@@ -136,20 +136,35 @@ async function mergeWith(roottask: ScorekeeperProtocol, myserver: MergeServerEnt
 
 
 async function mergeTables(wrap: SyncProcessInfo, tables: string[]) {
-    // Outer loop to rerun mergeTables and rerun, if for some reason we are still not up to date
-    let mtables = [...tables] // copy table
-    let ii
-    for (ii = 0; ii < 5; ii++) {
-        if (mtables.length <= 0) {
-            break
-        }
-        mtables = await mergeTablesInternal(wrap, mtables)
-        if (mtables.length) {
-            synclog.warn(`unfinished tables = ${mtables}`)
-        }
+    // Public tables (drivers, weekendmembers) are shared across all series and
+    // require a global advisory lock. Series-specific tables only need the
+    // per-series lock (already held). We acquire the global lock only when
+    // public tables need syncing, but run them together in one pass to
+    // preserve FK ordering (inserts top-down, deletes bottom-up).
+    const needsGlobal = wrap.needsPublicTables(tables)
+
+    if (needsGlobal) {
+        await wrap.acquireGlobalLock()
     }
-    if (ii === 5) {
-        synclog.error('Ran merge tables 5 times and not complete.')
+    try {
+        let mtables = [...tables]
+        let ii
+        for (ii = 0; ii < 5; ii++) {
+            if (mtables.length <= 0) {
+                break
+            }
+            mtables = await mergeTablesInternal(wrap, mtables)
+            if (mtables.length) {
+                synclog.warn(`unfinished tables = ${mtables}`)
+            }
+        }
+        if (ii === 5) {
+            synclog.error('Ran merge tables 5 times and not complete.')
+        }
+    } finally {
+        if (needsGlobal) {
+            await wrap.releaseGlobalLock()
+        }
     }
 
     // Rescan the tables to verify we are at the same state
