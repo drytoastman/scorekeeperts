@@ -2,10 +2,11 @@ import { parseTimestamp } from 'sctypes/util'
 import { pgp, ScorekeeperProtocol, SYNCTABLES } from 'scdb'
 import { synclog } from '@/util/logging'
 import { getRemoteDB } from './connections'
-import { asyncwait, FOREIGN_KEY_CONSTRAINT, logtablefor, PRIMARY_TVEQ, PRIMARY_SETS } from './constants'
+import { asyncwait, FOREIGN_KEY_CONSTRAINT, logtablefor, PRIMARY_TVEQ, PRIMARY_SETS, seriesLockId, PUBLIC_TABLES } from './constants'
 import { MergeServerEntry } from './mergeserver'
 import { DBObject, DeletedObject, getPKHash, LoggedObject, PrimaryKeyHash, SyncError, TableName } from './types'
 
+const GLOBAL_LOCK_ID = 42
 
 /* eslint-disable lines-between-class-members */
 export async function performSyncWrap(roottask: ScorekeeperProtocol, localserver: MergeServerEntry, remoteserver: MergeServerEntry, series: string,
@@ -21,20 +22,29 @@ export async function performSyncWrap(roottask: ScorekeeperProtocol, localserver
     await getRemoteDB(remoteserver, series, password).task(async remotetask => {
         const wrap = new SyncProcessInfo(roottask, localserver, version, remotetask, remoteserver, series)
         try {
-            await wrap.getLocks()
+            await wrap.acquireSeriesLock()
             await execution(wrap)
         } finally {
-            await wrap.returnLocks()
+            await wrap.releaseAllLocks()
         }
     })
 }
 
 export class SyncProcessInfo {
-    lock1: ScorekeeperProtocol|undefined
-    lock2: ScorekeeperProtocol|undefined
+    private heldLocks: { conn1: ScorekeeperProtocol, conn2: ScorekeeperProtocol, lockId: number }[] = []
+    private conn1: ScorekeeperProtocol  // lower serverid locks first
+    private conn2: ScorekeeperProtocol
 
     constructor(private localtask: ScorekeeperProtocol,   private localserver: MergeServerEntry, private version: string,
                private remotetask: ScorekeeperProtocol,  private remoteserver: MergeServerEntry, private series: string) {
+        // Ordered locking: lower serverid first to prevent distributed deadlocks
+        if (this.localserver.serverid < this.remoteserver.serverid) {
+            this.conn1 = this.localtask
+            this.conn2 = this.remotetask
+        } else {
+            this.conn1 = this.remotetask
+            this.conn2 = this.localtask
+        }
     }
 
     async updateRemoteCache() {
@@ -64,6 +74,18 @@ export class SyncProcessInfo {
             throw Error('Unable to find tables hash status')
         }
         return [...new Set([...Object.keys(ltables), ...Object.keys(rtables)].filter(table => ltables[table] !== rtables[table]))]
+    }
+
+    needsPublicTables(tables: string[]): boolean {
+        return tables.some(t => PUBLIC_TABLES.includes(t))
+    }
+
+    publicTables(tables: string[]): string[] {
+        return tables.filter(t => PUBLIC_TABLES.includes(t))
+    }
+
+    seriesTables(tables: string[]): string[] {
+        return tables.filter(t => !PUBLIC_TABLES.includes(t))
     }
 
     async loadAll(table: string)  {
@@ -216,60 +238,79 @@ export class SyncProcessInfo {
         })
     }
 
-    async getLocks() {
-        /*
-            Context manager to acquire/release advisory locks on both servers.
-            It will throw assertion error if it can't get both.  The logic for
-            first lock to obtain is there to help dynamic merging systems in
-            obtaining locks in the same order to reduce distributed lock race
-            conditions.  The current order is lower serverid first.
-            Also sets the series schema path so its all nicely tied away here.
-        */
-        let tries = 10
-        let cur1  = this.localtask
-        let cur2  = this.remotetask
+    /**
+     * Acquire the per-series advisory lock on both servers.
+     * This is held for the duration of series-specific table syncing.
+     */
+    async acquireSeriesLock() {
+        const lockId = seriesLockId(this.series)
+        await Promise.all([this.conn1.series.setSeries(this.series), this.conn2.series.setSeries(this.series)])
+        await this.acquireLock(lockId, `series ${this.series}`)
+    }
 
-        if (this.localserver.serverid >= this.remoteserver.serverid) {
-            cur1 = this.remotetask
-            cur2 = this.localtask
+    /**
+     * Acquire the global advisory lock on both servers.
+     * This is held only while syncing public tables (drivers, weekendmembers).
+     */
+    async acquireGlobalLock() {
+        await this.acquireLock(GLOBAL_LOCK_ID, 'global (public tables)')
+    }
+
+    /**
+     * Release the global advisory lock on both servers.
+     */
+    async releaseGlobalLock() {
+        await this.releaseLock(GLOBAL_LOCK_ID, 'global (public tables)')
+    }
+
+    /**
+     * Release all held locks in reverse order (called in finally block).
+     */
+    async releaseAllLocks() {
+        await this.remotetask.none('ROLLBACK').catch(error => { synclog.error(error) })
+        await this.localtask.none('ROLLBACK').catch(error => { synclog.error(error) })
+
+        // Release in reverse order to avoid deadlock
+        for (let i = this.heldLocks.length - 1; i >= 0; i--) {
+            const held = this.heldLocks[i]
+            synclog.debug(`Releasing lock ${held.lockId}`)
+            await held.conn2.one('SELECT pg_advisory_unlock($1)', [held.lockId]).catch(error => synclog.error(error))
+            await held.conn1.one('SELECT pg_advisory_unlock($1)', [held.lockId]).catch(error => synclog.error(error))
         }
+        this.heldLocks = []
+    }
 
-        await Promise.all([cur1.series.setSeries(this.series), cur2.series.setSeries(this.series)])
-
+    private async acquireLock(lockId: number, label: string) {
+        let tries = 10
         while (tries > 0) {
-            const stat1 = await cur1.one('SELECT pg_try_advisory_lock(42) as lock')
+            const stat1 = await this.conn1.one('SELECT pg_try_advisory_lock($1) as lock', [lockId])
             if (stat1.lock) {
-                this.lock1 = cur1
-                const stat2 = await cur2.one('SELECT pg_try_advisory_lock(42) as lock')
+                const stat2 = await this.conn2.one('SELECT pg_try_advisory_lock($1) as lock', [lockId])
                 if (stat2.lock) {
-                    this.lock2 = cur2
-                    synclog.debug('Acquired both locks')
+                    this.heldLocks.push({ conn1: this.conn1, conn2: this.conn2, lockId })
+                    synclog.debug(`Acquired ${label} lock (lockId=${lockId})`)
                     return
                 }
+                // Got first but not second — release first and retry
+                await this.conn1.one('SELECT pg_advisory_unlock($1)', [lockId])
             }
 
-            // Failed on lock1 or lock2, release the lock we did get, wait and retry
-            synclog.warn('Unable to obtain locks, sleeping and trying again')
-            if (this.lock1) { await this.lock1.one('SELECT pg_advisory_unlock(42)') }
+            synclog.warn(`Unable to obtain ${label} lock, sleeping and trying again`)
             await asyncwait(1000)
             tries -= 1
         }
 
-        throw new SyncError('Unable to obtain locks, will try again later')
+        throw new SyncError(`Unable to obtain ${label} lock, will try again later`)
     }
 
-    async returnLocks() {
-        // needed coming from psycopg to make sure it was clear, FINISH ME, check here now
-        await this.remotetask.none('ROLLBACK').catch(error => { synclog.error(error) })
-        await this.localtask.none('ROLLBACK').catch(error => { synclog.error(error) })
+    private async releaseLock(lockId: number, label: string) {
+        const idx = this.heldLocks.findIndex(h => h.lockId === lockId)
+        if (idx === -1) return
 
-        synclog.debug('Releasing locks')
-        // Release locks in opposite order from obtaining to avoid deadlock
-        if (this.lock2) {
-            await this.lock2.one('SELECT pg_advisory_unlock(42)').catch(error => synclog.error(error))
-        }
-        if (this.lock1) {
-            await this.lock1.one('SELECT pg_advisory_unlock(42)').catch(error => synclog.error(error))
-        }
+        const held = this.heldLocks[idx]
+        synclog.debug(`Releasing ${label} lock (lockId=${lockId})`)
+        await held.conn2.one('SELECT pg_advisory_unlock($1)', [held.lockId]).catch(error => synclog.error(error))
+        await held.conn1.one('SELECT pg_advisory_unlock($1)', [held.lockId]).catch(error => synclog.error(error))
+        this.heldLocks.splice(idx, 1)
     }
 }
