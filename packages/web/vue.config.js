@@ -32,7 +32,8 @@ module.exports = {
     },
     transpileDependencies: [
         'vuetify',
-        'sctypes'
+        'sctypes',
+        'axios'
     ],
     productionSourceMap: false,
     devServer: {
