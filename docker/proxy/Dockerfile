@@ -4,7 +4,7 @@ WORKDIR /code
 COPY package.json yarn.lock ./
 COPY packages/types/package.json ./packages/types/
 COPY packages/web/package.json   ./packages/web/
-RUN yarn install
+RUN yarn install --ignore-engines
 
 COPY package.json yarn.lock ./
 COPY packages/tscommon.json packages/

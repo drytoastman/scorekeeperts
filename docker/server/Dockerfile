@@ -5,7 +5,7 @@ COPY package.json yarn.lock ./
 COPY packages/types/package.json  ./packages/types/
 COPY packages/db/package.json     ./packages/db/
 COPY packages/server/package.json ./packages/server/
-RUN yarn install
+RUN yarn install --ignore-engines
 
 COPY package.json yarn.lock ./
 COPY packages/tscommon.json packages/
